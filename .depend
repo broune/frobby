@@ -45,8 +45,8 @@ $(outdir)GenerateFrobeniusAction.o: GenerateFrobeniusAction.cpp stdinc.h \
 $(outdir)IrreducibleDecomFacade.o: IrreducibleDecomFacade.cpp stdinc.h \
   IrreducibleDecomFacade.h Facade.h Timer.h IrreducibleDecomParameters.h \
   ParameterGroup.h Parameter.h BoolParameter.h BigIdeal.h VarNames.h \
-  IOFacade.h Strategies.h Partition.h Term.h monosIO.h Lexer.h io.h \
-  TermTree.h Allocator.h TermTranslator.h LabelAlgorithm.h
+  IOFacade.h Strategies.h Partition.h monosIO.h Lexer.h io.h TermTree.h \
+  Term.h Allocator.h TermTranslator.h LabelAlgorithm.h
 $(outdir)FrobeniusAction.o: FrobeniusAction.cpp stdinc.h FrobeniusAction.h \
   Action.h BoolParameter.h Parameter.h IrreducibleDecomParameters.h \
   ParameterGroup.h BigIdeal.h VarNames.h IOFacade.h Facade.h Timer.h \
@@ -76,3 +76,10 @@ $(outdir)IrreducibleDecomParameters.o: IrreducibleDecomParameters.cpp stdinc.h \
   IrreducibleDecomParameters.h ParameterGroup.h Parameter.h \
   BoolParameter.h
 $(outdir)BoolParameter.o: BoolParameter.cpp stdinc.h BoolParameter.h Parameter.h
+$(outdir)LabelAlgorithm.o: LabelAlgorithm.cpp stdinc.h LabelAlgorithm.h Term.h \
+  strategies.h Partition.h monosIO.h BigIdeal.h VarNames.h Lexer.h io.h \
+  Timer.h TermTree.h Allocator.h TermTranslator.h
+$(outdir)Lexer.o: Lexer.cpp stdinc.h Lexer.h
+$(outdir)Partition.o: Partition.cpp stdinc.h Partition.h Term.h
+$(outdir)StringParameter.o: StringParameter.cpp stdinc.h StringParameter.h \
+  Parameter.h

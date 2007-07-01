@@ -5,3 +5,4 @@ data
 frobby.lnk
 *.stackdump
 core
+*.orig

@@ -8,9 +8,10 @@ sources = main.cpp TermTree.cpp Action.cpp				\
   GenerateIdealAction.cpp GenerateFrobeniusAction.cpp			\
   IrreducibleDecomFacade.cpp FrobeniusAction.cpp Facade.cpp		\
   IOFacade.cpp DynamicFrobeniusFacade.cpp RandomDataFacade.cpp		\
-  AnalyzeAction.cpp AnalyzeFacade.cpp Parameter.cpp		\
+  AnalyzeAction.cpp AnalyzeFacade.cpp Parameter.cpp			\
   ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
-  IrreducibleDecomParameters.cpp BoolParameter.cpp
+  IrreducibleDecomParameters.cpp BoolParameter.cpp LabelAlgorithm.cpp	\
+  Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized -Wno-unused-parameter
@@ -80,4 +81,4 @@ depend:
 -include .depend
 
 clean:
-	rm -rf bin *~
+	rm -rf bin *~ *.orig
