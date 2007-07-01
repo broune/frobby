@@ -2,10 +2,11 @@
 #include "Facade.h"
 
 Facade::Facade(bool printActions):
+  _printActions(printActions) 
 #ifdef DEBUG
-  _doingAnAction(false),
+  , _doingAnAction(false)
 #endif
-  _printActions(printActions) {
+{
 }
 
 void Facade::beginAction(const char* message) {

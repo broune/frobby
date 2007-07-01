@@ -11,7 +11,8 @@ sources = main.cpp TermTree.cpp Action.cpp				\
   AnalyzeAction.cpp AnalyzeFacade.cpp Parameter.cpp			\
   ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
   IrreducibleDecomParameters.cpp BoolParameter.cpp LabelAlgorithm.cpp	\
-  Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp
+  Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp TermList.cpp	\
+  TermTranslator.cpp Timer.cpp VarNames.cpp Strategy.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized -Wno-unused-parameter

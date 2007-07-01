@@ -3,36 +3,18 @@
 
 #include <iterator>
 
+class ExternalTerm;
+
 class TermTranslator {
 public:
   // Takes over ownership of decompressionMaps.
-  TermTranslator(vector<vector<mpz_class> >* decompressionMaps):
-    _decompressionMaps(decompressionMaps) {
-    ASSERT(decompressionMaps != 0);
-  }
+  TermTranslator(vector<vector<mpz_class> >* decompressionMaps);
+  ~TermTranslator();
 
-  ~TermTranslator() {
-    delete _decompressionMaps;
-  }
+  const mpz_class& getExponent(int variable, Exponent exponent) const;
+  const mpz_class& getExponent(int variable, const ExternalTerm& term) const;
 
-  const mpz_class& getExponent(int variable, Exponent exponent) const {
-    ASSERT(0 <= variable);
-    ASSERT(variable < (int)_decompressionMaps->size());
-    ASSERT(exponent < (*_decompressionMaps)[variable].size());
-
-    return (*_decompressionMaps)[variable][exponent];
-  }
-
-  const mpz_class& getExponent(int variable, const ExternalTerm& term) const {
-    return getExponent(variable, term[variable]);
-  }
-
-  Exponent getMaxId(int variable) const {
-    ASSERT(0 <= variable);
-    ASSERT(variable < (int)_decompressionMaps->size());
-
-    return (*_decompressionMaps)[variable].size() - 1;
-  }
+  Exponent getMaxId(int variable) const;
 
   friend ostream& operator<<(ostream& out, const TermTranslator& translator) {
     out << "TermTranslator(" << endl;
@@ -50,8 +32,8 @@ public:
   }
 
 private:
-  // To make it inaccessible.
-  TermTranslator(const TermTranslator&);
+  TermTranslator(const TermTranslator&); // not suported
+  TermTranslator& operator=(const TermTranslator&); // not supported
 
   vector<vector<mpz_class> >* _decompressionMaps;
 };
