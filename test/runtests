@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd test/decom
+./runtests
+cd ../..
