@@ -3,38 +3,18 @@
 
 class Timer {
 public:
-  Timer() {
-    reset();
-  }
+  Timer();
 
   friend ostream& operator<<(ostream& out, const Timer& timer) {
     timer.print(out);
     return out;
   }
 
-  void print(ostream& out) const {
-    unsigned long seconds = getSeconds();
-    unsigned long minutes = seconds / 60;
-    unsigned long hours = minutes / 60;
+  void print(ostream& out) const;
 
-    seconds %= 60;
-    minutes %= 60;
+  void reset();
 
-    out << '(';
-    if (hours != 0)
-      out << hours << 'h';
-    if (minutes != 0 || hours != 0)
-      out << minutes << 'm';
-    out << seconds << "s)";
-  }
-
-  void reset() {
-    _initialTime = time(0);
-  }
-
-  unsigned long getSeconds() const {
-    return (unsigned long)(time(0) - _initialTime);
-  }
+  unsigned long getSeconds() const;
 
 private:
   time_t _initialTime;

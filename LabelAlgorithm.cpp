@@ -2,7 +2,7 @@
 #include "LabelAlgorithm.h"
 
 #include "Term.h"
-#include "strategies.h"
+#include "Strategy.h"
 #include "TermTree.h"
 #include "Partition.h"
 

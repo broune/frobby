@@ -10,32 +10,17 @@ public:
   typedef Cont::iterator iterator;
   typedef Cont::const_iterator const_iterator;
 
-  TermList(unsigned int varCount):
-    _varCount(varCount) {
-  }
+  TermList(unsigned int varCount);
 
-  void insert(const ExternalTerm& term) {
-    _terms.push_back(term);
-  }
+  void insert(const ExternalTerm& term);
 
-  const_iterator begin() const {
-    return _terms.begin();
-  }
+  const_iterator begin() const;
 
-  const_iterator end() const {
-    return _terms.end();
-  }
+  const_iterator end() const;
 
-  bool isIncomparable(const ExternalTerm& term) const {
-    for (const_iterator it = begin(); it != end(); ++it)
-      if (it->divides(term) || term.divides(*it))
-	return false;
-    return true;
-  }
+  bool isIncomparable(const ExternalTerm& term) const;
 
-  size_t size() const {
-    return _terms.size();
-  }
+  size_t size() const;
 
 private:
   Cont _terms;
