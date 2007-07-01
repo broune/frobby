@@ -43,10 +43,13 @@ $(outdir)GenerateFrobeniusAction.o: GenerateFrobeniusAction.cpp stdinc.h \
   GenerateFrobeniusAction.h Action.h BoolParameter.h Parameter.h \
   BigIdeal.h VarNames.h RandomDataFacade.h Facade.h Timer.h IOFacade.h
 $(outdir)IrreducibleDecomFacade.o: IrreducibleDecomFacade.cpp stdinc.h \
-  IrreducibleDecomFacade.h Facade.h Timer.h IrreducibleDecomParameters.h \
-  ParameterGroup.h Parameter.h BoolParameter.h BigIdeal.h VarNames.h \
-  IOFacade.h Strategies.h Partition.h monosIO.h Lexer.h io.h TermTree.h \
-  Term.h Allocator.h TermTranslator.h Strategy.h LabelAlgorithm.h
+  IrreducibleDecomFacade.h Facade.h Timer.h PrintDebugStrategy.h \
+  Strategy.h FrobeniusStrategy.h BenchmarkStrategy.h \
+  DecompositionStrategy.h VarNames.h StatisticsStrategy.h \
+  CompositeStrategy.h TermTree.h Term.h Allocator.h TermTranslator.h \
+  Partition.h PrintProgressStrategy.h SkipRedundantStrategy.h \
+  IrreducibleDecomParameters.h ParameterGroup.h Parameter.h \
+  BoolParameter.h BigIdeal.h IOFacade.h LabelAlgorithm.h
 $(outdir)FrobeniusAction.o: FrobeniusAction.cpp stdinc.h FrobeniusAction.h \
   Action.h BoolParameter.h Parameter.h IrreducibleDecomParameters.h \
   ParameterGroup.h BigIdeal.h VarNames.h IOFacade.h Facade.h Timer.h \
@@ -88,3 +91,21 @@ $(outdir)TermTranslator.o: TermTranslator.cpp stdinc.h TermTranslator.h Term.h
 $(outdir)Timer.o: Timer.cpp stdinc.h Timer.h
 $(outdir)VarNames.o: VarNames.cpp stdinc.h VarNames.h
 $(outdir)Strategy.o: Strategy.cpp stdinc.h Strategy.h
+$(outdir)PrintDebugStrategy.o: PrintDebugStrategy.cpp stdinc.h \
+  PrintDebugStrategy.h Strategy.h TermTree.h Term.h Allocator.h
+$(outdir)FrobeniusStrategy.o: FrobeniusStrategy.cpp stdinc.h FrobeniusStrategy.h \
+  Strategy.h TermTree.h Term.h Allocator.h TermTranslator.h Partition.h
+$(outdir)BenchmarkStrategy.o: BenchmarkStrategy.cpp stdinc.h BenchmarkStrategy.h \
+  Strategy.h
+$(outdir)DecompositionStrategy.o: DecompositionStrategy.cpp stdinc.h \
+  DecompositionStrategy.h Strategy.h VarNames.h TermTree.h Term.h \
+  Allocator.h TermTranslator.h Partition.h monosIO.h BigIdeal.h Lexer.h \
+  io.h
+$(outdir)StatisticsStrategy.o: StatisticsStrategy.cpp stdinc.h \
+  StatisticsStrategy.h Strategy.h TermTree.h Term.h Allocator.h
+$(outdir)CompositeStrategy.o: CompositeStrategy.cpp stdinc.h CompositeStrategy.h \
+  Strategy.h TermTree.h Term.h Allocator.h TermTranslator.h VarNames.h \
+  Partition.h
+$(outdir)PrintProgressStrategy.o: PrintProgressStrategy.cpp stdinc.h \
+  PrintProgressStrategy.h Strategy.h Timer.h TermTree.h Term.h \
+  Allocator.h

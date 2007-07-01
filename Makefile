@@ -12,7 +12,11 @@ sources = main.cpp TermTree.cpp Action.cpp				\
   ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
   IrreducibleDecomParameters.cpp BoolParameter.cpp LabelAlgorithm.cpp	\
   Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp TermList.cpp	\
-  TermTranslator.cpp Timer.cpp VarNames.cpp Strategy.cpp
+  TermTranslator.cpp Timer.cpp VarNames.cpp Strategy.cpp		\
+  PrintDebugStrategy.cpp FrobeniusStrategy.cpp BenchmarkStrategy.cpp	\
+  DecompositionStrategy.cpp StatisticsStrategy.cpp			\
+  CompositeStrategy.cpp PrintProgressStrategy.cpp			\
+  SkipRedundantStrategy.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized -Wno-unused-parameter
