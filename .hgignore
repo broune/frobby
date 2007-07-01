@@ -2,7 +2,6 @@ syntax: glob
 bin
 *~
 data
-save
 frobby.lnk
 *.stackdump
 core
