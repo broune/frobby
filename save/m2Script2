@@ -1,0 +1,5 @@
+load "__m2tmp.in";
+file = "__m2tmp.out" << "";
+file << "R = ZZ[" << toString(generators(R)) << "];" << endl;
+file << toString(irreducibleDecomposition(I)) << ";" << endl << close;
+quit;

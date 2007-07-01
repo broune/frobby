@@ -1,0 +1,3 @@
+g++ frobw.cpp -lgmpxx -lgmp -O2 -pg -g $*
+a.out gen t -genMinGenCount = 2000 -genVarCount=3
+gprof a.out|head
