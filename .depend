@@ -1,0 +1,78 @@
+$(outdir)main.o: main.cpp stdinc.h Action.h BoolParameter.h Parameter.h
+$(outdir)TermTree.o: TermTree.cpp stdinc.h TermTree.h Term.h Allocator.h
+$(outdir)Action.o: Action.cpp stdinc.h Action.h BoolParameter.h Parameter.h \
+  IrreducibleDecomAction.h IrreducibleDecomParameters.h ParameterGroup.h \
+  FormatAction.h StringParameter.h HelpAction.h DynamicFrobeniusAction.h \
+  GenerateIdealAction.h GenerateIdealParameters.h IntegerParameter.h \
+  GenerateFrobeniusAction.h FrobeniusAction.h AnalyzeAction.h
+$(outdir)IrreducibleDecomAction.o: IrreducibleDecomAction.cpp stdinc.h \
+  IrreducibleDecomAction.h Action.h BoolParameter.h Parameter.h \
+  IrreducibleDecomParameters.h ParameterGroup.h BigIdeal.h VarNames.h \
+  IrreducibleDecomFacade.h Facade.h Timer.h IOFacade.h
+$(outdir)fplllIO.o: fplllIO.cpp stdinc.h fplllIO.h BigIdeal.h VarNames.h Lexer.h
+$(outdir)io.o: io.cpp stdinc.h io.h Lexer.h BigIdeal.h VarNames.h newMonosIO.h \
+  monosIO.h macaulay2IO.h
+$(outdir)fourti2.o: fourti2.cpp stdinc.h fourti2.h BigIdeal.h VarNames.h Lexer.h \
+  io.h
+$(outdir)randomDataGenerators.o: randomDataGenerators.cpp stdinc.h \
+  randomDataGenerators.h BigIdeal.h VarNames.h TermList.h Term.h
+$(outdir)monosIO.o: monosIO.cpp stdinc.h monosIO.h BigIdeal.h VarNames.h Lexer.h \
+  io.h
+$(outdir)BigIdeal.o: BigIdeal.cpp stdinc.h BigIdeal.h VarNames.h TermTree.h Term.h \
+  Allocator.h TermList.h TermTranslator.h
+$(outdir)FormatAction.o: FormatAction.cpp stdinc.h FormatAction.h Action.h \
+  BoolParameter.h Parameter.h StringParameter.h BigIdeal.h VarNames.h \
+  IOFacade.h Facade.h Timer.h
+$(outdir)macaulay2IO.o: macaulay2IO.cpp stdinc.h macaulay2IO.h Lexer.h BigIdeal.h \
+  VarNames.h io.h monosIO.h
+$(outdir)newMonosIO.o: newMonosIO.cpp stdinc.h newMonosIO.h monosIO.h BigIdeal.h \
+  VarNames.h Lexer.h io.h
+$(outdir)HelpAction.o: HelpAction.cpp stdinc.h HelpAction.h Action.h \
+  BoolParameter.h Parameter.h
+$(outdir)stdinc.o: stdinc.cpp stdinc.h
+$(outdir)DynamicFrobeniusAction.o: DynamicFrobeniusAction.cpp stdinc.h \
+  DynamicFrobeniusAction.h Action.h BoolParameter.h Parameter.h \
+  IOFacade.h Facade.h Timer.h DynamicFrobeniusFacade.h
+$(outdir)dynamicFrobeniusAlgorithm.o: dynamicFrobeniusAlgorithm.cpp stdinc.h \
+  dynamicFrobeniusAlgorithm.h
+$(outdir)GenerateIdealAction.o: GenerateIdealAction.cpp stdinc.h \
+  GenerateIdealAction.h Action.h BoolParameter.h Parameter.h \
+  GenerateIdealParameters.h ParameterGroup.h IntegerParameter.h \
+  BigIdeal.h VarNames.h RandomDataFacade.h Facade.h Timer.h IOFacade.h
+$(outdir)GenerateFrobeniusAction.o: GenerateFrobeniusAction.cpp stdinc.h \
+  GenerateFrobeniusAction.h Action.h BoolParameter.h Parameter.h \
+  BigIdeal.h VarNames.h RandomDataFacade.h Facade.h Timer.h IOFacade.h
+$(outdir)IrreducibleDecomFacade.o: IrreducibleDecomFacade.cpp stdinc.h \
+  IrreducibleDecomFacade.h Facade.h Timer.h IrreducibleDecomParameters.h \
+  ParameterGroup.h Parameter.h BoolParameter.h BigIdeal.h VarNames.h \
+  IOFacade.h Strategies.h Partition.h Term.h monosIO.h Lexer.h io.h \
+  TermTree.h Allocator.h TermTranslator.h LabelAlgorithm.h
+$(outdir)FrobeniusAction.o: FrobeniusAction.cpp stdinc.h FrobeniusAction.h \
+  Action.h BoolParameter.h Parameter.h IrreducibleDecomParameters.h \
+  ParameterGroup.h BigIdeal.h VarNames.h IOFacade.h Facade.h Timer.h \
+  IrreducibleDecomFacade.h
+$(outdir)Facade.o: Facade.cpp stdinc.h Facade.h Timer.h
+$(outdir)IOFacade.o: IOFacade.cpp stdinc.h IOFacade.h Facade.h Timer.h io.h \
+  fourti2.h BigIdeal.h VarNames.h
+$(outdir)DynamicFrobeniusFacade.o: DynamicFrobeniusFacade.cpp stdinc.h \
+  DynamicFrobeniusFacade.h Facade.h Timer.h DynamicFrobeniusAlgorithm.h
+$(outdir)RandomDataFacade.o: RandomDataFacade.cpp stdinc.h RandomDataFacade.h \
+  Facade.h Timer.h RandomDataGenerators.h GenerateIdealParameters.h \
+  ParameterGroup.h Parameter.h IntegerParameter.h
+$(outdir)AnalyzeAction.o: AnalyzeAction.cpp stdinc.h AnalyzeAction.h Action.h \
+  BoolParameter.h Parameter.h BigIdeal.h VarNames.h IOFacade.h Facade.h \
+  Timer.h AnalyzeFacade.h
+$(outdir)AnalyzeFacade.o: AnalyzeFacade.cpp stdinc.h AnalyzeFacade.h Facade.h \
+  Timer.h BigIdeal.h VarNames.h
+$(outdir)Parameter.o: Parameter.cpp stdinc.h Parameter.h
+$(outdir)ParameterGroup.o: ParameterGroup.cpp stdinc.h ParameterGroup.h \
+  Parameter.h
+$(outdir)GenerateIdealParameters.o: GenerateIdealParameters.cpp stdinc.h \
+  GenerateIdealParameters.h ParameterGroup.h Parameter.h \
+  IntegerParameter.h
+$(outdir)IntegerParameter.o: IntegerParameter.cpp stdinc.h IntegerParameter.h \
+  Parameter.h
+$(outdir)IrreducibleDecomParameters.o: IrreducibleDecomParameters.cpp stdinc.h \
+  IrreducibleDecomParameters.h ParameterGroup.h Parameter.h \
+  BoolParameter.h
+$(outdir)BoolParameter.o: BoolParameter.cpp stdinc.h BoolParameter.h Parameter.h

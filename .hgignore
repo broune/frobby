@@ -1,0 +1,9 @@
+syntax: glob
+bin
+*~
+data
+test
+save
+frobby.lnk
+*.stackdump
+core
