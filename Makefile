@@ -16,7 +16,7 @@ sources = main.cpp TermTree.cpp Action.cpp				\
   PrintDebugStrategy.cpp FrobeniusStrategy.cpp BenchmarkStrategy.cpp	\
   DecompositionStrategy.cpp StatisticsStrategy.cpp			\
   CompositeStrategy.cpp PrintProgressStrategy.cpp			\
-  SkipRedundantStrategy.cpp
+  SkipRedundantStrategy.cpp LatticeFormatAction.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized -Wno-unused-parameter

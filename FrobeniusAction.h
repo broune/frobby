@@ -6,6 +6,8 @@
 
 class FrobeniusAction : public Action {
  public:
+  FrobeniusAction();
+
   virtual const char* getName() const;
   virtual const char* getShortDescription() const;
   virtual const char* getDescription() const;

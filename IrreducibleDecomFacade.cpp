@@ -60,6 +60,18 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   beginAction
     ("Optimizing over irreducible decomposition using label algorithm.");
 
+  if (_parameters.getSkipRedundant()) {
+    cerr << "ERROR: Due to implementation issues, the Grobner basis" << endl
+	 << "based Frobenius feature does not support independence splits."
+	 << endl;
+    exit(1);
+  }
+
+  if (instance.size() == 2) {
+    frobeniusNumber = instance[0] * instance[1] - instance[0] - instance[1];
+    return;
+  }
+
   TermTree* tree;
   TermTranslator* translator;
   ideal.buildAndClear(tree, translator, false);

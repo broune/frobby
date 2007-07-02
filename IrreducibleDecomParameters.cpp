@@ -47,6 +47,10 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
   addParameter(&_usePartition);
 }
 
+void IrreducibleDecomParameters::setSkipRedundant(bool value) {
+  _skipRedundant = value;
+}
+
 bool IrreducibleDecomParameters::getDoBenchmark() const {
   return _doBenchmark;
 }

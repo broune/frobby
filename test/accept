@@ -1,6 +1,0 @@
-#!/bin/bash
-
-for t in *.decom
-do
-  mv $t ${t:0:${#t} - 6}.ref
-done

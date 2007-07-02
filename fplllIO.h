@@ -6,18 +6,9 @@ class BigIdeal;
 namespace fplll {
   void writeLatticeBasis(ostream& out, const BigIdeal& basis);
 
-  void readLatticeBasis(istream& in,
-			unsigned int rowCount,
-			unsigned int columnCount,
-			BigIdeal& basis);
+  void readLatticeBasis(istream& in, BigIdeal& basis);
 
-  void reduceLatticeBasis(BigIdeal& basis);
-
-  void addMultiple(BigIdeal& basis,
-		   unsigned int add,
-		   unsigned int addTo,
-		   const mpz_class& mult);
-
+  // TODO: more this somewhere else.
   void makeZeroesInLatticeBasis(BigIdeal& basis);
 }
 

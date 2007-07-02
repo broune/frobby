@@ -3,3 +3,7 @@
 cd test/decom
 ./runtests
 cd ../..
+
+cd test/frob
+./runtests
+cd ../..
