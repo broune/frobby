@@ -4,6 +4,7 @@
 #include "io.h"
 #include "fourti2.h"
 #include "BigIdeal.h"
+#include "fplllIO.h"
 
 #include <iterator>
 
@@ -12,7 +13,7 @@ IOFacade::IOFacade(bool printActions):
 }
 
 bool IOFacade::isValidMonomialIdealFormat(const char* format) {
-  beginAction("Validating format name.");
+  beginAction("Validating monomial ideal format name.");
 
   IOHandler* handler = IOHandler::createIOHandler(format);
   bool valid = (handler != 0);
@@ -83,7 +84,47 @@ writeFrobeniusInstance(ostream& out, vector<mpz_class>& instance) {
   beginAction("Writing Frobenius instance.");
 
   copy(instance.begin(), instance.end(),
-       ostream_iterator<mpz_class>(cout, "\n"));
+       ostream_iterator<mpz_class>(out, "\n"));
+
+  endAction();
+}
+
+bool IOFacade::isValidLatticeFormat(const char* format) {
+  beginAction("Validating lattice format name.");
+
+  bool valid =
+    strcmp(format, "4ti2") == 0 ||
+    strcmp(format, "fplll") == 0;
+
+  endAction();
+
+  return valid;
+}
+
+void IOFacade::
+readLattice(istream& in, BigIdeal& ideal, const char* format) {
+  beginAction("Reading lattice basis.");
+
+  if (strcmp(format, "4ti2") == 0)
+    fourti2::readLatticeBasis(in, ideal);
+  else if (strcmp(format, "fplll") == 0)
+    fplll::readLatticeBasis(in, ideal);
+  else
+    ASSERT(false);
+
+  endAction();
+}
+
+void IOFacade::
+writeLattice(ostream& out, const BigIdeal& ideal, const char* format) {
+  beginAction("Writing lattice basis.");
+
+  if (strcmp(format, "4ti2") == 0)
+    fourti2::writeLatticeBasis(out, ideal);
+  else if (strcmp(format, "fplll") == 0)
+    fplll::writeLatticeBasis(out, ideal);
+  else
+    ASSERT(false);
 
   endAction();
 }

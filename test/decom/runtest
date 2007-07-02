@@ -1,28 +1,12 @@
 #!/bin/bash
 
-../../$frobby irrdecom < $1 > $1.decom 2>/dev/null
+../../$frobby irrdecom < $1 2>/dev/null | diff - $1.ref
 
 if [ $? != 0 ]
 then
   echo
-  echo Test $1 failed due to exit status $?.\n
-  echo Rerunning test in non-quiet mode.
-  echo ------------------------------------------------
-  ../../$frobby irrdecom < $1 > $1.decom
+  echo Test $1 failed
   exit 1
 fi
 
-diff $1.decom $1.ref
-
-if [ $? != 0 ]
-then
-  echo
-  echo Test $1 failed due to output mismatch with reference file $1.ref
-  echo Rerunning test in non-quiet mode.
-  echo ------------------------------------------------
-  ../../$frobby irrdecom < $1 > $1.decom
-  exit 1
-fi
-
-rm -f $1.decom
 echo -n .

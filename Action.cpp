@@ -9,6 +9,7 @@
 #include "GenerateFrobeniusAction.h"
 #include "FrobeniusAction.h"
 #include "AnalyzeAction.h"
+#include "LatticeFormatAction.h"
 
 Action::ActionContainer Action::_actions;
 
@@ -29,6 +30,7 @@ const Action::ActionContainer& Action::getActions() {
     _actions.push_back(new GenerateFrobeniusAction());
     _actions.push_back(new FrobeniusAction());
     _actions.push_back(new DynamicFrobeniusAction());
+    _actions.push_back(new LatticeFormatAction());
   }
 
   return _actions;

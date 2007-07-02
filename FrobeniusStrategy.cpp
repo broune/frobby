@@ -40,7 +40,7 @@ FrobeniusStrategy::~FrobeniusStrategy() {
     delete[] _degreeMultiples[i];
   delete[] _degreeMultiples;
   
-  *_frobeniusNumber = _maximumDegreeSeen;
+  *_frobeniusNumber = _maximumDegreeSeen - _initialDegree;
 }
 
 void FrobeniusStrategy::getName(string& name) const {
@@ -60,7 +60,7 @@ bool FrobeniusStrategy::startingCall(const ExternalTerm& b,
   
   if (!_startingPartition) {
     if (position == 0)
-      _partialDegrees[0] = -_initialDegree;
+      _partialDegrees[0] = 0;
     else {
       const Degree& degree = _degreeMultiples[position - 1][b[position - 1]];
       _partialDegrees[position] = _partialDegrees[position - 1] + degree;

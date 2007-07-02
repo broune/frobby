@@ -5,8 +5,7 @@
 #include "Lexer.h"
 
 namespace fplll {
-  void writeLatticeBasis(ostream& out,
-			 const BigIdeal& basis) {
+  void writeLatticeBasis(ostream& out, const BigIdeal& basis) {
     out << "[\n";
     for (unsigned int i = 0; i < basis.size(); ++i) {
       out << " [";
@@ -20,26 +19,39 @@ namespace fplll {
     out << "]\n";
   }
 
-  void readLatticeBasis(istream& in,
-			unsigned int rowCount,
-			unsigned int columnCount,
-			BigIdeal& basis) {
+  void readLatticeBasis(istream& in, BigIdeal& basis) {
     Lexer lexer(in);
 
-    lexer.expect('[');
+    vector<vector<mpz_class> > tmp;
 
-    VarNames names(columnCount);
+    lexer.expect('[');
+    do {
+      lexer.expect('[');
+      tmp.resize(tmp.size() + 1);
+      do {
+	mpz_class integer;
+	lexer.readInteger(integer);
+	tmp.back().push_back(integer);
+      } while (!lexer.match(']'));
+
+      if (tmp.front().size() != tmp.back().size()) {
+	cerr << "ERROR: Row 1 has " << tmp.front().size()
+	     << " entries, while row " << tmp.size()
+	     << " has " << tmp.back().size()
+	     << " entries." << endl;
+	exit(1);
+      }
+    } while (!lexer.match(']'));
+
+    ASSERT(!tmp.empty());
+    VarNames names(tmp.front().size());
     basis.clearAndSetNames(names);
 
-    for (unsigned int i = 0; i < rowCount; ++i) {
-      lexer.expect('[');
+    for (unsigned int i = 0; i < tmp.size(); ++i) {
       basis.newLastTerm();
-      for (unsigned int j = 0; j < columnCount; ++j)
-	lexer.readInteger(basis.getLastTermExponentRef(j));
-      lexer.expect(']');
+      for (unsigned int j = 0; j < tmp[i].size(); ++j)
+	basis.getLastTermExponentRef(j) = tmp[i][j];
     }
-
-    lexer.expect(']');
   }
 
   void addMultiple(BigIdeal& basis,

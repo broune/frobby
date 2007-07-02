@@ -10,7 +10,6 @@ class Action {
   Action();
   virtual ~Action();
 
-  // TODO: add short description for action overview.
   virtual const char* getName() const = 0;
   virtual const char* getShortDescription() const = 0;
   virtual const char* getDescription() const = 0;

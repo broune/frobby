@@ -5,6 +5,10 @@
 #include "IOFacade.h"
 #include "IrreducibleDecomFacade.h"
 
+FrobeniusAction::FrobeniusAction() {
+  _decomParameters.setSkipRedundant(false);
+}
+
 const char* FrobeniusAction::getName() const {
   return "frobgrob";
 }
@@ -40,13 +44,6 @@ void FrobeniusAction::perform() {
 
   IOFacade ioFacade(_printActions);
   ioFacade.readFrobeniusInstanceWithGrobnerBasis(cin, ideal, instance);
-
-  // TODO: Get rid of this in time. We only have it because the
-  // previous version of Frobby handled the entire computation, and
-  // there the current Grobner basis files are computed with respect
-  // to the sorted instance. This sorting should be done outside
-  // Frobby.
-  sort(instance.begin(), instance.end());
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
 
