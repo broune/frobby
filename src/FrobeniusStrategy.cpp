@@ -47,13 +47,13 @@ void FrobeniusStrategy::getName(string& name) const {
   name = "FrobeniusStrategy";
 }
 
-bool FrobeniusStrategy::consideringCall(const ExternalTerm& b,
+bool FrobeniusStrategy::consideringCall(const Term& b,
 					bool sameExponentAsNext,
 					const TermTree& tree) {
   return true;
 }
 
-bool FrobeniusStrategy::startingCall(const ExternalTerm& b,
+bool FrobeniusStrategy::startingCall(const Term& b,
 				     const TermTree& tree,
 				     bool startingPartition) {
   int position = tree.getPosition();
@@ -74,11 +74,11 @@ bool FrobeniusStrategy::startingCall(const ExternalTerm& b,
 	   canSkipDueToUpperBound(tree, _partialDegrees[position]));
 }
 
-void FrobeniusStrategy::endingCall(const ExternalTerm& b,
+void FrobeniusStrategy::endingCall(const Term& b,
 				   const TermTree& tree) {
 }
 
-void FrobeniusStrategy::foundSolution(const ExternalTerm& b,
+void FrobeniusStrategy::foundSolution(const Term& b,
 				      bool startingPartition) {
   Degree degree;
   
@@ -98,7 +98,7 @@ void FrobeniusStrategy::foundSolution(const ExternalTerm& b,
     _maximumDegreeSeen = degree;
 }
 
-void FrobeniusStrategy::startingPartitioning(const ExternalTerm& b,
+void FrobeniusStrategy::startingPartitioning(const Term& b,
 					     const Partition& partition,
 					     const TermTree& tree) {
   int position = tree.getPosition();
@@ -110,8 +110,8 @@ void FrobeniusStrategy::startingPartitioning(const ExternalTerm& b,
 }
 
 void FrobeniusStrategy::doingPartitionSet(int position,
-					  const ExternalTerm& b,
-					  const ExternalTerm& compressedB,
+					  const Term& b,
+					  const Term& compressedB,
 					  const Partition& partition,
 					  vector<Exponent> compressor,
 					  const TermTree& tree) {
@@ -133,7 +133,7 @@ void FrobeniusStrategy::doneDoingPartitionSet
 }
 
 void FrobeniusStrategy::endingPartitioning(int position,
-					   const ExternalTerm& b) {
+					   const Term& b) {
   delete[] _degreeMultiples;
   _degreeMultiples = _storedDegreeMultiples[position];
 
@@ -166,7 +166,7 @@ canSkipDueToUpperBound(const TermTree& tree, const Degree& degree) {
   if (position > _dimension - 3)
     return false;
 
-  ExternalTerm lcm(_dimension);
+  Term lcm(_dimension);
   tree.lcm(lcm);
 
   Degree upperBound = degree;

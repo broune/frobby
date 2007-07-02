@@ -51,28 +51,28 @@ void DecompositionStrategy::getName(string& name) const {
   name = "DecompositionStrategy";
 }
 
-bool DecompositionStrategy::consideringCall(const ExternalTerm& b,
+bool DecompositionStrategy::consideringCall(const Term& b,
 					    bool sameExponentAsNext,
 					    const TermTree& tree) {
   return true;
 }
 
-bool DecompositionStrategy::startingCall(const ExternalTerm& b,
+bool DecompositionStrategy::startingCall(const Term& b,
 					 const TermTree& tree,
 					 bool startingPartition) {
   return true;
 }
 
-void DecompositionStrategy::endingCall(const ExternalTerm& b,
+void DecompositionStrategy::endingCall(const Term& b,
 				       const TermTree& tree) {
 }
 
-void DecompositionStrategy::foundSolution(const ExternalTerm& b,
+void DecompositionStrategy::foundSolution(const Term& b,
 					  bool startingPartition) {
   _solutions.top()->push_back(b);
 }
 
-void DecompositionStrategy::startingPartitioning(const ExternalTerm& b,
+void DecompositionStrategy::startingPartitioning(const Term& b,
 						 const Partition& partition,
 						 const TermTree& tree) {
   _firstPartition[tree.getPosition()] = true;
@@ -81,8 +81,8 @@ void DecompositionStrategy::startingPartitioning(const ExternalTerm& b,
 }
 
 void DecompositionStrategy::doingPartitionSet(int position,
-					      const ExternalTerm& b,
-					      const ExternalTerm& compressedB,
+					      const Term& b,
+					      const Term& compressedB,
 					      const Partition& partition,
 					      vector<Exponent> compressor,
 					      const TermTree& tree) {
@@ -123,7 +123,7 @@ doneDoingPartitionSet(int position,
 }
 
 void DecompositionStrategy::endingPartitioning(int position,
-					       const ExternalTerm& b) {
+					       const Term& b) {
   TermCont* sols = _solutions.top();
   _solutions.pop();
 
@@ -155,7 +155,7 @@ void DecompositionStrategy::degenerisize() {
 
   sols.clear();
   TermTree::TreeIterator it = TermTree::TreeIterator(decom);
-  ExternalTerm term(_dimension);
+  Term term(_dimension);
   while (!it.atEnd()) {
     it.getTerm(term);
     ++it;
@@ -163,7 +163,7 @@ void DecompositionStrategy::degenerisize() {
   }
 }
 
-void DecompositionStrategy::writeSolution(const ExternalTerm& b) {
+void DecompositionStrategy::writeSolution(const Term& b) {
   ASSERT(_dimension == b.getDimension());
   
   static vector<mpz_class> term(_dimension);

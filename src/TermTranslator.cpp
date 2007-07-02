@@ -24,7 +24,7 @@ getExponent(int variable, Exponent exponent) const {
 }
 
 const mpz_class& TermTranslator::
-getExponent(int variable, const ExternalTerm& term) const {
+getExponent(int variable, const Term& term) const {
   return getExponent(variable, term[variable]);
 }
 

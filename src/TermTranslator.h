@@ -3,7 +3,7 @@
 
 #include <iterator>
 
-class ExternalTerm;
+class Term;
 
 class TermTranslator {
 public:
@@ -12,7 +12,7 @@ public:
   ~TermTranslator();
 
   const mpz_class& getExponent(int variable, Exponent exponent) const;
-  const mpz_class& getExponent(int variable, const ExternalTerm& term) const;
+  const mpz_class& getExponent(int variable, const Term& term) const;
 
   Exponent getMaxId(int variable) const;
 

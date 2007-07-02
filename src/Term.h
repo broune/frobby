@@ -1,14 +1,14 @@
 #ifndef TERM_GUARD
 #define TERM_GUARD
 
-// TODO: rename ExternalTerm to Term
+// TODO: rename Term to Term
 
-class ExternalTerm {
+class Term {
  public:
-  ExternalTerm(const ExternalTerm& term);
-  ExternalTerm(unsigned int dimension);
-  ExternalTerm();
-  ~ExternalTerm();
+  Term(const Term& term);
+  Term(unsigned int dimension);
+  Term();
+  ~Term();
 
   const Exponent* begin(int position) const;
 
@@ -22,23 +22,23 @@ class ExternalTerm {
 
   void setExponent(int position, Exponent value) const;
 
-  bool operator==(const ExternalTerm& term) const;
+  bool operator==(const Term& term) const;
 
-  ExternalTerm& operator=(const ExternalTerm& term);
+  Term& operator=(const Term& term);
   
-  bool divides(const ExternalTerm& term) const;
+  bool divides(const Term& term) const;
 
-  void lcm(const ExternalTerm& term1,
-	   const ExternalTerm& term2, int position);
+  void lcm(const Term& term1,
+	   const Term& term2, int position);
 
-  void gcd(const ExternalTerm& term1,
-	   const ExternalTerm& term2, int position);
+  void gcd(const Term& term1,
+	   const Term& term2, int position);
 
   void resize(unsigned int dimension);
 
-  bool operator<(const ExternalTerm& term) const;
+  bool operator<(const Term& term) const;
 
-  friend ostream& operator<<(ostream& out, const ExternalTerm& term) {
+  friend ostream& operator<<(ostream& out, const Term& term) {
     out << '(' << term[0];
     for (unsigned int i = 1; i < term._dimension; ++i)
       out << ", " << term[i];

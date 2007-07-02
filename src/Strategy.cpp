@@ -4,15 +4,15 @@
 Strategy::~Strategy() {
 }
 
-void Strategy::startingPartitioning(const ExternalTerm& b,
+void Strategy::startingPartitioning(const Term& b,
 				    const Partition& partition,
 				    const TermTree& tree) {
   ASSERT(false);
 }
     
 void Strategy::doingPartitionSet(int position,
-				 const ExternalTerm& b,
-				 const ExternalTerm& compressedB,
+				 const Term& b,
+				 const Term& compressedB,
 				 const Partition& partition,
 				 vector<Exponent> compressor,
 				 const TermTree& tree) {
@@ -28,7 +28,7 @@ void Strategy::doneDoingPartitionSet(int position,
 }
 
 void Strategy::endingPartitioning(int position,
-				  const ExternalTerm& b) {
+				  const Term& b) {
   string name;
   getName(name);
   cerr << "ERROR: endingPartitioning not implemented in " << name << "." << endl;

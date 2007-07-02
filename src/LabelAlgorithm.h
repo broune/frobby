@@ -1,7 +1,7 @@
 #ifndef LABEL_ALGORITHM_GUARD
 #define LABEL_ALGORITHM_GUARD
 
-class ExternalTerm;
+class Term;
 class Strategy;
 class TermTree;
 
@@ -10,10 +10,10 @@ public:
   LabelAlgorithm(Strategy* strategy, TermTree* tree, bool usePartition);
 
 private:
-  bool performPartition(const ExternalTerm& b, const TermTree& tree);
-  void recurse(const ExternalTerm& b, const TermTree& tree,
+  bool performPartition(const Term& b, const TermTree& tree);
+  void recurse(const Term& b, const TermTree& tree,
 	       bool startingPartition);
-  void baseCase(const ExternalTerm& b, const TermTree& tree);
+  void baseCase(const Term& b, const TermTree& tree);
 
   unsigned int _dimension;
   Strategy* _strategy;

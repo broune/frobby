@@ -10,7 +10,7 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
 			 unsigned int variableCount,
 			 unsigned int generatorCount) {
   TermList ideal(variableCount);
-  ExternalTerm term(variableCount);
+  Term term(variableCount);
 
   unsigned int generatorsToGo = generatorCount;
   unsigned int triesLeft = (unsigned int)4 * 1000 * 1000;

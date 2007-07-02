@@ -10,7 +10,7 @@ class Node;
 class TermTree {
 public:
   TermTree(const TermTree& tree);
-  TermTree(const ExternalTerm& threshold, unsigned int dimension, unsigned int position);
+  TermTree(const Term& threshold, unsigned int dimension, unsigned int position);
   TermTree(unsigned int dimension, unsigned int position = 0);
   ~TermTree();
 
@@ -42,7 +42,7 @@ public:
     void stepRight();
     bool canStepRight() const;
     bool preorderNext();
-    void getTerm(ExternalTerm& term) const;
+    void getTerm(Term& term) const;
     Exponent getExponent(unsigned int level) const;
     bool atLeaf() const;
     bool atRoot() const;
@@ -61,7 +61,7 @@ public:
   public:
     TreeIterator(const TermTree& tree);
     TreeIterator& operator++();
-    void getTerm(ExternalTerm& term) const;
+    void getTerm(Term& term) const;
     Exponent getExponent(unsigned int position) const;
     bool atEnd() const;
     void print(ostream& out) const;
@@ -75,48 +75,48 @@ public:
 
   void insert(const TermTree& tree);
 
-  void insert(const ExternalTerm& term);
+  void insert(const Term& term);
 
-  void removeDominators(const ExternalTerm& term);
+  void removeDominators(const Term& term);
 
-  void removeDivisors(const ExternalTerm& term);
+  void removeDivisors(const Term& term);
 
-  void removeNonDivisors(const ExternalTerm& term);
+  void removeNonDivisors(const Term& term);
 
-  bool getDivisor(const ExternalTerm& term) const;
+  bool getDivisor(const Term& term) const;
 
-  bool getComparable(const ExternalTerm& term) const;
+  bool getComparable(const Term& term) const;
 
   unsigned int getDimension() const;
 
   // does NOT support threshold!
-  bool getDominator(const ExternalTerm& term) const;
+  bool getDominator(const Term& term) const;
 
-  void* getComparable(const Node* node, const ExternalTerm& term, unsigned int position) const;
+  void* getComparable(const Node* node, const Term& term, unsigned int position) const;
 
   // This function is really meant to return a bool, but for some
   // *bizarre* reason this works significantly faster if I use a void*
   // as a stand-in for a bool when using gcc 4.0.3. int works just as
   // badly as bool does. I have no idea why.
-  void* getDivisor(const Node* node, const ExternalTerm& term, unsigned int position) const;
+  void* getDivisor(const Node* node, const Term& term, unsigned int position) const;
 
-  void* getDominator(const Node* node, const ExternalTerm& term, unsigned int position) const;
+  void* getDominator(const Node* node, const Term& term, unsigned int position) const;
 
   void clear();
 
   // Warning: This takes time linear in the number of generators.
   size_t size() const;
 
-  void insertProjectionHelper(ExternalTerm& term, const Node* node, unsigned int position);
+  void insertProjectionHelper(Term& term, const Node* node, unsigned int position);
 
   bool insertProjectionOf(const TermTree& tree, Exponent from, Exponent to);
 
-  void lcmHelper(ExternalTerm& leastCommonMultiple,
+  void lcmHelper(Term& leastCommonMultiple,
 		 const Node* node, unsigned int position) const;
 
-  void lcm(ExternalTerm& leastCommonMultiple) const;
+  void lcm(Term& leastCommonMultiple) const;
 
-  void setThreshold(const ExternalTerm& term);
+  void setThreshold(const Term& term);
 
   int getPosition() const;
 
@@ -129,13 +129,13 @@ public:
   static void clearStaticAllocator();
 
 private:
-  void insert(Node* node, const ExternalTerm& term, unsigned int position);
+  void insert(Node* node, const Term& term, unsigned int position);
   void copy(const Node* from, Node* to, unsigned int position);
 
   // These return true iff the node should be removed.
-  bool removeDominators(Node* node, const ExternalTerm& term, unsigned int position);
-  bool removeDivisors(Node* node, const ExternalTerm& term, unsigned int position);
-  void removeNonDivisors(Node* node, const ExternalTerm& term, unsigned int position);
+  bool removeDominators(Node* node, const Term& term, unsigned int position);
+  bool removeDivisors(Node* node, const Term& term, unsigned int position);
+  void removeNonDivisors(Node* node, const Term& term, unsigned int position);
 
   void print(const Node* node, ostream& out, unsigned int position) const;
 
@@ -149,8 +149,8 @@ private:
 
   unsigned int _dimension;
   int _position;
-  ExternalTerm _threshold;
-  ExternalTerm _term;
+  Term _threshold;
+  Term _term;
   void* _allocator; // TODO: make this nicer
   Node* _root;
 };

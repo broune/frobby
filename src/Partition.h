@@ -1,7 +1,7 @@
 #ifndef PARTITION_GUARD
 #define PARTITION_GUARD
 
-class ExternalTerm;
+class Term;
 
 class Partition {
  public:
@@ -21,7 +21,7 @@ class Partition {
 			 vector<Exponent>& decompressor,
 			 int position) const;
 
-  bool compress(ExternalTerm& term,
+  bool compress(Term& term,
 		const vector<Exponent>& compressor) const;
 
   void print(ostream& out) const;
