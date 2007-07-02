@@ -1,6 +1,6 @@
 # ***** Variables
 
-sources = main.cpp TermTree.cpp Action.cpp				\
+rawSources = main.cpp TermTree.cpp Action.cpp				\
   IrreducibleDecomAction.cpp fplllIO.cpp io.cpp fourti2.cpp		\
   randomDataGenerators.cpp monosIO.cpp BigIdeal.cpp FormatAction.cpp	\
   macaulay2IO.cpp newMonosIO.cpp HelpAction.cpp				\
@@ -48,7 +48,8 @@ else
   $(error Unknown value of MODE: "$(MODE)")
 endif
 
-objs    = $(patsubst %.cpp, $(outdir)%.o, $(sources))
+sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
+objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 program = frobby.exe
 
 # ***** Targets
@@ -74,8 +75,8 @@ ifneq ($(MODE), analysis)
 endif
 
 # Compile and output object files
-$(outdir)%.o: %.cpp | $(outdir)
-	  g++ ${cflags} -c $< -o $(outdir)$(<:.cpp=.o)
+$(outdir)%.o: src/%.cpp | $(outdir)
+	  g++ ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
 ifeq ($(MODE), analysis)
 	  echo > $(outdir)$(<:.cpp=.o)
 endif
@@ -87,3 +88,12 @@ depend:
 
 clean:
 	rm -rf bin *~ *.orig
+
+# ***** Mercurial
+
+commit: test
+ifdef MSG
+	hg commit -m "$(MSG)"
+else
+  $(error MSG not defined - will not commit.)
+endif
