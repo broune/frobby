@@ -1,111 +1,142 @@
-$(outdir)main.o: main.cpp stdinc.h Action.h BoolParameter.h Parameter.h
-$(outdir)TermTree.o: TermTree.cpp stdinc.h TermTree.h Term.h Allocator.h
-$(outdir)Action.o: Action.cpp stdinc.h Action.h BoolParameter.h Parameter.h \
-  IrreducibleDecomAction.h IrreducibleDecomParameters.h ParameterGroup.h \
-  FormatAction.h StringParameter.h HelpAction.h DynamicFrobeniusAction.h \
-  GenerateIdealAction.h GenerateIdealParameters.h IntegerParameter.h \
-  GenerateFrobeniusAction.h FrobeniusAction.h AnalyzeAction.h
-$(outdir)IrreducibleDecomAction.o: IrreducibleDecomAction.cpp stdinc.h \
-  IrreducibleDecomAction.h Action.h BoolParameter.h Parameter.h \
-  IrreducibleDecomParameters.h ParameterGroup.h BigIdeal.h VarNames.h \
-  IrreducibleDecomFacade.h Facade.h Timer.h IOFacade.h
-$(outdir)fplllIO.o: fplllIO.cpp stdinc.h fplllIO.h BigIdeal.h VarNames.h Lexer.h
-$(outdir)io.o: io.cpp stdinc.h io.h Lexer.h BigIdeal.h VarNames.h newMonosIO.h \
-  monosIO.h macaulay2IO.h
-$(outdir)fourti2.o: fourti2.cpp stdinc.h fourti2.h BigIdeal.h VarNames.h Lexer.h \
-  io.h
-$(outdir)randomDataGenerators.o: randomDataGenerators.cpp stdinc.h \
-  randomDataGenerators.h BigIdeal.h VarNames.h TermList.h Term.h
-$(outdir)monosIO.o: monosIO.cpp stdinc.h monosIO.h BigIdeal.h VarNames.h Lexer.h \
-  io.h
-$(outdir)BigIdeal.o: BigIdeal.cpp stdinc.h BigIdeal.h VarNames.h TermTree.h Term.h \
-  Allocator.h TermList.h TermTranslator.h
-$(outdir)FormatAction.o: FormatAction.cpp stdinc.h FormatAction.h Action.h \
-  BoolParameter.h Parameter.h StringParameter.h BigIdeal.h VarNames.h \
-  IOFacade.h Facade.h Timer.h
-$(outdir)macaulay2IO.o: macaulay2IO.cpp stdinc.h macaulay2IO.h Lexer.h BigIdeal.h \
-  VarNames.h io.h monosIO.h
-$(outdir)newMonosIO.o: newMonosIO.cpp stdinc.h newMonosIO.h monosIO.h BigIdeal.h \
-  VarNames.h Lexer.h io.h
-$(outdir)HelpAction.o: HelpAction.cpp stdinc.h HelpAction.h Action.h \
-  BoolParameter.h Parameter.h
-$(outdir)stdinc.o: stdinc.cpp stdinc.h
-$(outdir)DynamicFrobeniusAction.o: DynamicFrobeniusAction.cpp stdinc.h \
-  DynamicFrobeniusAction.h Action.h BoolParameter.h Parameter.h \
-  IOFacade.h Facade.h Timer.h DynamicFrobeniusFacade.h
-$(outdir)dynamicFrobeniusAlgorithm.o: dynamicFrobeniusAlgorithm.cpp stdinc.h \
-  dynamicFrobeniusAlgorithm.h
-$(outdir)GenerateIdealAction.o: GenerateIdealAction.cpp stdinc.h \
-  GenerateIdealAction.h Action.h BoolParameter.h Parameter.h \
-  GenerateIdealParameters.h ParameterGroup.h IntegerParameter.h \
-  BigIdeal.h VarNames.h RandomDataFacade.h Facade.h Timer.h IOFacade.h
-$(outdir)GenerateFrobeniusAction.o: GenerateFrobeniusAction.cpp stdinc.h \
-  GenerateFrobeniusAction.h Action.h BoolParameter.h Parameter.h \
-  BigIdeal.h VarNames.h RandomDataFacade.h Facade.h Timer.h IOFacade.h
-$(outdir)IrreducibleDecomFacade.o: IrreducibleDecomFacade.cpp stdinc.h \
-  IrreducibleDecomFacade.h Facade.h Timer.h PrintDebugStrategy.h \
-  Strategy.h FrobeniusStrategy.h BenchmarkStrategy.h \
-  DecompositionStrategy.h VarNames.h StatisticsStrategy.h \
-  CompositeStrategy.h TermTree.h Term.h Allocator.h TermTranslator.h \
-  Partition.h PrintProgressStrategy.h SkipRedundantStrategy.h \
-  IrreducibleDecomParameters.h ParameterGroup.h Parameter.h \
-  BoolParameter.h BigIdeal.h IOFacade.h LabelAlgorithm.h
-$(outdir)FrobeniusAction.o: FrobeniusAction.cpp stdinc.h FrobeniusAction.h \
-  Action.h BoolParameter.h Parameter.h IrreducibleDecomParameters.h \
-  ParameterGroup.h BigIdeal.h VarNames.h IOFacade.h Facade.h Timer.h \
-  IrreducibleDecomFacade.h
-$(outdir)Facade.o: Facade.cpp stdinc.h Facade.h Timer.h
-$(outdir)IOFacade.o: IOFacade.cpp stdinc.h IOFacade.h Facade.h Timer.h io.h \
-  fourti2.h BigIdeal.h VarNames.h
-$(outdir)DynamicFrobeniusFacade.o: DynamicFrobeniusFacade.cpp stdinc.h \
-  DynamicFrobeniusFacade.h Facade.h Timer.h DynamicFrobeniusAlgorithm.h
-$(outdir)RandomDataFacade.o: RandomDataFacade.cpp stdinc.h RandomDataFacade.h \
-  Facade.h Timer.h RandomDataGenerators.h GenerateIdealParameters.h \
-  ParameterGroup.h Parameter.h IntegerParameter.h
-$(outdir)AnalyzeAction.o: AnalyzeAction.cpp stdinc.h AnalyzeAction.h Action.h \
-  BoolParameter.h Parameter.h BigIdeal.h VarNames.h IOFacade.h Facade.h \
-  Timer.h AnalyzeFacade.h
-$(outdir)AnalyzeFacade.o: AnalyzeFacade.cpp stdinc.h AnalyzeFacade.h Facade.h \
-  Timer.h BigIdeal.h VarNames.h
-$(outdir)Parameter.o: Parameter.cpp stdinc.h Parameter.h
-$(outdir)ParameterGroup.o: ParameterGroup.cpp stdinc.h ParameterGroup.h \
-  Parameter.h
-$(outdir)GenerateIdealParameters.o: GenerateIdealParameters.cpp stdinc.h \
-  GenerateIdealParameters.h ParameterGroup.h Parameter.h \
-  IntegerParameter.h
-$(outdir)IntegerParameter.o: IntegerParameter.cpp stdinc.h IntegerParameter.h \
-  Parameter.h
-$(outdir)IrreducibleDecomParameters.o: IrreducibleDecomParameters.cpp stdinc.h \
-  IrreducibleDecomParameters.h ParameterGroup.h Parameter.h \
-  BoolParameter.h
-$(outdir)BoolParameter.o: BoolParameter.cpp stdinc.h BoolParameter.h Parameter.h
-$(outdir)LabelAlgorithm.o: LabelAlgorithm.cpp stdinc.h LabelAlgorithm.h Term.h \
-  Strategy.h TermTree.h Allocator.h Partition.h
-$(outdir)Lexer.o: Lexer.cpp stdinc.h Lexer.h
-$(outdir)Partition.o: Partition.cpp stdinc.h Partition.h Term.h
-$(outdir)StringParameter.o: StringParameter.cpp stdinc.h StringParameter.h \
-  Parameter.h
-$(outdir)Term.o: Term.cpp stdinc.h Term.h
-$(outdir)TermList.o: TermList.cpp stdinc.h TermList.h Term.h
-$(outdir)TermTranslator.o: TermTranslator.cpp stdinc.h TermTranslator.h Term.h
-$(outdir)Timer.o: Timer.cpp stdinc.h Timer.h
-$(outdir)VarNames.o: VarNames.cpp stdinc.h VarNames.h
-$(outdir)Strategy.o: Strategy.cpp stdinc.h Strategy.h
-$(outdir)PrintDebugStrategy.o: PrintDebugStrategy.cpp stdinc.h \
-  PrintDebugStrategy.h Strategy.h TermTree.h Term.h Allocator.h
-$(outdir)FrobeniusStrategy.o: FrobeniusStrategy.cpp stdinc.h FrobeniusStrategy.h \
-  Strategy.h TermTree.h Term.h Allocator.h TermTranslator.h Partition.h
-$(outdir)BenchmarkStrategy.o: BenchmarkStrategy.cpp stdinc.h BenchmarkStrategy.h \
-  Strategy.h
-$(outdir)DecompositionStrategy.o: DecompositionStrategy.cpp stdinc.h \
-  DecompositionStrategy.h Strategy.h VarNames.h TermTree.h Term.h \
-  Allocator.h TermTranslator.h Partition.h monosIO.h BigIdeal.h Lexer.h \
-  io.h
-$(outdir)StatisticsStrategy.o: StatisticsStrategy.cpp stdinc.h \
-  StatisticsStrategy.h Strategy.h TermTree.h Term.h Allocator.h
-$(outdir)CompositeStrategy.o: CompositeStrategy.cpp stdinc.h CompositeStrategy.h \
-  Strategy.h TermTree.h Term.h Allocator.h TermTranslator.h VarNames.h \
-  Partition.h
-$(outdir)PrintProgressStrategy.o: PrintProgressStrategy.cpp stdinc.h \
-  PrintProgressStrategy.h Strategy.h Timer.h TermTree.h Term.h \
-  Allocator.h
+$(outdir)main.o: src/main.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h
+$(outdir)TermTree.o: src/TermTree.cpp src/stdinc.h src/TermTree.h src/Term.h \
+  src/Allocator.h
+$(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/IrreducibleDecomAction.h \
+  src/IrreducibleDecomParameters.h src/ParameterGroup.h \
+  src/FormatAction.h src/StringParameter.h src/HelpAction.h \
+  src/DynamicFrobeniusAction.h src/GenerateIdealAction.h \
+  src/GenerateIdealParameters.h src/IntegerParameter.h \
+  src/GenerateFrobeniusAction.h src/FrobeniusAction.h src/AnalyzeAction.h \
+  src/LatticeFormatAction.h
+$(outdir)IrreducibleDecomAction.o: src/IrreducibleDecomAction.cpp src/stdinc.h \
+  src/IrreducibleDecomAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
+  src/BigIdeal.h src/VarNames.h src/IrreducibleDecomFacade.h src/Facade.h \
+  src/Timer.h src/IOFacade.h
+$(outdir)fplllIO.o: src/fplllIO.cpp src/stdinc.h src/fplllIO.h src/BigIdeal.h \
+  src/VarNames.h src/Lexer.h
+$(outdir)io.o: src/io.cpp src/stdinc.h src/io.h src/Lexer.h src/BigIdeal.h \
+  src/VarNames.h src/newMonosIO.h src/monosIO.h src/macaulay2IO.h
+$(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
+  src/VarNames.h src/Lexer.h src/io.h
+$(outdir)randomDataGenerators.o: src/randomDataGenerators.cpp src/stdinc.h \
+  src/randomDataGenerators.h src/BigIdeal.h src/VarNames.h src/TermList.h \
+  src/Term.h
+$(outdir)monosIO.o: src/monosIO.cpp src/stdinc.h src/monosIO.h src/BigIdeal.h \
+  src/VarNames.h src/Lexer.h src/io.h
+$(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
+  src/TermTree.h src/Term.h src/Allocator.h src/TermList.h \
+  src/TermTranslator.h
+$(outdir)FormatAction.o: src/FormatAction.cpp src/stdinc.h src/FormatAction.h \
+  src/Action.h src/BoolParameter.h src/Parameter.h src/StringParameter.h \
+  src/BigIdeal.h src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h
+$(outdir)macaulay2IO.o: src/macaulay2IO.cpp src/stdinc.h src/macaulay2IO.h \
+  src/Lexer.h src/BigIdeal.h src/VarNames.h src/io.h src/monosIO.h
+$(outdir)newMonosIO.o: src/newMonosIO.cpp src/stdinc.h src/newMonosIO.h \
+  src/monosIO.h src/BigIdeal.h src/VarNames.h src/Lexer.h src/io.h
+$(outdir)HelpAction.o: src/HelpAction.cpp src/stdinc.h src/HelpAction.h \
+  src/Action.h src/BoolParameter.h src/Parameter.h
+$(outdir)stdinc.o: src/stdinc.cpp src/stdinc.h
+$(outdir)DynamicFrobeniusAction.o: src/DynamicFrobeniusAction.cpp src/stdinc.h \
+  src/DynamicFrobeniusAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/IOFacade.h src/Facade.h src/Timer.h \
+  src/DynamicFrobeniusFacade.h
+$(outdir)dynamicFrobeniusAlgorithm.o: src/dynamicFrobeniusAlgorithm.cpp \
+  src/stdinc.h src/dynamicFrobeniusAlgorithm.h
+$(outdir)GenerateIdealAction.o: src/GenerateIdealAction.cpp src/stdinc.h \
+  src/GenerateIdealAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/GenerateIdealParameters.h src/ParameterGroup.h \
+  src/IntegerParameter.h src/BigIdeal.h src/VarNames.h \
+  src/RandomDataFacade.h src/Facade.h src/Timer.h src/IOFacade.h
+$(outdir)GenerateFrobeniusAction.o: src/GenerateFrobeniusAction.cpp src/stdinc.h \
+  src/GenerateFrobeniusAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/BigIdeal.h src/VarNames.h src/RandomDataFacade.h \
+  src/Facade.h src/Timer.h src/IOFacade.h
+$(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
+  src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
+  src/PrintDebugStrategy.h src/Strategy.h src/FrobeniusStrategy.h \
+  src/BenchmarkStrategy.h src/DecompositionStrategy.h src/VarNames.h \
+  src/StatisticsStrategy.h src/CompositeStrategy.h src/TermTree.h \
+  src/Term.h src/Allocator.h src/TermTranslator.h src/Partition.h \
+  src/PrintProgressStrategy.h src/SkipRedundantStrategy.h \
+  src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
+  src/BoolParameter.h src/BigIdeal.h src/IOFacade.h src/LabelAlgorithm.h
+$(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
+  src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
+  src/IrreducibleDecomParameters.h src/ParameterGroup.h src/BigIdeal.h \
+  src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
+  src/IrreducibleDecomFacade.h
+$(outdir)Facade.o: src/Facade.cpp src/stdinc.h src/Facade.h src/Timer.h
+$(outdir)IOFacade.o: src/IOFacade.cpp src/stdinc.h src/IOFacade.h src/Facade.h \
+  src/Timer.h src/io.h src/fourti2.h src/BigIdeal.h src/VarNames.h \
+  src/fplllIO.h
+$(outdir)DynamicFrobeniusFacade.o: src/DynamicFrobeniusFacade.cpp src/stdinc.h \
+  src/DynamicFrobeniusFacade.h src/Facade.h src/Timer.h \
+  src/DynamicFrobeniusAlgorithm.h
+$(outdir)RandomDataFacade.o: src/RandomDataFacade.cpp src/stdinc.h \
+  src/RandomDataFacade.h src/Facade.h src/Timer.h \
+  src/RandomDataGenerators.h src/GenerateIdealParameters.h \
+  src/ParameterGroup.h src/Parameter.h src/IntegerParameter.h
+$(outdir)AnalyzeAction.o: src/AnalyzeAction.cpp src/stdinc.h src/AnalyzeAction.h \
+  src/Action.h src/BoolParameter.h src/Parameter.h src/BigIdeal.h \
+  src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
+  src/AnalyzeFacade.h
+$(outdir)AnalyzeFacade.o: src/AnalyzeFacade.cpp src/stdinc.h src/AnalyzeFacade.h \
+  src/Facade.h src/Timer.h src/BigIdeal.h src/VarNames.h
+$(outdir)Parameter.o: src/Parameter.cpp src/stdinc.h src/Parameter.h
+$(outdir)ParameterGroup.o: src/ParameterGroup.cpp src/stdinc.h \
+  src/ParameterGroup.h src/Parameter.h
+$(outdir)GenerateIdealParameters.o: src/GenerateIdealParameters.cpp src/stdinc.h \
+  src/GenerateIdealParameters.h src/ParameterGroup.h src/Parameter.h \
+  src/IntegerParameter.h
+$(outdir)IntegerParameter.o: src/IntegerParameter.cpp src/stdinc.h \
+  src/IntegerParameter.h src/Parameter.h
+$(outdir)IrreducibleDecomParameters.o: src/IrreducibleDecomParameters.cpp \
+  src/stdinc.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
+  src/Parameter.h src/BoolParameter.h
+$(outdir)BoolParameter.o: src/BoolParameter.cpp src/stdinc.h src/BoolParameter.h \
+  src/Parameter.h
+$(outdir)LabelAlgorithm.o: src/LabelAlgorithm.cpp src/stdinc.h \
+  src/LabelAlgorithm.h src/Term.h src/Strategy.h src/TermTree.h \
+  src/Allocator.h src/Partition.h
+$(outdir)Lexer.o: src/Lexer.cpp src/stdinc.h src/Lexer.h
+$(outdir)Partition.o: src/Partition.cpp src/stdinc.h src/Partition.h src/Term.h
+$(outdir)StringParameter.o: src/StringParameter.cpp src/stdinc.h \
+  src/StringParameter.h src/Parameter.h
+$(outdir)Term.o: src/Term.cpp src/stdinc.h src/Term.h
+$(outdir)TermList.o: src/TermList.cpp src/stdinc.h src/TermList.h src/Term.h
+$(outdir)TermTranslator.o: src/TermTranslator.cpp src/stdinc.h \
+  src/TermTranslator.h src/Term.h
+$(outdir)Timer.o: src/Timer.cpp src/stdinc.h src/Timer.h
+$(outdir)VarNames.o: src/VarNames.cpp src/stdinc.h src/VarNames.h
+$(outdir)Strategy.o: src/Strategy.cpp src/stdinc.h src/Strategy.h
+$(outdir)PrintDebugStrategy.o: src/PrintDebugStrategy.cpp src/stdinc.h \
+  src/PrintDebugStrategy.h src/Strategy.h src/TermTree.h src/Term.h \
+  src/Allocator.h
+$(outdir)FrobeniusStrategy.o: src/FrobeniusStrategy.cpp src/stdinc.h \
+  src/FrobeniusStrategy.h src/Strategy.h src/TermTree.h src/Term.h \
+  src/Allocator.h src/TermTranslator.h src/Partition.h
+$(outdir)BenchmarkStrategy.o: src/BenchmarkStrategy.cpp src/stdinc.h \
+  src/BenchmarkStrategy.h src/Strategy.h
+$(outdir)DecompositionStrategy.o: src/DecompositionStrategy.cpp src/stdinc.h \
+  src/DecompositionStrategy.h src/Strategy.h src/VarNames.h \
+  src/TermTree.h src/Term.h src/Allocator.h src/TermTranslator.h \
+  src/Partition.h src/monosIO.h src/BigIdeal.h src/Lexer.h src/io.h
+$(outdir)StatisticsStrategy.o: src/StatisticsStrategy.cpp src/stdinc.h \
+  src/StatisticsStrategy.h src/Strategy.h src/TermTree.h src/Term.h \
+  src/Allocator.h
+$(outdir)CompositeStrategy.o: src/CompositeStrategy.cpp src/stdinc.h \
+  src/CompositeStrategy.h src/Strategy.h src/TermTree.h src/Term.h \
+  src/Allocator.h src/TermTranslator.h src/VarNames.h src/Partition.h
+$(outdir)PrintProgressStrategy.o: src/PrintProgressStrategy.cpp src/stdinc.h \
+  src/PrintProgressStrategy.h src/Strategy.h src/Timer.h src/TermTree.h \
+  src/Term.h src/Allocator.h
+$(outdir)SkipRedundantStrategy.o: src/SkipRedundantStrategy.cpp src/stdinc.h \
+  src/SkipRedundantStrategy.h src/Strategy.h src/TermTree.h src/Term.h \
+  src/Allocator.h src/Partition.h
+$(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
+  src/LatticeFormatAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
+  src/IOFacade.h src/Facade.h src/Timer.h src/fplllIO.h
