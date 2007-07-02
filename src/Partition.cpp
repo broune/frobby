@@ -90,7 +90,7 @@ void Partition::getSetTranslators(int number,
   }
 }
 
-bool Partition::compress(ExternalTerm& term,
+bool Partition::compress(Term& term,
 			 const vector<Exponent>& compressor) const {
   bool insideSet = false;
   bool outsideSet = false;

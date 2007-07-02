@@ -130,7 +130,7 @@ TermTree& TermTree::operator=(const TermTree& tree) {
   return *this;
 }
 
-TermTree::TermTree(const ExternalTerm& threshold, unsigned int dimension, unsigned int position):
+TermTree::TermTree(const Term& threshold, unsigned int dimension, unsigned int position):
   _dimension(dimension),
   _position(position),
   _threshold(threshold),
@@ -256,7 +256,7 @@ bool TermTree::TreeWalker::preorderNext() {
   return true;
 }
 
-void TermTree::TreeWalker::getTerm(ExternalTerm& term) const {
+void TermTree::TreeWalker::getTerm(Term& term) const {
   int base = term.getDimension() - _maxLevel - 1;
   for (unsigned int l = 1; l <= _level; ++l)
     term[base + l] = _stack[l]->_exponent;
@@ -308,7 +308,7 @@ TermTree::TreeIterator& TermTree::TreeIterator::operator++() {
   return *this;
 }
 
-void TermTree::TreeIterator::getTerm(ExternalTerm& term) const {
+void TermTree::TreeIterator::getTerm(Term& term) const {
   ASSERT(!atEnd());
   ASSERT(!_walker.canStepDown());
   _walker.getTerm(term);
@@ -346,7 +346,7 @@ void  TermTree::insert(const TermTree& tree) {
   }
 }
 
-void TermTree::insert(const ExternalTerm& term) {
+void TermTree::insert(const Term& term) {
 #ifdef PROFILE
   if (_position == 234234) {
     combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
@@ -363,32 +363,32 @@ void TermTree::insert(const ExternalTerm& term) {
   insert(_root, term, _position);
 }
 
-void TermTree::removeDominators(const ExternalTerm& term) {
+void TermTree::removeDominators(const Term& term) {
   removeDominators(_root, term, _position);
 }
 
-void TermTree::removeDivisors(const ExternalTerm& term) {
+void TermTree::removeDivisors(const Term& term) {
   removeDivisors(_root, term, _position);
 }
 
-void TermTree::removeNonDivisors(const ExternalTerm& term) {
+void TermTree::removeNonDivisors(const Term& term) {
   removeNonDivisors(_root, term, _position);
 }
 
-bool TermTree::getDivisor(const ExternalTerm& term) const {
+bool TermTree::getDivisor(const Term& term) const {
   return getDivisor(_root, term, _position);
 }
 
-bool TermTree::getComparable(const ExternalTerm& term) const {
+bool TermTree::getComparable(const Term& term) const {
   return getComparable(_root, term, _position);
 }
 
 // does NOT support threshold!
-bool TermTree::getDominator(const ExternalTerm& term) const {
+bool TermTree::getDominator(const Term& term) const {
   return getDominator(_root, term, _position);
 }
 
-void* TermTree::getComparable(const Node* node, const ExternalTerm& term, unsigned int position) const {
+void* TermTree::getComparable(const Node* node, const Term& term, unsigned int position) const {
   PROFILE_NO_INLINE;
   ASSERT(position <= _dimension);
   
@@ -419,7 +419,7 @@ unsigned int TermTree::getDimension() const {
 // *bizarre* reason this works significantly faster if I use a void*
 // as a stand-in for a bool when using gcc 4.0.3. int works just as
 // badly as bool does. I have no idea why.
-void* TermTree::getDivisor(const Node* node, const ExternalTerm& term, unsigned int position) const {
+void* TermTree::getDivisor(const Node* node, const Term& term, unsigned int position) const {
   PROFILE_NO_INLINE;
   ASSERT(position <= _dimension);
 
@@ -436,7 +436,7 @@ void* TermTree::getDivisor(const Node* node, const ExternalTerm& term, unsigned 
   return (void*)0;
 }
 
-void* TermTree::getDominator(const Node* node, const ExternalTerm& term, unsigned int position) const {
+void* TermTree::getDominator(const Node* node, const Term& term, unsigned int position) const {
   PROFILE_NO_INLINE;
   ASSERT(position <= _dimension);
 
@@ -471,7 +471,7 @@ size_t TermTree::size() const {
   return count;
 }
   
-void TermTree::insertProjectionHelper(ExternalTerm& term, const Node* node, unsigned int position) {
+void TermTree::insertProjectionHelper(Term& term, const Node* node, unsigned int position) {
   if (position == _dimension) {
     if (getDivisor(term) == 0) {
       removeDominators(term);
@@ -497,7 +497,7 @@ bool TermTree::insertProjectionOf(const TermTree& tree, Exponent from, Exponent 
 
   bool mayHaveChanged = false;
   ASSERT(_position == tree._position + 1);
-  ExternalTerm term(_dimension);
+  Term term(_dimension);
   for (Node::iterator it = tree._root->begin(); &*it != 0; ++it) {
     if (it->getExponent() > to)
       break;
@@ -509,7 +509,7 @@ bool TermTree::insertProjectionOf(const TermTree& tree, Exponent from, Exponent 
   return mayHaveChanged;
 }
 
-void TermTree::lcmHelper(ExternalTerm& leastCommonMultiple,
+void TermTree::lcmHelper(Term& leastCommonMultiple,
 			 const Node* node, unsigned int position) const {
   if (position == _dimension)
     return;
@@ -521,11 +521,11 @@ void TermTree::lcmHelper(ExternalTerm& leastCommonMultiple,
   }
 }
 
-void TermTree::lcm(ExternalTerm& leastCommonMultiple) const {
+void TermTree::lcm(Term& leastCommonMultiple) const {
   lcmHelper(leastCommonMultiple, _root, _position);
 }
 
-void TermTree::setThreshold(const ExternalTerm& term) {
+void TermTree::setThreshold(const Term& term) {
   _threshold = term;
 }
 
@@ -586,7 +586,7 @@ void TermTree::clearStaticAllocator() {
 }
 
 
-void TermTree::insert(Node* node, const ExternalTerm& term, unsigned int position) {
+void TermTree::insert(Node* node, const Term& term, unsigned int position) {
   ASSERT(position <= _dimension);
   
   if (position == _dimension)
@@ -626,7 +626,7 @@ void TermTree::copy(const Node* from, Node* to, unsigned int position) {
 }
 
 // Returns true iff the node should be removed.
-bool TermTree::removeDominators(Node* node, const ExternalTerm& term, unsigned int position) {
+bool TermTree::removeDominators(Node* node, const Term& term, unsigned int position) {
   ASSERT(position <= _dimension);
   
   if (position == _dimension)
@@ -653,7 +653,7 @@ bool TermTree::removeDominators(Node* node, const ExternalTerm& term, unsigned i
   return node->empty();
 }
 
-bool TermTree::removeDivisors(Node* node, const ExternalTerm& term, unsigned int position) {
+bool TermTree::removeDivisors(Node* node, const Term& term, unsigned int position) {
   ASSERT(position <= _dimension);
 
   if (position == _dimension)
@@ -682,7 +682,7 @@ bool TermTree::removeDivisors(Node* node, const ExternalTerm& term, unsigned int
 }
 
 // Returns true iff the node should be removed.
-void TermTree::removeNonDivisors(Node* node, const ExternalTerm& term, unsigned int position) {
+void TermTree::removeNonDivisors(Node* node, const Term& term, unsigned int position) {
   ASSERT(position <= _dimension);
 
   if (position == _dimension)

@@ -14,13 +14,13 @@ LabelAlgorithm::LabelAlgorithm(Strategy* strategy,
   _usePartition(usePartition) {
   ASSERT(_dimension > 1);
   
-  ExternalTerm b(_dimension);
+  Term b(_dimension);
   recurse(b, *tree, false);
 }
 
 bool LabelAlgorithm::
-performPartition(const ExternalTerm& b, const TermTree& tree) {
-  ExternalTerm term(_dimension);
+performPartition(const Term& b, const TermTree& tree) {
+  Term term(_dimension);
   TermTree::TreeIterator it(tree);
 
   if (tree.getPosition() > (int)_dimension - 6)
@@ -60,7 +60,7 @@ performPartition(const ExternalTerm& b, const TermTree& tree) {
   for (int i = 0; i < partition.getSetCount(1, tree.getPosition()); ++i) {
     partition.getSetTranslators(i, compressor, decompressor, tree.getPosition());
 
-    ExternalTerm newB(b);
+    Term newB(b);
     partition.compress(newB, compressor);
 
     TermTree nextTree(newB, _dimension, _dimension - partition.getSetSize(i, tree.getPosition()));
@@ -101,7 +101,7 @@ performPartition(const ExternalTerm& b, const TermTree& tree) {
 }
 
 void LabelAlgorithm::
-recurse(const ExternalTerm& b, const TermTree& tree, bool startingPartition) {
+recurse(const Term& b, const TermTree& tree, bool startingPartition) {
   if (tree.empty()) {
     // This only happens if the input ideal was not minimized.
     // TODO: report this as an error ONCE somehow.
@@ -122,10 +122,10 @@ recurse(const ExternalTerm& b, const TermTree& tree, bool startingPartition) {
   if (_usePartition && performPartition(b, tree))
     return;
 
-  ExternalTerm newB(b);
+  Term newB(b);
 
   TermTree::TreeIterator treeIt(tree);
-  ExternalTerm tmpTerm(_dimension);
+  Term tmpTerm(_dimension);
   while (!treeIt.atEnd()) {
     treeIt.getTerm(tmpTerm);
     if (tmpTerm[position] > b[position])
@@ -170,7 +170,7 @@ recurse(const ExternalTerm& b, const TermTree& tree, bool startingPartition) {
   _strategy->endingCall(b, tree);
 }
 
-void LabelAlgorithm::baseCase(const ExternalTerm& b, const TermTree& tree) {
+void LabelAlgorithm::baseCase(const Term& b, const TermTree& tree) {
   ASSERT(!tree.empty());
 
   int position = tree.getPosition();
@@ -179,7 +179,7 @@ void LabelAlgorithm::baseCase(const ExternalTerm& b, const TermTree& tree) {
   TermTree::TreeIterator treeNextIt(tree);
   ++treeNextIt;
 
-  ExternalTerm newB(b);
+  Term newB(b);
   while (!treeNextIt.atEnd()) {
     ASSERT(treeNextIt.getExponent(position) > 0);
     ASSERT(treeIt.getExponent(position + 1) > 0);

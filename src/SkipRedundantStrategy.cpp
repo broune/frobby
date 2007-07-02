@@ -22,7 +22,7 @@ void SkipRedundantStrategy::getName(string& name) const {
   name = "SkipRedundantStrategy";
 }
 
-bool SkipRedundantStrategy::consideringCall(const ExternalTerm& b,
+bool SkipRedundantStrategy::consideringCall(const Term& b,
 					    bool sameExponentAsNext,
 					    const TermTree& tree) {
   unsigned int position = tree.getPosition();
@@ -42,7 +42,7 @@ bool SkipRedundantStrategy::consideringCall(const ExternalTerm& b,
   return _strategy->consideringCall(b, sameExponentAsNext, tree);
 }
 
-bool SkipRedundantStrategy::startingCall(const ExternalTerm& b,
+bool SkipRedundantStrategy::startingCall(const Term& b,
 					 const TermTree& tree,
 					 bool startingPartition) {
   unsigned int position = tree.getPosition();
@@ -61,7 +61,7 @@ bool SkipRedundantStrategy::startingCall(const ExternalTerm& b,
   return _strategy->startingCall(b, tree, startingPartition);
 }
 
-void SkipRedundantStrategy::endingCall(const ExternalTerm& b,
+void SkipRedundantStrategy::endingCall(const Term& b,
 				       const TermTree& tree) {
   unsigned int position = tree.getPosition();
 
@@ -75,7 +75,7 @@ void SkipRedundantStrategy::endingCall(const ExternalTerm& b,
   _strategy->endingCall(b, tree);
 }
   
-void SkipRedundantStrategy::foundSolution(const ExternalTerm& b,
+void SkipRedundantStrategy::foundSolution(const Term& b,
 					  bool startingPartition) {
   //cout << "sol " << b << ' ' << startingPartition << endl;
   //print(cout);
@@ -87,7 +87,7 @@ void SkipRedundantStrategy::foundSolution(const ExternalTerm& b,
 }
 
 void SkipRedundantStrategy::
-startingPartitioning(const ExternalTerm& b,
+startingPartitioning(const Term& b,
 		     const Partition& partition,
 		     const TermTree& tree) {
   unsigned int position = tree.getPosition();
@@ -105,8 +105,8 @@ startingPartitioning(const ExternalTerm& b,
 }
     
 void SkipRedundantStrategy::doingPartitionSet(int position,
-					      const ExternalTerm& b,
-					      const ExternalTerm& compressedB,
+					      const Term& b,
+					      const Term& compressedB,
 					      const Partition& partition,
 					      vector<Exponent> compressor,
 					      const TermTree& tree) {
@@ -117,7 +117,7 @@ void SkipRedundantStrategy::doingPartitionSet(int position,
   _skip[nextPosition].setThreshold(compressedB);
 
   //cout << "compressing _skip. b=" << b << ", nextPosition=" << nextPosition << endl;
-  ExternalTerm term(_dimension);
+  Term term(_dimension);
   while (!it.atEnd()) {
     it.getTerm(term);
 
@@ -146,7 +146,7 @@ doneDoingPartitionSet(int position,
 }
 
 void SkipRedundantStrategy::endingPartitioning(int position,
-					       const ExternalTerm& b) {
+					       const Term& b) {
   if (position > 0) {
     if (_remember[position - 1])
       _newSkip[position].push_back(b);
@@ -177,7 +177,7 @@ void SkipRedundantStrategy::print(ostream& out) {
   for (unsigned int i = 0; i < _dimension; ++i) {
     out << "  " << i << ": ";
     copy(_newSkip[i].begin(), _newSkip[i].end(),
-	 ostream_iterator<ExternalTerm>(out));
+	 ostream_iterator<Term>(out));
     out << '\n';
   }
 

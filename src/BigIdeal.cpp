@@ -17,7 +17,7 @@ BigIdeal::BigIdeal(const VarNames& names):
 
 void BigIdeal::insert(const TermTree& tree) {
   TermTree::TreeIterator it(tree);
-  ExternalTerm term(_names.getVarCount());
+  Term term(_names.getVarCount());
   while (!it.atEnd()) {
     newLastTerm();
     it.getTerm(term);
@@ -221,7 +221,7 @@ BigIdeal::buildIdeal(vector<map<mpz_class, Exponent> >& compressionMaps,
   TermTree* tree = new TermTree(_names.getVarCount());
 
   // Populate hasArtinianPower and tree with data.
-  ExternalTerm term(_names.getVarCount());
+  Term term(_names.getVarCount());
   for (size_t i = 0; i < _terms.size(); ++i) {
     int artinianVariable = -1;
     for (size_t variable = 0; variable < _names.getVarCount(); ++variable) {

@@ -21,7 +21,7 @@ void CompositeStrategy::getName(string& name) const {
   name = "CompositeStrategy";
 }
 
-bool CompositeStrategy::consideringCall(const ExternalTerm& b,
+bool CompositeStrategy::consideringCall(const Term& b,
 					bool sameExponentAsNext,
 					const TermTree& tree) {
   bool iSayContinue1 =
@@ -31,7 +31,7 @@ bool CompositeStrategy::consideringCall(const ExternalTerm& b,
   return iSayContinue1 || iSayContinue2;
 }
 
-bool CompositeStrategy::startingCall(const ExternalTerm& b,
+bool CompositeStrategy::startingCall(const Term& b,
 				     const TermTree& tree,
 				     bool startingPartition) {
   bool iSayContinue1 = _strategy1->startingCall(b, tree, startingPartition);
@@ -39,19 +39,19 @@ bool CompositeStrategy::startingCall(const ExternalTerm& b,
   return iSayContinue1 || iSayContinue2;
 }
 
-void CompositeStrategy::endingCall(const ExternalTerm& b,
+void CompositeStrategy::endingCall(const Term& b,
 				   const TermTree& tree) {
   _strategy1->endingCall(b, tree);
   _strategy2->endingCall(b, tree);
 }
 
-void CompositeStrategy::foundSolution(const ExternalTerm& b,
+void CompositeStrategy::foundSolution(const Term& b,
 				      bool startingPartition) {
   _strategy1->foundSolution(b, startingPartition);
   _strategy2->foundSolution(b, startingPartition);
 }
 
-void CompositeStrategy::startingPartitioning(const ExternalTerm& b,
+void CompositeStrategy::startingPartitioning(const Term& b,
 					     const Partition& partition,
 					     const TermTree& tree) {
   _strategy1->startingPartitioning(b, partition, tree);
@@ -59,8 +59,8 @@ void CompositeStrategy::startingPartitioning(const ExternalTerm& b,
 }
 
 void CompositeStrategy::doingPartitionSet(int position,
-					  const ExternalTerm& b,
-					  const ExternalTerm& compressedB,
+					  const Term& b,
+					  const Term& compressedB,
 					  const Partition& partition,
 					  vector<Exponent> compressor,
 					  const TermTree& tree) {
@@ -78,7 +78,7 @@ doneDoingPartitionSet(int position,
 }
 
 void CompositeStrategy::endingPartitioning(int position,
-					   const ExternalTerm& b) {
+					   const Term& b) {
   _strategy1->endingPartitioning(position, b);
   _strategy2->endingPartitioning(position, b);
 }

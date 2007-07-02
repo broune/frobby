@@ -13,7 +13,7 @@ void PrintProgressStrategy::getName(string& name) const {
   name = "PrintProgressStrategy";
 }
 
-bool PrintProgressStrategy::consideringCall(const ExternalTerm& b,
+bool PrintProgressStrategy::consideringCall(const Term& b,
 					    bool sameExponentAsNext,
 					    const TermTree& tree) {
   ASSERT(_workTotal != 0);
@@ -35,7 +35,7 @@ bool PrintProgressStrategy::consideringCall(const ExternalTerm& b,
   return false;
 }
 
-bool PrintProgressStrategy::startingCall(const ExternalTerm& b,
+bool PrintProgressStrategy::startingCall(const Term& b,
 					 const TermTree& tree,
 					 bool startingPartition) {
   if (tree.getPosition() == 0) {
@@ -51,22 +51,22 @@ bool PrintProgressStrategy::startingCall(const ExternalTerm& b,
   return false;
 }
 
-void PrintProgressStrategy::endingCall(const ExternalTerm& b,
+void PrintProgressStrategy::endingCall(const Term& b,
 				       const TermTree& tree) {
 }
 
-void PrintProgressStrategy::foundSolution(const ExternalTerm& b,
+void PrintProgressStrategy::foundSolution(const Term& b,
 					  bool startingPartition) {
 }
 
-void PrintProgressStrategy::startingPartitioning(const ExternalTerm& b,
+void PrintProgressStrategy::startingPartitioning(const Term& b,
 						 const Partition& partition,
 						 const TermTree& tree) {
 }
 
 void PrintProgressStrategy::doingPartitionSet(int position,
-					      const ExternalTerm& b,
-					      const ExternalTerm& compressedB,
+					      const Term& b,
+					      const Term& compressedB,
 					      const Partition& partition,
 					      vector<Exponent> compressor,
 					      const TermTree& tree) {
@@ -78,5 +78,5 @@ doneDoingPartitionSet(int position,
 }
 
 void PrintProgressStrategy::endingPartitioning(int position,
-					       const ExternalTerm& b) {
+					       const Term& b) {
 }

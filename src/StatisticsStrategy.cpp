@@ -18,36 +18,36 @@ void StatisticsStrategy::getName(string& name) const {
   name = "StatisticsStrategy";
 }
 
-bool StatisticsStrategy::consideringCall(const ExternalTerm& b,
+bool StatisticsStrategy::consideringCall(const Term& b,
 					 bool sameExponentAsNext,
 					 const TermTree& tree) {
   return false;
 }
 
-bool StatisticsStrategy::startingCall(const ExternalTerm& b,
+bool StatisticsStrategy::startingCall(const Term& b,
 				      const TermTree& tree,
 				      bool startingPartition) {
   return false;
 }
 
-void StatisticsStrategy::endingCall(const ExternalTerm& b,
+void StatisticsStrategy::endingCall(const Term& b,
 				    const TermTree& tree) {
   ++(_callCounts[tree.getPosition()]);
 }
 
-void StatisticsStrategy::foundSolution(const ExternalTerm& b,
+void StatisticsStrategy::foundSolution(const Term& b,
 				       bool startingPartition) {
   ++(_callCounts[_dimension - 1]);
 }
 
-void StatisticsStrategy::startingPartitioning(const ExternalTerm& b,
+void StatisticsStrategy::startingPartitioning(const Term& b,
 					      const Partition& partition,
 					      const TermTree& tree) {
 }
     
 void StatisticsStrategy::doingPartitionSet(int position,
-					   const ExternalTerm& b,
-					   const ExternalTerm& compressedB,
+					   const Term& b,
+					   const Term& compressedB,
 					   const Partition& partition,
 					   vector<Exponent> compressor,
 					   const TermTree& tree) {
@@ -59,5 +59,5 @@ doneDoingPartitionSet(int position,
 }
 
 void StatisticsStrategy::endingPartitioning(int position,
-					    const ExternalTerm& b) {
+					    const Term& b) {
 }

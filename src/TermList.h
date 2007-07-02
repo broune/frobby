@@ -4,7 +4,7 @@
 #include "Term.h"
 
 class TermList {
-  typedef vector<ExternalTerm> Cont;
+  typedef vector<Term> Cont;
 
 public:
   typedef Cont::iterator iterator;
@@ -12,13 +12,13 @@ public:
 
   TermList(unsigned int varCount);
 
-  void insert(const ExternalTerm& term);
+  void insert(const Term& term);
 
   const_iterator begin() const;
 
   const_iterator end() const;
 
-  bool isIncomparable(const ExternalTerm& term) const;
+  bool isIncomparable(const Term& term) const;
 
   size_t size() const;
 
