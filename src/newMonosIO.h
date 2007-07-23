@@ -2,6 +2,9 @@
 #define NEW_MONOS_IO
 
 #include "monosIO.h"
+#include "Bigideal.h"
+#include "VarNames.h"
+#include "Lexer.h"
 
 class NewMonosIOHandler : public IOHandler {
 public:
@@ -112,19 +115,5 @@ private:
     ideal.clearAndSetNames(names);
   }
 };
-
-namespace newMonos {
-  void computeDecomposition(const string& temporaryFilename,
-			    BigIdeal& input,
-			    BigIdeal& output,
-			    bool useScarfComplex,
-			    bool printProgress);
-
-  void computeDecomposition(const string& temporaryFilename,
-			    BigIdeal& input,
-			    const string& outputFile,
-			    bool useScarfComplex,
-			    bool printProgress);
-}
 
 #endif

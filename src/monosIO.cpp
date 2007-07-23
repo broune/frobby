@@ -2,71 +2,154 @@
 #include "monosIO.h"
 
 #include "BigIdeal.h"
+#include "Lexer.h"
 
-namespace monos {
-  void computeDecomposition(const string& temporaryFilename,
-			    BigIdeal& input,
-			    BigIdeal& output,
-			    bool printProgress) {
-    IOHandler* ioHandler = new MonosIOHandler();
+#include <fstream>
 
-    unsigned int varCount = 1;
-    if (!input.empty())
-      varCount = input[0].size();
+MonosIOHandler::MonosIOHandler():
+  _justStartedWritingIdeal(false) {
+}
+  
+void MonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
+  Lexer lexer(in);
+  readVarsAndClearIdeal(ideal, lexer);
+  
+  lexer.expect('[');
+  do {
+    readTerm(ideal, lexer);
+  } while (lexer.match(','));
+  lexer.expect(']');
+}
 
-    // Write temporary file
-    ofstream out((temporaryFilename + ".in").c_str());
-    ioHandler->writeIdeal(out, input);
-    out.close();
-    
-    // Do computation using monos
-    deleteFile(temporaryFilename + ".out");
-    string infoTag;
-    if (printProgress)
-      infoTag = "-i ";
-    system(("runMonos decompose.ms " +
-	    infoTag +
-	    temporaryFilename + ".in > " +
-	    temporaryFilename + ".out ").c_str());
-
-    // Read temporary file
-    ifstream in((temporaryFilename + ".out").c_str());
-    ioHandler->readIrreducibleDecomposition(in, output);
+void MonosIOHandler::startWritingIdeal(ostream& out,
+				       const VarNames& names) {
+  out << "vars ";
+  const char* pre = "";
+  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+    out << pre << names.getName(i);
+    pre = ", ";
   }
+  out << ";\n[";
+  
+  _justStartedWritingIdeal = true;
+}
 
-  void computeDecomposition(const string& temporaryFilename,
-			    BigIdeal& input,
-			    const string& outputFile,
-			    bool printProgress) {
-    BigIdeal output(input.getNames());
-    computeDecomposition(temporaryFilename, input, output, printProgress);
+void MonosIOHandler::writeGeneratorOfIdeal(ostream& out,
+					   const vector<mpz_class>& generator,
+					   const VarNames& names) {
+  if (_justStartedWritingIdeal)
+    _justStartedWritingIdeal = false;
+  else
+    out << ',';
+  out << "\n ";
+  
+  bool someVar = false;
+  for (unsigned int j = 0; j < names.getVarCount(); ++j) {
+    if ((generator[j]) == 0)
+      continue;
+    if (someVar)
+      out << '*';
+    else
+      someVar = true;
 
-    ofstream out(outputFile.c_str());
-    IOHandler* ioHandler = new MonosIOHandler();
-    ioHandler->writeIdeal(out, output);
+    out << names.getName(j);
+    if ((generator[j]) != 1)
+      out << '^' << (generator[j]);
   }
+  if (!someVar)
+    out << 1;
+}
 
-  bool areIdealsEqual(const string& a, const string& b) {
-    IOHandler* ioHandler = new MonosIOHandler();
+void MonosIOHandler::writeGeneratorOfIdeal
+(ostream& out,
+ const vector<const char*>& generator,
+ const VarNames& names) {
+  if (_justStartedWritingIdeal) {
+    _justStartedWritingIdeal = false;
+    out << '\n';
+  }
+  else
+    out << ",\n";
 
-    ifstream inA(a.c_str());
-    BigIdeal idealA;
-    ioHandler->readIdeal(inA, idealA);
+  char separator = ' ';
+  for (unsigned int j = 0; j < names.getVarCount(); ++j) {
+    const char* exp = generator[j];
+    if (exp == 0)
+      continue;
 
-    ifstream inB(b.c_str());
-    BigIdeal idealB;
-    ioHandler->readIdeal(inB, idealB);
+    out << separator << exp;
+    separator = '*';
+  }
+  if (separator == ' ')
+    out << " 1";
+}
 
-    if (idealA.sortUnique()) {
-      cout << "ERROR: there were duplicates in output decomposition in file "
-	   << a << '.' << endl;
+void MonosIOHandler::doneWritingIdeal(ostream& out) {
+  out << "\n];\n";
+}
+
+void MonosIOHandler::readIrreducibleDecomposition(istream& in,
+						  BigIdeal& decom) {
+  Lexer lexer(in);
+  readVarsAndClearIdeal(decom, lexer);
+  readIrreducibleIdealList(decom, lexer);
+}
+
+const char* MonosIOHandler::getFormatName() const {
+  return "monos";
+}
+
+IOHandler* MonosIOHandler::createNew() const {
+  return new MonosIOHandler();
+}
+
+void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer) {
+  ideal.newLastTerm();
+
+  lexer.expect('[');
+  if (lexer.match(']'))
+    return;
+
+  int var;
+  mpz_class power;
+
+  do {
+    readVarPower(var, power, ideal.getNames(), lexer);
+    ASSERT(power > 0);
+    if (ideal.getLastTermExponentRef(var) != 0) {
+      cerr << "ERROR: a variable appears twice in irreducible ideal." << endl;
+      exit(0);
     }
+    ideal.getLastTermExponentRef(var) = power;
+  } while (lexer.match(','));
 
-    if (idealB.sortUnique()) {
-      cout << "ERROR: there were duplicates in output decomposition in file "
-	   << b << '.' << endl;
-    }
+  lexer.expect(']');
+}
 
-    return idealA == idealB;
-  }
+void MonosIOHandler::readIrreducibleIdealList(BigIdeal& ideals, Lexer& lexer) {
+  lexer.expect('[');
+  if (lexer.match(']'))
+    return;
+  
+  do {
+    readIrreducibleIdeal(ideals, lexer);
+  } while (lexer.match(',')); 
+
+  lexer.expect(']');
+  lexer.expect(';');
+}
+
+void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer) {
+  lexer.expect("vars");
+
+  VarNames names;
+  string varName;
+  do {
+    lexer.readIdentifier(varName);
+    names.addVar(varName);
+  } while (lexer.match(','));
+
+  lexer.expect(';');
+
+  ideal.clearAndSetNames(names);
 }

@@ -1,10 +1,11 @@
 #ifndef DECOMPOSITION_STRATEGY
 #define DECOMPOSITION_STRATEGY
 
-#include <stack>
-
 #include "Strategy.h"
 #include "VarNames.h"
+
+#include <list>
+#include <stack>
 
 class TermTree;
 class TermTranslator;
@@ -12,14 +13,13 @@ class Partition;
 class IOHandler;
 
 class DecompositionStrategy : public Strategy {
-  typedef vector<Term> TermCont;
+  typedef list<Term> TermCont;
 
 public:
   DecompositionStrategy(ostream* out,
 			const VarNames& names,
 			unsigned int dimension,
-			const TermTranslator* translator,
-			bool doDegenerization);
+			const TermTranslator* translator);
 
   virtual ~DecompositionStrategy();
 
@@ -57,9 +57,8 @@ public:
 				  const Term& b);
 
 protected:
-  void degenerisize();
-
   void writeSolution(const Term& b);
+  void flushIfPossible();
 
   stack<TermCont*> _solutions;
 
@@ -70,8 +69,9 @@ protected:
   VarNames _names;
   bool _first;
   const TermTranslator* _translator;
-  bool _doDegenerization;
   IOHandler* _ioHandler;
+
+  vector<const char*> _outputTmp;
 };
 
 #endif

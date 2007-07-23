@@ -10,6 +10,7 @@ int main(int argc, const char** argv) {
 #endif
 
   srand(time(0));
+  ios_base::sync_with_stdio(false);
 
   string actionName = "help";
   if (argc > 1) {

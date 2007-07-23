@@ -16,6 +16,8 @@
 #include "LabelAlgorithm.h"
 #include "VarNames.h"
 #include "TermTranslator.h"
+#include "TermList.h"
+#include "SliceAlgorithm.h"
 
 IrreducibleDecomFacade::
 IrreducibleDecomFacade(bool printActions,
@@ -45,10 +47,19 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
   TermTranslator* translator;
   ideal.buildAndClear(tree, translator, false);
 
-  Strategy* strategy = new DecompositionStrategy
-    (&out, ideal.getNames(), ideal.getNames().getVarCount(),
-     translator, false);
-  runAlgorithm(tree, translator, strategy);
+  if (_parameters.getUseSlice()) {
+    TermList terms(tree->getDimension());
+    tree->getTerms(terms);
+    SliceAlgorithm alg(terms, ideal.getNames(), translator);
+  } else {
+    Strategy* strategy;
+    if (_parameters.getDoBenchmark())
+      strategy = new BenchmarkStrategy();
+    else
+      strategy = new DecompositionStrategy
+	(&out, ideal.getNames(), ideal.getNames().getVarCount(), translator);
+    runAlgorithm(tree, translator, strategy);
+  }
 
   endAction();
 }
@@ -92,9 +103,6 @@ runAlgorithm(TermTree* tree, TermTranslator* translator, Strategy* strategy) {
   // Set up the combined strategy
   vector<Strategy*> strategies;
   strategies.push_back(strategy);
-
-  if (_parameters.getDoBenchmark())
-    strategy = addStrategy(strategies, strategy, new BenchmarkStrategy());
 
   if (_parameters.getPrintProgress())
     strategy = addStrategy(strategies, strategy, new PrintProgressStrategy());

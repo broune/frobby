@@ -37,6 +37,11 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
   _usePartition
   ("partition",
    "Perform independence splits when possible.",
+   true),
+  
+  _useSlice
+  ("slice",
+   "Use the Slice Algorithm in place of the Label Algorithm.",
    true) {
   addParameter(&_doBenchmark);
   addParameter(&_printDebug);
@@ -45,6 +50,7 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
   addParameter(&_skipRedundant);
   addParameter(&_useBound);
   addParameter(&_usePartition);
+  addParameter(&_useSlice);
 }
 
 void IrreducibleDecomParameters::setSkipRedundant(bool value) {
@@ -77,4 +83,8 @@ bool IrreducibleDecomParameters::getUseBound() const {
 
 bool IrreducibleDecomParameters::getUsePartition() const {
   return _usePartition;
+}
+
+bool IrreducibleDecomParameters::getUseSlice() const {
+  return _useSlice;
 }

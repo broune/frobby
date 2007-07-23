@@ -162,9 +162,4 @@ private:
   }
 };
 
-namespace macaulay2 {
-  void computeDecomposition(const BigIdeal& input, BigIdeal& output);
-  void computeDecomposition(const BigIdeal& input, const string& outputFile);
-}
-
 #endif

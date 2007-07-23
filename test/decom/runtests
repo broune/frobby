@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for t in *.gen
+for t in `ls *.gen -S -r`
 do
   ./runtest $t
   if [ $? != 0 ]

@@ -102,7 +102,7 @@ size_t BigIdeal::buildAndClear(TermTree*& tree,
   vector<vector<mpz_class> >* decompressionMaps =
     buildDecompressionMaps(compressionMaps, generisize);
   tree = buildIdeal(compressionMaps, *decompressionMaps, artinize);
-  translator = new TermTranslator(decompressionMaps);
+  translator = new TermTranslator(_names, decompressionMaps);
 
   _terms.clear();
   return tree->size() - initialSize;
@@ -169,9 +169,9 @@ bool BigIdeal::bigTermCompare(const vector<mpz_class>& a,
 			      const vector<mpz_class>& b) {
   ASSERT(a.size() == b.size());
   for (size_t i = 0; i < a.size(); ++i) {
-    if (a[i] < b[i])
-      return true;
     if (a[i] > b[i])
+      return true;
+    if (a[i] < b[i])
       return false;
   }
   return false;

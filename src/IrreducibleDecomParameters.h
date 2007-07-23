@@ -17,6 +17,7 @@ class IrreducibleDecomParameters : public ParameterGroup {
   bool getSkipRedundant() const;
   bool getUseBound() const;
   bool getUsePartition() const;
+  bool getUseSlice() const;
 
  private:
   BoolParameter _doBenchmark;
@@ -26,6 +27,7 @@ class IrreducibleDecomParameters : public ParameterGroup {
   BoolParameter _skipRedundant;
   BoolParameter _useBound;
   BoolParameter _usePartition;
+  BoolParameter _useSlice;
 };
 
 #endif
