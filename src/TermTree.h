@@ -6,6 +6,7 @@
 #include "Allocator.h"
 
 class Node;
+class TermList;
 
 class TermTree {
 public:
@@ -13,6 +14,8 @@ public:
   TermTree(const Term& threshold, unsigned int dimension, unsigned int position);
   TermTree(unsigned int dimension, unsigned int position = 0);
   ~TermTree();
+
+  void getTerms(TermList& terms) const;
 
   TermTree& operator=(const TermTree& tree);
 

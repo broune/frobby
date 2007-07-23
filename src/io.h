@@ -19,7 +19,13 @@ public:
 
   virtual void writeGeneratorOfIdeal(ostream& out,
 				     const vector<mpz_class>& generator,
-				     const VarNames& names) = 0;
+				     const VarNames& names) {
+  }
+
+  virtual void writeGeneratorOfIdeal(ostream& out,
+				     const vector<const char*>& generator,
+				     const VarNames& names) {
+  }
 
   virtual void doneWritingIdeal(ostream& out) = 0;
 

@@ -27,12 +27,13 @@ class Term {
   Term& operator=(const Term& term);
   
   bool divides(const Term& term) const;
+  bool strictlyDivides(const Term& term) const;
 
   void lcm(const Term& term1,
-	   const Term& term2, int position);
+	   const Term& term2, int position = 0);
 
   void gcd(const Term& term1,
-	   const Term& term2, int position);
+	   const Term& term2, int position = 0);
 
   void resize(unsigned int dimension);
 
@@ -47,7 +48,13 @@ class Term {
     return out;
   }
 
-  void setToZero();
+  void product(const Term& a, const Term& b);
+
+  void setToZero(); // TODO: rename to setToOne
+  bool isZero() const; // TODO: rename to isOne
+
+  // this = a : b, which is lcm(a,b)/b
+  void colon(const Term& a, const Term& b);
 
  private:
   Exponent* _exponents;

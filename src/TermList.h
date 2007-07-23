@@ -20,7 +20,25 @@ public:
 
   bool isIncomparable(const Term& term) const;
 
-  size_t size() const;
+  size_t size() const; // TODO: remove this
+
+  size_t getVariableCount() const;
+  size_t getGeneratorCount() const;
+  bool isZeroIdeal() const;
+
+  void getLcm(Term& lcm) const;
+  void getGcd(Term& gcd) const;
+
+  bool contains(const Term& term) const;
+
+  void colonMinimize(const TermList& ideal, const Term& by);
+  void colon(const Term& by);
+
+  void minimize();
+
+  void removeStrictMultiples(const Term& term);
+
+  void print() const;
 
 private:
   Cont _terms;

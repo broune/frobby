@@ -9,16 +9,15 @@
 DecompositionStrategy::DecompositionStrategy(ostream* out,
 					     const VarNames& names,
 					     unsigned int dimension,
-					     const TermTranslator* translator,
-					     bool doDegenerization):
+					     const TermTranslator* translator):
   _firstPartition(dimension),
   _out(out),
   _dimension(dimension),
   _names(names),
   _first(true),
   _translator(translator),
-  _doDegenerization(doDegenerization),
-  _ioHandler(new MonosIOHandler()) {
+  _ioHandler(new MonosIOHandler()),
+  _outputTmp(dimension) {
   ASSERT(out != 0);
   
   _solutions.push(new TermCont());
@@ -27,19 +26,9 @@ DecompositionStrategy::DecompositionStrategy(ostream* out,
 
 DecompositionStrategy::~DecompositionStrategy() {
   ASSERT(_solutions.size() == 1);
-  
-  _translator->getExponent(0,0);
 
-  if (_doDegenerization)
-    degenerisize();
+  flushIfPossible();
 
-  TermCont& sols = *(_solutions.top());
-  sort(sols.begin(), sols.end());
-  sols.erase(unique(sols.begin(), sols.end()), sols.end());
-    
-  for (TermCont::iterator it = sols.begin(); it != sols.end(); ++it)
-    writeSolution(*it);
-  delete _solutions.top();
   _solutions.pop();
   ASSERT(_solutions.empty());
     
@@ -69,7 +58,10 @@ void DecompositionStrategy::endingCall(const Term& b,
 
 void DecompositionStrategy::foundSolution(const Term& b,
 					  bool startingPartition) {
-  _solutions.top()->push_back(b);
+  if (_solutions.size() == 1)
+    writeSolution(b);
+  else
+    _solutions.top()->push_back(b);
 }
 
 void DecompositionStrategy::startingPartitioning(const Term& b,
@@ -127,47 +119,36 @@ void DecompositionStrategy::endingPartitioning(int position,
   TermCont* sols = _solutions.top();
   _solutions.pop();
 
-  for (TermCont::iterator it = sols->begin();
-       it != sols->end(); ++it)
-    _solutions.top()->push_back(*it);
+  if (_solutions.size() != 1) {
+    for (TermCont::iterator it = sols->begin();
+	 it != sols->end(); ++it)
+      _solutions.top()->push_back(*it);
+  } else {
+    for (TermCont::iterator it = sols->begin();
+	 it != sols->end(); ++it)
+      writeSolution(*it);
+  }
 
   delete sols;
+
+  flushIfPossible();
 }
 
-void DecompositionStrategy::degenerisize() {
-  TermTree decom(_dimension);
+void DecompositionStrategy::flushIfPossible() {
+  if (_solutions.size() != 1)
+    return;
+  
   TermCont& sols = *(_solutions.top());
-  for (TermCont::iterator it = sols.begin(); it != sols.end(); ++it) {
-    for (unsigned int var = 0; var < _dimension; ++var) {
-      if (_translator->getExponent(var, (*it)[var] + 1) != 0) {
-	while ((*it)[var] > 0 &&
-	       _translator->getExponent(var, (*it)[var]) ==
-	       _translator->getExponent(var, (*it)[var] + 1))
-	  --((*it)[var]);
-      }
-    }
-
-    if (!decom.getDominator(*it)) {
-      decom.removeDivisors(*it);
-      decom.insert(*it);
-    }
-  }
-
-  sols.clear();
-  TermTree::TreeIterator it = TermTree::TreeIterator(decom);
-  Term term(_dimension);
-  while (!it.atEnd()) {
-    it.getTerm(term);
-    ++it;
-    sols.push_back(term);
-  }
+    
+  for (TermCont::iterator it = sols.begin(); it != sols.end(); ++it)
+    writeSolution(*it);
+  _solutions.top()->clear();
 }
 
 void DecompositionStrategy::writeSolution(const Term& b) {
   ASSERT(_dimension == b.getDimension());
-  
-  static vector<mpz_class> term(_dimension);
+
   for (unsigned int var = 0; var < _dimension; ++var)
-    term[var] = (_translator->getExponent(var, b[var] + 1));
-  _ioHandler->writeGeneratorOfIdeal(*_out, term, _names);
+    _outputTmp[var] = (_translator->getExponentString(var, b[var] + 1));
+    _ioHandler->writeGeneratorOfIdeal(*_out, _outputTmp, _names);
 }

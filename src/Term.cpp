@@ -74,6 +74,13 @@ bool Term::divides(const Term& term) const {
   return true;
 }
 
+bool Term::strictlyDivides(const Term& term) const {
+  for (unsigned int i = 0; i < _dimension; ++i)
+    if ((*this)[i] >= term[i] && (*this)[i] > 0)
+      return false;
+  return true;
+}
+
 void Term::lcm(const Term& term1,
 		       const Term& term2, int position) {
   for (unsigned int i = position; i < _dimension; ++i) {
@@ -114,6 +121,33 @@ bool Term::operator<(const Term& term) const {
   return false;
 }
 
+void Term::product(const Term& a, const Term& b) {
+  ASSERT(_dimension == a._dimension);
+  ASSERT(a._dimension == b._dimension);
+
+  for (unsigned int i = 0; i < _dimension; ++i)
+    _exponents[i] = a[i] + b[i];
+}
+
 void Term::setToZero() {
   fill_n(_exponents, _dimension, 0);
+}
+
+bool Term::isZero() const {
+  for (size_t i = 0; i < _dimension; ++i)
+    if (_exponents[i] != 0)
+      return false;
+  return true;
+}
+
+void Term::colon(const Term& a, const Term& b) {
+  ASSERT(_dimension == a._dimension);
+  ASSERT(a._dimension == b._dimension);
+
+  for (size_t i = 0; i < _dimension; ++i) {
+    if (a[i] > b[i])
+      _exponents[i] = a[i] - b[i];
+    else
+      _exponents[i] = 0;
+  }
 }

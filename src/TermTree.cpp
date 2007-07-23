@@ -1,6 +1,8 @@
 #include "stdinc.h"
 #include "TermTree.h"
 
+#include "TermList.h"
+
 class Node {
 public:
   Node(): _entry(0), _next(0), _exponent(0) {}
@@ -152,6 +154,16 @@ TermTree::TermTree(unsigned int dimension, unsigned int position):
 	    
 TermTree::~TermTree() {
   delete (Allocator<Node>*)_allocator;
+}
+
+void TermTree::getTerms(TermList& terms) const {
+  TreeIterator it(*this);
+  Term term(_dimension);
+  while (!it.atEnd()) {
+    it.getTerm(term);
+    terms.insert(term);
+    ++it;
+  }
 }
 
 TermTree::TreeWalker::TreeWalker(TermTree& tree):

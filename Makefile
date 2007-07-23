@@ -16,7 +16,7 @@ rawSources = main.cpp TermTree.cpp Action.cpp				\
   PrintDebugStrategy.cpp FrobeniusStrategy.cpp BenchmarkStrategy.cpp	\
   DecompositionStrategy.cpp StatisticsStrategy.cpp			\
   CompositeStrategy.cpp PrintProgressStrategy.cpp			\
-  SkipRedundantStrategy.cpp LatticeFormatAction.cpp
+  SkipRedundantStrategy.cpp LatticeFormatAction.cpp SliceAlgorithm.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized -Wno-unused-parameter
@@ -52,7 +52,7 @@ sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 program = frobby.exe
 
-# ***** Targets
+# ***** Compilation
 
 .PHONY: all depend clean
 all: bin/$(program) $(outdir)$(program)
@@ -87,13 +87,23 @@ depend:
 -include .depend
 
 clean:
-	rm -rf bin *~ *.orig
+	rm -rf bin *~ *.orig src/*~ src/*.orig frobby_v*.tar.gz
 
 # ***** Mercurial
 
 commit: test
-ifdef MSG
 	hg commit -m "$(MSG)"
-else
-  $(error MSG not defined - will not commit.)
-endif
+
+# ***** Distribution
+
+distribution: test
+	make depend
+	cd ..;tar --create --file=frobby_v$(ver).tar.gz frobby/ --gzip \
+	  --exclude=*/data/* --exclude=*/data \
+	  --exclude=*/.hg/* --exclude=*/.hg --exclude=.hgignore\
+	  --exclude=*/bin/* --exclude=*/bin \
+	  --exclude=*/save/* --exclude=*/save \
+	  --exclude=*/4ti2/* \
+	  --exclude=*.tar.gz --exclude=*~ --exclude=*.orig
+	mv ../frobby_v$(ver).tar.gz .
+	ls -l frobby_v$(ver).tar.gz
