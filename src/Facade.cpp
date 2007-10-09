@@ -9,6 +9,11 @@ Facade::Facade(bool printActions):
 {
 }
 
+void Facade::printMessage(const char* message) {
+  if (_printActions)
+    cerr << message << flush;
+}
+
 void Facade::beginAction(const char* message) {
 #ifdef DEBUG
   ASSERT(!_doingAnAction);

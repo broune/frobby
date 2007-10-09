@@ -2,8 +2,9 @@
 #define TERM_LIST_GUARD
 
 #include "Term.h"
+#include "Ideal.h"
 
-class TermList {
+class TermList : public Ideal {
   typedef vector<Term> Cont;
 
 public:
@@ -11,6 +12,7 @@ public:
   typedef Cont::const_iterator const_iterator;
 
   TermList(unsigned int varCount);
+  TermList(const Ideal& ideal);
 
   void insert(const Term& term);
 
@@ -31,18 +33,20 @@ public:
 
   bool contains(const Term& term) const;
 
-  void colonMinimize(const TermList& ideal, const Term& by);
+  void minimize();
   void colon(const Term& by);
 
-  void minimize();
+  Ideal* createMinimizedColon(const Term& by) const;
+  Ideal* clone() const;
+  void clear();
 
   void removeStrictMultiples(const Term& term);
 
   void print() const;
 
 private:
-  Cont _terms;
   unsigned int _varCount;
+  Cont _terms;
 };
 
 #endif

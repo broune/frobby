@@ -37,6 +37,10 @@ public:
 
   static const int UNKNOWN;
 
+  bool operator==(const VarNames& names) const {
+    return _indexToName == names._indexToName;
+  }
+
 private:
   bool contains(const string& name) const;
 

@@ -82,7 +82,7 @@ bool Term::strictlyDivides(const Term& term) const {
 }
 
 void Term::lcm(const Term& term1,
-		       const Term& term2, int position) {
+	       const Term& term2, int position) {
   for (unsigned int i = position; i < _dimension; ++i) {
     Exponent e1 = term1[i];
     Exponent e2 = term2[i];
@@ -91,7 +91,7 @@ void Term::lcm(const Term& term1,
 }
 
 void Term::gcd(const Term& term1,
-		       const Term& term2, int position) {
+	       const Term& term2, int position) {
   for (unsigned int i = position; i < _dimension; ++i) {
     Exponent e1 = term1[i];
     Exponent e2 = term2[i];

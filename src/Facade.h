@@ -6,6 +6,8 @@
 class Facade {
  protected:
   Facade(bool printActions);
+
+  void printMessage(const char* message);
   void beginAction(const char* message);
   void endAction();
 

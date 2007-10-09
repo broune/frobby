@@ -1,7 +1,7 @@
 $(outdir)main.o: src/main.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
   src/Parameter.h
 $(outdir)TermTree.o: src/TermTree.cpp src/stdinc.h src/TermTree.h src/Term.h \
-  src/Allocator.h src/TermList.h
+  src/Allocator.h src/TermList.h src/Ideal.h
 $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomAction.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
@@ -24,11 +24,11 @@ $(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
   src/VarNames.h src/Lexer.h src/io.h
 $(outdir)randomDataGenerators.o: src/randomDataGenerators.cpp src/stdinc.h \
   src/randomDataGenerators.h src/BigIdeal.h src/VarNames.h src/TermList.h \
-  src/Term.h
+  src/Term.h src/Ideal.h
 $(outdir)monosIO.o: src/monosIO.cpp src/stdinc.h src/monosIO.h src/io.h \
   src/BigIdeal.h src/VarNames.h src/Lexer.h
 $(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
-  src/TermTree.h src/Term.h src/Allocator.h src/TermList.h \
+  src/TermTree.h src/Term.h src/Allocator.h src/TermList.h src/Ideal.h \
   src/TermTranslator.h
 $(outdir)FormatAction.o: src/FormatAction.cpp src/stdinc.h src/FormatAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h src/StringParameter.h \
@@ -64,7 +64,7 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/PrintProgressStrategy.h src/SkipRedundantStrategy.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
   src/BoolParameter.h src/BigIdeal.h src/IOFacade.h src/LabelAlgorithm.h \
-  src/TermList.h src/SliceAlgorithm.h
+  src/TermList.h src/Ideal.h src/SliceAlgorithm.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/BigIdeal.h \
@@ -108,7 +108,8 @@ $(outdir)Partition.o: src/Partition.cpp src/stdinc.h src/Partition.h src/Term.h
 $(outdir)StringParameter.o: src/StringParameter.cpp src/stdinc.h \
   src/StringParameter.h src/Parameter.h
 $(outdir)Term.o: src/Term.cpp src/stdinc.h src/Term.h
-$(outdir)TermList.o: src/TermList.cpp src/stdinc.h src/TermList.h src/Term.h
+$(outdir)TermList.o: src/TermList.cpp src/stdinc.h src/TermList.h src/Term.h \
+  src/Ideal.h
 $(outdir)TermTranslator.o: src/TermTranslator.cpp src/stdinc.h \
   src/TermTranslator.h src/VarNames.h src/Term.h
 $(outdir)Timer.o: src/Timer.cpp src/stdinc.h src/Timer.h
@@ -143,5 +144,6 @@ $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
   src/Parameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
   src/IOFacade.h src/Facade.h src/Timer.h src/fplllIO.h
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
-  src/SliceAlgorithm.h src/VarNames.h src/TermList.h src/Term.h src/io.h \
-  src/TermTranslator.h
+  src/SliceAlgorithm.h src/VarNames.h src/TermList.h src/Term.h \
+  src/Ideal.h src/io.h src/TermTranslator.h
+$(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h

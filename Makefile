@@ -16,10 +16,12 @@ rawSources = main.cpp TermTree.cpp Action.cpp				\
   PrintDebugStrategy.cpp FrobeniusStrategy.cpp BenchmarkStrategy.cpp	\
   DecompositionStrategy.cpp StatisticsStrategy.cpp			\
   CompositeStrategy.cpp PrintProgressStrategy.cpp			\
-  SkipRedundantStrategy.cpp LatticeFormatAction.cpp SliceAlgorithm.cpp
+  SkipRedundantStrategy.cpp LatticeFormatAction.cpp SliceAlgorithm.cpp	\
+  Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp
 
 ldflags = -lgmpxx -lgmp
-cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized -Wno-unused-parameter
+cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\
+         -Wno-unused-parameter -Werror
 
 ifndef MODE
  MODE=release
@@ -27,12 +29,14 @@ endif
 
 ifeq ($(MODE), release)
   outdir = bin/release/
-  cflags += -O2
+  cflags += -O3
 else ifeq ($(MODE), debug)
   outdir = bin/debug/
   cflags += -g -D DEBUG -fno-inline
 else ifeq ($(MODE), profile)
   outdir = bin/profile/
+  cflags += -g -pg -O3
+  ldflags += -pg
 else ifeq ($(MODE), analysis)
   outdir = bin/analysis/
   cflags += -fsyntax-only -O1 -Wfloat-equal -Wundef			\
@@ -56,6 +60,11 @@ program = frobby.exe
 
 .PHONY: all depend clean
 all: bin/$(program) $(outdir)$(program)
+ifeq ($(MODE), profile)
+	./bench
+	gprof ./frobby > prof
+endif
+
 test: all
 	export frobby=bin/$(program); ./test/runtests
 
@@ -92,6 +101,7 @@ clean:
 # ***** Mercurial
 
 commit: test
+	echo
 	hg commit -m "$(MSG)"
 
 # ***** Distribution
