@@ -5,6 +5,7 @@
 #include "TermTree.h"
 #include "TermList.h"
 #include "TermTranslator.h"
+#include "Ideal.h"
 
 #include <map>
 
@@ -34,6 +35,17 @@ void BigIdeal::insert(const TermList& termList) {
 
     for (size_t var = 0; var < _names.getVarCount(); ++var)
       getLastTermExponentRef(var) = (*it)[var];
+  }
+}
+
+void BigIdeal::insert(const TermList& termList,
+		      const TermTranslator& translator) {
+  TermList::const_iterator it = termList.begin();
+  for (; it != termList.end(); ++it) {
+    newLastTerm();
+
+    for (size_t var = 0; var < _names.getVarCount(); ++var)
+      getLastTermExponentRef(var) = translator.getExponent(var, (*it)[var]);
   }
 }
 
@@ -94,18 +106,51 @@ size_t BigIdeal::buildAndClear(TermTree*& tree,
   size_t initialSize = size();
   if (generisize)
     makeGeneric();
-  
+
   vector<map<mpz_class, Exponent> > compressionMaps(_names.getVarCount());
   for (size_t variable = 0; variable < _names.getVarCount(); ++variable)
     makeCompressionMap(variable, compressionMaps[variable]);
 
   vector<vector<mpz_class> >* decompressionMaps =
-    buildDecompressionMaps(compressionMaps, generisize);
-  tree = buildIdeal(compressionMaps, *decompressionMaps, artinize);
+    buildDecompressionMaps(compressionMaps,
+			   generisize ? _terms.size() : 0,
+			   _names.getVarCount());
+  tree = buildIdeal(this,
+		    compressionMaps, *decompressionMaps,
+		    _names.getVarCount(), artinize);
   translator = new TermTranslator(_names, decompressionMaps);
 
   _terms.clear();
   return tree->size() - initialSize;
+}
+
+TermTranslator* BigIdeal::buildAndClear
+(const vector<BigIdeal*>& bigIdeals,
+ vector<Ideal*>& ideals) {
+  ASSERT(!ideals.empty());
+
+  size_t varCount = bigIdeals[0]->_names.getVarCount();
+
+  vector<map<mpz_class, Exponent> > compressionMaps(varCount);
+  for (size_t variable = 0; variable < varCount; ++variable)
+    makeCompressionMap(variable, bigIdeals, compressionMaps[variable]);
+
+  vector<vector<mpz_class> >* decompressionMaps =
+    buildDecompressionMaps(compressionMaps, 0, varCount);
+
+  for (size_t i = 0; i < bigIdeals.size(); ++i) {
+    TermTree* tree =
+      buildIdeal(bigIdeals[i], compressionMaps, *decompressionMaps,
+		 varCount, false);
+
+    // Convert from BigIdeal to Ideal.
+    TermList* ideal = new TermList(varCount);
+    tree->getTerms(*ideal);
+    delete tree;
+    ideals.push_back(ideal);
+  }
+
+  return new TermTranslator(bigIdeals[0]->_names, decompressionMaps);
 }
 
 size_t BigIdeal::size() const {
@@ -187,45 +232,52 @@ void BigIdeal::makeGeneric() {
 }
 
 vector<vector<mpz_class> >*
-BigIdeal::buildDecompressionMaps(const vector<map<mpz_class, Exponent> >&
-				 compressionMaps,
-				 bool generisized) {
+BigIdeal::buildDecompressionMaps
+(const vector<map<mpz_class, Exponent> >&
+ compressionMaps,
+ size_t generisized, // 0 if no generisizing, _terms.size() otherwise.
+ size_t varCount) {
   vector<vector<mpz_class> >* decompressionMaps =
-    new vector<vector<mpz_class> >(_names.getVarCount());
+    new vector<vector<mpz_class> >(varCount);
 
-  for (size_t variable = 0; variable < _names.getVarCount(); ++variable) {
+  for (size_t variable = 0; variable < varCount; ++variable) {
     const map<mpz_class, Exponent>& compressionMap =
       compressionMaps[variable];
     vector<mpz_class>& decompressionMap = (*decompressionMaps)[variable];
 
-    // The +1 is for the Artinian power we may add later.
+    // The +1 is for the Artinian power we add later.
     decompressionMap.reserve(compressionMap.size() + 1);
     map<mpz_class, Exponent>::const_iterator it = compressionMap.begin();
     for (; it != compressionMap.end(); ++it) {
       ASSERT(it->second == decompressionMap.size());
-      if (generisized)
-	decompressionMap.push_back(it->first / _terms.size());
+      if (generisized != 0)
+	decompressionMap.push_back(it->first / generisized);
       else
 	decompressionMap.push_back(it->first);
     }
+
+    // For the possible added artinian power.
+    decompressionMap.push_back(0);
   }
 
   return decompressionMaps;
 }
 
 TermTree*
-BigIdeal::buildIdeal(vector<map<mpz_class, Exponent> >& compressionMaps,
+BigIdeal::buildIdeal(BigIdeal* ideal,
+                     vector<map<mpz_class, Exponent> >& compressionMaps,
 		     vector<vector<mpz_class> >& decompressionMaps,
+                     size_t varCount,
 		     bool artinize) {
-  vector<bool> hasArtinianPower(_names.getVarCount());
-  TermTree* tree = new TermTree(_names.getVarCount());
+  vector<bool> hasArtinianPower(varCount);
+  TermTree* tree = new TermTree(varCount);
 
   // Populate hasArtinianPower and tree with data.
-  Term term(_names.getVarCount());
-  for (size_t i = 0; i < _terms.size(); ++i) {
+  Term term(varCount);
+  for (size_t i = 0; i < ideal->_terms.size(); ++i) {
     int artinianVariable = -1;
-    for (size_t variable = 0; variable < _names.getVarCount(); ++variable) {
-      term[variable] = compressionMaps[variable][_terms[i][variable]];
+    for (size_t variable = 0; variable < varCount; ++variable) {
+      term[variable] = compressionMaps[variable][ideal->_terms[i][variable]];
       if (term[variable] != 0) {
 	if (artinianVariable == -1)
 	  artinianVariable = variable;
@@ -241,13 +293,11 @@ BigIdeal::buildIdeal(vector<map<mpz_class, Exponent> >& compressionMaps,
 
   if (artinize) {
     // Add any missing Artinian powers.
-    for (size_t variable = 0; variable < _names.getVarCount(); ++variable) {
+    for (size_t variable = 0; variable < varCount; ++variable) {
       if (hasArtinianPower[variable])
 	continue;
 	
-      Exponent power = decompressionMaps[variable].size();
-      decompressionMaps[variable].push_back(0);
-	
+      Exponent power = decompressionMaps[variable].size() - 1;
       term.setToZero();
       term[variable] = power;
       tree->insert(term);
@@ -255,6 +305,19 @@ BigIdeal::buildIdeal(vector<map<mpz_class, Exponent> >& compressionMaps,
   }
 
   return tree;
+}
+
+void BigIdeal::makeCompressionMap
+(int position,
+ const vector<BigIdeal*> ideals,
+ map<mpz_class, Exponent>& compressionMap) {
+  // Collect the exponents.
+  vector<mpz_class> exponents;
+  for (size_t i = 0; i < ideals.size(); ++i)
+    for (size_t j = 0; j < ideals[i]->_terms.size(); ++j)
+      exponents.push_back(ideals[i]->_terms[j][position]);
+
+  makeCompressionMap(exponents, compressionMap);
 }
 
 void BigIdeal::makeCompressionMap(int position,
@@ -265,6 +328,12 @@ void BigIdeal::makeCompressionMap(int position,
   for (size_t i = 0; i < _terms.size(); ++i)
     exponents.push_back(_terms[i][position]);
 
+  makeCompressionMap(exponents, compressionMap);
+}
+
+void BigIdeal::makeCompressionMap
+    (vector<mpz_class>& exponents,
+     map<mpz_class, Exponent>& compressionMap) {
   // Sort the exponents and remove duplicates.
   sort(exponents.begin(), exponents.end());
   vector<mpz_class>::iterator uniqueEnd =

@@ -4,6 +4,10 @@
 TermList::TermList(unsigned int varCount):
   _varCount(varCount) {
 }
+TermList::TermList(const Ideal& ideal):
+  _varCount(ideal.getVariableCount()),
+  _terms(ideal.begin(), ideal.end()) {
+}
 
 void TermList::insert(const Term& term) {
   _terms.push_back(term);
@@ -59,16 +63,27 @@ bool TermList::contains(const Term& term) const {
   return false;
 }
 
-void TermList::colonMinimize(const TermList& ideal, const Term& by) {
-  _terms.clear();
-  _terms.reserve(ideal.getGeneratorCount());
+Ideal* TermList::createMinimizedColon(const Term& by) const {
+  TermList* colon = new TermList(_varCount);
 
-  for (const_iterator it = ideal.begin(); it != ideal.end(); ++it) {
-    _terms.push_back(Term(_varCount));
-    _terms.back().colon(*it, by);
+  colon->_terms.reserve(getGeneratorCount());
+
+  for (const_iterator it = begin(); it != end(); ++it) {
+    colon->_terms.push_back(Term(_varCount));
+    colon->_terms.back().colon(*it, by);
   }
 
-  minimize();
+  colon->minimize();
+
+  return colon;
+}
+
+Ideal* TermList::clone() const {
+  return new TermList(*this);
+}
+
+void TermList::clear() {
+  _terms.clear();
 }
 
 void TermList::colon(const Term& by) {

@@ -6,6 +6,7 @@
 class TermTree;
 class TermList;
 class TermTranslator;
+class Ideal;
 
 class BigIdeal {
 public:
@@ -14,6 +15,7 @@ public:
 
   void insert(const TermTree& tree);
   void insert(const TermList& termList);
+  void insert(const TermList& termList, const TermTranslator& translator);
 
   void setNames(const VarNames& names);
 
@@ -32,6 +34,9 @@ public:
 		       TermTranslator*& translator,
 		       bool generisize,
 		       bool artinize = true);
+
+  static TermTranslator* buildAndClear(const vector<BigIdeal*>& bigIdeals,
+				       vector<Ideal*>& ideals);
 
   size_t size() const;
 
@@ -63,22 +68,35 @@ private:
 
   void makeGeneric();
 
-  vector<vector<mpz_class> >*
-  buildDecompressionMaps(const vector<map<mpz_class, Exponent> >&
-			 compressionMaps,
-			 bool generisized);
+  static vector<vector<mpz_class> >*
+    buildDecompressionMaps
+    (const vector<map<mpz_class, Exponent> >&
+     compressionMaps,
+     size_t generisized,
+     size_t varCount);
 
-  TermTree*
-  buildIdeal(vector<map<mpz_class, Exponent> >& compressionMaps,
-	     vector<vector<mpz_class> >& decompressionMaps,
-	     bool artinize);
+    static TermTree*
+    buildIdeal(BigIdeal* ideal,
+	       vector<map<mpz_class, Exponent> >& compressionMaps,
+	       vector<vector<mpz_class> >& decompressionMaps,
+	       size_t varCount,
+	       bool artinize);
 
-  void makeCompressionMap(int position,
-			  map<mpz_class, Exponent>& compressionMap);
+    static void makeCompressionMap
+      (int position,
+       const vector<BigIdeal*> ideals,
+       map<mpz_class, Exponent>& compressionMap);
 
-  vector<string> _variables;
-  vector<vector<mpz_class> > _terms;
-  VarNames _names;
+    void makeCompressionMap(int position,
+			    map<mpz_class, Exponent>& compressionMap);
+
+    static void makeCompressionMap
+      (vector<mpz_class>& exponents,
+       map<mpz_class, Exponent>& compressionMap);
+
+    vector<string> _variables;
+    vector<vector<mpz_class> > _terms;
+    VarNames _names;
 };
 
 #endif

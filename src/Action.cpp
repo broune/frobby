@@ -10,6 +10,7 @@
 #include "FrobeniusAction.h"
 #include "AnalyzeAction.h"
 #include "LatticeFormatAction.h"
+#include "IntersectAction.h"
 
 Action::ActionContainer Action::_actions;
 
@@ -31,6 +32,7 @@ const Action::ActionContainer& Action::getActions() {
     _actions.push_back(new FrobeniusAction());
     _actions.push_back(new DynamicFrobeniusAction());
     _actions.push_back(new LatticeFormatAction());
+    _actions.push_back(new IntersectAction());
   }
 
   return _actions;
