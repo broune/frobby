@@ -48,9 +48,9 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
   ideal.buildAndClear(tree, translator, false);
 
   if (_parameters.getUseSlice()) {
-    TermList terms(tree->getDimension());
+    TreeTermList terms(tree->getDimension());
     tree->getTerms(terms);
-    SliceAlgorithm alg(terms, ideal.getNames(), translator);
+    SliceAlgorithm alg(terms, ideal.getNames(), translator, out);
   } else {
     Strategy* strategy;
     if (_parameters.getDoBenchmark())
@@ -109,8 +109,7 @@ runAlgorithm(TermTree* tree, TermTranslator* translator, Strategy* strategy) {
 
   if (_parameters.getPrintStatistics())
     strategy = addStrategy
-      (strategies, strategy,
-       new StatisticsStrategy(tree->getDimension()));
+      (strategies, strategy, new StatisticsStrategy(tree->getDimension()));
 
   if (_parameters.getPrintDebug())
     strategy = addStrategy(strategies, strategy, new PrintDebugStrategy());
@@ -142,7 +141,7 @@ addStrategy(vector<Strategy*>& strategies,
   
   Strategy* composite = new CompositeStrategy(oldStrategy, newStrategy);
 
-  strategies.push_back(oldStrategy);
+  strategies.push_back(newStrategy);
   strategies.push_back(composite);
 
   return composite;

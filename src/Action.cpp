@@ -11,6 +11,8 @@
 #include "AnalyzeAction.h"
 #include "LatticeFormatAction.h"
 #include "IntersectAction.h"
+#include "AssociatedPrimesAction.h"
+#include "PrimaryDecomAction.h"
 
 Action::ActionContainer Action::_actions;
 
@@ -33,6 +35,8 @@ const Action::ActionContainer& Action::getActions() {
     _actions.push_back(new DynamicFrobeniusAction());
     _actions.push_back(new LatticeFormatAction());
     _actions.push_back(new IntersectAction());
+    _actions.push_back(new AssociatedPrimesAction());
+    _actions.push_back(new PrimaryDecomAction());
   }
 
   return _actions;

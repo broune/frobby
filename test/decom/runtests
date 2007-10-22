@@ -2,7 +2,7 @@
 
 for t in `ls *.gen -S -r`
 do
-  ./runtest $t
+  ./runtest $t $*
   if [ $? != 0 ]
   then
     exit 1

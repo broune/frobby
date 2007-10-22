@@ -534,7 +534,26 @@ void TermTree::lcmHelper(Term& leastCommonMultiple,
 }
 
 void TermTree::lcm(Term& leastCommonMultiple) const {
+  leastCommonMultiple.setToZero();
   lcmHelper(leastCommonMultiple, _root, _position);
+}
+
+void TermTree::gcdHelper(Term& greatestCommonDivisor,
+			 const Node* node, unsigned int position) const {
+  if (position == _dimension)
+    return;
+  
+  for (Node::iterator it = node->begin(); &*it != 0; ++it) {
+    if (it->getExponent() < greatestCommonDivisor[position] )
+      greatestCommonDivisor[position] = it->getExponent();
+    gcdHelper(greatestCommonDivisor, &*it, position + 1);
+  }
+}
+
+void TermTree::gcd(Term& greatestCommonDivisor) const {
+  for (size_t var = 0; var < _dimension; ++var)
+    greatestCommonDivisor[var] = numeric_limits<Exponent>::max();
+  gcdHelper(greatestCommonDivisor, _root, _position);
 }
 
 void TermTree::setThreshold(const Term& term) {

@@ -4,6 +4,7 @@
 #include <list>
 #include "Term.h"
 #include "Allocator.h"
+#include "Ideal.h"
 
 class Node;
 class TermList;
@@ -13,7 +14,7 @@ public:
   TermTree(const TermTree& tree);
   TermTree(const Term& threshold, unsigned int dimension, unsigned int position);
   TermTree(unsigned int dimension, unsigned int position = 0);
-  ~TermTree();
+  virtual ~TermTree();
 
   void getTerms(TermList& terms) const;
 
@@ -118,6 +119,11 @@ public:
 		 const Node* node, unsigned int position) const;
 
   void lcm(Term& leastCommonMultiple) const;
+
+  void gcdHelper(Term& leastCommonMultiple,
+		 const Node* node, unsigned int position) const;
+
+  void gcd(Term& leastCommonMultiple) const;
 
   void setThreshold(const Term& term);
 

@@ -127,3 +127,18 @@ void TermList::print() const {
     cerr << *it << '\n';
   cerr << "------------\\\\" << endl;
 }
+
+#include "TermTree.h"
+void TreeTermList::minimize() {
+  TermTree tree(getVariableCount());
+
+  for (const_iterator it = begin(); it != end(); ++it) {
+    if (!tree.getDivisor(*it)) {
+      tree.removeDominators(*it);
+      tree.insert(*it);
+    }
+  }
+
+  clear();
+  tree.getTerms(*this);
+}

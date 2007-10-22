@@ -127,7 +127,8 @@ size_t BigIdeal::buildAndClear(TermTree*& tree,
 TermTranslator* BigIdeal::buildAndClear
 (const vector<BigIdeal*>& bigIdeals,
  vector<Ideal*>& ideals) {
-  ASSERT(!ideals.empty());
+  ASSERT(!bigIdeals.empty());
+  ideals.clear();
 
   size_t varCount = bigIdeals[0]->_names.getVarCount();
 
@@ -189,7 +190,7 @@ const VarNames& BigIdeal::getNames() const {
 }
 
 bool BigIdeal::sortUnique() {
-  sort(_terms.begin(), _terms.end(), bigTermCompare);
+  sort();
   vector<vector<mpz_class> >::iterator newEnd =
     unique(_terms.begin(), _terms.end());
   if (newEnd != _terms.end()) {
@@ -200,6 +201,10 @@ bool BigIdeal::sortUnique() {
     return false;
 }
 
+void BigIdeal::sort() {
+  std::sort(_terms.begin(), _terms.end(), bigTermCompare);
+}
+
 void BigIdeal::print(ostream& out) const {
   out << "BigTerm list of " << _terms.size() << " elements:" << endl;
   for (vector<vector<mpz_class> >::const_iterator it = _terms.begin(); it != _terms.end(); ++it) {
@@ -208,6 +213,20 @@ void BigIdeal::print(ostream& out) const {
     out << '\n';
   }
   out << "---- End of list." << endl;
+}
+
+const mpz_class& BigIdeal::getExponent(size_t term, size_t var) const {
+  ASSERT(term < _terms.size());
+  ASSERT(var < _names.getVarCount());
+
+  return _terms[term][var];
+}
+
+void BigIdeal::setExponent(size_t term, size_t var, const mpz_class& exp) {
+  ASSERT(term < _terms.size());
+  ASSERT(var < _names.getVarCount());
+
+  _terms[term][var] = exp;
 }
 
 bool BigIdeal::bigTermCompare(const vector<mpz_class>& a,
@@ -223,7 +242,7 @@ bool BigIdeal::bigTermCompare(const vector<mpz_class>& a,
 }
 
 void BigIdeal::makeGeneric() {
-  sort(_terms.begin(), _terms.end());
+  std::sort(_terms.begin(), _terms.end());
 
   for (unsigned int i = 0; i < _terms.size(); ++i)
     for (unsigned int j = 0; j < _terms[i].size(); ++j)
@@ -335,7 +354,7 @@ void BigIdeal::makeCompressionMap
     (vector<mpz_class>& exponents,
      map<mpz_class, Exponent>& compressionMap) {
   // Sort the exponents and remove duplicates.
-  sort(exponents.begin(), exponents.end());
+  std::sort(exponents.begin(), exponents.end());
   vector<mpz_class>::iterator uniqueEnd =
     unique(exponents.begin(), exponents.end());
   exponents.erase(uniqueEnd, exponents.end());

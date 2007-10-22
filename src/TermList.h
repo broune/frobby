@@ -44,9 +44,34 @@ public:
 
   void print() const;
 
-private:
+
   unsigned int _varCount;
   Cont _terms;
+};
+
+class TreeTermList : public TermList {
+ public:
+  TreeTermList(unsigned int varCount):
+    TermList(varCount) {}
+  virtual ~TreeTermList() {}
+
+  virtual Ideal* createMinimizedColon(const Term& by) const {
+    TermList* colon = new TreeTermList(getVariableCount());
+
+    colon->_terms.reserve(getGeneratorCount());
+
+    for (const_iterator it = begin(); it != end(); ++it) {
+      colon->_terms.push_back(Term(getVariableCount()));
+      colon->_terms.back().colon(*it, by);
+    }
+
+    colon->minimize();
+
+    return colon;
+  }    
+
+  virtual void minimize();
+  Ideal* clone() const {return new TreeTermList(*this);}
 };
 
 #endif
