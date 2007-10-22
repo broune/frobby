@@ -1,0 +1,4 @@
+vars a;[a^3];
+vars a;[a];
+vars a;[a^4];
+vars a;[a^2];

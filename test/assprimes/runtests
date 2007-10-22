@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for t in `ls *.gen -S -r`
+do
+  ./runtest $t $*
+  if [ $? != 0 ]
+  then
+    exit 1
+  fi
+done
