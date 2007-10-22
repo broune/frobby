@@ -11,6 +11,9 @@ class Facade {
   void beginAction(const char* message);
   void endAction();
 
+ protected:
+  bool isPrintingActions() const;
+
  private:
   Timer _timer;
   bool _printActions;

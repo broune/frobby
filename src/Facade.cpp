@@ -38,3 +38,7 @@ void Facade::endAction() {
 
   cerr << ' ' << _timer << endl;
 }
+
+bool Facade::isPrintingActions() const {
+  return _printActions;
+}

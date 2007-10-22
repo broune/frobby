@@ -96,13 +96,11 @@ doneDoingPartitionSet(int position,
        it1 != sols1->end(); ++it1) {
     for (TermCont::iterator it2 = sols2->begin();
 	 it2 != sols2->end(); ++it2) {
-      //	cout << "applying " << *it2 << " to " << *it1;
       for (int i = _dimension - 1; i >= 0; --i) {
 	if (compressor[i] == 0xFFFFFFFF)
 	  continue;
 	(*it1)[i] = (*it2)[compressor[i]];
       }
-      //	cout << " getting " << *it1 << endl;
 
       sols->push_back(*it1);
     }

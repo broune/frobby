@@ -1,9 +1,28 @@
 #!/bin/bash
 
+TIMEFORMAT=$' (%2lR real)'
+
+echo -n "decom (label): "
 cd test/decom
-./runtests
+time ./runtests -slice off
 cd ../..
 
+echo -n "decom (slice): "
+cd test/decom
+time ./runtests -slice on
+cd ../..
+
+echo -n "frob: "
 cd test/frob
-./runtests
+time ./runtests
+cd ../..
+
+echo -n "intersect: "
+cd test/intersect
+time ./runtests
+cd ../..
+
+echo -n "assprimes: "
+cd test/assprimes
+time ./runtests
 cd ../..

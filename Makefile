@@ -17,7 +17,9 @@ rawSources = main.cpp TermTree.cpp Action.cpp				\
   DecompositionStrategy.cpp StatisticsStrategy.cpp			\
   CompositeStrategy.cpp PrintProgressStrategy.cpp			\
   SkipRedundantStrategy.cpp LatticeFormatAction.cpp SliceAlgorithm.cpp	\
-  Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp
+  Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\
+  AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp uwe.cpp		\
+  PrimaryDecomFacade.cpp PrimaryDecomAction.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\

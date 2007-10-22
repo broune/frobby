@@ -19,6 +19,7 @@ void MonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
     readTerm(ideal, lexer);
   } while (lexer.match(','));
   lexer.expect(']');
+  lexer.expect(';');
 }
 
 void MonosIOHandler::startWritingIdeal(ostream& out,

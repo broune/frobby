@@ -10,6 +10,8 @@ class Ideal;
 
 class BigIdeal {
 public:
+
+
   BigIdeal();
   BigIdeal(const VarNames& names);
 
@@ -25,6 +27,9 @@ public:
   void minimize();
 
   mpz_class& getLastTermExponentRef(size_t var);
+
+  const mpz_class& getExponent(size_t term, size_t var) const;
+  void setExponent(size_t term, size_t var, const mpz_class& exp);
 
   bool operator==(const BigIdeal& b) const;
 
@@ -56,9 +61,10 @@ public:
   const VarNames& getNames() const;
 
   // Sorts and also removes duplicates. Returns true if there were
-  // duplicates.
-  // TODO: also sort variables and reorder exponents accordingly.
+  // duplicates. TODO: also sort variables and reorder exponents
+  // accordingly.
   bool sortUnique();
+  void sort();
 
   void print(ostream& out) const;
 
