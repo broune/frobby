@@ -14,7 +14,7 @@ public:
     clear();
   }
 
-  void clear() {
+  void clear() throw() {
     for (typename list<T*>::iterator it = _buffers.begin();
 	 it != _buffers.end(); ++it)
       doBuffer(*it);
@@ -24,7 +24,7 @@ public:
     _bufferEnd = 0;
   }
 
-  T* allocate() {
+  T* allocate() throw() {
     if (_buffer == _bufferEnd) {
       _buffer = doBuffer(0);
       _bufferEnd = _buffer + BufferSize;
@@ -34,7 +34,7 @@ public:
     return _buffer++;
   }
 
-  static void clearStatic() {
+  static void clearStatic() throw() {
     doBuffer((T*)1);
   }
 

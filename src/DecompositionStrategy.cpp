@@ -144,7 +144,7 @@ void DecompositionStrategy::flushIfPossible() {
 }
 
 void DecompositionStrategy::writeSolution(const Term& b) {
-  ASSERT(_dimension == b.getDimension());
+  ASSERT(_dimension == b.getVarCount());
 
   for (unsigned int var = 0; var < _dimension; ++var)
     _outputTmp[var] = (_translator->getExponentString(var, b[var] + 1));

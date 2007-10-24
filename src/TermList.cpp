@@ -1,15 +1,62 @@
 #include "stdinc.h"
 #include "TermList.h"
 
+#include <algorithm>
+#include <functional>
+
 TermList::TermList(unsigned int varCount):
-  _varCount(varCount) {
+  _varCount(varCount),
+  _allocator(varCount) {
 }
+
 TermList::TermList(const Ideal& ideal):
   _varCount(ideal.getVariableCount()),
-  _terms(ideal.begin(), ideal.end()) {
+  _allocator(ideal.getVariableCount()) {
+
+  _terms.reserve(ideal.getGeneratorCount());
+  insert(ideal);
+}
+
+TermList::TermList(const TermList& ideal):
+  Ideal(),
+  _varCount(ideal.getVariableCount()),
+  _allocator(ideal.getVariableCount()) {
+
+  _terms.reserve(ideal.getGeneratorCount());
+  insert(ideal);
+}
+
+bool TermList::filter(FilterFunction& function) {
+  bool removedAny = false;
+
+  for (size_t i = 0; i < _terms.size();) {
+    if (function(_terms[i])) {
+      ++i;
+      continue;
+    }
+
+    swap(_terms[i], _terms.back());
+    _terms.erase(_terms.end() - 1);
+
+    removedAny = true;
+  }
+  return removedAny;
 }
 
 void TermList::insert(const Term& term) {
+  ASSERT(term.getVarCount() == _varCount);
+  insert(term.begin());
+}
+
+void TermList::insert(const Ideal& ideal) {
+  Ideal::const_iterator stop = ideal.end();
+  for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it)
+    insert(*it);
+}
+
+void TermList::insert(const Exponent* exponents) {
+  Exponent* term = _allocator.allocate();
+  copy(exponents, exponents + _varCount, term);
   _terms.push_back(term);
 }
 
@@ -21,9 +68,15 @@ TermList::const_iterator TermList::end() const {
   return _terms.end();
 }
 
+void TermList::singleDegreeSort(size_t variable) {
+  std::sort(_terms.begin(), _terms.end(),
+	    Term::SingleDegreeComparator(variable, _varCount));
+}
+
 bool TermList::isIncomparable(const Term& term) const {
-  for (const_iterator it = begin(); it != end(); ++it)
-    if (it->divides(term) || term.divides(*it))
+  const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
+    if (term.dominates(*it) || term.divides(*it))
       return false;
   return true;
 }
@@ -45,34 +98,35 @@ bool TermList::isZeroIdeal() const {
 }
 
 void TermList::getLcm(Term& lcm) const {
-  lcm.setToZero();
-  for (const_iterator it = begin(); it != end(); ++it)
+  lcm.setToIdentity();
+  const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
     lcm.lcm(lcm, *it);
 }
 
 void TermList::getGcd(Term& gcd) const {
-  gcd.setToZero();
-  for (const_iterator it = begin(); it != end(); ++it)
+  if (_terms.empty()) {
+    gcd.setToIdentity();
+    return;
+  }
+
+  gcd = _terms[0];
+  const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
     gcd.gcd(gcd, *it);
 }
 
 bool TermList::contains(const Term& term) const {
-  for (const_iterator it = begin(); it != end(); ++it)
-    if (it->divides(term))
+  const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
+    if (term.dominates(*it))
       return true;
   return false;
 }
 
 Ideal* TermList::createMinimizedColon(const Term& by) const {
-  TermList* colon = new TermList(_varCount);
-
-  colon->_terms.reserve(getGeneratorCount());
-
-  for (const_iterator it = begin(); it != end(); ++it) {
-    colon->_terms.push_back(Term(_varCount));
-    colon->_terms.back().colon(*it, by);
-  }
-
+  Ideal* colon = clone();
+  colon->colon(by);
   colon->minimize();
 
   return colon;
@@ -84,61 +138,82 @@ Ideal* TermList::clone() const {
 
 void TermList::clear() {
   _terms.clear();
+  _allocator.clear();
 }
 
 void TermList::colon(const Term& by) {
-  for (iterator it = _terms.begin(); it != end(); ++it)
-    it->colon(*it, by);
+  const_iterator stop = end();
+  for (iterator it = _terms.begin(); it != stop; ++it)
+    ::colon(*it, *it, by.begin(), _varCount);
+}
+
+bool TermList::removeStrictMultiples(const Term& termParam) {
+  bool removedAny = false;
+  
+  for (size_t i = 0; i < _terms.size();) {
+    if (!termParam.strictlyDivides(_terms[i])) {
+      ++i;
+      continue;
+    }
+    
+    swap(_terms[i], _terms.back());
+    _terms.erase(_terms.end() - 1);
+    
+    removedAny = true;
+  }
+  return removedAny;
+}
+
+void TermList::print() const {
+  cerr << "//------------ TermList:\n";
+  for (const_iterator it = begin(); it != end(); ++it) {
+    Term term(*it, _varCount);
+    cerr << term << '\n';
+  }
+  cerr << "------------\\\\" << endl;
 }
 
 void TermList::minimize() {
-  for (iterator it1 = _terms.begin(); it1 != end();) {
+  for (size_t i = 0; i < _terms.size();) {
     bool remove = false;
-    for (const_iterator it2 = begin(); it2 != end(); ++it2) {
-      if (it1 == it2)
+    
+    size_t idealSize = _terms.size();
+    for (size_t j = 0; j < idealSize; ++j) {
+      if (i == j)
 	continue;
-      if (it2->divides(*it1)) {
+      
+      if (::divides(_terms[j], _terms[i], _varCount)) {
 	remove = true;
 	break;
       }
     }
     
     if (remove) {
-      swap(*it1, _terms.back());
+      swap(_terms[i], _terms.back());
       _terms.erase(_terms.end() - 1);
     } else
-      ++it1;
+      ++i;
   }
 }
 
-void TermList::removeStrictMultiples(const Term& term) {
-  for (iterator it1 = _terms.begin(); it1 != end();) {
-    if (term.strictlyDivides(*it1)) {
-      swap(*it1, _terms.back());
-      _terms.erase(_terms.end() - 1);
-    } else
-      ++it1;
-  }  
-}
 
-void TermList::print() const {
-  cerr << "//------------ TermList:\n";
-  for (const_iterator it = begin(); it != end(); ++it)
-    cerr << *it << '\n';
-  cerr << "------------\\\\" << endl;
-}
-
+/*
 #include "TermTree.h"
-void TreeTermList::minimize() {
+void TermList::minimize() {
   TermTree tree(getVariableCount());
+  
+  Term term(getVariableCount());
 
-  for (const_iterator it = begin(); it != end(); ++it) {
-    if (!tree.getDivisor(*it)) {
-      tree.removeDominators(*it);
-      tree.insert(*it);
+  const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it) {
+    term = *it;
+    if (!tree.getDivisor(term)) {
+      tree.removeDominators(term);
+      tree.insert(term);
     }
   }
-
+  
   clear();
   tree.getTerms(*this);
 }
+*/

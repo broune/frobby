@@ -4,11 +4,20 @@
 #include "Term.h"
 
 class Ideal {
-  typedef vector<Term> Cont;
+  typedef vector<Exponent*> Cont;
 
 public:
   typedef Cont::iterator iterator;
   typedef Cont::const_iterator const_iterator;
+
+  class FilterFunction {
+  public:
+    virtual ~FilterFunction() {}
+    virtual bool operator()(const Exponent* term) = 0;
+  };
+
+  // Returns true if any terms were removed.
+  virtual bool filter(FilterFunction& function) = 0;
 
   virtual ~Ideal();
 
@@ -16,6 +25,7 @@ public:
 
   virtual const_iterator begin() const = 0;
   virtual const_iterator end() const = 0;
+  virtual void singleDegreeSort(size_t variable) = 0;
 
   virtual bool isIncomparable(const Term& term) const = 0;
 
@@ -35,7 +45,12 @@ public:
   virtual Ideal* clone() const = 0;
   virtual void clear() = 0;
 
-  virtual void removeStrictMultiples(const Term& term) = 0;
+  // Returns true if any were removed.
+  virtual bool removeStrictMultiples(const Term& term) = 0;
+  bool removeStrictMultiples(const Exponent* exponents) {
+    Term term(exponents, getVariableCount());
+    return removeStrictMultiples(term);
+  }
 
   virtual void print() const = 0;
 };

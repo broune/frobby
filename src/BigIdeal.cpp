@@ -317,7 +317,7 @@ BigIdeal::buildIdeal(BigIdeal* ideal,
 	continue;
 	
       Exponent power = decompressionMaps[variable].size() - 1;
-      term.setToZero();
+      term.setToIdentity();
       term[variable] = power;
       tree->insert(term);
     }

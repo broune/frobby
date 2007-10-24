@@ -122,7 +122,6 @@ TermTree& TermTree::operator=(const TermTree& tree) {
   ASSERT(_dimension == tree._dimension);
   clear();
 
-  _term.resize(tree._dimension);
   _position = tree._position;
   _threshold = tree._threshold;
 
@@ -269,7 +268,7 @@ bool TermTree::TreeWalker::preorderNext() {
 }
 
 void TermTree::TreeWalker::getTerm(Term& term) const {
-  int base = term.getDimension() - _maxLevel - 1;
+  int base = term.getVarCount() - _maxLevel - 1;
   for (unsigned int l = 1; l <= _level; ++l)
     term[base + l] = _stack[l]->_exponent;
 }
@@ -359,19 +358,7 @@ void  TermTree::insert(const TermTree& tree) {
 }
 
 void TermTree::insert(const Term& term) {
-#ifdef PROFILE
-  if (_position == 234234) {
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-    combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();combatInlining();
-  }
-#endif
-
+  PROFILE_NO_INLINE;
   insert(_root, term, _position);
 }
 
@@ -534,7 +521,7 @@ void TermTree::lcmHelper(Term& leastCommonMultiple,
 }
 
 void TermTree::lcm(Term& leastCommonMultiple) const {
-  leastCommonMultiple.setToZero();
+  leastCommonMultiple.setToIdentity();
   lcmHelper(leastCommonMultiple, _root, _position);
 }
 
