@@ -23,7 +23,7 @@ rawSources = main.cpp TermTree.cpp Action.cpp				\
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\
-         -Wno-unused-parameter -Werror
+         -Wno-unused-parameter -Werror 
 
 ifndef MODE
  MODE=release
@@ -60,7 +60,7 @@ program = frobby.exe
 
 # ***** Compilation
 
-.PHONY: all depend clean
+.PHONY: all depend clean bin/$(program)
 all: bin/$(program) $(outdir)$(program)
 ifeq ($(MODE), profile)
 	./bench

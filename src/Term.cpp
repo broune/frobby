@@ -1,153 +1,57 @@
 #include "stdinc.h"
 #include "Term.h"
 
-Term::Term(const Term& term):
-  _dimension(term._dimension) {
-  _exponents = new Exponent[_dimension];
-  copy(term._exponents,
-       term._exponents + _dimension,
-       _exponents);
-}
+const unsigned int PoolCount = 50;
+const unsigned int ObjectPoolSize = 1000;
 
-Term::Term(unsigned int dimension):
-  _dimension(dimension) {
-  if (dimension > 0) {
-    _exponents = new Exponent[_dimension];
-    setToZero();
-  } else
-    _exponents = 0;
-}
+struct ObjectPool {
+  ObjectPool(): objectsStored(0) {}
 
-Term::Term():
-  _exponents(0),
-  _dimension(0) {
-}
-    
-Term::~Term() {
-  delete[] _exponents;
-}
-
-const Exponent* Term::begin(int position) const {
-  ASSERT(position <= (int)_dimension);
-  return _exponents + position;
-}
-
-const Exponent* Term::end() const {
-  return _exponents + _dimension;
-}
-
-unsigned int Term::getDimension() const {
-  return _dimension;
-}
-
-Exponent Term::operator[](int position) const {
-  return _exponents[position];
-}
-
-Exponent& Term::operator[](int position) {
-  return _exponents[position];
-}
-
-void Term::setExponent(int position, Exponent value) const {
-  _exponents[position] = value;
-}
-
-bool Term::operator==(const Term& term) const {
-  for (unsigned int i = 0; i < getDimension(); ++i)
-    if ((*this)[i] != term[i])
-      return false;
-  return true;
-}
-
-Term& Term::operator=(const Term& term) {
-  copy(term._exponents,
-       term._exponents + _dimension,
-       _exponents);
-  
-  return *this;
-}
-
-bool Term::divides(const Term& term) const {
-  for (unsigned int i = 0; i < _dimension; ++i)
-    if ((*this)[i] > term[i])
-      return false;
-  return true;
-}
-
-bool Term::strictlyDivides(const Term& term) const {
-  for (unsigned int i = 0; i < _dimension; ++i)
-    if ((*this)[i] >= term[i] && (*this)[i] > 0)
-      return false;
-  return true;
-}
-
-void Term::lcm(const Term& term1,
-	       const Term& term2, int position) {
-  for (unsigned int i = position; i < _dimension; ++i) {
-    Exponent e1 = term1[i];
-    Exponent e2 = term2[i];
-    setExponent(i, e1 > e2 ? e1 : e2);
+  bool empty() const {
+    return objectsStored == 0;
   }
-}
 
-void Term::gcd(const Term& term1,
-	       const Term& term2, int position) {
-  for (unsigned int i = position; i < _dimension; ++i) {
-    Exponent e1 = term1[i];
-    Exponent e2 = term2[i];
-    setExponent(i, e1 < e2 ? e1 : e2);
+  bool canStoreMore() const {
+    return objectsStored < ObjectPoolSize;
   }
-}
 
-void Term::resize(unsigned int dimension) {
-  ASSERT(dimension > 0);
-  
-  delete[] _exponents;
-  _dimension = dimension;
-  if (dimension > 0)
-    _exponents = new Exponent[dimension];
+  Exponent* removeObject() {
+    ASSERT(!empty());
+    --objectsStored;
+    return objects[objectsStored];
+  }
+
+  void addObject(Exponent* object) {
+    ASSERT(canStoreMore());
+
+    if (objects == 0)
+      objects = new Exponent*[ObjectPoolSize];
+    objects[objectsStored] = object;
+    ++objectsStored;
+  }
+
+  unsigned int objectsStored;
+  Exponent** objects;
+} pools[PoolCount];
+
+Exponent* Term::allocate(size_t size) {
+  ASSERT(size > 0);
+
+  if (size < PoolCount && !pools[size].empty())
+    return pools[size].removeObject();
   else
-    _exponents = 0;
+    return new Exponent[size];
+  
 }
 
-bool Term::operator<(const Term& term) const {
-  ASSERT(_dimension == term._dimension);
-  for (unsigned int i = 0; i < _dimension; ++i) {
-    if ((*this)[i] < term[i])
-      return true;
-    if ((*this)[i] > term[i])
-	return false;
-  }
-  return false;
-}
+void Term::deallocate(Exponent* p, size_t size) {
+  if (p == 0)
+    return;
 
-void Term::product(const Term& a, const Term& b) {
-  ASSERT(_dimension == a._dimension);
-  ASSERT(a._dimension == b._dimension);
+  ASSERT(size > 0);
 
-  for (unsigned int i = 0; i < _dimension; ++i)
-    _exponents[i] = a[i] + b[i];
-}
-
-void Term::setToZero() {
-  fill_n(_exponents, _dimension, 0);
-}
-
-bool Term::isZero() const {
-  for (size_t i = 0; i < _dimension; ++i)
-    if (_exponents[i] != 0)
-      return false;
-  return true;
-}
-
-void Term::colon(const Term& a, const Term& b) {
-  ASSERT(_dimension == a._dimension);
-  ASSERT(a._dimension == b._dimension);
-
-  for (size_t i = 0; i < _dimension; ++i) {
-    if (a[i] > b[i])
-      _exponents[i] = a[i] - b[i];
-    else
-      _exponents[i] = 0;
-  }
+  if (size < PoolCount && pools[size].canStoreMore())
+    pools[size].addObject(p);
+  else
+    delete[] p;
 }

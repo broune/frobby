@@ -4,8 +4,59 @@
 #include "Term.h"
 #include "Ideal.h"
 
+class ExponentAllocator {
+ public:
+  ExponentAllocator(size_t varCount):
+    _varCount(varCount),
+    _chunkSize(varCount * 100),
+    _chunk(0),
+    _chunkIterator(0),
+    _chunkEnd(0) {
+    ASSERT(varCount >= 1);
+  }
+
+  ~ExponentAllocator() {
+    clear();
+  }
+
+  Exponent* allocate() {
+    if (_chunkIterator == _chunkEnd) {
+      if (_chunk != 0)
+	_chunks.push_back(_chunk);
+      _chunk = new Exponent[_chunkSize];
+      _chunkIterator = _chunk;
+      _chunkEnd = _chunk + _chunkSize;
+    }
+
+    Exponent* term = _chunkIterator;
+    _chunkIterator += _varCount;
+    return term;
+  }
+
+  void clear() {
+    delete[] _chunk;
+    _chunk = 0;
+    _chunkIterator = 0;
+    _chunkEnd = 0;
+
+    for (size_t i = 0; i < _chunks.size(); ++i)
+      delete[] _chunks[i];
+    _chunks.clear();
+  }
+
+ private:
+  size_t _varCount;
+  size_t _chunkSize;
+
+  Exponent* _chunk;
+  Exponent* _chunkIterator;
+  Exponent* _chunkEnd;
+
+  vector<Exponent*> _chunks;
+};
+
 class TermList : public Ideal {
-  typedef vector<Term> Cont;
+  typedef vector<Exponent*> Cont;
 
 public:
   typedef Cont::iterator iterator;
@@ -13,12 +64,18 @@ public:
 
   TermList(unsigned int varCount);
   TermList(const Ideal& ideal);
+  TermList(const TermList& ideal);
+
+  virtual bool filter(FilterFunction& function);
 
   void insert(const Term& term);
+  void insert(const Exponent* exponents);
+  void insert(const Ideal& ideal);
 
   const_iterator begin() const;
-
   const_iterator end() const;
+
+  void singleDegreeSort(size_t variable);
 
   bool isIncomparable(const Term& term) const;
 
@@ -40,38 +97,14 @@ public:
   Ideal* clone() const;
   void clear();
 
-  void removeStrictMultiples(const Term& term);
+  bool removeStrictMultiples(const Term& term);
 
   void print() const;
 
-
-  unsigned int _varCount;
-  Cont _terms;
-};
-
-class TreeTermList : public TermList {
- public:
-  TreeTermList(unsigned int varCount):
-    TermList(varCount) {}
-  virtual ~TreeTermList() {}
-
-  virtual Ideal* createMinimizedColon(const Term& by) const {
-    TermList* colon = new TreeTermList(getVariableCount());
-
-    colon->_terms.reserve(getGeneratorCount());
-
-    for (const_iterator it = begin(); it != end(); ++it) {
-      colon->_terms.push_back(Term(getVariableCount()));
-      colon->_terms.back().colon(*it, by);
-    }
-
-    colon->minimize();
-
-    return colon;
-  }    
-
-  virtual void minimize();
-  Ideal* clone() const {return new TreeTermList(*this);}
+private:
+  size_t _varCount;
+  vector<Exponent*> _terms;
+  ExponentAllocator _allocator;
 };
 
 #endif

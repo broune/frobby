@@ -48,7 +48,7 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
   ideal.buildAndClear(tree, translator, false);
 
   if (_parameters.getUseSlice()) {
-    TreeTermList terms(tree->getDimension());
+    TermList terms(tree->getDimension());
     tree->getTerms(terms);
     SliceAlgorithm alg(terms, ideal.getNames(), translator, out);
   } else {

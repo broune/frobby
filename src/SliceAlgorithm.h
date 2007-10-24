@@ -30,7 +30,12 @@ class SliceAlgorithm {
 		Term& pivot);
 
   void simplify(Ideal& ideal,
+		Ideal& subtract,
 		Term& multiply) const;
+
+  void labelSplit(const Ideal& ideal,
+		  const Ideal& subtract,
+		  const Term& multiply);
 
   IOHandler* _ioHandler;
   VarNames _names;

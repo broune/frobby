@@ -44,7 +44,7 @@ void PrintDebugStrategy::endingCall(const Term& b,
 
 void PrintDebugStrategy::foundSolution(const Term& b,
 				       bool startingPartition) {
-  for (unsigned int i = 0; i < b.getDimension(); ++i)
+  for (unsigned int i = 0; i < b.getVarCount(); ++i)
     cerr << '*';
   cerr << " Found solution " << b << endl;
 }

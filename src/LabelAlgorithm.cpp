@@ -143,7 +143,7 @@ recurse(const Term& b, const TermTree& tree, bool startingPartition) {
     // Does not change entries prior to position, so we can keep
     // using newB in later iterations without resetting it to b.
     newB.lcm(b, tmpTerm, position);
-    newB.setExponent(position, tmpTerm[position] - 1);
+    newB[position] = tmpTerm[position] - 1;
       
     ++treeIt;
     bool sameExponentAsNext = false;
@@ -184,10 +184,8 @@ void LabelAlgorithm::baseCase(const Term& b, const TermTree& tree) {
     ASSERT(treeNextIt.getExponent(position) > 0);
     ASSERT(treeIt.getExponent(position + 1) > 0);
 
-    newB.setExponent(position,
-		     treeNextIt.getExponent(position) - 1);
-    newB.setExponent(position + 1,
-		     treeIt.getExponent(position + 1) - 1);
+    newB[position] = treeNextIt.getExponent(position) - 1;
+    newB[position + 1] = treeIt.getExponent(position + 1) - 1;
 
     _strategy->foundSolution(newB, false);
 	
