@@ -328,6 +328,11 @@ public:
   void deallocate(Exponent* chunk) {
     _chunks.push_back(chunk);
   }
+  
+  ~ChunkPool() {
+    for (size_t i = 0; i < _chunks.size(); ++i)
+      delete[] _chunks[i];
+  }
 
 private:
   vector<Exponent*> _chunks;
