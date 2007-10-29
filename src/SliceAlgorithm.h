@@ -28,6 +28,11 @@ class SliceAlgorithm {
  private:
   class Slice {
   public:
+    void clear() {
+      _subtract = 0;
+      _ideal = 0;
+    }
+
     Slice(Ideal* ideal, Ideal* subtract,
 	  size_t varCount);
     Slice(Ideal* ideal, Ideal* subtract,
