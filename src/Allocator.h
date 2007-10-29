@@ -1,9 +1,10 @@
 #ifndef ALLOCATOR_GUARD
 #define ALLOCATOR_GUARD
 
+// TODO: this class needs an overhaul.
 template<class T>
 class Allocator {
-public:
+ public:
   Allocator():
     _buffers(),
     _buffer(0),
@@ -38,18 +39,36 @@ public:
     doBuffer((T*)1);
   }
 
-private:
+ private:
   static const int BufferSize = 1000;
+
+  // We declare a single static variable of this type inside
+  // doBuffer. This will cause the destructor to be called on program
+  // exit, thus clearing the buffers, which we want to do to avoid
+  // spurious reports from memory leak detectors. We have to put the
+  // buffer object inside ClearBuffers to make sure that the buffers
+  // object does not get destructted before ClearBuffers get destructed,
+  // which could otherwise happen if we had simply declared buffers as a
+  // static local variable inside doBuffer.
+  template<class S>
+    class ClearBuffers {
+    public:
+    ~ClearBuffers() {clearStatic();}
+    vector<S*> buffers;
+  };
+
 
   // A hack to get static data working without problems.
   static T* doBuffer(T* buffer) {
-    static vector<T*> buffers;
+    static ClearBuffers<T> clearBuffers;
+    vector<T*>& buffers = clearBuffers.buffers;
 
     if (buffer == (T*)1) {
       // TODO: check if 1 is really invalid as a pointer.
       for (typename vector<T*>::iterator it = buffers.begin();
-	   it != buffers.end(); ++it)
+	   it != buffers.end(); ++it) {
 	delete[] *it;
+      }
       buffers.clear();
       return 0;
     }
