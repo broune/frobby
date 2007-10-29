@@ -131,7 +131,7 @@ Ideal* TermList::createMinimizedColon(const Term& by) const {
 }
 
 void TermList::colonReminimize(const Term& by) {
-  if (by.getSizeOfSupport() == 1) {
+  if (by.getSizeOfSupport() == 1 && false) {
     size_t var = by.getFirstNonZeroExponent();
     colonReminimize(var, by[var]);
   } else {
@@ -234,8 +234,11 @@ void TermList::print() const {
   }
   cerr << "------------\\\\" << endl;
 }
-
+//*
 void TermList::minimize() {
+  if (_terms.empty())
+    return;
+
   std::sort(_terms.begin(), _terms.end(),
 	    Term::LexComparator(_varCount));
 
@@ -261,7 +264,7 @@ void TermList::minimize() {
 
   _terms.erase(_terms.begin() + newEnd, _terms.end());
 }
-
+//*/
 
 /*
 void TermList::minimize() {
@@ -286,7 +289,7 @@ void TermList::minimize() {
       ++i;
   }
 }
-*/
+//*/
 
 /*
 #include "TermTree.h"
@@ -307,7 +310,7 @@ void TermList::minimize() {
   clear();
   tree.getTerms(*this);
 }
-*/
+//*/
 
 const int ExponentsPerChunk = 100;
 const int MinTermsPerChunk = 2;
@@ -393,4 +396,43 @@ void TermList::ExponentAllocator::reset(size_t newVarCount) {
 
 bool TermList::ExponentAllocator::useSingleChunking() const {
   return _varCount > ExponentsPerChunk / MinTermsPerChunk;
+}
+
+// Making it into an object ensures proper destruction and hence
+// deallocation. This prevents spurious reports from memory leak
+// detectors.
+class TermListCache {
+public:
+  ~TermListCache() {
+    for (size_t i = 0; i < _cache.size(); ++i)
+      free(_cache[i]);
+  }
+
+  void* allocate(size_t size) {
+    ASSERT(size == sizeof(TermList));
+
+    if (_cache.empty())
+      return malloc(size);
+
+    void* p = _cache.back();
+    _cache.pop_back();
+    return p;
+  }
+
+  void deallocate(void* p, size_t size) {
+    ASSERT(size == sizeof(TermList));
+
+    _cache.push_back(p);
+  }
+
+  private:
+    vector<void*> _cache;
+} termListCache;
+
+void* TermList::operator new(size_t size) {
+  return termListCache.allocate(size);
+}
+
+void TermList::operator delete(void* p, size_t size) {
+  termListCache.deallocate(p, size);
 }

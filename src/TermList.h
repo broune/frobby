@@ -53,6 +53,9 @@ class TermList : public Ideal {
 
   void print() const;
 
+  static void* operator new(size_t size);
+  void operator delete(void* p, size_t size);
+ 
  private:
   class ExponentAllocator {
   public:
