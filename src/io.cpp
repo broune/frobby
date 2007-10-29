@@ -66,9 +66,18 @@ void IOHandler::readVarPower(int& var, mpz_class& power,
 
 const IOHandler::IOHandlerContainer& IOHandler::getIOHandlers() {
   if (_ioHandlers.empty()) {
-    _ioHandlers.push_back(new MonosIOHandler());
-    _ioHandlers.push_back(new NewMonosIOHandler());
-    _ioHandlers.push_back(new Macaulay2IOHandler());
+    // This method uses static variables instead of new to avoid
+    // spurious reports from memory leak detectors.
+
+    static MonosIOHandler monos;
+    _ioHandlers.push_back(&monos);
+
+    static NewMonosIOHandler newMonos;
+    _ioHandlers.push_back(&newMonos);
+
+    static Macaulay2IOHandler m2;
+    _ioHandlers.push_back(&m2);
+
     // We need a handler for 4ti2
   }
 
