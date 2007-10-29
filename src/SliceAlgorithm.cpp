@@ -97,7 +97,11 @@ SliceAlgorithm::ProjDecom::~ProjDecom() {
 	delete decom;
 }
 
+// Requires slice.getIdeal() to be minimized.
 bool SliceAlgorithm::independenceSplit(Slice& slice) {
+  if (slice.getVarCount() <= 3)
+    return false;
+
   // Compute the partition
   Partition partition(slice.getVarCount());
 
@@ -112,17 +116,45 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
 
   // Check if there are any independent subsets of variables.
   size_t setCount = partition.getSetCount();
-  if (setCount <= 1)
+  if (setCount == 1)
     return false;
 
-  vector<ProjDecom> projDecoms(setCount);
+  size_t at1 = 0;
+  size_t over1 = 0;
+  for (size_t i = 0; i < setCount; ++i) {
+    size_t size = partition.getSetSize(i);
+    if (size == 1)
+      ++at1;
+    else
+      ++over1;
+  }
+
+  if (at1 <= 2 && over1 <= 1 && slice.getIdeal()->getGeneratorCount() < 15)
+    return false;
+  
+  vector<Exponent> decompressor;
+  vector<ProjDecom> projDecoms;
+  projDecoms.reserve(setCount);
+
+  Term term(slice.getVarCount());
+  if (at1 > 0) {
+    // This relies on slice.getIdeal() to be minimized.
+    term = slice.getLcm();
+    for (size_t i = 0; i < slice.getVarCount(); ++i)
+      if (term[i] > 0)
+	term[i] = slice.getMultiply()[i] + (term[i] - 1);
+  }
 
   for (size_t i = 0; i < setCount; ++i) {
-    vector<Exponent> decompressor;
-    vector<Exponent>& compressor = projDecoms[i].compressor;
+    size_t projVarCount = partition.getSetSize(i);
+    if (projVarCount == 1)
+      continue;
+
+    projDecoms.resize(projDecoms.size() + 1);
+    ProjDecom& projDecom = projDecoms.back();
+    vector<Exponent>& compressor = projDecom.compressor;
 
     partition.getSetTranslators(i, compressor, decompressor);
-    size_t projVarCount = partition.getSetSize(i);
 
     Slice projSlice(slice.getIdeal()->createNew(projVarCount),
 	       slice.getSubtract()->createNew(projVarCount),
@@ -139,16 +171,15 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
     }
 
     DecomConsumer* oldConsumer = _decomConsumer;
-    projDecoms[i].decom = slice.getIdeal()->createNew(projVarCount);
-    _decomConsumer = new DecomStorer(projDecoms[i].decom);
+    projDecom.decom = slice.getIdeal()->createNew(projVarCount);
+    _decomConsumer = new DecomStorer(projDecom.decom);
     
-    content(projSlice);
+    content(projSlice, true);
     
     delete _decomConsumer;
     _decomConsumer = oldConsumer;
   }
 
-  Term term(slice.getVarCount());
   inverseDecomProject(projDecoms, partition, 0, term);
 
   return true;
@@ -163,7 +194,6 @@ void SliceAlgorithm::inverseDecomProject(const vector<ProjDecom>& projs,
     _decomConsumer->consume(term);
     return;
   }
-
   
   Ideal::const_iterator stop = projs[proj].decom->end();
   for (Ideal::const_iterator it = projs[proj].decom->begin();
@@ -218,6 +248,7 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
     Slice inner(slice.getIdeal()->createMinimizedColon(pivot),
 		slice.getSubtract()->createMinimizedColon(pivot),
 		slice.getMultiply(), pivot);
+    inner.normalize();
     content(inner);
   }
 
@@ -225,14 +256,18 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
     Slice outer(slice.getIdeal()->clone(),
 		slice.getSubtract()->clone(),
 		slice.getMultiply());
-    outer.addToSubtract(pivot);
+
+    outer.getIdeal()->removeStrictMultiples(pivot);
+    if (pivot.getSizeOfSupport() > 1)
+      outer.getSubtract()->insert(pivot);
     
     content(outer);
   }
 }
 
-void SliceAlgorithm::content(Slice& slice) {
-  slice.simplify();
+void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
+  if (!simplifiedAndDependent)
+    slice.simplify();
 
   if (calls.size() == level)
     calls.push_back(0);
@@ -240,8 +275,8 @@ void SliceAlgorithm::content(Slice& slice) {
   ++level;
 
   if (!slice.baseCase(_decomConsumer)) {
-    if (!independenceSplit(slice)) {
-      if (false)
+    if (simplifiedAndDependent || !independenceSplit(slice)) {
+      if (true)
 	labelSplit(slice);
       else
 	pivotSplit(slice);
@@ -280,6 +315,19 @@ private:
   Term _irrIdeal;
 };
 
+class PruneSubtractFilter : public Ideal::FilterFunction {
+public:
+  PruneSubtractFilter(const Term& lcm):
+    _lcm(lcm) {}
+
+  virtual bool operator()(const Exponent* term) {
+    return ::strictlyDivides(term, _lcm, _lcm.getVarCount());
+  }
+
+private:
+  const Term& _lcm;
+};
+
 class DoubleLcmFilter : public Ideal::FilterFunction {
 public:
   DoubleLcmFilter(size_t varCount):
@@ -308,11 +356,42 @@ private:
   size_t _varCount;
 };
 
+bool SliceAlgorithm::Slice::twoVarBaseCase(SliceAlgorithm::DecomConsumer* consumer) {
+  if (_varCount != 2)
+    return false;
+
+  _ideal->singleDegreeSort(0);
+
+  static Term term(2);
+
+  Ideal::const_iterator stop = _ideal->end();
+  Ideal::const_iterator it = _ideal->begin();
+  ASSERT(it != stop);
+
+  while (true) {
+    term[1] = _multiply[1] + (*it)[1] - 1;
+    
+    ++it;
+    if (it == stop)
+      break;
+
+    term[0] = _multiply[0] + (*it)[0] - 1;
+
+    // TODO: take subtract into account
+    consumer->consume(term);
+  }
+
+  return true;
+}
+
 bool SliceAlgorithm::Slice::baseCase
-(SliceAlgorithm::DecomConsumer* consumer) const {
+(SliceAlgorithm::DecomConsumer* consumer) {
   // It is assumed that the slice is normalized.
 
-  const Term& lcm = getLcm(); // recalculate
+  if (twoVarBaseCase(consumer))
+    return true;
+
+  const Term& lcm = getLcm();
 
   // Check that each variable appears in some minimal generator.
   if (lcm.getSizeOfSupport() != _varCount)
@@ -341,11 +420,12 @@ bool SliceAlgorithm::Slice::baseCase
 }
 
 void SliceAlgorithm::Slice::simplify() {
+  ASSERT(!normalize());
+
   Term tmp(_varCount);
   Term lcm(_varCount);
   Term gcd(_varCount);
 
-  normalize();
   filterDoubleLcm();
 
  beginning:
@@ -397,39 +477,18 @@ void SliceAlgorithm::Slice::simplify() {
 }
 
 bool SliceAlgorithm::Slice::normalize() {
-  if (_varCount == 0)
+  if (_subtract->getGeneratorCount() == 0)
     return false;
 
-  bool irreducible = true;
+  bool removedAny = false;
+  for (Ideal::const_iterator it = _subtract->begin(); it != _subtract->end(); ++it)
+    if (_ideal->removeStrictMultiples(*it))
+      removedAny = true;
 
-  IrreducibleNormalizeFilter filter(_varCount);
-  Term& t = filter.irrIdeal();
+  PruneSubtractFilter pruneFilter(getLcm());
+  _subtract->filter(pruneFilter);
 
-  for (size_t i = 0; i < _varCount; ++i)
-    t[i] = numeric_limits<Exponent>::max();
-
-  Ideal::const_iterator stop = _subtract->end();
-  for (Ideal::const_iterator it = _subtract->begin(); it != stop; ++it) {
-    if (::getSizeOfSupport(*it, _varCount) != 1) {
-      irreducible = false;
-      break;
-    }
-
-    size_t var = ::getFirstNonZeroExponent(*it, _varCount);
-    if ((*it)[var] < t[var])
-      t[var] = (*it)[var];
-  }
-
-  if (irreducible)
-    return _ideal->filter(filter);
-  else {
-    bool removedAny = false;
-    for (Ideal::const_iterator it = _subtract->begin();
-	 it != _subtract->end(); ++it)
-      if (_ideal->removeStrictMultiples(*it))
-	removedAny = true;
-    return removedAny;
-  }
+  return removedAny;
 }
 
 bool SliceAlgorithm::Slice::filterDoubleLcm() {
@@ -488,11 +547,6 @@ SliceAlgorithm::Slice::Slice(Ideal* ideal,
 SliceAlgorithm::Slice::~Slice() {
   delete _ideal;
   delete _subtract;
-}
-
-void SliceAlgorithm::Slice::addToSubtract(const Term& term) {
-  _subtract->insert(term);
-  _ideal->removeStrictMultiples(term);
 }
 
 const Term& SliceAlgorithm::Slice::getLcm() const {

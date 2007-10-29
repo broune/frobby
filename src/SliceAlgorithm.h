@@ -41,7 +41,7 @@ class SliceAlgorithm {
     bool filterDoubleLcm();
     void simplify();
 
-    bool baseCase(DecomConsumer* consumer) const;
+    bool baseCase(DecomConsumer* consumer);
 
     const Term& getLcm() const;
 
@@ -59,6 +59,8 @@ class SliceAlgorithm {
     void print() const;
 
   private:
+    bool twoVarBaseCase(DecomConsumer* consumer);
+
     const size_t _varCount;
     Term _multiply;
     mutable Term _lcm;
@@ -67,7 +69,7 @@ class SliceAlgorithm {
     Ideal* _subtract;
   };
 
-  void content(Slice& slice);
+  void content(Slice& slice, bool simplifiedAndDependent = false);
   void labelSplit(Slice& slice);
   void pivotSplit(Slice& slice);
   bool independenceSplit(Slice& slice);

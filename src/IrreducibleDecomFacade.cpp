@@ -133,9 +133,6 @@ runAlgorithm(TermTree* tree, TermTranslator* translator, Strategy* strategy) {
   for (vector<Strategy*>::iterator it = strategies.begin();
        it != strategies.end(); ++it)
     delete *it;
-  
-  delete tree;
-  delete translator;
 }
 
 Strategy* IrreducibleDecomFacade::

@@ -21,7 +21,7 @@ public:
 
   virtual ~Ideal();
 
-  virtual void insert(const Term& term) = 0;
+  virtual void insert(const Exponent* term) = 0;
 
   virtual const_iterator begin() const = 0;
   virtual const_iterator end() const = 0;
