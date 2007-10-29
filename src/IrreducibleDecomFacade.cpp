@@ -43,14 +43,17 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
     return;
   }
 
-  TermTree* tree;
-  TermTranslator* translator;
+  TermTree* tree = 0;
+  TermTranslator* translator = 0;
   ideal.buildAndClear(tree, translator, false);
 
   if (_parameters.getUseSlice()) {
     TermList terms(tree->getDimension());
     tree->getTerms(terms);
+    delete tree;
+    
     SliceAlgorithm alg(terms, ideal.getNames(), translator, out);
+    delete translator;
   } else {
     Strategy* strategy;
     if (_parameters.getDoBenchmark())
@@ -59,6 +62,9 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
       strategy = new DecompositionStrategy
 	(&out, ideal.getNames(), ideal.getNames().getVarCount(), translator);
     runAlgorithm(tree, translator, strategy);
+
+    delete tree;
+    delete translator;
   }
 
   endAction();
@@ -119,15 +125,15 @@ runAlgorithm(TermTree* tree, TermTranslator* translator, Strategy* strategy) {
       new SkipRedundantStrategy(strategy, tree->getDimension());
     strategies.push_back(strategy);
   }
-
+  
   // Run algorithm
   LabelAlgorithm algo(strategy, tree, _parameters.getUsePartition());
-
+  
   // Clean up afterwards
   for (vector<Strategy*>::iterator it = strategies.begin();
        it != strategies.end(); ++it)
     delete *it;
-
+  
   delete tree;
   delete translator;
 }
