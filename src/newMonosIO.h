@@ -2,7 +2,7 @@
 #define NEW_MONOS_IO
 
 #include "monosIO.h"
-#include "Bigideal.h"
+#include "BigIdeal.h"
 #include "VarNames.h"
 #include "Lexer.h"
 

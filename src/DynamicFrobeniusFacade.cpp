@@ -1,7 +1,6 @@
 #include "stdinc.h"
 #include "DynamicFrobeniusFacade.h"
-
-#include "DynamicFrobeniusAlgorithm.h"
+#include "dynamicFrobeniusAlgorithm.h"
 
 DynamicFrobeniusFacade::
 DynamicFrobeniusFacade(bool printActions):

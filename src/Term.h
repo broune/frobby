@@ -100,6 +100,41 @@ inline bool isIdentity(const Exponent* a, size_t varCount) {
   return true;
 }
 
+// Returns true iff a[var] <= 1 for all var.
+inline bool isSquareFree(const Exponent* a, size_t varCount) {
+  for (size_t var = 0; var < varCount; ++var)
+    if (a[var] >= 2)
+      return false;
+  return true;
+}
+
+// Returns var such that a[var] >= a[i] for all i.
+inline size_t getFirstMaxExponent(const Exponent* a, size_t varCount) {
+  size_t max = 0;
+  for (size_t var = 1; var < varCount; ++var)
+    if (a[max] < a[var])
+      max = var;
+  return max;
+}
+
+// Returns the least integer var such that a[var] is non-zero.
+// Returns varCount if no such var exists.
+inline size_t getFirstNonZeroExponent(const Exponent* a, size_t varCount) {
+  for (size_t var = 0; var < varCount; ++var)
+    if (a[var] != 0)
+      return var;
+  return varCount;
+}
+
+// Returns the number of integers var such that a[var] is non-zero.
+inline size_t getSizeOfSupport(const Exponent* a, size_t varCount) {
+  size_t size = 0;
+  for (size_t var = 0; var < varCount; ++var)
+    if (a[var] != 0)
+      ++size;
+  return size;
+}
+
 // Defines lexicographic order on exponents.
 //  Returns something < 0 if a < b.
 //  Returns 0 if a = b.
@@ -109,9 +144,12 @@ inline bool isIdentity(const Exponent* a, size_t varCount) {
 inline int lexCompare(const Exponent* a, const Exponent* b,
 		   size_t varCount) {
   for (size_t var = 0; var < varCount; ++var) {
+    if (a[var] == b[var])
+      continue;
+
     if (a[var] < b[var])
       return -1;
-    if (a[var] > b[var])
+    else
       return 1;
   }
   return 0;
@@ -168,8 +206,17 @@ class Term {
 
   size_t getVarCount() const {return _varCount;}
 
-  Exponent operator[](int position) const {return _exponents[position];}
-  Exponent& operator[](int position) {return _exponents[position];}
+  Exponent operator[](int offset) const {return (*this)[(size_t)offset];}
+  Exponent operator[](size_t offset) const {
+    ASSERT(offset < _varCount);
+    return _exponents[offset];
+  }
+
+  Exponent& operator[](int offset) {return (*this)[(size_t)offset];}
+  Exponent& operator[](size_t offset) {
+    ASSERT(offset < _varCount);
+    return _exponents[offset];
+  }
 
   bool operator==(const Term& term) const {
     ASSERT(_varCount == term._varCount);
@@ -276,6 +323,22 @@ class Term {
     return ::isIdentity(_exponents, _varCount);
   }
 
+  bool isSquareFree() const {
+    return ::isSquareFree(_exponents, _varCount);
+  }
+
+  size_t getFirstNonZeroExponent() const {
+    return ::getFirstNonZeroExponent(_exponents, _varCount);
+  }
+
+  size_t getFirstMaxExponent() const {
+    return ::getFirstMaxExponent(_exponents, _varCount);
+  }
+
+  size_t getSizeOfSupport() const {
+    return ::getSizeOfSupport(_exponents, _varCount);
+  }
+
   void colon(const Term& a, const Term& b) {
     ASSERT(_varCount == a._varCount);
     ASSERT(a._varCount == b._varCount);
@@ -313,12 +376,12 @@ class Term {
     size_t _varCount;
   };
 
-  // A predicate that sorts according to the degree of the specified
-  // variable. There is no tie-breaker for different terms with the
-  // same degree of that variable.
-  class SingleDegreeComparator {
+  // A predicate that sorts terms in weakly ascending order according
+  // to degree of the specified variable. There is no tie-breaker for
+  // different terms with the same degree of that variable.
+  class AscendingSingleDegreeComparator {
   public:
-    SingleDegreeComparator(size_t variable, size_t varCount):
+    AscendingSingleDegreeComparator(size_t variable, size_t varCount):
       _variable(variable),
       _varCount(varCount) {
       ASSERT(variable < varCount);
@@ -338,6 +401,31 @@ class Term {
     size_t _variable;
     size_t _varCount;
   };
+
+  // Reverse sorted order of AscendingSingleDegreeComparator.
+  class DescendingSingleDegreeComparator {
+  public:
+    DescendingSingleDegreeComparator(size_t variable, size_t varCount):
+      _variable(variable),
+      _varCount(varCount) {
+      ASSERT(variable < varCount);
+    }
+
+    bool operator()(const Term& a, const Term& b) {
+      ASSERT(_varCount == a._varCount);
+      ASSERT(_varCount == b._varCount);
+      return a[_variable] > b[_variable];
+    }
+
+    bool operator()(const Exponent* a, const Exponent* b) const {
+      return a[_variable] > b[_variable];
+    }
+
+  private:
+    size_t _variable;
+    size_t _varCount;
+  };
+
 
  private:
   static Exponent* allocate(size_t size);

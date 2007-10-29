@@ -4,61 +4,10 @@
 #include "Term.h"
 #include "Ideal.h"
 
-class ExponentAllocator {
- public:
-  ExponentAllocator(size_t varCount):
-    _varCount(varCount),
-    _chunkSize(varCount * 100),
-    _chunk(0),
-    _chunkIterator(0),
-    _chunkEnd(0) {
-    ASSERT(varCount >= 1);
-  }
-
-  ~ExponentAllocator() {
-    clear();
-  }
-
-  Exponent* allocate() {
-    if (_chunkIterator == _chunkEnd) {
-      if (_chunk != 0)
-	_chunks.push_back(_chunk);
-      _chunk = new Exponent[_chunkSize];
-      _chunkIterator = _chunk;
-      _chunkEnd = _chunk + _chunkSize;
-    }
-
-    Exponent* term = _chunkIterator;
-    _chunkIterator += _varCount;
-    return term;
-  }
-
-  void clear() {
-    delete[] _chunk;
-    _chunk = 0;
-    _chunkIterator = 0;
-    _chunkEnd = 0;
-
-    for (size_t i = 0; i < _chunks.size(); ++i)
-      delete[] _chunks[i];
-    _chunks.clear();
-  }
-
- private:
-  size_t _varCount;
-  size_t _chunkSize;
-
-  Exponent* _chunk;
-  Exponent* _chunkIterator;
-  Exponent* _chunkEnd;
-
-  vector<Exponent*> _chunks;
-};
-
 class TermList : public Ideal {
   typedef vector<Exponent*> Cont;
 
-public:
+ public:
   typedef Cont::iterator iterator;
   typedef Cont::const_iterator const_iterator;
 
@@ -92,16 +41,39 @@ public:
 
   void minimize();
   void colon(const Term& by);
+  void colonReminimize(size_t var, Exponent exp);
+  void colonReminimize(const Term& by);
 
   Ideal* createMinimizedColon(const Term& by) const;
   Ideal* clone() const;
+  Ideal* createNew(size_t varCount);
   void clear();
 
-  bool removeStrictMultiples(const Term& term);
+  bool removeStrictMultiples(const Exponent* term);
 
   void print() const;
 
-private:
+ private:
+  class ExponentAllocator {
+  public:
+    ExponentAllocator(size_t varCount);
+    ~ExponentAllocator();
+
+    Exponent* allocate();
+    void reset(size_t newVarCount = 0);
+
+  private:
+    bool useSingleChunking() const;
+
+    size_t _varCount;
+
+    Exponent* _chunk;
+    Exponent* _chunkIterator;
+    Exponent* _chunkEnd;
+
+    vector<Exponent*> _chunks;
+  };
+
   size_t _varCount;
   vector<Exponent*> _terms;
   ExponentAllocator _allocator;

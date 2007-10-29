@@ -45,7 +45,8 @@ void MonosIOHandler::writeGeneratorOfIdeal(ostream& out,
   out << "\n ";
   
   bool someVar = false;
-  for (unsigned int j = 0; j < names.getVarCount(); ++j) {
+  size_t varCount = names.getVarCount();
+  for (size_t j = 0; j < varCount; ++j) {
     if ((generator[j]) == 0)
       continue;
     if (someVar)
@@ -73,7 +74,8 @@ void MonosIOHandler::writeGeneratorOfIdeal
     out << ",\n";
 
   char separator = ' ';
-  for (unsigned int j = 0; j < names.getVarCount(); ++j) {
+  size_t varCount = names.getVarCount();
+  for (size_t j = 0; j < varCount; ++j) {
     const char* exp = generator[j];
     if (exp == 0)
       continue;

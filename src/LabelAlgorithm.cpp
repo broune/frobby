@@ -173,7 +173,7 @@ recurse(const Term& b, const TermTree& tree, bool startingPartition) {
 void LabelAlgorithm::baseCase(const Term& b, const TermTree& tree) {
   ASSERT(!tree.empty());
 
-  int position = tree.getPosition();
+  size_t position = tree.getPosition();
 
   TermTree::TreeIterator treeIt(tree);
   TermTree::TreeIterator treeNextIt(tree);

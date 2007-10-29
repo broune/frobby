@@ -1,7 +1,7 @@
 #include "stdinc.h"
 #include "RandomDataFacade.h"
 
-#include "RandomDataGenerators.h"
+#include "randomDataGenerators.h"
 #include "GenerateIdealParameters.h"
 
 RandomDataFacade::RandomDataFacade(bool printActions):

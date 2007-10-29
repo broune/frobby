@@ -40,17 +40,15 @@ public:
 
   virtual void minimize() = 0;
   virtual void colon(const Term& by) = 0;
+  virtual void colonReminimize(const Term& by) = 0;
 
   virtual Ideal* createMinimizedColon(const Term& by) const = 0;
   virtual Ideal* clone() const = 0;
+  virtual Ideal* createNew(size_t varCount) = 0;
   virtual void clear() = 0;
 
   // Returns true if any were removed.
-  virtual bool removeStrictMultiples(const Term& term) = 0;
-  bool removeStrictMultiples(const Exponent* exponents) {
-    Term term(exponents, getVariableCount());
-    return removeStrictMultiples(term);
-  }
+  virtual bool removeStrictMultiples(const Exponent* exponent) = 0;
 
   virtual void print() const = 0;
 };
