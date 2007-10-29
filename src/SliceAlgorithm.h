@@ -71,8 +71,10 @@ class SliceAlgorithm {
   void labelSplit(Slice& slice);
   void pivotSplit(Slice& slice);
   bool independenceSplit(Slice& slice);
-
+  
   struct ProjDecom {
+    ProjDecom(): decom(0) {}
+    ~ProjDecom();
     vector<Exponent> compressor;
     Ideal* decom;
   };
