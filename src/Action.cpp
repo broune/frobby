@@ -25,18 +25,44 @@ Action::~Action() {
 
 const Action::ActionContainer& Action::getActions() {
   if (_actions.empty()) {
-    _actions.push_back(new IrreducibleDecomAction());
-    _actions.push_back(new FormatAction());
-    _actions.push_back(new HelpAction());
-    _actions.push_back(new AnalyzeAction());
-    _actions.push_back(new GenerateIdealAction());
-    _actions.push_back(new GenerateFrobeniusAction());
-    _actions.push_back(new FrobeniusAction());
-    _actions.push_back(new DynamicFrobeniusAction());
-    _actions.push_back(new LatticeFormatAction());
-    _actions.push_back(new IntersectAction());
-    _actions.push_back(new AssociatedPrimesAction());
-    _actions.push_back(new PrimaryDecomAction());
+    // This method uses static variables instead of new to avoid
+    // spurious reports from memory leak detectors.
+
+    static IrreducibleDecomAction irreducibleDecom;
+    _actions.push_back(&irreducibleDecom);
+
+    static FormatAction format;
+    _actions.push_back(&format);
+
+    static HelpAction help;
+    _actions.push_back(&help);
+
+    static AnalyzeAction analyze;
+    _actions.push_back(&analyze);
+
+    static GenerateIdealAction generateIdeal; 
+    _actions.push_back(&generateIdeal);
+
+    static GenerateFrobeniusAction generateFrobenius;
+    _actions.push_back(&generateFrobenius);
+
+    static FrobeniusAction frobenius;
+    _actions.push_back(&frobenius);
+
+    static DynamicFrobeniusAction dynamicFrobenius;
+    _actions.push_back(&dynamicFrobenius);
+
+    static LatticeFormatAction latticeFormat;
+    _actions.push_back(&latticeFormat);
+
+    static IntersectAction intersect;
+    _actions.push_back(&intersect);
+
+    static AssociatedPrimesAction associatedPrimes;
+    _actions.push_back(&associatedPrimes);
+
+    static PrimaryDecomAction primaryDecom;
+    _actions.push_back(&primaryDecom);
   }
 
   return _actions;
