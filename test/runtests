@@ -2,14 +2,14 @@
 
 TIMEFORMAT=$' (%2lR real)'
 
-echo -n "decom (label): "
-cd test/decom
-time ./runtests -slice off
-cd ../..
-
 echo -n "decom (slice): "
 cd test/decom
 time ./runtests -slice on
+cd ../..
+
+echo -n "decom (label): "
+cd test/decom
+time ./runtests -slice off
 cd ../..
 
 echo -n "frob: "

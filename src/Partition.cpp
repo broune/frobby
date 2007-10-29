@@ -115,3 +115,27 @@ void Partition::print(ostream& out) const {
     out << ' ' << _partitions[i];
   out << endl;
 }
+
+void Partition::project(Term& to, const Exponent* from,
+	     const vector<Exponent>& compressor) const {
+  size_t dummies = 0;
+  for (int i = _size - 1; i >= 0; --i)
+    if (compressor[i] == 0xFFFFFFFF)
+      ++dummies;
+
+  for (int i = _size - 1; i >= 0; --i)
+    if (compressor[i] != 0xFFFFFFFF)
+      to[compressor[i] - dummies] = from[i];
+}
+
+void Partition::inverseProject(Term& to, const Exponent* from,
+	     const vector<Exponent>& compressor) const {
+  size_t dummies = 0;
+  for (int i = _size - 1; i >= 0; --i)
+    if (compressor[i] == 0xFFFFFFFF)
+      ++dummies;
+
+  for (int i = _size - 1; i >= 0; --i)
+    if (compressor[i] != 0xFFFFFFFF)
+      to[i] = from[compressor[i] - dummies];
+}

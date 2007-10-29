@@ -63,6 +63,7 @@ program = frobby.exe
 .PHONY: all depend clean bin/$(program)
 all: bin/$(program) $(outdir)$(program)
 ifeq ($(MODE), profile)
+	rm -f gmon.out
 	./bench
 	gprof ./frobby > prof
 endif
