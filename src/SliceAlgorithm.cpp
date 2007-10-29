@@ -93,6 +93,10 @@ SliceAlgorithm::SliceAlgorithm(const Ideal& ideal,
   cerr << endl << "Sum: " << sum << endl;
 }
 
+SliceAlgorithm::ProjDecom::~ProjDecom() {
+	delete decom;
+}
+
 bool SliceAlgorithm::independenceSplit(Slice& slice) {
   // Compute the partition
   Partition partition(slice.getVarCount());
@@ -112,18 +116,6 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
     return false;
 
   vector<ProjDecom> projDecoms(setCount);
-
-  static bool pr = true;
-  bool oldPr = pr;
-  if (setCount < 4)
-    oldPr = false;
-  else
-    pr = false;
-  if (oldPr) {
-    cerr << "------------------------------------" << endl;
-    slice.print();
-    cerr << "************************************" << endl;
-  }
 
   for (size_t i = 0; i < setCount; ++i) {
     vector<Exponent> decompressor;
@@ -145,12 +137,10 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
       if (!tmp.isIdentity())
 	projSlice.getIdeal()->insert(tmp);
     }
-        DecomConsumer* oldConsumer = _decomConsumer;
-        projDecoms[i].decom = slice.getIdeal()->createNew(projVarCount);
-        _decomConsumer = new DecomStorer(projDecoms[i].decom);
 
-    if (oldPr)
-      projSlice.print();
+    DecomConsumer* oldConsumer = _decomConsumer;
+    projDecoms[i].decom = slice.getIdeal()->createNew(projVarCount);
+    _decomConsumer = new DecomStorer(projDecoms[i].decom);
     
     content(projSlice);
     
