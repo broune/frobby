@@ -37,7 +37,7 @@ TermTranslator::~TermTranslator() {
   delete _decompressionMaps;
   for (size_t i = 0; i < _stringDecompressionMaps.size(); ++i)
     for (size_t j = 0; j < _stringDecompressionMaps[i].size(); ++j)
-      delete _stringDecompressionMaps[i][j];
+      delete[] _stringDecompressionMaps[i][j];
 }
 
 const mpz_class& TermTranslator::
