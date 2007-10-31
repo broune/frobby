@@ -131,7 +131,7 @@ Ideal* TermList::createMinimizedColon(const Term& by) const {
 }
 
 void TermList::colonReminimize(const Term& by) {
-  if (by.getSizeOfSupport() == 1 && false) {
+  if (by.getSizeOfSupport() == 1) {
     size_t var = by.getFirstNonZeroExponent();
     colonReminimize(var, by[var]);
   } else {
