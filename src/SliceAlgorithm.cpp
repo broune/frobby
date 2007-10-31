@@ -99,9 +99,6 @@ SliceAlgorithm::ProjDecom::~ProjDecom() {
 
 // Requires slice.getIdeal() to be minimized.
 bool SliceAlgorithm::independenceSplit(Slice& slice) {
-  if (slice.getVarCount() <= 3)
-    return false;
-
   // Compute the partition
   Partition partition(slice.getVarCount());
 
@@ -120,16 +117,19 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
     return false;
 
   size_t at1 = 0;
-  size_t over1 = 0;
+  size_t at2 = 0;
+  size_t over2 = 0;
   for (size_t i = 0; i < setCount; ++i) {
     size_t size = partition.getSetSize(i);
     if (size == 1)
       ++at1;
+    else if (size == 2)
+      ++at2;
     else
-      ++over1;
+      ++over2;
   }
 
-  if (at1 <= 2 && over1 <= 1 && slice.getIdeal()->getGeneratorCount() < 15)
+  if (at1 <= 2 && at2 == 0 && over2 <= 1 && slice.getIdeal()->getGeneratorCount() < 15)
     return false;
   
   vector<Exponent> decompressor;
@@ -289,7 +289,24 @@ void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
 // TODO: make the pivot selection strategy a parameter.
 void SliceAlgorithm::getPivot(const Slice& slice,
 			      Term& pivot) {
-  size_t maxOffset = slice.getLcm().getFirstMaxExponent();
+  const Term& lcm = slice.getLcm();
+  //  size_t maxOffset = lcm.getFirstMaxExponent();
+
+  Term co(slice.getVarCount());
+
+  for (Ideal::const_iterator it = slice.getIdeal()->begin();
+       it != slice.getIdeal()->end(); ++it) {
+    for (size_t var = 0; var < slice.getVarCount(); ++var)
+      if ((*it)[var] > 0)
+	++co[var];
+  }
+
+  size_t maxOffset;
+  do {
+    maxOffset = co.getFirstMaxExponent();
+    co[maxOffset] = 0;
+  } while (lcm[maxOffset] <= 1);
+
   pivot.setToIdentity();
   pivot[maxOffset] = 1;
 
