@@ -3,9 +3,9 @@
 
 #include "Strategy.h"
 #include "TermTree.h"
+#include "OldPartition.h"
 
 #include "../Term.h"
-#include "../Partition.h"
 
 LabelAlgorithm::LabelAlgorithm(Strategy* strategy,
 			       TermTree* tree,
@@ -29,7 +29,7 @@ performPartition(const Term& b, const TermTree& tree) {
     
   unsigned int size = 0;
 
-  Partition partition(_dimension);
+  OldPartition partition(_dimension);
   while (!it.atEnd()) {
     it.getTerm(term);
     ++size;
@@ -59,7 +59,7 @@ performPartition(const Term& b, const TermTree& tree) {
   _strategy->startingPartitioning(b, partition, tree);
 
   for (int i = 0; i < partition.getSetCount(1, tree.getPosition()); ++i) {
-    partition.getSetTranslators(i, compressor, decompressor, tree.getPosition());
+    partition.getSetTranslators(i, compressor, tree.getPosition());
 
     Term newB(b);
     partition.compress(newB, compressor);

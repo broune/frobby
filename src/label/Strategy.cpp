@@ -5,7 +5,7 @@ Strategy::~Strategy() {
 }
 
 void Strategy::startingPartitioning(const Term& b,
-				    const Partition& partition,
+				    const OldPartition& partition,
 				    const TermTree& tree) {
   ASSERT(false);
 }
@@ -13,7 +13,7 @@ void Strategy::startingPartitioning(const Term& b,
 void Strategy::doingPartitionSet(int position,
 				 const Term& b,
 				 const Term& compressedB,
-				 const Partition& partition,
+				 const OldPartition& partition,
 				 vector<Exponent> compressor,
 				 const TermTree& tree) {
   ASSERT(false);

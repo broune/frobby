@@ -3,9 +3,9 @@
 
 #include "Strategy.h"
 #include "TermTree.h"
+#include "OldPartition.h"
 
 #include "../TermTranslator.h"
-#include "../Partition.h"
 
 FrobeniusStrategy::FrobeniusStrategy(const vector<mpz_class>& degrees,
 				     mpz_class* frobeniusNumber,
@@ -100,7 +100,7 @@ void FrobeniusStrategy::foundSolution(const Term& b,
 }
 
 void FrobeniusStrategy::startingPartitioning(const Term& b,
-					     const Partition& partition,
+					     const OldPartition& partition,
 					     const TermTree& tree) {
   int position = tree.getPosition();
   
@@ -113,7 +113,7 @@ void FrobeniusStrategy::startingPartitioning(const Term& b,
 void FrobeniusStrategy::doingPartitionSet(int position,
 					  const Term& b,
 					  const Term& compressedB,
-					  const Partition& partition,
+					  const OldPartition& partition,
 					  vector<Exponent> compressor,
 					  const TermTree& tree) {
   for (int i = _dimension - 1; i >= 0; --i) {

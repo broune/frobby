@@ -4,7 +4,7 @@
 #include "TermTree.h"
 
 #include <iterator>
-#include "../Partition.h"
+#include "OldPartition.h"
 
 
 SkipRedundantStrategy::SkipRedundantStrategy(Strategy* strategy,
@@ -89,7 +89,7 @@ void SkipRedundantStrategy::foundSolution(const Term& b,
 
 void SkipRedundantStrategy::
 startingPartitioning(const Term& b,
-		     const Partition& partition,
+		     const OldPartition& partition,
 		     const TermTree& tree) {
   unsigned int position = tree.getPosition();
   
@@ -108,7 +108,7 @@ startingPartitioning(const Term& b,
 void SkipRedundantStrategy::doingPartitionSet(int position,
 					      const Term& b,
 					      const Term& compressedB,
-					      const Partition& partition,
+					      const OldPartition& partition,
 					      vector<Exponent> compressor,
 					      const TermTree& tree) {
   int nextPosition = tree.getPosition();

@@ -3,7 +3,7 @@
 
 class Term;
 class TermTree;
-class Partition;
+class OldPartition;
 
 class Strategy {
 public:
@@ -24,13 +24,13 @@ public:
 			     bool startingPartition) = 0;
 
   virtual void startingPartitioning(const Term& b,
-				    const Partition& partition,
+				    const OldPartition& partition,
 				    const TermTree& tree);
     
   virtual void doingPartitionSet(int position,
 				 const Term& b,
 				 const Term& compressedB,
-				 const Partition& partition,
+				 const OldPartition& partition,
 				 vector<Exponent> compressor,
 				 const TermTree& tree);
 
