@@ -4,7 +4,6 @@
 #include "Strategy.h"
 #include "TermTree.h"
 
-#include "../Partition.h"
 #include "../TermTranslator.h"
 #include "../VarNames.h"
 
@@ -53,7 +52,7 @@ void CompositeStrategy::foundSolution(const Term& b,
 }
 
 void CompositeStrategy::startingPartitioning(const Term& b,
-					     const Partition& partition,
+					     const OldPartition& partition,
 					     const TermTree& tree) {
   _strategy1->startingPartitioning(b, partition, tree);
   _strategy2->startingPartitioning(b, partition, tree);
@@ -62,7 +61,7 @@ void CompositeStrategy::startingPartitioning(const Term& b,
 void CompositeStrategy::doingPartitionSet(int position,
 					  const Term& b,
 					  const Term& compressedB,
-					  const Partition& partition,
+					  const OldPartition& partition,
 					  vector<Exponent> compressor,
 					  const TermTree& tree) {
   _strategy1->

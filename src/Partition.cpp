@@ -24,17 +24,17 @@ void Partition::join(int i, int j) {
   _partitions[rootJ] = rootI;
 }
 
-int Partition::getSetCount(int minSize, int position) const {
+int Partition::getSetCount(int minSize) const {
   int partitionCount = 0;
-  for (int i = position; i < _size; ++i)
+  for (int i = 0; i < _size; ++i)
     if (i == getRoot(i) &&
 	-_partitions[i] >= minSize)
       ++partitionCount;
   return partitionCount;
 }
 
-int Partition::getSetSize(int set, int position) const {
-  for (int i = position; i < _size; ++i) {
+int Partition::getSetSize(int set) const {
+  for (int i = 0; i < _size; ++i) {
     if (i == getRoot(i)) {
       if (set == 0)
 	return -_partitions[i];
@@ -54,13 +54,13 @@ int Partition::getRoot(int i) const {
     return i;
 }
 
-void Partition::getSetTranslators(int number,
-				  vector<Exponent>& compressor,
-				  vector<Exponent>& decompressor,
-				  int position) const {
+void Partition::getProjection(int number,
+			      vector<Exponent>& projection) const {
   
+  projection.resize(getSetSize(number));
+
   int root = -1;
-  for (int i = position; i < _size; ++i) {
+  for (int i = 0; i < _size; ++i) {
     if (i == getRoot(i)) {
       if (number == 0) {
 	root = i;
@@ -71,42 +71,15 @@ void Partition::getSetTranslators(int number,
   }
   ASSERT(number == 0 && root != -1);
 
-  compressor.resize(_size);
-  decompressor.resize(_size);
-    
-  // Compressing t is done by setting t[compressor[i]] = t[i].
+  size_t projectionOffset = 0;
 
-  int decompressorOffset = decompressor.size() - 1;
-  int compressorOffset = compressor.size() - 1;
-  for (; compressorOffset >= 0; --compressorOffset) {
-    if (getRoot(compressorOffset) != root) {
-      compressor[compressorOffset] = 0xFFFFFFFF;
+  for (size_t i = 0; i < (size_t)_size; ++i) {
+    if (getRoot(i) != root)
       continue;
-    }
 
-    compressor[compressorOffset] = decompressorOffset;
-    //decompressor[decompressorOffset] = compressorOffset;
-    --decompressorOffset;
+    projection[projectionOffset] = i;
+    ++projectionOffset;
   }
-}
-
-bool Partition::compress(Term& term,
-			 const vector<Exponent>& compressor) const {
-  bool insideSet = false;
-  bool outsideSet = false;
-
-  for (int i = _size - 1; i >= 0; --i) {
-    if (compressor[i] == 0xFFFFFFFF) {
-      if (term[i] != 0)
-	outsideSet = true;
-      continue;
-    }
-    if (term[i] != 0)
-      insideSet = true;
-    term[compressor[i]] = term[i];
-  }
-
-  return insideSet && !outsideSet;
 }
 
 void Partition::print(ostream& out) const {
@@ -117,25 +90,15 @@ void Partition::print(ostream& out) const {
 }
 
 void Partition::project(Term& to, const Exponent* from,
-	     const vector<Exponent>& compressor) const {
-  size_t dummies = 0;
-  for (int i = _size - 1; i >= 0; --i)
-    if (compressor[i] == 0xFFFFFFFF)
-      ++dummies;
-
-  for (int i = _size - 1; i >= 0; --i)
-    if (compressor[i] != 0xFFFFFFFF)
-      to[compressor[i] - dummies] = from[i];
+	     const vector<Exponent>& projection) const {
+  size_t size = projection.size();
+  for (size_t i = 0; i < size; ++i)
+    to[i] = from[projection[i]];
 }
 
 void Partition::inverseProject(Term& to, const Exponent* from,
-	     const vector<Exponent>& compressor) const {
-  size_t dummies = 0;
-  for (int i = _size - 1; i >= 0; --i)
-    if (compressor[i] == 0xFFFFFFFF)
-      ++dummies;
-
-  for (int i = _size - 1; i >= 0; --i)
-    if (compressor[i] != 0xFFFFFFFF)
-      to[i] = from[compressor[i] - dummies];
+	     const vector<Exponent>& projection) const {
+  size_t size = projection.size();
+  for (size_t i = 0; i < size; ++i)
+    to[projection[i]] = from[i];
 }

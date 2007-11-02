@@ -3,10 +3,10 @@
 
 #include "Strategy.h"
 #include "TermTree.h"
+#include "OldPartition.h"
 
 #include "../TermTranslator.h"
 #include "../VarNames.h"
-#include "../Partition.h"
 
 class CompositeStrategy : public Strategy {
 public:
@@ -30,13 +30,13 @@ public:
 			     bool startingPartition);
 
   virtual void startingPartitioning(const Term& b,
-				    const Partition& partition,
+				    const OldPartition& partition,
 				    const TermTree& tree);
     
   virtual void doingPartitionSet(int position,
 				 const Term& b,
 				 const Term& compressedB,
-				 const Partition& partition,
+				 const OldPartition& partition,
 				 vector<Exponent> compressor,
 				 const TermTree& tree);
 

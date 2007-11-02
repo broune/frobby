@@ -4,7 +4,7 @@ labelSources = TermTree.cpp Strategy.cpp PrintDebugStrategy.cpp	\
   FrobeniusStrategy.cpp BenchmarkStrategy.cpp			\
   DecompositionStrategy.cpp StatisticsStrategy.cpp		\
   CompositeStrategy.cpp PrintProgressStrategy.cpp		\
-  SkipRedundantStrategy.cpp LabelAlgorithm.cpp
+  SkipRedundantStrategy.cpp LabelAlgorithm.cpp OldPartition.cpp
 
 rawSources = $(patsubst %, label/%, $(labelSources))			\
   main.cpp Action.cpp							\
@@ -23,7 +23,7 @@ rawSources = $(patsubst %, label/%, $(labelSources))			\
   SliceAlgorithm.cpp							\
   Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\
   AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp uwe.cpp		\
-  PrimaryDecomFacade.cpp PrimaryDecomAction.cpp
+  PrimaryDecomFacade.cpp PrimaryDecomAction.cpp Slice.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\

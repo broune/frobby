@@ -5,7 +5,7 @@
 
 class TermTree;
 class TermTranslator;
-class Partition;
+class OldPartition;
 
 class SkipRedundantStrategy : public Strategy {
 public:
@@ -29,13 +29,13 @@ public:
 			     bool startingPartition);
 
   virtual void startingPartitioning(const Term& b,
-				    const Partition& partition,
+				    const OldPartition& partition,
 				    const TermTree& tree);
     
   virtual void doingPartitionSet(int position,
 				 const Term& b,
 				 const Term& compressedB,
-				 const Partition& partition,
+				 const OldPartition& partition,
 				 vector<Exponent> compressor,
 				 const TermTree& tree);
 

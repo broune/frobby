@@ -2,9 +2,9 @@
 #include "DecompositionStrategy.h"
 
 #include "TermTree.h"
+#include "OldPartition.h"
 
 #include "../TermTranslator.h"
-#include "../Partition.h"
 #include "../monosIO.h"
 
 DecompositionStrategy::DecompositionStrategy(ostream* out,
@@ -66,7 +66,7 @@ void DecompositionStrategy::foundSolution(const Term& b,
 }
 
 void DecompositionStrategy::startingPartitioning(const Term& b,
-						 const Partition& partition,
+						 const OldPartition& partition,
 						 const TermTree& tree) {
   _firstPartition[tree.getPosition()] = true;
   _solutions.push(new TermCont());
@@ -76,7 +76,7 @@ void DecompositionStrategy::startingPartitioning(const Term& b,
 void DecompositionStrategy::doingPartitionSet(int position,
 					      const Term& b,
 					      const Term& compressedB,
-					      const Partition& partition,
+					      const OldPartition& partition,
 					      vector<Exponent> compressor,
 					      const TermTree& tree) {
   _solutions.push(new TermCont());
