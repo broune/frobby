@@ -1,4 +1,4 @@
-#include "stdinc.h"
+#include "../stdinc.h"
 #include "PrintDebugStrategy.h"
 
 #include "TermTree.h"

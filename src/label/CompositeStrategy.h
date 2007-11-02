@@ -1,16 +1,17 @@
-#ifndef PRINT_PROGRESS_STRATEGY_GUARD
-#define PRINT_PROGRESS_STRATEGY_GUARD
+#ifndef COMPOSITE_STRATEGY_GUARD
+#define COMPOSITE_STRATEGY_GUARD
 
 #include "Strategy.h"
-#include "Timer.h"
+#include "TermTree.h"
 
-class TermTree;
-class TermTranslator;
-class Partition;
+#include "../TermTranslator.h"
+#include "../VarNames.h"
+#include "../Partition.h"
 
-class PrintProgressStrategy : public Strategy {
+class CompositeStrategy : public Strategy {
 public:
-  PrintProgressStrategy();
+  CompositeStrategy(Strategy* strategy1, Strategy* strategy2);
+  virtual ~CompositeStrategy();
 
   virtual void getName(string& name) const;
 
@@ -46,10 +47,8 @@ public:
 				  const Term& b);
 
 private:
-  Timer _totalTime;
-  Timer _timeSinceLastReport;
-  unsigned int _workTotal;
-  unsigned int _workDone;
+  Strategy* _strategy1;
+  Strategy* _strategy2;
 };
 
 #endif

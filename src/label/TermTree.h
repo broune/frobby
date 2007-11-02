@@ -1,10 +1,11 @@
 #ifndef TERM_TREE_GUARD
 #define TERM_TREE_GUARD
 
+#include "../Term.h"
+#include "../Ideal.h"
+
 #include <list>
-#include "Term.h"
 #include "Allocator.h"
-#include "Ideal.h"
 
 class Node;
 class TermList;

@@ -268,7 +268,7 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
 void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
   if (!simplifiedAndDependent)
     slice.simplify();
-
+  
   if (calls.size() == level)
     calls.push_back(0);
   ++calls[level];

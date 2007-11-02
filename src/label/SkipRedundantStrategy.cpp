@@ -1,10 +1,11 @@
-#include "stdinc.h"
+#include "../stdinc.h"
 #include "SkipRedundantStrategy.h"
 
 #include "TermTree.h"
-#include "Partition.h"
 
 #include <iterator>
+#include "../Partition.h"
+
 
 SkipRedundantStrategy::SkipRedundantStrategy(Strategy* strategy,
 					     unsigned int dimension):

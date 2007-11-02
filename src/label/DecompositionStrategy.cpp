@@ -1,10 +1,11 @@
-#include "stdinc.h"
+#include "../stdinc.h"
 #include "DecompositionStrategy.h"
 
 #include "TermTree.h"
-#include "TermTranslator.h"
-#include "Partition.h"
-#include "monosIO.h"
+
+#include "../TermTranslator.h"
+#include "../Partition.h"
+#include "../monosIO.h"
 
 DecompositionStrategy::DecompositionStrategy(ostream* out,
 					     const VarNames& names,
