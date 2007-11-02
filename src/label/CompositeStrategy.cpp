@@ -1,11 +1,12 @@
-#include "stdinc.h"
+#include "../stdinc.h"
 #include "CompositeStrategy.h"
 
 #include "Strategy.h"
 #include "TermTree.h"
-#include "TermTranslator.h"
-#include "VarNames.h"
-#include "Partition.h"
+
+#include "../Partition.h"
+#include "../TermTranslator.h"
+#include "../VarNames.h"
 
 CompositeStrategy::CompositeStrategy(Strategy* strategy1, Strategy* strategy2):
   _strategy1(strategy1),

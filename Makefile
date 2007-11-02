@@ -1,6 +1,13 @@
 # ***** Variables
 
-rawSources = main.cpp TermTree.cpp Action.cpp				\
+labelSources = TermTree.cpp Strategy.cpp PrintDebugStrategy.cpp	\
+  FrobeniusStrategy.cpp BenchmarkStrategy.cpp			\
+  DecompositionStrategy.cpp StatisticsStrategy.cpp		\
+  CompositeStrategy.cpp PrintProgressStrategy.cpp		\
+  SkipRedundantStrategy.cpp LabelAlgorithm.cpp
+
+rawSources = $(patsubst %, label/%, $(labelSources))			\
+  main.cpp Action.cpp							\
   IrreducibleDecomAction.cpp fplllIO.cpp io.cpp fourti2.cpp		\
   randomDataGenerators.cpp monosIO.cpp BigIdeal.cpp FormatAction.cpp	\
   macaulay2IO.cpp newMonosIO.cpp HelpAction.cpp				\
@@ -10,13 +17,10 @@ rawSources = main.cpp TermTree.cpp Action.cpp				\
   IOFacade.cpp DynamicFrobeniusFacade.cpp RandomDataFacade.cpp		\
   AnalyzeAction.cpp AnalyzeFacade.cpp Parameter.cpp			\
   ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
-  IrreducibleDecomParameters.cpp BoolParameter.cpp LabelAlgorithm.cpp	\
+  IrreducibleDecomParameters.cpp BoolParameter.cpp			\
   Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp TermList.cpp	\
-  TermTranslator.cpp Timer.cpp VarNames.cpp Strategy.cpp		\
-  PrintDebugStrategy.cpp FrobeniusStrategy.cpp BenchmarkStrategy.cpp	\
-  DecompositionStrategy.cpp StatisticsStrategy.cpp			\
-  CompositeStrategy.cpp PrintProgressStrategy.cpp			\
-  SkipRedundantStrategy.cpp LatticeFormatAction.cpp SliceAlgorithm.cpp	\
+  TermTranslator.cpp Timer.cpp VarNames.cpp LatticeFormatAction.cpp	\
+  SliceAlgorithm.cpp							\
   Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\
   AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp uwe.cpp		\
   PrimaryDecomFacade.cpp PrimaryDecomAction.cpp
@@ -71,8 +75,11 @@ endif
 test: all
 	export frobby=bin/$(program); ./test/runtests
 
-$(outdir):
+$(outdir): $(outdir)label
 	mkdir -p $(outdir)
+$(outdir)/label:
+	mkdir -p $(outdir)label
+
 
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)

@@ -1,27 +1,16 @@
-#ifndef DECOMPOSITION_STRATEGY
-#define DECOMPOSITION_STRATEGY
+#ifndef PRINT_PROGRESS_STRATEGY_GUARD
+#define PRINT_PROGRESS_STRATEGY_GUARD
 
 #include "Strategy.h"
-#include "VarNames.h"
-
-#include <list>
-#include <stack>
+#include "../Timer.h"
 
 class TermTree;
 class TermTranslator;
 class Partition;
-class IOHandler;
 
-class DecompositionStrategy : public Strategy {
-  typedef list<Term> TermCont;
-
+class PrintProgressStrategy : public Strategy {
 public:
-  DecompositionStrategy(ostream* out,
-			const VarNames& names,
-			unsigned int dimension,
-			const TermTranslator* translator);
-
-  virtual ~DecompositionStrategy();
+  PrintProgressStrategy();
 
   virtual void getName(string& name) const;
 
@@ -42,7 +31,7 @@ public:
   virtual void startingPartitioning(const Term& b,
 				    const Partition& partition,
 				    const TermTree& tree);
-
+    
   virtual void doingPartitionSet(int position,
 				 const Term& b,
 				 const Term& compressedB,
@@ -56,22 +45,11 @@ public:
   virtual void endingPartitioning(int position,
 				  const Term& b);
 
-protected:
-  void writeSolution(const Term& b);
-  void flushIfPossible();
-
-  stack<TermCont*> _solutions;
-
-  vector<bool> _firstPartition;
-
-  ostream* _out;
-  unsigned int _dimension;
-  VarNames _names;
-  bool _first;
-  const TermTranslator* _translator;
-  IOHandler* _ioHandler;
-
-  vector<const char*> _outputTmp;
+private:
+  Timer _totalTime;
+  Timer _timeSinceLastReport;
+  unsigned int _workTotal;
+  unsigned int _workDone;
 };
 
 #endif

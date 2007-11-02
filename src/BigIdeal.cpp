@@ -2,7 +2,7 @@
 #include "BigIdeal.h"
 
 #include "VarNames.h"
-#include "TermTree.h"
+#include "label/TermTree.h"
 #include "TermList.h"
 #include "TermTranslator.h"
 #include "Ideal.h"

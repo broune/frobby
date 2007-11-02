@@ -1,16 +1,27 @@
-#ifndef COMPOSITE_STRATEGY_GUARD
-#define COMPOSITE_STRATEGY_GUARD
+#ifndef DECOMPOSITION_STRATEGY
+#define DECOMPOSITION_STRATEGY
 
 #include "Strategy.h"
-#include "TermTree.h"
-#include "TermTranslator.h"
-#include "VarNames.h"
-#include "Partition.h"
+#include "../VarNames.h"
 
-class CompositeStrategy : public Strategy {
+#include <list>
+#include <stack>
+
+class TermTree;
+class TermTranslator;
+class Partition;
+class IOHandler;
+
+class DecompositionStrategy : public Strategy {
+  typedef list<Term> TermCont;
+
 public:
-  CompositeStrategy(Strategy* strategy1, Strategy* strategy2);
-  virtual ~CompositeStrategy();
+  DecompositionStrategy(ostream* out,
+			const VarNames& names,
+			unsigned int dimension,
+			const TermTranslator* translator);
+
+  virtual ~DecompositionStrategy();
 
   virtual void getName(string& name) const;
 
@@ -31,7 +42,7 @@ public:
   virtual void startingPartitioning(const Term& b,
 				    const Partition& partition,
 				    const TermTree& tree);
-    
+
   virtual void doingPartitionSet(int position,
 				 const Term& b,
 				 const Term& compressedB,
@@ -45,9 +56,22 @@ public:
   virtual void endingPartitioning(int position,
 				  const Term& b);
 
-private:
-  Strategy* _strategy1;
-  Strategy* _strategy2;
+protected:
+  void writeSolution(const Term& b);
+  void flushIfPossible();
+
+  stack<TermCont*> _solutions;
+
+  vector<bool> _firstPartition;
+
+  ostream* _out;
+  unsigned int _dimension;
+  VarNames _names;
+  bool _first;
+  const TermTranslator* _translator;
+  IOHandler* _ioHandler;
+
+  vector<const char*> _outputTmp;
 };
 
 #endif

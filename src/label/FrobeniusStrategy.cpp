@@ -1,10 +1,11 @@
-#include "stdinc.h"
+#include "../stdinc.h"
 #include "FrobeniusStrategy.h"
 
 #include "Strategy.h"
 #include "TermTree.h"
-#include "TermTranslator.h"
-#include "Partition.h"
+
+#include "../TermTranslator.h"
+#include "../Partition.h"
 
 FrobeniusStrategy::FrobeniusStrategy(const vector<mpz_class>& degrees,
 				     mpz_class* frobeniusNumber,

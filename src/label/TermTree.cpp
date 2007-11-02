@@ -1,7 +1,7 @@
-#include "stdinc.h"
+#include "../stdinc.h"
 #include "TermTree.h"
 
-#include "TermList.h"
+#include "../TermList.h"
 
 class Node {
 public:

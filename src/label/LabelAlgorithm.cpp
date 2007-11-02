@@ -1,10 +1,11 @@
-#include "stdinc.h"
+#include "../stdinc.h"
 #include "LabelAlgorithm.h"
 
-#include "Term.h"
 #include "Strategy.h"
 #include "TermTree.h"
-#include "Partition.h"
+
+#include "../Term.h"
+#include "../Partition.h"
 
 LabelAlgorithm::LabelAlgorithm(Strategy* strategy,
 			       TermTree* tree,
