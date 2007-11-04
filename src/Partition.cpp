@@ -3,19 +3,30 @@
 
 #include "Term.h"
 
-Partition::Partition(int size):
-  _partitions(new int[size]),
-  _size(size) {
-  fill_n(_partitions, _size, -1);
+Partition::Partition():
+  _partitions(0),
+  _size(0),
+  _capacity(0) {
 }
 
 Partition::~Partition() {
   delete[] _partitions;
 }
 
-void Partition::join(int i, int j) {
-  int rootI = getRoot(i);
-  int rootJ = getRoot(j);
+void Partition::reset(size_t size) {
+  if (size > _capacity) {
+    delete[] _partitions;
+    _partitions = new int[size];
+    _capacity = size;
+  }
+
+  _size = size;
+  fill_n(_partitions, _size, -1);
+}
+
+void Partition::join(size_t i, size_t j) {
+  size_t rootI = getRoot(i);
+  size_t rootJ = getRoot(j);
   
   if (rootI == rootJ)
     return;
@@ -24,17 +35,17 @@ void Partition::join(int i, int j) {
   _partitions[rootJ] = rootI;
 }
 
-int Partition::getSetCount(int minSize) const {
-  int partitionCount = 0;
-  for (int i = 0; i < _size; ++i)
+size_t Partition::getSetCount(size_t minSize) const {
+  size_t partitionCount = 0;
+  for (size_t i = 0; i < _size; ++i)
     if (i == getRoot(i) &&
-	-_partitions[i] >= minSize)
+	(size_t)-_partitions[i] >= minSize)
       ++partitionCount;
   return partitionCount;
 }
 
-int Partition::getSetSize(int set) const {
-  for (int i = 0; i < _size; ++i) {
+size_t Partition::getSetSize(size_t set) const {
+  for (size_t i = 0; i < _size; ++i) {
     if (i == getRoot(i)) {
       if (set == 0)
 	return -_partitions[i];
@@ -45,7 +56,7 @@ int Partition::getSetSize(int set) const {
   return 0;
 }
 
-int Partition::getRoot(int i) const {
+size_t Partition::getRoot(size_t i) const {
   ASSERT(i < _size);
   if (_partitions[i] >= 0) {
     _partitions[i] = getRoot(_partitions[i]);
@@ -54,51 +65,13 @@ int Partition::getRoot(int i) const {
     return i;
 }
 
-void Partition::getProjection(int number,
-			      vector<Exponent>& projection) const {
-  
-  projection.resize(getSetSize(number));
-
-  int root = -1;
-  for (int i = 0; i < _size; ++i) {
-    if (i == getRoot(i)) {
-      if (number == 0) {
-	root = i;
-	break;
-      }
-      --number;
-    }
-  }
-  ASSERT(number == 0 && root != -1);
-
-  size_t projectionOffset = 0;
-
-  for (size_t i = 0; i < (size_t)_size; ++i) {
-    if (getRoot(i) != root)
-      continue;
-
-    projection[projectionOffset] = i;
-    ++projectionOffset;
-  }
-}
-
 void Partition::print(ostream& out) const {
   out << "Partition(size=" << _size << " sets:";
-  for (int i = 0; i < _size; ++i)
+  for (size_t i = 0; i < _size; ++i)
     out << ' ' << _partitions[i];
   out << endl;
 }
 
-void Partition::project(Term& to, const Exponent* from,
-	     const vector<Exponent>& projection) const {
-  size_t size = projection.size();
-  for (size_t i = 0; i < size; ++i)
-    to[i] = from[projection[i]];
-}
-
-void Partition::inverseProject(Term& to, const Exponent* from,
-	     const vector<Exponent>& projection) const {
-  size_t size = projection.size();
-  for (size_t i = 0; i < size; ++i)
-    to[projection[i]] = from[i];
+size_t Partition::getSize() const {
+  return _size;
 }

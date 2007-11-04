@@ -11,6 +11,7 @@ class SkipRedundantStrategy : public Strategy {
 public:
   SkipRedundantStrategy(Strategy* strategy,
 			unsigned int dimension);
+  ~SkipRedundantStrategy();
 
   virtual void getName(string& name) const;
 

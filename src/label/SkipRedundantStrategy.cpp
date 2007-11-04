@@ -19,6 +19,10 @@ SkipRedundantStrategy::SkipRedundantStrategy(Strategy* strategy,
     _skip.push_back(TermTree(dimension, position));
 }
 
+SkipRedundantStrategy::~SkipRedundantStrategy() {
+  delete _strategy;
+}
+
 void SkipRedundantStrategy::getName(string& name) const {
   name = "SkipRedundantStrategy";
 }

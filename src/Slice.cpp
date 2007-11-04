@@ -195,6 +195,14 @@ bool Slice::filterDoubleLcm() {
   return removedAny;
 }
 
+Slice::Slice():
+  _varCount(0),
+  _multiply(0),
+  _lcm(0),
+  _ideal(0),
+  _subtract(0) {
+}
+
 Slice::Slice(Ideal* ideal,
 	     Ideal* subtract,
 	     size_t varCount):
@@ -203,6 +211,26 @@ Slice::Slice(Ideal* ideal,
   _lcm(varCount),
   _ideal(ideal),
   _subtract(subtract) {
+  ASSERT(ideal != 0);
+  ASSERT(subtract != 0);
+  ASSERT(varCount == ideal->getVariableCount());
+  ASSERT(varCount == subtract->getVariableCount());
+}
+
+void Slice::reset(Ideal* ideal, Ideal* subtract, size_t varCount) {
+  _varCount = varCount;
+
+  delete _ideal;
+  _ideal = ideal;
+
+  delete _subtract;
+  _subtract = subtract;
+  
+  _multiply.reset(varCount);
+  _lcm.reset(varCount);
+
+  ASSERT(ideal != 0);
+  ASSERT(subtract != 0);
   ASSERT(varCount == ideal->getVariableCount());
   ASSERT(varCount == subtract->getVariableCount());
 }

@@ -357,6 +357,16 @@ class Term {
     term._exponents = tmp;
   }
 
+  void reset(size_t newVarCount) {
+    if (newVarCount == _varCount)
+      setToIdentity();
+    else {
+      deallocate(_exponents, _varCount);
+      _varCount = newVarCount;
+      _exponents = allocate(newVarCount);
+    }
+  }
+
   // A predicate that sorts according to lexicographic order.
   class LexComparator {
   public:

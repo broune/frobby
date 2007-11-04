@@ -7,17 +7,32 @@
 
 #include "../Term.h"
 
-LabelAlgorithm::LabelAlgorithm(Strategy* strategy,
-			       TermTree* tree,
-			       bool usePartition):
-  _dimension(tree->getDimension()),
-  _strategy(strategy),
-  _usePartition(usePartition) {
+LabelAlgorithm::LabelAlgorithm():
+  _strategy(0),
+  _usePartition(true) {
+}
+
+void LabelAlgorithm::setStrategy(Strategy* strategy) {
+  _strategy = strategy;
+}
+
+void LabelAlgorithm::setUsePartition(bool usePartition) {
+  _usePartition = usePartition;
+}
+
+void LabelAlgorithm::runAndDeleteIdealAndReset(TermTree* tree) {
   ASSERT(_dimension > 1);
-  
+
+  _dimension = tree->getDimension();
   Term b(_dimension);
   recurse(b, *tree, false);
+
+  delete _strategy;
+  delete tree;
+  _strategy = 0;
+  _usePartition = true;
 }
+
 
 bool LabelAlgorithm::
 performPartition(const Term& b, const TermTree& tree) {

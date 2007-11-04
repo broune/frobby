@@ -23,7 +23,9 @@ rawSources = $(patsubst %, label/%, $(labelSources))			\
   SliceAlgorithm.cpp							\
   Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\
   AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp uwe.cpp		\
-  PrimaryDecomFacade.cpp PrimaryDecomAction.cpp Slice.cpp
+  PrimaryDecomFacade.cpp PrimaryDecomAction.cpp Slice.cpp		\
+  IndependenceSplitter.cpp Projection.cpp DecomWriter.cpp		\
+  SliceStrategy.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\
