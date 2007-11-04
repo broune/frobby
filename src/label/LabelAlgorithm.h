@@ -7,7 +7,12 @@ class TermTree;
 
 class LabelAlgorithm {
 public:
-  LabelAlgorithm(Strategy* strategy, TermTree* tree, bool usePartition);
+  LabelAlgorithm();
+
+  void setStrategy(Strategy* strategy);
+  void setUsePartition(bool usePartition);
+
+  void runAndDeleteIdealAndReset(TermTree* tree);
 
 private:
   bool performPartition(const Term& b, const TermTree& tree);

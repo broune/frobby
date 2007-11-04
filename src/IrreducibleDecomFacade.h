@@ -8,6 +8,9 @@ class BigIdeal;
 class Strategy;
 class TermTranslator;
 class TermTree;
+class DecomConsumer;
+class SliceStrategy;
+class Ideal;
 
 class IrreducibleDecomFacade : private Facade {
  public:
@@ -23,11 +26,10 @@ class IrreducibleDecomFacade : private Facade {
 			      mpz_class& frobeniusNumber);
 
  private:
-  void runAlgorithm(TermTree* tree, TermTranslator* translator,
-		    Strategy* strategy);
-  Strategy* addStrategy(vector<Strategy*>& strategies,
-			Strategy* oldStrategy,
-			Strategy* newStrategy);
+  void runLabelAlgorithm(TermTree* tree, TermTranslator* translator,
+			 Strategy* strategy);
+  void runSliceAlgorithm(Ideal* ideal, DecomConsumer* consumer,
+			 SliceStrategy* strategy);
 
   const IrreducibleDecomParameters& _parameters;
 };

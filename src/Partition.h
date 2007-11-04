@@ -5,30 +5,27 @@ class Term;
 
 class Partition {
  public:
-  Partition(int size);
+  Partition();
   ~Partition();
 
-  void join(int i, int j);
+  void reset(size_t size);
 
-  int getSetCount(int minSize = 1) const;
+  void join(size_t i, size_t j);
 
-  int getSetSize(int set) const;
+  size_t getSize() const;
 
-  int getRoot(int i) const;
+  size_t getSetCount(size_t minSize = 1) const;
 
-  void getProjection(int number, vector<Exponent>& projection) const;
+  size_t getSetSize(size_t set) const;
+
+  size_t getRoot(size_t i) const;
 
   void print(ostream& out) const;
 
-  void project(Term& to, const Exponent* from,
-	       const vector<Exponent>& projection) const;
-  void inverseProject(Term& to, const Exponent* from,
-		      const vector<Exponent>& projection) const;
-
-
  private:
   int* _partitions;
-  int _size;
+  size_t _size;
+  size_t _capacity;
 };
 
 #endif

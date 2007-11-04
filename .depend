@@ -120,7 +120,8 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
   src/BoolParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
   src/TermTranslator.h src/TermList.h src/Term.h src/Ideal.h \
-  src/SliceAlgorithm.h
+  src/SliceAlgorithm.h src/DecomWriter.h src/io.h src/DecomConsumer.h \
+  src/SliceStrategy.h src/Slice.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/BigIdeal.h \
@@ -174,7 +175,8 @@ $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceAlgorithm.h src/Term.h src/VarNames.h src/TermList.h \
   src/Ideal.h src/io.h src/TermTranslator.h src/Partition.h src/Slice.h \
-  src/DecomConsumer.h
+  src/DecomConsumer.h src/DecomWriter.h src/SliceStrategy.h \
+  src/IndependenceSplitter.h src/Projection.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
   src/Term.h
@@ -206,4 +208,15 @@ $(outdir)PrimaryDecomAction.o: src/PrimaryDecomAction.cpp src/stdinc.h \
   src/PrimaryDecomAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
   src/Facade.h src/Timer.h src/PrimaryDecomFacade.h
-$(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h
+$(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h src/Term.h src/Ideal.h \
+  src/DecomConsumer.h
+$(outdir)IndependenceSplitter.o: src/IndependenceSplitter.cpp src/stdinc.h \
+  src/IndependenceSplitter.h src/DecomConsumer.h src/Partition.h \
+  src/Projection.h src/Slice.h src/Term.h src/Ideal.h
+$(outdir)Projection.o: src/Projection.cpp src/stdinc.h src/Projection.h src/Term.h \
+  src/Partition.h
+$(outdir)DecomWriter.o: src/DecomWriter.cpp src/stdinc.h src/DecomWriter.h \
+  src/VarNames.h src/TermTranslator.h src/io.h src/DecomConsumer.h \
+  src/Term.h
+$(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
+  src/Slice.h src/Term.h src/Ideal.h

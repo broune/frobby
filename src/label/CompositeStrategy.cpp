@@ -15,6 +15,8 @@ CompositeStrategy::CompositeStrategy(Strategy* strategy1, Strategy* strategy2):
 }
 
 CompositeStrategy::~CompositeStrategy() {
+  delete _strategy1;
+  delete _strategy2;
 }
 
 void CompositeStrategy::getName(string& name) const {

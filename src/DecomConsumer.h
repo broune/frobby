@@ -1,6 +1,8 @@
 #ifndef DECOM_CONSUMER_GUARD
 #define DECOM_CONSUMER_GUARD
 
+class Term;
+
 class DecomConsumer {
  public:
   virtual ~DecomConsumer() {}

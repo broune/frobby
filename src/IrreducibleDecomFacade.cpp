@@ -18,6 +18,8 @@
 #include "TermTranslator.h"
 #include "TermList.h"
 #include "SliceAlgorithm.h"
+#include "DecomWriter.h"
+#include "SliceStrategy.h"
 
 IrreducibleDecomFacade::
 IrreducibleDecomFacade(bool printActions,
@@ -48,11 +50,13 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
   ideal.buildAndClear(tree, translator, false);
 
   if (_parameters.getUseSlice()) {
-    TermList terms(tree->getDimension());
-    tree->getTerms(terms);
+    TermList* terms = new TermList(tree->getDimension());
+    tree->getTerms(*terms);
     delete tree;
-    
-    SliceAlgorithm alg(terms, ideal.getNames(), translator, out);
+
+    runSliceAlgorithm(terms,
+		      new DecomWriter(ideal.getNames(), translator, out),
+		      SliceStrategy::newStrategy("label"));
     delete translator;
   } else {
     Strategy* strategy;
@@ -61,10 +65,7 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
     else
       strategy = new DecompositionStrategy
 	(&out, ideal.getNames(), ideal.getNames().getVarCount(), translator);
-    runAlgorithm(tree, translator, strategy);
-
-    delete tree;
-    delete translator;
+    runLabelAlgorithm(tree, translator, strategy);
   }
 
   endAction();
@@ -96,56 +97,55 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   Strategy* strategy = new FrobeniusStrategy
     (instance, &frobeniusNumber, ideal.getNames().getVarCount(),
      translator, _parameters.getUseBound());
-  runAlgorithm(tree, translator, strategy);
+  runLabelAlgorithm(tree, translator, strategy);
 
   endAction();
 }
 
+void IrreducibleDecomFacade::
+runSliceAlgorithm(Ideal* ideal, DecomConsumer* consumer,
+		  SliceStrategy* strategy) {
+  ASSERT(strategy != 0);
+  ASSERT(ideal != 0);
+  ASSERT(consumer != 0);
+
+  SliceAlgorithm alg;
+
+  if (_parameters.getPrintStatistics())
+    strategy = SliceStrategy::addStatistics(strategy);
+
+  alg.setConsumer(consumer);
+  alg.setStrategy(strategy);
+  alg.runAndDeleteIdealAndReset(ideal);
+}
+
+
 // All parameters are deleted.
 void IrreducibleDecomFacade::
-runAlgorithm(TermTree* tree, TermTranslator* translator, Strategy* strategy) {
+runLabelAlgorithm(TermTree* tree, TermTranslator* translator,
+		  Strategy* strategy) {
+  ASSERT(tree != 0);
+  ASSERT(translator != 0);
   ASSERT(strategy != 0);
 
   // Set up the combined strategy
-  vector<Strategy*> strategies;
-  strategies.push_back(strategy);
-
   if (_parameters.getPrintProgress())
-    strategy = addStrategy(strategies, strategy, new PrintProgressStrategy());
+    strategy = new CompositeStrategy(strategy, new PrintProgressStrategy());
 
   if (_parameters.getPrintStatistics())
-    strategy = addStrategy
-      (strategies, strategy, new StatisticsStrategy(tree->getDimension()));
+    strategy = new CompositeStrategy
+      (strategy, new StatisticsStrategy(tree->getDimension()));
 
   if (_parameters.getPrintDebug())
-    strategy = addStrategy(strategies, strategy, new PrintDebugStrategy());
+    strategy = new CompositeStrategy(strategy, new PrintDebugStrategy());
 
   if (_parameters.getSkipRedundant()) {
-    strategy = 
-      new SkipRedundantStrategy(strategy, tree->getDimension());
-    strategies.push_back(strategy);
+    strategy = new SkipRedundantStrategy(strategy, tree->getDimension());
   }
   
   // Run algorithm
-  LabelAlgorithm algo(strategy, tree, _parameters.getUsePartition());
-  
-  // Clean up afterwards
-  for (vector<Strategy*>::iterator it = strategies.begin();
-       it != strategies.end(); ++it)
-    delete *it;
-}
-
-Strategy* IrreducibleDecomFacade::
-addStrategy(vector<Strategy*>& strategies,
-	    Strategy* oldStrategy,
-	    Strategy* newStrategy) {
-  ASSERT(oldStrategy != 0);
-  ASSERT(newStrategy != 0);
-  
-  Strategy* composite = new CompositeStrategy(oldStrategy, newStrategy);
-
-  strategies.push_back(newStrategy);
-  strategies.push_back(composite);
-
-  return composite;
+  LabelAlgorithm algo;
+  algo.setStrategy(strategy);
+  algo.setUsePartition(_parameters.getUsePartition());
+  algo.runAndDeleteIdealAndReset(tree);
 }

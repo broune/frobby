@@ -13,6 +13,7 @@ class Slice {
     _ideal = 0;
   }
 
+  Slice();
   Slice(Ideal* ideal, Ideal* subtract,
 	size_t varCount);
   Slice(Ideal* ideal, Ideal* subtract,
@@ -20,6 +21,8 @@ class Slice {
   Slice(Ideal* ideal, Ideal* subtract,
 	const Term& multiply, const Term& pivot);
   ~Slice();
+
+  void reset(Ideal* ideal, Ideal* subtract, size_t varCount);
 
   void addToSubtract(const Term& term);
   bool normalize();
@@ -46,7 +49,7 @@ class Slice {
  private:
   bool twoVarBaseCase(DecomConsumer* consumer);
 
-  const size_t _varCount;
+  size_t _varCount;
   Term _multiply;
   mutable Term _lcm;
 
