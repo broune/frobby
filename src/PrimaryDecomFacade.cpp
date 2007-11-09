@@ -1,7 +1,6 @@
 #include "stdinc.h"
 #include "PrimaryDecomFacade.h"
 
-#include "uwe.h"
 #include "BigIdeal.h"
 #include "IOFacade.h"
 
