@@ -2,13 +2,12 @@
 #define TERM_TREE_GUARD
 
 #include "../Term.h"
-#include "../Ideal.h"
+#include "../TermList.h"
 
 #include <list>
 #include "Allocator.h"
 
 class Node;
-class TermList;
 
 class TermTree {
 public:

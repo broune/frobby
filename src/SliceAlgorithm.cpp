@@ -1,14 +1,12 @@
 #include "stdinc.h"
 #include "SliceAlgorithm.h"
 
-#include "TermList.h"
 #include "Term.h"
 #include "VarNames.h"
 #include "io.h"
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "Partition.h"
-#include "TermList.h"
 #include "Slice.h"
 #include "DecomConsumer.h"
 #include "DecomWriter.h"
@@ -42,7 +40,7 @@ void SliceAlgorithm::runAndDeleteIdealAndReset(Ideal* ideal) {
 
   if (!ideal->isZeroIdeal()) {
     Slice slice(ideal->clone(),
-		new TermList(ideal->getVarCount()),
+		new Ideal(ideal->getVarCount()),
 		Term(ideal->getVarCount()));
     content(slice);
   }

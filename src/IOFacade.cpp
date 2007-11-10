@@ -64,7 +64,7 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
   fourti2::readGrobnerBasis(in, ideal);
   ::readFrobeniusInstance(in, instance);
 
-  if (instance.size() != ideal.getNames().getVarCount() + 1) {
+  if (instance.size() != ideal.getVarCount() + 1) {
     if (instance.empty())
       cerr << "ERROR: There is no Frobenius instance at end of input.";
     else

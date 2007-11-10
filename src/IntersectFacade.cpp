@@ -4,7 +4,7 @@
 #include "BigIdeal.h"
 #include "Ideal.h"
 #include "intersect.h"
-#include "TermList.h"
+#include "Ideal.h"
 #include "TermTranslator.h"
 
 IntersectFacade::IntersectFacade(bool printActions):
@@ -25,7 +25,7 @@ BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
   vector<Ideal*> ideals2;
   TermTranslator* translator = BigIdeal::buildAndClear(ideals, ideals2);
 
-  TermList* intersection = new TermList(variableCount);
+  Ideal* intersection = new Ideal(variableCount);
   Term identity(variableCount);
   intersection->insert(identity);
 
@@ -33,7 +33,7 @@ BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
     ASSERT(names == ideals[i]->getNames());
 
     // Compute intersection
-    TermList* tmp = new TermList(variableCount);
+    Ideal* tmp = new Ideal(variableCount);
     ::intersect(tmp, intersection, ideals2[i]);
 
     // Handle bookkeeping

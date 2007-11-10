@@ -11,15 +11,15 @@ class TermTree;
 class TermTranslator;
 class OldPartition;
 class IOHandler;
+class DecomConsumer;
 
 class DecompositionStrategy : public Strategy {
   typedef list<Term> TermCont;
 
 public:
-  DecompositionStrategy(ostream* out,
-			const VarNames& names,
-			unsigned int dimension,
-			const TermTranslator* translator);
+  // Ownership of decomConsumer is taken over.
+  DecompositionStrategy(DecomConsumer* decomConsumer,
+			unsigned int dimension);
 
   virtual ~DecompositionStrategy();
 
@@ -60,18 +60,13 @@ protected:
   void writeSolution(const Term& b);
   void flushIfPossible();
 
-  stack<TermCont*> _solutions;
 
+  unsigned int _dimension;
+
+  stack<TermCont*> _solutions;
   vector<bool> _firstPartition;
 
-  ostream* _out;
-  unsigned int _dimension;
-  VarNames _names;
-  bool _first;
-  const TermTranslator* _translator;
-  IOHandler* _ioHandler;
-
-  vector<const char*> _outputTmp;
+  DecomConsumer* _decomConsumer;
 };
 
 #endif

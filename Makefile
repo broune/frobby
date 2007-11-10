@@ -18,7 +18,7 @@ rawSources = $(patsubst %, label/%, $(labelSources))			\
   AnalyzeAction.cpp IdealFacade.cpp Parameter.cpp			\
   ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
   IrreducibleDecomParameters.cpp BoolParameter.cpp			\
-  Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp TermList.cpp	\
+  Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp			\
   TermTranslator.cpp Timer.cpp VarNames.cpp LatticeFormatAction.cpp	\
   SliceAlgorithm.cpp							\
   Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\

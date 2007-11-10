@@ -4,25 +4,14 @@
 #include "TermTree.h"
 #include "OldPartition.h"
 
-#include "../TermTranslator.h"
-#include "../monosIO.h"
+#include "../DecomConsumer.h"
 
-DecompositionStrategy::DecompositionStrategy(ostream* out,
-					     const VarNames& names,
-					     unsigned int dimension,
-					     const TermTranslator* translator):
-  _firstPartition(dimension),
-  _out(out),
+DecompositionStrategy::DecompositionStrategy(DecomConsumer* decomConsumer,
+					     unsigned int dimension):
   _dimension(dimension),
-  _names(names),
-  _first(true),
-  _translator(translator),
-  _ioHandler(new MonosIOHandler()),
-  _outputTmp(dimension) {
-  ASSERT(out != 0);
-  
+  _firstPartition(dimension),
+  _decomConsumer(decomConsumer) {
   _solutions.push(new TermCont());
-  _ioHandler->startWritingIdeal(*_out, _names);
 }
 
 DecompositionStrategy::~DecompositionStrategy() {
@@ -33,11 +22,8 @@ DecompositionStrategy::~DecompositionStrategy() {
   delete _solutions.top();
   _solutions.pop();
   ASSERT(_solutions.empty());
-    
-  _ioHandler->doneWritingIdeal(*_out);
-  _out->flush();
 
-  delete _ioHandler;
+  delete _decomConsumer;
 }
 
 void DecompositionStrategy::getName(string& name) const {
@@ -149,8 +135,5 @@ void DecompositionStrategy::flushIfPossible() {
 
 void DecompositionStrategy::writeSolution(const Term& b) {
   ASSERT(_dimension == b.getVarCount());
-
-  for (unsigned int var = 0; var < _dimension; ++var)
-    _outputTmp[var] = (_translator->getExponentString(var, b[var] + 1));
-    _ioHandler->writeGeneratorOfIdeal(*_out, _outputTmp, _names);
+  _decomConsumer->consume(b);
 }

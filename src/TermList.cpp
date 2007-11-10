@@ -1,26 +1,22 @@
 #include "stdinc.h"
 #include "TermList.h"
-
+/*
 #include <algorithm>
 #include <functional>
 
 TermList::TermList(unsigned int varCount):
-  _varCount(varCount),
-  _allocator(varCount) {
+  Ideal(varCount) {
 }
 
 TermList::TermList(const Ideal& ideal):
-  _varCount(ideal.getVarCount()),
-  _allocator(ideal.getVarCount()) {
+  Ideal(ideal.getVarCount()) {
 
   _terms.reserve(ideal.getGeneratorCount());
   insert(ideal);
 }
 
 TermList::TermList(const TermList& ideal):
-  Ideal(),
-  _varCount(ideal._varCount),
-  _allocator(ideal._varCount) {
+  Ideal(ideal.getVarCount()) {
 
   _terms.reserve(ideal.getGeneratorCount());
   insert(ideal);
@@ -60,72 +56,9 @@ void TermList::insert(const Exponent* exponents) {
   _terms.push_back(term);
 }
 
-TermList::iterator TermList::begin() {
-  return _terms.begin();
-}
-
-TermList::iterator TermList::end() {
-  return _terms.end();
-}
-
-TermList::const_iterator TermList::begin() const {
-  return _terms.begin();
-}
-
-TermList::const_iterator TermList::end() const {
-  return _terms.end();
-}
-
 void TermList::singleDegreeSort(size_t variable) {
   std::sort(_terms.begin(), _terms.end(),
 	    Term::AscendingSingleDegreeComparator(variable, _varCount));
-}
-
-bool TermList::isIncomparable(const Term& term) const {
-  const_iterator stop = _terms.end();
-  for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (term.dominates(*it) || term.divides(*it))
-      return false;
-  return true;
-}
-
-size_t TermList::getVarCount() const {
-  return _varCount;
-}
-
-size_t TermList::getGeneratorCount() const {
-  return _terms.size();
-}
-
-bool TermList::isZeroIdeal() const {
-  return _terms.empty();
-}
-
-void TermList::getLcm(Term& lcm) const {
-  lcm.setToIdentity();
-  const_iterator stop = _terms.end();
-  for (const_iterator it = _terms.begin(); it != stop; ++it)
-    lcm.lcm(lcm, *it);
-}
-
-void TermList::getGcd(Term& gcd) const {
-  if (_terms.empty()) {
-    gcd.setToIdentity();
-    return;
-  }
-
-  gcd = _terms[0];
-  const_iterator stop = _terms.end();
-  for (const_iterator it = _terms.begin(); it != stop; ++it)
-    gcd.gcd(gcd, *it);
-}
-
-bool TermList::contains(const Exponent* term) const {
-  const_iterator stop = _terms.end();
-  for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (::dominates(term, *it, _varCount))
-      return true;
-  return false;
 }
 
 Ideal* TermList::createMinimizedColon(const Term& by) const {
@@ -238,148 +171,6 @@ void TermList::print() const {
   }
   cerr << "------------\\\\" << endl;
 }
-//*
-void TermList::minimize() {
-  if (_terms.empty())
-    return;
-
-  std::sort(_terms.begin(), _terms.end(),
-	    Term::LexComparator(_varCount));
-
-  size_t newEnd = 0;
-  for (size_t i = 0; i < _terms.size(); ++i) {
-    bool remove = false;
-
-    for (size_t j = 0; j < newEnd; ++j) {
-      if (i == j)
-	continue;
-
-      if (::divides(_terms[j], _terms[i], _varCount)) {
-	remove = true;
-	break;
-      }
-    }
-
-    if (!remove) {
-      _terms[newEnd] = _terms[i];
-      ++newEnd;
-    }
-  }
-
-  _terms.erase(_terms.begin() + newEnd, _terms.end());
-}
-//*/
-
-/*
-void TermList::minimize() {
-  for (size_t i = 0; i < _terms.size();) {
-    bool remove = false;
-    
-    size_t idealSize = _terms.size();
-    for (size_t j = 0; j < idealSize; ++j) {
-      if (i == j)
-	continue;
-      
-      if (::divides(_terms[j], _terms[i], _varCount)) {
-	remove = true;
-	break;
-      }
-    }
-    
-    if (remove) {
-      swap(_terms[i], _terms.back());
-      _terms.erase(_terms.end() - 1);
-    } else
-      ++i;
-  }
-}
-//*/
-
-const int ExponentsPerChunk = 100;
-const int MinTermsPerChunk = 2;
-
-class ChunkPool {
-public:
-  Exponent* allocate() {
-    if (_chunks.empty()) {
-      Exponent* e = new Exponent[ExponentsPerChunk];
-      return e;
-    }
-
-    Exponent* chunk = _chunks.back();
-    _chunks.pop_back();
-    return chunk;
-  }
-
-  void deallocate(Exponent* chunk) {
-    _chunks.push_back(chunk);
-  }
-  
-  ~ChunkPool() {
-    for (size_t i = 0; i < _chunks.size(); ++i)
-      delete[] _chunks[i];
-  }
-
-private:
-  vector<Exponent*> _chunks;
-} globalChunkPool;
-
-TermList::ExponentAllocator::ExponentAllocator(size_t varCount):
-  _varCount(varCount),
-  _chunk(0),
-  _chunkIterator(0),
-  _chunkEnd(0) {
-}
-
-TermList::ExponentAllocator::~ExponentAllocator() {
-  reset();
-}
-
-Exponent* TermList::ExponentAllocator::allocate() {
-  ASSERT(_varCount >= 1);
-
-  if (_chunkIterator + _varCount > _chunkEnd) {
-    if (useSingleChunking()) {
-      Exponent* term = new Exponent[_varCount];
-      _chunks.push_back(term);
-      return term;
-    }
-
-    _chunk = globalChunkPool.allocate();
-    _chunkIterator = _chunk;
-    _chunkEnd = _chunk + ExponentsPerChunk;
-
-    _chunks.push_back(_chunk);
-  }
-  
-  Exponent* term = _chunkIterator;
-  _chunkIterator += _varCount;
-  ASSERT(_chunkIterator <= _chunkEnd);
-
-  return term;
-}
-
-void TermList::ExponentAllocator::reset(size_t newVarCount) {
-  if (useSingleChunking()) {
-    for (size_t i = 0; i < _chunks.size(); ++i)
-      delete[] _chunks[i];
-    _chunks.clear();
-  } else {
-    _chunk = 0;
-    _chunkIterator = 0;
-    _chunkEnd = 0;
-    
-    for (size_t i = 0; i < _chunks.size(); ++i)
-      globalChunkPool.deallocate(_chunks[i]);
-    _chunks.clear();
-  }
-
-  _varCount = newVarCount;
-}
-
-bool TermList::ExponentAllocator::useSingleChunking() const {
-  return _varCount > ExponentsPerChunk / MinTermsPerChunk;
-}
 
 // Making it into an object ensures proper destruction and hence
 // deallocation. This prevents spurious reports from memory leak
@@ -426,3 +217,4 @@ void TermList::removeDuplicates() {
     unique(_terms.begin(), _terms.end(), Term::EqualsPredicate(_varCount));
   _terms.erase(newEnd, _terms.end());
 }
+*/
