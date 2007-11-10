@@ -3,6 +3,7 @@
 
 #include "BigIdeal.h"
 #include "IOFacade.h"
+#include "IdealFacade.h"
 
 FormatAction::FormatAction():
   _inputFormat
@@ -20,9 +21,19 @@ FormatAction::FormatAction():
    "Sort generators and variables to get canonical representation.",
    false),
 
+  _sort
+  ("sort",
+   "Sort generators according to the lexicographic order.",
+   false),
+
+  _unique
+  ("unique",
+   "Remove duplicate generators.",
+   false),
+
   _minimize 
   ("minimize",
-  "Remove non-minimial generators. This is currently implemented in a slow way.",
+  "Remove non-minimial generators.",
    false) {
 }
 
@@ -50,37 +61,44 @@ void FormatAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_outputFormat);
   parameters.push_back(&_canonicalize);
   parameters.push_back(&_minimize);
+  parameters.push_back(&_sort);
+  parameters.push_back(&_unique);
   Action::obtainParameters(parameters);
 }
 
 void FormatAction::perform() {
-  // TODO improve this casting business
-  const char* iformat = ((const string&)_inputFormat).c_str();
-  const char* oformat = ((const string&)_outputFormat).c_str();
+  string iformat = _inputFormat.getValue();
+  string oformat = _outputFormat.getValue();
 
-  if (strcmp(oformat, "auto") == 0)
+  if (oformat == "auto")
     oformat = iformat;
 
   IOFacade facade(_printActions);
 
-  if (!facade.isValidMonomialIdealFormat(iformat)) {
+  if (!facade.isValidMonomialIdealFormat(iformat.c_str())) {
     cerr << "ERROR: Unknown input format \"" << iformat<< "\"." << endl;
     exit(0);
   }
 
-  if (!facade.isValidMonomialIdealFormat(oformat)) {
+  if (!facade.isValidMonomialIdealFormat(oformat.c_str())) {
     cerr << "ERROR: Unknown output format \"" << oformat<< "\"." << endl;
     exit(0);
   }
 
   BigIdeal ideal;
-  facade.readIdeal(cin, ideal, iformat);
+  facade.readIdeal(cin, ideal, iformat.c_str());
 
+  IdealFacade idealFacade(_printActions);
   if (_minimize)
-    ideal.minimize(); // TODO: move this to some facade
+    idealFacade.minimize(ideal);
 
   if (_canonicalize)
-    ideal.sortUnique(); // TODO: move this to some facade
+    idealFacade.sortVariables(ideal);
 
-  facade.writeIdeal(cout, ideal, oformat);
+  if (_unique)
+    idealFacade.sortGeneratorsUnique(ideal);
+  else if (_sort || _canonicalize)
+    idealFacade.sortGenerators(ideal);
+
+  facade.writeIdeal(cout, ideal, oformat.c_str());
 }

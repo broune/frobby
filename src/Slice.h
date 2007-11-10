@@ -8,11 +8,6 @@ class DecomConsumer;
 
 class Slice {
  public:
-  void clear() {
-    _subtract = 0;
-    _ideal = 0;
-  }
-
   Slice();
   Slice(Ideal* ideal, Ideal* subtract,
 	size_t varCount);
@@ -23,6 +18,7 @@ class Slice {
   ~Slice();
 
   void reset(Ideal* ideal, Ideal* subtract, size_t varCount);
+  void clear();
 
   void addToSubtract(const Term& term);
   bool normalize();

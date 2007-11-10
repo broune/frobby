@@ -56,8 +56,8 @@ namespace fourti2 {
   void writeLatticeBasis(ostream& out, const BigIdeal& basis) {
     ASSERT(!basis.empty());
 
-    out << basis.size() << ' ' << basis[0].size() << '\n';
-    for (unsigned int i = 0; i < basis.size(); ++i) {
+    out << basis.getGeneratorCount() << ' ' << basis[0].size() << '\n';
+    for (unsigned int i = 0; i < basis.getGeneratorCount(); ++i) {
       const char* prefix = "";
       for (unsigned int j = 0; j < basis[i].size(); ++j) {
 	out << prefix << basis[i][j];

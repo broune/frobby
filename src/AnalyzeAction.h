@@ -3,7 +3,6 @@
 
 #include "Action.h"
 
-//TODO: rename to AnalyzeAction
 class AnalyzeAction : public Action {
  public:
   virtual const char* getName() const;

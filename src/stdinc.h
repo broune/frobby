@@ -36,6 +36,5 @@ typedef unsigned int Exponent;
 typedef mpz_class Degree;
 
 namespace constants {
-  // TODO: find exact number
   extern const char* version;
 }

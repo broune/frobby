@@ -10,7 +10,7 @@ SliceStrategy::~SliceStrategy() {
 void SliceStrategy::startingContent(const Slice& slice) {
 }
 
-void SliceStrategy::endingContent(const Slice& slice) {
+void SliceStrategy::endingContent() {
 }
 
 void SliceStrategy::getPivot(Term& pivot, const Slice& slice) {
@@ -32,7 +32,18 @@ class LabelSliceStrategy : public SliceStrategy {
   }
 
   size_t getLabelSplitVariable(const Slice& slice) {
-    return slice.getLcm().getFirstMaxExponent();
+    Term co(slice.getVarCount());
+
+    // TODO: This is duplicate code from PivotSliceStrategy. Factor
+    // out into Slice.
+    for (Ideal::const_iterator it = slice.getIdeal()->begin();
+	 it != slice.getIdeal()->end(); ++it) {
+      for (size_t var = 0; var < slice.getVarCount(); ++var)
+	if ((*it)[var] > 0)
+	  ++co[var];
+    }
+
+    return co.getFirstMaxExponent();
   }
 }; 
 
@@ -68,11 +79,10 @@ class PivotSliceStrategy : public SliceStrategy {
   }
 }; 
 
-SliceStrategy* SliceStrategy::newStrategy(const char* name) {
-  string str(name);
-  if (str == "label")
+SliceStrategy* SliceStrategy::newStrategy(const string& name) {
+  if (name == "label")
     return new LabelSliceStrategy();
-  else if (str == "pivot")
+  else if (name == "pivot")
     return new PivotSliceStrategy();
 
   return 0;
@@ -108,10 +118,10 @@ public:
     _strategy->startingContent(slice);
   }
 
-  void endingContent(const Slice& slice) {
+  void endingContent() {
     --_level;
 
-    _strategy->endingContent(slice);
+    _strategy->endingContent();
   }
 
   SplitType getSplitType(const Slice& slice) {
@@ -135,4 +145,56 @@ private:
 
 SliceStrategy* SliceStrategy::addStatistics(SliceStrategy* strategy) {
   return new StatisticsSliceStrategy(strategy);
+}
+
+class DebugSliceStrategy : public SliceStrategy {
+ public:
+  DebugSliceStrategy(SliceStrategy* strategy):
+    _strategy(strategy),
+    _level(0) {
+  }
+
+  ~DebugSliceStrategy() {
+    delete _strategy;
+  }
+
+  void startingContent(const Slice& slice) {
+    ++_level;
+    cerr << "DEBUG " << _level
+	 << ": computing content of the following slice." << endl;
+    slice.print();
+    _strategy->startingContent(slice);
+  }
+
+  void endingContent() {
+    cerr << "DEBUG " << _level
+	 << ": done computing content of that slice." << endl;
+    _strategy->endingContent();
+    --_level;
+  }
+
+  SplitType getSplitType(const Slice& slice) {
+    return _strategy->getSplitType(slice);
+  }
+
+  void getPivot(Term& pivot, const Slice& slice) {
+    _strategy->getPivot(pivot, slice);
+    cerr << "DEBUG " << _level
+	 << ": performing pivot split on " << pivot << '.' << endl;
+  }
+
+  size_t getLabelSplitVariable(const Slice& slice) {
+    size_t var = _strategy->getLabelSplitVariable(slice);
+    cerr << "DEBUG " << _level
+	 << ": performing label split on var " << var << '.' << endl;
+    return var;
+  }
+
+private:
+  SliceStrategy* _strategy;
+  size_t _level;
+};
+
+SliceStrategy* SliceStrategy::addDebugOutput(SliceStrategy* strategy) {
+  return new DebugSliceStrategy(strategy);
 }

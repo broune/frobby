@@ -15,17 +15,18 @@ rawSources = $(patsubst %, label/%, $(labelSources))			\
   GenerateIdealAction.cpp GenerateFrobeniusAction.cpp			\
   IrreducibleDecomFacade.cpp FrobeniusAction.cpp Facade.cpp		\
   IOFacade.cpp DynamicFrobeniusFacade.cpp RandomDataFacade.cpp		\
-  AnalyzeAction.cpp AnalyzeFacade.cpp Parameter.cpp			\
+  AnalyzeAction.cpp IdealFacade.cpp Parameter.cpp			\
   ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
   IrreducibleDecomParameters.cpp BoolParameter.cpp			\
   Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp TermList.cpp	\
   TermTranslator.cpp Timer.cpp VarNames.cpp LatticeFormatAction.cpp	\
   SliceAlgorithm.cpp							\
   Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\
-  AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp uwe.cpp		\
-  PrimaryDecomFacade.cpp PrimaryDecomAction.cpp Slice.cpp		\
+  AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp			\
+  PrimaryDecomAction.cpp Slice.cpp					\
   IndependenceSplitter.cpp Projection.cpp DecomWriter.cpp		\
-  SliceStrategy.cpp
+  SliceStrategy.cpp DebugDecomConsumer.cpp lattice.cpp			\
+  LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\
@@ -75,11 +76,16 @@ ifeq ($(MODE), profile)
 endif
 
 test: all
+ifdef TESTCASE
+	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
+	cd test/$(TESTCASE); ./runtests $(TESTARGS); cd ../..
+else
 	export frobby=bin/$(program); ./test/runtests
+endif
 
 $(outdir): $(outdir)label
 	mkdir -p $(outdir)
-$(outdir)/label:
+$(outdir)label:
 	mkdir -p $(outdir)label
 
 
@@ -107,8 +113,15 @@ depend:
 	g++ -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
 -include .depend
 
-clean:
-	rm -rf bin *~ *.orig src/*~ src/*.orig frobby_v*.tar.gz
+clean: tidy
+	rm -rf bin frobby_v*.tar.gz
+
+tidy:
+	find -name "*~" -exec rm -f {} \;
+	find -name "*.stackdump" -exec rm -f {} \;
+	find -name "gmon.out" -exec rm -f {} \;
+	find -name "*.orig" -exec rm -f {} \;
+	find -name "core" -exec rm -f {} \;
 
 # ***** Mercurial
 
@@ -118,7 +131,7 @@ commit: test
 
 # ***** Distribution
 
-distribution: test
+distribution: test tidy
 	make depend
 	cd ..;tar --create --file=frobby_v$(ver).tar.gz frobby/ --gzip \
 	  --exclude=*/data/* --exclude=*/data \
@@ -126,6 +139,9 @@ distribution: test
 	  --exclude=*/bin/* --exclude=*/bin \
 	  --exclude=*/save/* --exclude=*/save \
 	  --exclude=*/4ti2/* \
-	  --exclude=*.tar.gz --exclude=*~ --exclude=*.orig
+	  --exclude=*.tar.gz \
+          --exclude=*~ --exclude=*.orig \
+          --exclude=gmon.out \
+          --exclude=*.stackdump
 	mv ../frobby_v$(ver).tar.gz .
 	ls -l frobby_v$(ver).tar.gz

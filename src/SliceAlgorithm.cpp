@@ -16,15 +16,24 @@
 
 #include "IndependenceSplitter.h"
 
-SliceAlgorithm::SliceAlgorithm() {
+SliceAlgorithm::SliceAlgorithm():
+  _useIndependence(true),
+  _decomConsumer(0),
+  _strategy(0) {
 }
 
 void SliceAlgorithm::setConsumer(DecomConsumer* consumer) {
+  delete _decomConsumer;
   _decomConsumer = consumer;
 }
 
 void SliceAlgorithm::setStrategy(SliceStrategy* strategy) {
+  delete _strategy;
   _strategy = strategy;
+}
+
+void SliceAlgorithm::setUseIndependence(bool useIndependence) {
+  _useIndependence = useIndependence;
 }
 
 void SliceAlgorithm::runAndDeleteIdealAndReset(Ideal* ideal) {
@@ -33,26 +42,32 @@ void SliceAlgorithm::runAndDeleteIdealAndReset(Ideal* ideal) {
 
   if (!ideal->isZeroIdeal()) {
     Slice slice(ideal->clone(),
-		new TermList(ideal->getVariableCount()),
-		Term(ideal->getVariableCount()));
+		new TermList(ideal->getVarCount()),
+		Term(ideal->getVarCount()));
     content(slice);
   }
 
+  delete ideal;
+
+  // Now reset the fields to their default values.
   delete _decomConsumer;
   _decomConsumer = 0;
 
   delete _strategy;
   _strategy = 0;
 
-  delete ideal;
+  _useIndependence = true;
 }
 
 // Requires slice.getIdeal() to be minimized.
 bool SliceAlgorithm::independenceSplit(Slice& slice) {
+  if (!_useIndependence)
+    return false;
+
   static Partition partition;
 
   IndependenceSplitter::computePartition(partition, slice);
-  if (IndependenceSplitter::shouldPerformSplit(partition, slice))
+  if (!IndependenceSplitter::shouldPerformSplit(partition, slice))
     return false;
 
   IndependenceSplitter indep(partition, slice);
@@ -60,16 +75,74 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
   DecomConsumer* oldConsumer = _decomConsumer;
   _decomConsumer = &indep;
 
+  bool decomMustBeEmpty = false;
+
   Slice projSlice;
   for (size_t i = 0; i < indep.getChildCount(); ++i) {
     indep.setCurrentChild(i, projSlice);
     content(projSlice, true);
+    if (indep.currentChildDecomIsEmpty()) {
+      decomMustBeEmpty = true;
+      break;
+    }
   }
   _decomConsumer = oldConsumer;
 
-  indep.generateDecom(_decomConsumer);
+  if (!decomMustBeEmpty)
+    indep.generateDecom(_decomConsumer);
 
   return true;
+}
+
+void SliceAlgorithm::labelSplit2(Slice& slice) {
+  size_t var = _strategy->getLabelSplitVariable(slice);
+
+  Ideal* ideal = slice.getIdeal()->createNew(slice.getVarCount());
+  
+  Ideal::const_iterator stop = slice.getIdeal()->end();
+  for (Ideal::const_iterator it = slice.getIdeal()->begin();
+       it != stop; ++it)
+    if ((*it)[var] == 0)
+      ideal->insert(*it);
+
+  Term pivot(slice.getVarCount());
+  pivot[var] = 1;
+  ideal->insert(pivot);
+  
+  size_t childCount = 0;
+  for (Ideal::const_iterator it = slice.getIdeal()->begin();
+       it != stop; ++it) {
+    if ((*it)[var] != 1)
+      continue;
+    if (childCount > 0)
+      slice.getSubtract()->insert(pivot); // This is the previous pivot
+
+    pivot = *it;
+    pivot[var] -= 1;
+
+    {
+      Slice child(ideal->createMinimizedColon(pivot),
+		  slice.getSubtract()->createMinimizedColon(pivot),
+		  slice.getMultiply(), pivot);
+
+      child.normalize();
+      content(child);
+    }
+    ++childCount;
+  }
+
+  delete ideal;
+
+  pivot.setToIdentity();
+  pivot[var] = 1;
+
+  slice.getIdeal()->colonReminimize(pivot);
+  slice.getSubtract()->colonReminimize(pivot);
+  slice.getMultiply()[var] += 1;
+  slice.normalize();
+
+
+  content(slice);
 }
 
 void SliceAlgorithm::labelSplit(Slice& slice) {
@@ -113,6 +186,7 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
   Term pivot(slice.getVarCount());
   _strategy->getPivot(pivot, slice);
 
+  // Handle inner slice.
   {
     Slice inner(slice.getIdeal()->createMinimizedColon(pivot),
 		slice.getSubtract()->createMinimizedColon(pivot),
@@ -121,17 +195,12 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
     content(inner);
   }
 
-  {
-    Slice outer(slice.getIdeal()->clone(),
-		slice.getSubtract()->clone(),
-		slice.getMultiply());
-
-    outer.getIdeal()->removeStrictMultiples(pivot);
-    if (pivot.getSizeOfSupport() > 1)
-      outer.getSubtract()->insert(pivot);
-
-    content(outer);
-  }
+  // Handle outer slice.
+  slice.getIdeal()->removeStrictMultiples(pivot);
+  if (pivot.getSizeOfSupport() > 1)
+    slice.getSubtract()->insert(pivot);
+  
+  content(slice);
 }
 
 void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
@@ -144,7 +213,7 @@ void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
     if (simplifiedAndDependent || !independenceSplit(slice)) {
       switch (_strategy->getSplitType(slice)) {
       case SliceStrategy::LabelSplit:
-	labelSplit(slice);
+	labelSplit2(slice);
 	break;
 
       case SliceStrategy::PivotSplit:
@@ -154,5 +223,5 @@ void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
     }
   }
 
-  _strategy->endingContent(slice);
+  _strategy->endingContent();
 }

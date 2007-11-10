@@ -2,10 +2,13 @@
 #define DECOM_WRITER_GUARD
 
 #include "VarNames.h"
-#include "TermTranslator.h"
-#include "io.h"
 #include "DecomConsumer.h"
-#include "Term.h"
+
+class IOHandler;
+class TermTranslator;
+class Term;
+
+#include <vector>
 
 class DecomWriter : public DecomConsumer {
 public:

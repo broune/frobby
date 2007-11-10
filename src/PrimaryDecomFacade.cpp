@@ -12,8 +12,13 @@ void PrimaryDecomFacade::
 computePrimaryDecom(BigIdeal& ideal, ostream& out) {
   beginAction("Computing primary decomposition using the Uwe algorithm.\n");
 
+  cerr << "ERROR: not implemented" << endl;
+  ASSERT(false);
+  exit(1);
+  
+
   vector<BigIdeal*> ideals;
-  ::computePrimaryDecom(ideal, ideals);
+  //  ::computePrimaryDecom(ideal, ideals);
 
   endAction();
 

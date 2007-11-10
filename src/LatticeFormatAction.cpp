@@ -4,6 +4,7 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "fplllIO.h"
+#include "LatticeFacade.h"
 
 LatticeFormatAction::LatticeFormatAction():
   _inputFormat
@@ -48,31 +49,31 @@ void LatticeFormatAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void LatticeFormatAction::perform() {
-  // TODO improve this casting business
-  const char* iformat = ((const string&)_inputFormat).c_str();
-  const char* oformat = ((const string&)_outputFormat).c_str();
+  string iformat = _inputFormat.getValue();
+  string oformat = _outputFormat.getValue();
 
-  if (strcmp(oformat, "auto") == 0)
+  if (oformat == "auto")
     oformat = iformat;
 
   IOFacade facade(_printActions);
 
-  if (!facade.isValidLatticeFormat(iformat)) {
+  if (!facade.isValidLatticeFormat(iformat.c_str())) {
     cerr << "ERROR: Unknown input format \"" << iformat<< "\"." << endl;
     exit(0);
   }
 
-  if (!facade.isValidLatticeFormat(oformat)) {
+  if (!facade.isValidLatticeFormat(oformat.c_str())) {
     cerr << "ERROR: Unknown output format \"" << oformat<< "\"." << endl;
     exit(0);
   }
 
   BigIdeal basis;
-  facade.readLattice(cin, basis, iformat);
+  facade.readLattice(cin, basis, iformat.c_str());
 
-  // TODO: more this to some facade.
-  if (_zero)
-    fplll::makeZeroesInLatticeBasis(basis);
+  if (_zero) {
+    LatticeFacade latticeFacade(_printActions);
+    latticeFacade.makeZeroesInLatticeBasis(basis);
+  }
 
-  facade.writeLattice(cout, basis, oformat);
+  facade.writeLattice(cout, basis, oformat.c_str());
 }

@@ -7,9 +7,6 @@ namespace fplll {
   void writeLatticeBasis(ostream& out, const BigIdeal& basis);
 
   void readLatticeBasis(istream& in, BigIdeal& basis);
-
-  // TODO: more this somewhere else.
-  void makeZeroesInLatticeBasis(BigIdeal& basis);
 }
 
 #endif

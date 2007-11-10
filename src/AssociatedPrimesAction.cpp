@@ -9,7 +9,7 @@
 AssociatedPrimesAction::AssociatedPrimesAction():
   _algorithm
 ("alg",
- "The algorithm used. Either uwe or irrdecom.",
+ "The algorithm used. Only current options is irrdecom.",
  "irrdecom") {
 }
 
@@ -51,8 +51,6 @@ void AssociatedPrimesAction::perform() {
   if (alg == "irrdecom") {
     IrreducibleDecomParameters params;
     facade.computeAPUsingIrrDecom(ideal, params, cout);
-  } else if (alg == "uwe") {
-    facade.computeAPUsingUwe(ideal, cout);
   } else {
     cout << "ERROR: Unknown algorithm parameter \"" << alg << "\"." << endl;
     exit(1);

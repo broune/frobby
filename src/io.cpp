@@ -18,7 +18,7 @@ IOHandler::~IOHandler() {
 
 void IOHandler::writeIdeal(ostream& out, const BigIdeal& ideal) {
   startWritingIdeal(out, ideal.getNames());
-  for (size_t i = 0; i < ideal.size(); ++i)
+  for (size_t i = 0; i < ideal.getGeneratorCount(); ++i)
     writeGeneratorOfIdeal(out, ideal[i], ideal.getNames());
   doneWritingIdeal(out);
 }

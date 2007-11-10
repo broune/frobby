@@ -12,6 +12,7 @@ public:
   virtual const char* getParameterName() const;
 
   virtual void getValue(string& str) const;
+  const string& getValue() const;
 
   operator const string&() const;
 

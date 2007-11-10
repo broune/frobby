@@ -4,6 +4,7 @@
 #include "DecomConsumer.h"
 #include "Partition.h"
 #include "Projection.h"
+#include "Ideal.h"
 #include <vector>
 
 class Slice;
@@ -12,7 +13,9 @@ class Term;
 
 class IndependenceSplitter : public DecomConsumer {
  public:
+  // Slice must be simplified and normalized.
   IndependenceSplitter(const Partition& partition, Slice& slice);
+  ~IndependenceSplitter();
 
   static void computePartition(Partition& partition, const Slice& slice);
   static bool shouldPerformSplit(const Partition& partition,
@@ -20,30 +23,41 @@ class IndependenceSplitter : public DecomConsumer {
 
   size_t getChildCount() const;
 
+  // It is only allowed to set the current child to each value once.
   void setCurrentChild(size_t child, Slice& slice);
+  bool currentChildDecomIsEmpty() const;
 
   void generateDecom(DecomConsumer* consumer);
 
   void consume(const Term& term);
 
  private:
+  struct Child {
+    Child(): decom(0), ideal(0), subtract(0) {}
+
+    Ideal* decom;
+    Ideal* ideal;
+    Ideal* subtract;
+    Projection projection;
+
+    bool operator<(const Child& child) const;
+  };
+
+  void initializeChildren(const Partition& partition);
+  void populateChildIdealsAndSingletonDecom(const vector<Child*>& childAt);
+  void populateChildSubtracts(const vector<Child*>& childAt);
+  
   void generateDecom(DecomConsumer* consumer,
 		     size_t child,
 		     Term& partial);
 
-  struct Child {
-    Child(): ideal(0) {}
-
-    Ideal* ideal; // TODO: rename to decom
-    Projection projection;
-  };
-
   Slice& _slice;
   vector<Child> _children;
   size_t _childCount;
-  bool _anySingletons;
   bool _shouldSplit;
   size_t _currentChild;
+  Term _singletonDecom;
+  Ideal* _mixedProjectionSubtract;
 };
 
 #endif

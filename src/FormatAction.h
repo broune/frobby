@@ -23,6 +23,8 @@ class FormatAction : public Action {
   StringParameter _inputFormat;
   StringParameter _outputFormat;
   BoolParameter _canonicalize;
+  BoolParameter _sort;
+  BoolParameter _unique;
   BoolParameter _minimize;
 };
 

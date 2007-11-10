@@ -15,8 +15,6 @@ TermTranslator::TermTranslator(const VarNames& names,
   for (unsigned int i = 0; i < _decompressionMaps->size(); ++i) {
     _stringDecompressionMaps[i].resize((*_decompressionMaps)[i].size());
     for (unsigned int j = 0; j < (*_decompressionMaps)[i].size(); ++j) {
-      // TODO: this should be possible without using stringstream - check 
-      // the GMP docs.
       char* str = 0;
 
       if ((*_decompressionMaps)[i][j] != 0) {

@@ -7,23 +7,148 @@
 
 IndependenceSplitter::IndependenceSplitter(const Partition& partition,
 					   Slice& slice):
-  _slice(slice) {
-  _childCount = partition.getSetCount();
+  _slice(slice),
+  _childCount(0),
+  _singletonDecom(slice.getVarCount()),
+  _mixedProjectionSubtract(0) {
 
-  for (size_t child = 0; child < _childCount; ++child) {
-    size_t childVarCount = partition.getSetSize(child);
+  initializeChildren(partition);
 
-    if (childVarCount == 1) {
-      _anySingletons = true;
+  // A term belongs to the child childAt[i] if term[i] > 0.
+  vector<Child*> childAt(slice.getVarCount()); 
+  for (size_t c = 0; c < _children.size(); ++c)
+    for (size_t var = 0; var < _children[c].projection.getRangeVarCount();
+	 ++var)
+      childAt[_children[c].projection.getDomainVar(var)] = &(_children[c]);
+
+  populateChildIdealsAndSingletonDecom(childAt);
+  populateChildSubtracts(childAt);
+
+  _childCount = _children.size();
+
+  // We do not need ideal or subtract anymore, so we can clear them
+  // now to save memory.
+  _slice.getIdeal()->clear();
+  _slice.getSubtract()->clear();
+
+  // Handle the smallest children first to save memory.
+  sort(_children.begin(), _children.end());
+}
+
+// Set up entries in _children for those partition sets that are not
+// singletons (i.e. contains more than one variable).
+void IndependenceSplitter::initializeChildren(const Partition& partition) {
+  size_t setCount = partition.getSetCount();
+  for (size_t set = 0; set < setCount; ++set) {
+    size_t childVarCount = partition.getSetSize(set);
+
+    if (childVarCount == 1)
+      continue;
+
+    _children.resize(_children.size() + 1);
+    Child& child = _children.back();
+
+    child.projection.reset(partition, set);
+    child.decom = _slice.getIdeal()->createNew(childVarCount);
+
+    child.ideal = _slice.getIdeal()->createNew(childVarCount);
+    child.subtract = _slice.getSubtract()->createNew(childVarCount);
+  }
+}
+
+// Distribute the the terms of _slice.getIdeal() to the ideals of the
+// children. Also set up _singletonDecom to be the lcm of the
+// decompositions of the singleton children (i.e. those that contain
+// only one variable). Each of these decompositions contain only 1
+// element, so this is easy to do and _singletonDecom ends up
+// containing all the information we need about the singleton
+// decompositions.
+void IndependenceSplitter::populateChildIdealsAndSingletonDecom
+(const vector<Child*>& childAt) {
+  // tmp is static to avoid an allocation for each call.
+  static Term tmp;
+  if (tmp.getVarCount() < _slice.getVarCount())
+    tmp.reset(_slice.getVarCount());
+  Exponent* exponents = tmp.begin();
+
+  Ideal::const_iterator idealEnd = _slice.getIdeal()->end();
+  for (Ideal::const_iterator it = _slice.getIdeal()->begin();
+       it != idealEnd; ++it) {
+    size_t var = getFirstNonZeroExponent(*it, _slice.getVarCount());
+    ASSERT(var < _slice.getVarCount());
+
+    Child* child = childAt[var];
+    if (child == 0) {
+      // This relies on _slice.getIdeal() being minimized.
+      _singletonDecom[var] = _slice.getMultiply()[var] + ((*it)[var] - 1);
       continue;
     }
 
-    _children.resize(_children.size() + 1);
+    child->projection.project(exponents, *it);
+    ASSERT(!isIdentity(exponents, child->projection.getRangeVarCount()));
 
-    _children.back().projection.reset(partition, child);
-    _children.back().ideal = _slice.getIdeal()->createNew(childVarCount);
+    child->ideal->insert(exponents);
   }
-  _childCount = _children.size();
+}
+
+// Distributes _slice.getSubtract() among the children. Terms that
+// project into more than one child are saved in
+// _mixedProjectionSubtract.
+void IndependenceSplitter::populateChildSubtracts
+(const vector<Child*>& childAt) {
+  // tmp is static to avoid an allocation for each call.
+  static Term tmp;
+  if (tmp.getVarCount() < _slice.getVarCount())
+    tmp.reset(_slice.getVarCount());
+  Exponent* exponents = tmp.begin();
+
+  Ideal::const_iterator subtractEnd = _slice.getSubtract()->end();
+  for (Ideal::const_iterator it = _slice.getSubtract()->begin();
+       it != subtractEnd; ++it) {
+    bool hasMixedProjection = false;
+
+    Child* child = 0;
+    for (size_t var = 0; var < _slice.getVarCount(); ++var) {
+      if ((*it)[var] == 0)
+	continue;
+      if (child == 0) {
+	child = childAt[var];
+      }
+      else if (child != childAt[var]) {
+	// It is assumed that _slice is simplified and normalized,
+	// which implies that no term of _subtract can be mixed over a
+	// singleton child.
+	ASSERT(childAt[var] != 0);
+
+	hasMixedProjection = true;
+	break;
+      }
+    }
+    ASSERT(child != 0);
+
+    if (hasMixedProjection) {
+      if (_mixedProjectionSubtract == 0)
+	_mixedProjectionSubtract =
+	  _slice.getIdeal()->createNew(_slice.getVarCount());
+      
+      product(exponents, *it, _slice.getMultiply(), _slice.getVarCount());
+      _mixedProjectionSubtract->insert(exponents);
+    } else {
+      child->projection.project(exponents, *it);
+      ASSERT(!isIdentity(exponents, child->projection.getRangeVarCount()));
+
+      child->subtract->insert(exponents);
+    }
+  }
+}
+
+IndependenceSplitter::~IndependenceSplitter() {
+  size_t size = _children.size();
+  for (size_t i = 0; i < size; ++i) {
+    delete _children[i].decom;
+    delete _children[i].ideal;
+    delete _children[i].subtract;
+  }
 }
 
 void IndependenceSplitter::computePartition
@@ -71,61 +196,69 @@ size_t IndependenceSplitter::getChildCount() const {
   return _childCount;
 }
 
-void IndependenceSplitter::setCurrentChild(size_t child,
+void IndependenceSplitter::setCurrentChild(size_t childIndex,
 					   Slice& projSlice) {
-  ASSERT(child < _childCount);
+  ASSERT(childIndex < _childCount);
 
-  _currentChild = child;
+  _currentChild = childIndex;
+  Child& child = _children[childIndex];
 
-  Projection& projection = _children[child].projection;
-  size_t varCount = projection.getRangeVarCount();
+  ASSERT(child.ideal != 0);
+  ASSERT(child.subtract != 0);
 
-  projSlice.reset(_slice.getIdeal()->createNew(varCount),
-		  _slice.getSubtract()->createNew(varCount),
-		  varCount);
+  projSlice.reset(child.ideal, child.subtract,
+		  child.projection.getRangeVarCount());
+  child.projection.project(projSlice.getMultiply(), _slice.getMultiply());
 
-  projection.project(projSlice.getMultiply(), _slice.getMultiply());
+  child.ideal = 0;
+  child.subtract = 0;
+}
 
-  Term tmp(varCount);
-  Ideal::const_iterator idealEnd = _slice.getIdeal()->end();
-  for (Ideal::const_iterator it = _slice.getIdeal()->begin();
-       it != idealEnd; ++it) {
-    projection.project(tmp, *it);
-    if (!tmp.isIdentity())
-      projSlice.getIdeal()->insert(tmp);
-  }
+bool IndependenceSplitter::currentChildDecomIsEmpty() const {
+  ASSERT(_currentChild < _children.size());
+  ASSERT(_children[_currentChild].decom != 0);
+
+  return _children[_currentChild].decom->getGeneratorCount() == 0;
 }
 
 void IndependenceSplitter::consume(const Term& term) {
-  _children[_currentChild].ideal->insert(term);
+  _children[_currentChild].decom->insert(term);
 }
 
 void IndependenceSplitter::generateDecom(DecomConsumer* consumer) {
-  Term partial(_slice.getVarCount());
-
-  // This relies on _slice.getIdeal() to be minimized.
-  if (_anySingletons > 0) {
-    partial = _slice.getLcm();
-    for (size_t i = 0; i < _slice.getVarCount(); ++i)
-      if (partial[i] > 0)
-	partial[i] = _slice.getMultiply()[i] + (partial[i] - 1);
-  }
-
-  generateDecom(consumer, 0, partial);
+  generateDecom(consumer, 0, _singletonDecom);
 }
 
+// This method tries out all possible ways to combine one
+// decomposition element from each child. The singleton children are
+// already dealth with because we start out with partial being equal
+// to _singletonDecom. We also need to discard the decomposition
+// elements that we can make this way that are contained within
+// _mixedProjectionSubtract.
 void IndependenceSplitter::generateDecom(DecomConsumer* consumer,
 					 size_t child,
 					 Term& partial) {
   if (child == _childCount) {
-    consumer->consume(partial);
+    if (_mixedProjectionSubtract == 0 ||
+	!_mixedProjectionSubtract->contains(partial))
+      consumer->consume(partial);
     return;
   }
 
   const Child& c = _children[child];
-  Ideal::const_iterator stop = c.ideal->end();
-  for (Ideal::const_iterator it = c.ideal->begin(); it != stop; ++it) {
+  Ideal::const_iterator stop = c.decom->end();
+  for (Ideal::const_iterator it = c.decom->begin(); it != stop; ++it) {
     c.projection.inverseProject(partial, *it);
     generateDecom(consumer, child + 1, partial);
   }
+}
+
+bool IndependenceSplitter::Child::operator<(const Child& child) const {
+  ASSERT(child.ideal != 0);
+  ASSERT(ideal != 0);
+
+  if (projection.getRangeVarCount() != child.projection.getRangeVarCount())
+    return projection.getRangeVarCount() < child.projection.getRangeVarCount();
+  else
+    return ideal->getGeneratorCount() < child.ideal->getGeneratorCount();
 }

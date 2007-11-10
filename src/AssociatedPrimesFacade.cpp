@@ -5,7 +5,9 @@
 #include "IrreducibleDecomParameters.h"
 #include "BigIdeal.h"
 #include "IOFacade.h"
-#include "uwe.h"
+#include "TermList.h"
+#include "DecomRecorder.h"
+#include "TermTranslator.h"
 
 #include <sstream>
 
@@ -14,43 +16,40 @@ AssociatedPrimesFacade::AssociatedPrimesFacade(bool printActions):
 }
 
 void AssociatedPrimesFacade::
-computeAPUsingIrrDecom(BigIdeal& ideal,
+computeAPUsingIrrDecom(BigIdeal& bigIdeal,
 			const IrreducibleDecomParameters& params,
 			ostream& out) {
-  // TODO: This really needs to be done better.
-
-  stringstream tmp;
   IrreducibleDecomFacade facade(isPrintingActions(), params);
-  facade.computeIrreducibleDecom(ideal, tmp);
+  
+  Ideal* ideal;
+  TermTranslator* translator;
+  bigIdeal.buildAndClear(ideal, translator, false);
+
+  TermList decom(ideal->getVarCount());
+
+  facade.computeIrreducibleDecom(ideal, new DecomRecorder(&decom));
 
   beginAction("Computing associated primes from irreducible decomposition.");
 
-  // Recover the ideal written to tmp.
-  IOFacade ioFacade(false);
-  ioFacade.readIdeal(tmp, ideal);
+  // Take radical.
+  Ideal::iterator stop = decom.end();
+  for (Ideal::iterator it = decom.begin(); it != stop; ++it) {
+    for (size_t var = 0; var < decom.getVarCount(); ++var) {
+      if (translator->getExponent(var, (*it)[var]) == 0)
+	(*it)[var] = 0;
+      else
+	(*it)[var] = 1;
+    }
+  }
+  delete translator;
 
-  // Take radicals and then remove duplicates.
-  for (size_t term = 0; term < ideal.size(); ++term)
-    for (size_t var = 0; var < ideal.getNames().getVarCount(); ++var)
-      if (ideal.getExponent(term, var) > 1)
-	ideal.setExponent(term, var, 1);
+  decom.removeDuplicates();
 
-  ideal.sortUnique();
-
-  ioFacade.writeIdeal(out, ideal);
-
-  endAction();
-}
-
-void AssociatedPrimesFacade::computeAPUsingUwe
-(BigIdeal& ideal, ostream& out) {
-  beginAction("Computing associated primes using the Uwe algorithm.\n");
-
-  BigIdeal primes(ideal.getNames());
-  ::computeAssociatedPrimes(ideal, primes);
-
-  endAction();
+  bigIdeal.clear();
+  bigIdeal.insert(decom);
 
   IOFacade ioFacade(isPrintingActions());
-  ioFacade.writeIdeal(out, primes);
+  ioFacade.writeIdeal(out, bigIdeal);
+
+  endAction();
 }

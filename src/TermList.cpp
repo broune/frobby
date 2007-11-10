@@ -10,8 +10,8 @@ TermList::TermList(unsigned int varCount):
 }
 
 TermList::TermList(const Ideal& ideal):
-  _varCount(ideal.getVariableCount()),
-  _allocator(ideal.getVariableCount()) {
+  _varCount(ideal.getVarCount()),
+  _allocator(ideal.getVarCount()) {
 
   _terms.reserve(ideal.getGeneratorCount());
   insert(ideal);
@@ -60,6 +60,14 @@ void TermList::insert(const Exponent* exponents) {
   _terms.push_back(term);
 }
 
+TermList::iterator TermList::begin() {
+  return _terms.begin();
+}
+
+TermList::iterator TermList::end() {
+  return _terms.end();
+}
+
 TermList::const_iterator TermList::begin() const {
   return _terms.begin();
 }
@@ -81,11 +89,7 @@ bool TermList::isIncomparable(const Term& term) const {
   return true;
 }
 
-size_t TermList::size() const {
-  return _terms.size();
-}
-
-size_t TermList::getVariableCount() const {
+size_t TermList::getVarCount() const {
   return _varCount;
 }
 
@@ -116,10 +120,10 @@ void TermList::getGcd(Term& gcd) const {
     gcd.gcd(gcd, *it);
 }
 
-bool TermList::contains(const Term& term) const {
+bool TermList::contains(const Exponent* term) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (term.dominates(*it))
+    if (::dominates(term, *it, _varCount))
       return true;
   return false;
 }
@@ -291,27 +295,6 @@ void TermList::minimize() {
 }
 //*/
 
-/*
-#include "TermTree.h"
-void TermList::minimize() {
-  TermTree tree(getVariableCount());
-  
-  Term term(getVariableCount());
-
-  const_iterator stop = _terms.end();
-  for (const_iterator it = _terms.begin(); it != stop; ++it) {
-    term = *it;
-    if (!tree.getDivisor(term)) {
-      tree.removeDominators(term);
-      tree.insert(term);
-    }
-  }
-  
-  clear();
-  tree.getTerms(*this);
-}
-//*/
-
 const int ExponentsPerChunk = 100;
 const int MinTermsPerChunk = 2;
 
@@ -435,4 +418,11 @@ void* TermList::operator new(size_t size) {
 
 void TermList::operator delete(void* p, size_t size) {
   termListCache.deallocate(p, size);
+}
+
+void TermList::removeDuplicates() {
+  std::sort(_terms.begin(), _terms.end(), Term::LexComparator(_varCount));
+  iterator newEnd =
+    unique(_terms.begin(), _terms.end(), Term::EqualsPredicate(_varCount));
+  _terms.erase(newEnd, _terms.end());
 }

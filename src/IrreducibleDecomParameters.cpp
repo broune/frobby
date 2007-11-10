@@ -34,23 +34,29 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
    "Use a bound to eliminate some useless computations when solving an IDP.",
      false),
   
-  _usePartition
-  ("partition",
+  _useIndependence
+  ("independence",
    "Perform independence splits when possible.",
    true),
   
   _useSlice
   ("slice",
    "Use the Slice Algorithm in place of the Label Algorithm.",
-   true) {
+   true),
+
+  _split
+  ("split",
+   "The split selection strategy to use. Options are label and minart. (slice only)",
+ "label") {
   addParameter(&_doBenchmark);
   addParameter(&_printDebug);
   addParameter(&_printProgress);
   addParameter(&_printStatistics);
   addParameter(&_skipRedundant);
   addParameter(&_useBound);
-  addParameter(&_usePartition);
+  addParameter(&_useIndependence);
   addParameter(&_useSlice);
+  addParameter(&_split);
 }
 
 void IrreducibleDecomParameters::setSkipRedundant(bool value) {
@@ -81,10 +87,14 @@ bool IrreducibleDecomParameters::getUseBound() const {
   return _useBound;
 }
 
-bool IrreducibleDecomParameters::getUsePartition() const {
-  return _usePartition;
+bool IrreducibleDecomParameters::getUseIndependence() const {
+  return _useIndependence;
 }
 
 bool IrreducibleDecomParameters::getUseSlice() const {
   return _useSlice;
+}
+
+const string& IrreducibleDecomParameters::getSplit() const {
+  return _split;
 }

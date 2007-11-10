@@ -26,14 +26,6 @@ int main(int argc, const char** argv) {
     return 1;
   }
 
-  // TODO: move this into Action
-  if (action->acceptsNonParameter() && argc > 1 && argv[1][0] != '-') {
-    if (!action->processNonParameter(argv[1]))
-      exit(1);
-    --argc;
-    ++argv;
-  }
-
   action->parseCommandLine(argc - 1, argv + 1);
   action->perform();
   delete action;

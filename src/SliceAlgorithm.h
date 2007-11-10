@@ -21,6 +21,7 @@ class SliceAlgorithm {
   // These take over ownership of the parameter.
   void setConsumer(DecomConsumer* consumer);
   void setStrategy(SliceStrategy* strategy);
+  void setUseIndependence(bool useIndependence);
 
   // Runs the algorithm and deletes the ideal, the consumer and the
   // strategy.
@@ -29,9 +30,11 @@ class SliceAlgorithm {
  private:
   void content(Slice& slice, bool simplifiedAndDependent = false);
   void labelSplit(Slice& slice);
+  void labelSplit2(Slice& slice);
   void pivotSplit(Slice& slice);
   bool independenceSplit(Slice& slice);
-  
+
+  bool _useIndependence;
   DecomConsumer* _decomConsumer;
   SliceStrategy* _strategy;
 };

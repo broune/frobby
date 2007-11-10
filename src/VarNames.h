@@ -13,6 +13,8 @@ public:
   // Returns VarNames::UNKNOWN if name is not known.
   int getIndex(const string& name) const;
 
+  bool contains(const string& name) const;
+
   // The returned reference can become invalid next time addVar is
   // called.
   const string& getName(int index) const;
@@ -42,7 +44,6 @@ public:
   }
 
 private:
-  bool contains(const string& name) const;
 
   map<string, int> _nameToIndex;
   vector<string> _indexToName;

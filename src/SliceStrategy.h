@@ -3,6 +3,7 @@
 
 #include "Slice.h"
 #include "Term.h"
+#include <string>
 
 class SliceStrategy {
  public:
@@ -14,15 +15,16 @@ class SliceStrategy {
   };
 
   virtual void startingContent(const Slice& slice);
-  virtual void endingContent(const Slice& slice);
+  virtual void endingContent();
 
   virtual SplitType getSplitType(const Slice& slice) = 0;
 
   virtual void getPivot(Term& pivot, const Slice& slice);
   virtual size_t getLabelSplitVariable(const Slice& slice);
 
-  static SliceStrategy* newStrategy(const char* name);
+  static SliceStrategy* newStrategy(const string& name);
   static SliceStrategy* addStatistics(SliceStrategy* strategy);
+  static SliceStrategy* addDebugOutput(SliceStrategy* strategy);
 };
 
 #endif

@@ -6,6 +6,7 @@
 class TermTree;
 class TermTranslator;
 class VarNames;
+class Partition;
 
 class BenchmarkStrategy : public Strategy {
 public:

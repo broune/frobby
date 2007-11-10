@@ -3,7 +3,7 @@
 
 #include "BigIdeal.h"
 #include "IOFacade.h"
-#include "AnalyzeFacade.h"
+#include "IdealFacade.h"
 
 const char* AnalyzeAction::getName() const {
   return "analyze";
@@ -31,6 +31,6 @@ void AnalyzeAction::perform() {
   IOFacade ioFacade(_printActions);
   ioFacade.readIdeal(cin, ideal);
 
-  AnalyzeFacade analyzeFacade(_printActions);
-  analyzeFacade.printAnalysis(cout, ideal);
+  IdealFacade idealFacade(_printActions);
+  idealFacade.printAnalysis(cout, ideal);
 }

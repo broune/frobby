@@ -4,6 +4,7 @@
 class Term;
 class Strategy;
 class TermTree;
+class Ideal;
 
 class LabelAlgorithm {
 public:
@@ -12,7 +13,7 @@ public:
   void setStrategy(Strategy* strategy);
   void setUsePartition(bool usePartition);
 
-  void runAndDeleteIdealAndReset(TermTree* tree);
+  void runAndDeleteIdealAndReset(Ideal* ideal);
 
 private:
   bool performPartition(const Term& b, const TermTree& tree);
