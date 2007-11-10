@@ -1,14 +1,9 @@
 #include "stdinc.h"
 #include "IrreducibleDecomFacade.h"
 
-#include "label/PrintDebugStrategy.h"
 #include "label/FrobeniusStrategy.h"
 #include "label/BenchmarkStrategy.h"
 #include "label/DecompositionStrategy.h"
-#include "label/StatisticsStrategy.h"
-#include "label/CompositeStrategy.h"
-#include "label/PrintProgressStrategy.h"
-#include "label/SkipRedundantStrategy.h"
 #include "label/LabelAlgorithm.h"
 
 #include "IrreducibleDecomParameters.h"
@@ -138,17 +133,16 @@ runSliceAlgorithm(Ideal* ideal, DecomConsumer* consumer,
   ASSERT(ideal != 0);
   ASSERT(consumer != 0);
 
-  SliceAlgorithm alg;
-
   if (_parameters.getPrintStatistics())
     strategy = SliceStrategy::addStatistics(strategy);
+
   if (_parameters.getPrintDebug()) {
     strategy = SliceStrategy::addDebugOutput(strategy);
     consumer = new DebugDecomConsumer(consumer);
   }
 
+  SliceAlgorithm alg;
   alg.setUseIndependence(_parameters.getUseIndependence());
-
   alg.setConsumer(consumer);
   alg.setStrategy(strategy);
   alg.runAndDeleteIdealAndReset(ideal);
@@ -163,21 +157,18 @@ runLabelAlgorithm(Ideal* ideal, TermTranslator* translator,
   ASSERT(translator != 0);
   ASSERT(strategy != 0);
 
-  // Set up the combined strategy
   if (_parameters.getPrintProgress())
-    strategy = new CompositeStrategy(strategy, new PrintProgressStrategy());
+    strategy = Strategy::addDebugOutput(strategy);
 
   if (_parameters.getPrintStatistics())
-    strategy = new CompositeStrategy
-      (strategy, new StatisticsStrategy(ideal->getVarCount()));
+    strategy = Strategy::addStatistics(strategy, ideal->getVarCount());
 
   if (_parameters.getPrintDebug())
-    strategy = new CompositeStrategy(strategy, new PrintDebugStrategy());
+    strategy = Strategy::addDebugOutput(strategy);
 
-  if (_parameters.getSkipRedundant()) {
-    strategy = new SkipRedundantStrategy(strategy, ideal->getVarCount());
-  }
-  
+  if (_parameters.getSkipRedundant())
+    strategy = Strategy::addSkipRedundant(strategy, ideal->getVarCount());
+
   // Run algorithm
   LabelAlgorithm algo;
   algo.setStrategy(strategy);

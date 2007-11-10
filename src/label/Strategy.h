@@ -41,6 +41,11 @@ public:
 				  const Term& b);
 
   virtual void getName(string& name) const = 0;
+
+  static Strategy* addDebugOutput(Strategy* strategy);
+  static Strategy* addStatistics(Strategy* strategy, size_t varCount);
+  static Strategy* addPrintProgress(Strategy* strategy);
+  static Strategy* addSkipRedundant(Strategy* strategy, size_t varCount);
 };
 
 #endif
