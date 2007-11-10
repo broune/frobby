@@ -28,7 +28,7 @@ void RandomDataFacade::generateIdeal
 void RandomDataFacade::generateFrobeniusInstance(vector<mpz_class>& instance) {
   beginAction("Generating random Frobenius instance.");
 
-  ::generateRandomFrobeniusInput(instance);
+  ::generateRandomFrobeniusInstance(instance);
 
   endAction();
 }

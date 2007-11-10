@@ -47,7 +47,7 @@ class Allocator {
   // exit, thus clearing the buffers, which we want to do to avoid
   // spurious reports from memory leak detectors. We have to put the
   // buffer object inside ClearBuffers to make sure that the buffers
-  // object does not get destructted before ClearBuffers get destructed,
+  // object does not get destructed before ClearBuffers get destructed,
   // which could otherwise happen if we had simply declared buffers as a
   // static local variable inside doBuffer.
   template<class S>

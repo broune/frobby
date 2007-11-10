@@ -11,6 +11,8 @@ class HelpAction : public Action {
   virtual const char* getShortDescription() const;
   virtual const char* getDescription() const;
 
+  virtual void obtainParameters(vector<Parameter*>& parameters);
+
   virtual bool acceptsNonParameter() const;
   virtual bool processNonParameter(const char* str);
 

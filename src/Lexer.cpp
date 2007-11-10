@@ -24,6 +24,10 @@ void Lexer::expect(char expected) {
   }
 }
 
+unsigned int Lexer::getLineNumber() const {
+  return _lineNumber;
+}
+
 void Lexer::expect(const char* str) {
   eatWhite();
 
@@ -58,7 +62,7 @@ void Lexer::readInteger(mpz_class& integer) {
     
   _in >> integer;
   if (c == '-')
-    integer *= -1; // TODO: look up more efficient way to swap sign
+    integer *= -1;
 }
 
 void Lexer::readInteger(unsigned int& i) {

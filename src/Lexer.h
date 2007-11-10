@@ -17,6 +17,8 @@ public:
 
   void readIdentifier(string& identifier);
 
+  unsigned int getLineNumber() const;
+
 private:
   int getChar();
 

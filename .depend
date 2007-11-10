@@ -55,7 +55,7 @@ $(outdir)main.o: src/main.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
 $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomAction.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
-  src/FormatAction.h src/StringParameter.h src/HelpAction.h \
+  src/StringParameter.h src/FormatAction.h src/HelpAction.h \
   src/DynamicFrobeniusAction.h src/GenerateIdealAction.h \
   src/GenerateIdealParameters.h src/IntegerParameter.h \
   src/GenerateFrobeniusAction.h src/FrobeniusAction.h src/AnalyzeAction.h \
@@ -64,8 +64,8 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
 $(outdir)IrreducibleDecomAction.o: src/IrreducibleDecomAction.cpp src/stdinc.h \
   src/IrreducibleDecomAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
-  src/BigIdeal.h src/VarNames.h src/IrreducibleDecomFacade.h src/Facade.h \
-  src/Timer.h src/IOFacade.h
+  src/StringParameter.h src/BigIdeal.h src/VarNames.h \
+  src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h src/IOFacade.h
 $(outdir)fplllIO.o: src/fplllIO.cpp src/stdinc.h src/fplllIO.h src/BigIdeal.h \
   src/VarNames.h src/Lexer.h
 $(outdir)io.o: src/io.cpp src/stdinc.h src/io.h src/Lexer.h src/BigIdeal.h \
@@ -78,12 +78,11 @@ $(outdir)randomDataGenerators.o: src/randomDataGenerators.cpp src/stdinc.h \
 $(outdir)monosIO.o: src/monosIO.cpp src/stdinc.h src/monosIO.h src/io.h \
   src/BigIdeal.h src/VarNames.h src/Lexer.h
 $(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
-  src/label/TermTree.h src/label/../Term.h src/label/../Ideal.h \
-  src/label/../Term.h src/label/Allocator.h src/TermList.h src/Term.h \
-  src/Ideal.h src/TermTranslator.h
+  src/TermList.h src/Term.h src/Ideal.h src/TermTranslator.h
 $(outdir)FormatAction.o: src/FormatAction.cpp src/stdinc.h src/FormatAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h src/StringParameter.h \
-  src/BigIdeal.h src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h
+  src/BigIdeal.h src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
+  src/IdealFacade.h
 $(outdir)macaulay2IO.o: src/macaulay2IO.cpp src/stdinc.h src/macaulay2IO.h \
   src/Lexer.h src/BigIdeal.h src/VarNames.h src/io.h src/monosIO.h
 $(outdir)newMonosIO.o: src/newMonosIO.cpp src/stdinc.h src/newMonosIO.h \
@@ -118,15 +117,15 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/label/PrintProgressStrategy.h src/label/../Timer.h \
   src/label/SkipRedundantStrategy.h src/label/LabelAlgorithm.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
-  src/BoolParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
-  src/TermTranslator.h src/TermList.h src/Term.h src/Ideal.h \
-  src/SliceAlgorithm.h src/DecomWriter.h src/io.h src/DecomConsumer.h \
-  src/SliceStrategy.h src/Slice.h
+  src/BoolParameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
+  src/IOFacade.h src/TermTranslator.h src/TermList.h src/Term.h \
+  src/Ideal.h src/SliceAlgorithm.h src/DecomWriter.h src/DecomConsumer.h \
+  src/SliceStrategy.h src/Slice.h src/DebugDecomConsumer.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
-  src/IrreducibleDecomParameters.h src/ParameterGroup.h src/BigIdeal.h \
-  src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
-  src/IrreducibleDecomFacade.h
+  src/IrreducibleDecomParameters.h src/ParameterGroup.h \
+  src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
+  src/Facade.h src/Timer.h src/IrreducibleDecomFacade.h
 $(outdir)Facade.o: src/Facade.cpp src/stdinc.h src/Facade.h src/Timer.h
 $(outdir)IOFacade.o: src/IOFacade.cpp src/stdinc.h src/IOFacade.h src/Facade.h \
   src/Timer.h src/io.h src/fourti2.h src/BigIdeal.h src/VarNames.h \
@@ -141,9 +140,10 @@ $(outdir)RandomDataFacade.o: src/RandomDataFacade.cpp src/stdinc.h \
 $(outdir)AnalyzeAction.o: src/AnalyzeAction.cpp src/stdinc.h src/AnalyzeAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h src/BigIdeal.h \
   src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
-  src/AnalyzeFacade.h
-$(outdir)AnalyzeFacade.o: src/AnalyzeFacade.cpp src/stdinc.h src/AnalyzeFacade.h \
-  src/Facade.h src/Timer.h src/BigIdeal.h src/VarNames.h
+  src/IdealFacade.h
+$(outdir)IdealFacade.o: src/IdealFacade.cpp src/stdinc.h src/IdealFacade.h \
+  src/Facade.h src/Timer.h src/BigIdeal.h src/VarNames.h src/Ideal.h \
+  src/Term.h src/TermTranslator.h
 $(outdir)Parameter.o: src/Parameter.cpp src/stdinc.h src/Parameter.h
 $(outdir)ParameterGroup.o: src/ParameterGroup.cpp src/stdinc.h \
   src/ParameterGroup.h src/Parameter.h
@@ -154,7 +154,7 @@ $(outdir)IntegerParameter.o: src/IntegerParameter.cpp src/stdinc.h \
   src/IntegerParameter.h src/Parameter.h
 $(outdir)IrreducibleDecomParameters.o: src/IrreducibleDecomParameters.cpp \
   src/stdinc.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
-  src/Parameter.h src/BoolParameter.h
+  src/Parameter.h src/BoolParameter.h src/StringParameter.h
 $(outdir)BoolParameter.o: src/BoolParameter.cpp src/stdinc.h src/BoolParameter.h \
   src/Parameter.h
 $(outdir)Lexer.o: src/Lexer.cpp src/stdinc.h src/Lexer.h
@@ -171,7 +171,8 @@ $(outdir)VarNames.o: src/VarNames.cpp src/stdinc.h src/VarNames.h
 $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
   src/LatticeFormatAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
-  src/IOFacade.h src/Facade.h src/Timer.h src/fplllIO.h
+  src/IOFacade.h src/Facade.h src/Timer.h src/fplllIO.h \
+  src/LatticeFacade.h
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceAlgorithm.h src/Term.h src/VarNames.h src/TermList.h \
   src/Ideal.h src/io.h src/TermTranslator.h src/Partition.h src/Slice.h \
@@ -183,8 +184,7 @@ $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h
 $(outdir)IntersectFacade.o: src/IntersectFacade.cpp src/stdinc.h \
   src/IntersectFacade.h src/Facade.h src/Timer.h src/BigIdeal.h \
   src/VarNames.h src/Ideal.h src/Term.h src/intersect.h src/TermList.h \
-  src/TermTranslator.h src/label/TermTree.h src/label/../Term.h \
-  src/label/../Ideal.h src/label/Allocator.h
+  src/TermTranslator.h
 $(outdir)IntersectAction.o: src/IntersectAction.cpp src/stdinc.h \
   src/IntersectAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/BigIdeal.h src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
@@ -192,18 +192,15 @@ $(outdir)IntersectAction.o: src/IntersectAction.cpp src/stdinc.h \
 $(outdir)AssociatedPrimesFacade.o: src/AssociatedPrimesFacade.cpp src/stdinc.h \
   src/AssociatedPrimesFacade.h src/Facade.h src/Timer.h \
   src/IrreducibleDecomFacade.h src/IrreducibleDecomParameters.h \
-  src/ParameterGroup.h src/Parameter.h src/BoolParameter.h src/BigIdeal.h \
-  src/VarNames.h src/IOFacade.h src/uwe.h
+  src/ParameterGroup.h src/Parameter.h src/BoolParameter.h \
+  src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
+  src/TermList.h src/Term.h src/Ideal.h src/DecomRecorder.h \
+  src/DecomConsumer.h src/TermTranslator.h
 $(outdir)AssociatedPrimesAction.o: src/AssociatedPrimesAction.cpp src/stdinc.h \
   src/AssociatedPrimesAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
   src/IOFacade.h src/Facade.h src/Timer.h src/AssociatedPrimesFacade.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h
-$(outdir)uwe.o: src/uwe.cpp src/stdinc.h src/uwe.h src/BigIdeal.h src/VarNames.h \
-  src/Term.h
-$(outdir)PrimaryDecomFacade.o: src/PrimaryDecomFacade.cpp src/stdinc.h \
-  src/PrimaryDecomFacade.h src/Facade.h src/Timer.h src/uwe.h \
-  src/BigIdeal.h src/VarNames.h src/IOFacade.h
 $(outdir)PrimaryDecomAction.o: src/PrimaryDecomAction.cpp src/stdinc.h \
   src/PrimaryDecomAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
@@ -212,11 +209,22 @@ $(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h src/Term.h src/Ideal.h 
   src/DecomConsumer.h
 $(outdir)IndependenceSplitter.o: src/IndependenceSplitter.cpp src/stdinc.h \
   src/IndependenceSplitter.h src/DecomConsumer.h src/Partition.h \
-  src/Projection.h src/Slice.h src/Term.h src/Ideal.h
+  src/Projection.h src/Ideal.h src/Term.h src/Slice.h
 $(outdir)Projection.o: src/Projection.cpp src/stdinc.h src/Projection.h src/Term.h \
   src/Partition.h
 $(outdir)DecomWriter.o: src/DecomWriter.cpp src/stdinc.h src/DecomWriter.h \
-  src/VarNames.h src/TermTranslator.h src/io.h src/DecomConsumer.h \
+  src/VarNames.h src/DecomConsumer.h src/io.h src/TermTranslator.h \
   src/Term.h
 $(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
   src/Slice.h src/Term.h src/Ideal.h
+$(outdir)DebugDecomConsumer.o: src/DebugDecomConsumer.cpp src/stdinc.h \
+  src/DebugDecomConsumer.h src/DecomConsumer.h src/Term.h
+$(outdir)lattice.o: src/lattice.cpp src/stdinc.h src/lattice.h src/BigIdeal.h \
+  src/VarNames.h
+$(outdir)LatticeFacade.o: src/LatticeFacade.cpp src/stdinc.h src/LatticeFacade.h \
+  src/Facade.h src/Timer.h src/lattice.h
+$(outdir)PrimaryDecomFacade.o: src/PrimaryDecomFacade.cpp src/stdinc.h \
+  src/PrimaryDecomFacade.h src/Facade.h src/Timer.h src/BigIdeal.h \
+  src/VarNames.h src/IOFacade.h
+$(outdir)DecomRecorder.o: src/DecomRecorder.cpp src/stdinc.h src/DecomRecorder.h \
+  src/DecomConsumer.h src/Term.h src/Ideal.h

@@ -38,9 +38,9 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
   return generatorsToGo == 0;
 }
 
-void generateRandomFrobeniusInput(vector<Degree>& degrees) {
+void generateRandomFrobeniusInstance(vector<Degree>& degrees) {
   int numberCount = 4 + (rand() % 6);
-  int mod = 4007; // 4007 57
+  int mod = 4007;
 
   degrees.resize(numberCount);
 

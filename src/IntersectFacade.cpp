@@ -6,7 +6,6 @@
 #include "intersect.h"
 #include "TermList.h"
 #include "TermTranslator.h"
-#include "label/TermTree.h"
 
 IntersectFacade::IntersectFacade(bool printActions):
   Facade(printActions) {

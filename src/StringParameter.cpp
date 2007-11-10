@@ -16,6 +16,10 @@ void StringParameter::getValue(string& str) const {
   str = _value;
 }
 
+const string& StringParameter::getValue() const {
+  return _value;
+}
+
 StringParameter::operator const string&() const {
   return _value;
 }

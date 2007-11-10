@@ -61,8 +61,8 @@ const Action::ActionContainer& Action::getActions() {
     static AssociatedPrimesAction associatedPrimes;
     _actions.push_back(&associatedPrimes);
 
-    static PrimaryDecomAction primaryDecom;
-    _actions.push_back(&primaryDecom);
+    //static PrimaryDecomAction primaryDecom;
+    //_actions.push_back(&primaryDecom);
   }
 
   return _actions;
@@ -108,6 +108,13 @@ void Action::processOption(const string& optionName,
 }
 
 void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
+  if (acceptsNonParameter() && tokenCount > 0 && tokens[0][0] != '-') {
+    if (!processNonParameter(tokens[0]))
+      exit(1);
+    --tokenCount;
+    ++tokens;
+  }
+
   obtainParameters(_parameters);
 
   unsigned int i = 0;

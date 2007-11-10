@@ -2,9 +2,14 @@
 
 TIMEFORMAT=$' (%2lR real)'
 
-echo -n "decom (slice): "
+echo -n "decom (slice, split=label): "
 cd test/decom
-time ./runtests -slice on
+time ./runtests -slice on -split label
+cd ../..
+
+echo -n "decom (slice, split=pivot): "
+cd test/decom
+time ./runtests -slice on -split pivot
 cd ../..
 
 echo -n "decom (label): "
@@ -24,5 +29,10 @@ cd ../..
 
 echo -n "assprimes: "
 cd test/assprimes
+time ./runtests
+cd ../..
+
+echo -n "minimize: "
+cd test/minimize
 time ./runtests
 cd ../..

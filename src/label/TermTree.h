@@ -18,6 +18,7 @@ public:
   virtual ~TermTree();
 
   void getTerms(TermList& terms) const;
+  void insert(const Ideal* ideal);
 
   TermTree& operator=(const TermTree& tree);
 

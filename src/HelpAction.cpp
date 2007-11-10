@@ -28,6 +28,9 @@ Action* HelpAction::createNew() const {
   return new HelpAction();
 }
 
+void HelpAction::obtainParameters(vector<Parameter*>& parameters) {
+}
+
 bool HelpAction::acceptsNonParameter() const {
   return true;
 }
@@ -51,7 +54,6 @@ void HelpAction::displayTopic() {
   vector<Parameter*> parameters;
   _topic->obtainParameters(parameters);
 
-  // TODO: print default.
   if (!parameters.empty()) {
     cout << "\nThe parameters accepted by "
 	 << _topic->getName()

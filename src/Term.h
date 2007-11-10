@@ -367,6 +367,13 @@ class Term {
     }
   }
 
+  void clear() {
+    deallocate(_exponents, _varCount);
+    _exponents = 0;
+    _varCount = 0;
+  }
+
+
   // A predicate that sorts according to lexicographic order.
   class LexComparator {
   public:
@@ -436,6 +443,26 @@ class Term {
     size_t _varCount;
   };
 
+  class EqualsPredicate {
+  public:
+    EqualsPredicate(size_t varCount): _varCount(varCount) {}
+
+    bool operator()(const Term& a, const Term& b) {
+      ASSERT(_varCount == a._varCount);
+      ASSERT(_varCount == b._varCount);
+      return (*this)(a.begin(), b.begin());
+    }
+
+    bool operator()(const Exponent* a, const Exponent* b) const {
+      for (size_t var = 0; var < _varCount; ++var)
+	if (a[var] != b[var])
+	  return false;
+      return true;
+    }
+
+  private:
+    size_t _varCount;
+  };
 
  private:
   static Exponent* allocate(size_t size);

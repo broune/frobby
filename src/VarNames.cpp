@@ -25,12 +25,15 @@ void VarNames::addVar(const string& name) {
 }
 
 int VarNames::getIndex(const string& name) const {
-  map<string, int>::const_iterator it =
-    _nameToIndex.find(name);
+  map<string, int>::const_iterator it = _nameToIndex.find(name);
   if (it == _nameToIndex.end())
     return -1;
   else
     return it->second;
+}
+
+bool VarNames::contains(const string& name) const {
+  return getIndex(name) != UNKNOWN;
 }
 
 const string& VarNames::getName(int index) const {
@@ -51,8 +54,4 @@ void VarNames::clear() {
 
 bool VarNames::empty() const {
   return _indexToName.empty();
-}
-
-bool VarNames::contains(const string& name) const {
-  return _nameToIndex.find(name) != _nameToIndex.end();
 }

@@ -23,20 +23,22 @@ public:
 
   virtual void insert(const Exponent* term) = 0;
 
+  virtual iterator begin() = 0;
+  virtual iterator end() = 0;
   virtual const_iterator begin() const = 0;
   virtual const_iterator end() const = 0;
   virtual void singleDegreeSort(size_t variable) = 0;
 
   virtual bool isIncomparable(const Term& term) const = 0;
 
-  virtual size_t getVariableCount() const = 0;
+  virtual size_t getVarCount() const = 0;
   virtual size_t getGeneratorCount() const = 0;
   virtual bool isZeroIdeal() const = 0;
 
   virtual void getLcm(Term& lcm) const = 0;
   virtual void getGcd(Term& gcd) const = 0;
 
-  virtual bool contains(const Term& term) const = 0;
+  virtual bool contains(const Exponent* term) const = 0;
 
   virtual void minimize() = 0;
   virtual void colon(const Term& by) = 0;
@@ -51,6 +53,10 @@ public:
   virtual bool removeStrictMultiples(const Exponent* exponent) = 0;
 
   virtual void print() const = 0;
+
+  bool isIrreducible() const;
+
+  virtual void removeDuplicates() = 0;
 };
 
 #endif

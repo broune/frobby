@@ -6,14 +6,17 @@
 
 class PruneSubtractFilter : public Ideal::FilterFunction {
 public:
-  PruneSubtractFilter(const Term& lcm):
-    _lcm(lcm) {}
+  PruneSubtractFilter(const Ideal* ideal, const Term& lcm):
+    _ideal(ideal), _lcm(lcm) {}
 
   virtual bool operator()(const Exponent* term) {
-    return ::strictlyDivides(term, _lcm, _lcm.getVarCount());
+    return
+      ::strictlyDivides(term, _lcm, _lcm.getVarCount()) &&
+      !_ideal->contains(term);
   }
 
 private:
+  const Ideal* _ideal;
   const Term& _lcm;
 };
 
@@ -45,6 +48,8 @@ private:
   size_t _varCount;
 };
 
+// It is a prerequisite that the slice has already been simplified,
+// especially that it has been minimized and that it is normal.
 bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
   if (_varCount != 2)
     return false;
@@ -58,21 +63,27 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
   ASSERT(it != stop);
 
   while (true) {
-    term[1] = _multiply[1] + (*it)[1] - 1;
+    term[1] = (*it)[1] - 1;
     
     ++it;
     if (it == stop)
       break;
 
-    term[0] = _multiply[0] + (*it)[0] - 1;
+    term[0] = (*it)[0] - 1;
 
-    // TODO: take subtract into account
+    ASSERT(!_subtract->contains(term));
+    ASSERT(!_ideal->contains(term));
+
+    term[0] += _multiply[0];
+    term[1] += _multiply[1];
+
     consumer->consume(term);
   }
 
   return true;
 }
 
+// It is a prerequisite that the slice has already been simplified.
 bool Slice::baseCase(DecomConsumer* consumer) {
   // It is assumed that the slice is normalized.
 
@@ -97,13 +108,9 @@ bool Slice::baseCase(DecomConsumer* consumer) {
   // This might appear to rest on an assumption that ideal is
   // minimized and thus has no duplicates. This is not the case, since
   // we checked that each variable appears in some minimal generator.
-  // TODO: add a method isIrreducible to Ideal.
-  Ideal::const_iterator stop = _ideal->end();
-  for (Ideal::const_iterator it = _ideal->begin(); it != stop; ++it)
-    if (getSizeOfSupport(*it, _varCount) != 1)
-      return true;
+  if (_ideal->isIrreducible())
+    consumer->consume(_multiply);
 
-  consumer->consume(_multiply);
   return true;
 }
 
@@ -132,8 +139,9 @@ void Slice::simplify() {
 	if (first) {
 	  tmp = *it;
 	  first = false;
-	} else
+	} else {
 	  tmp.gcd(tmp, *it);
+	}
       }
       if (first)
 	return; // we reached a basecase, so no reason to simplify further
@@ -174,7 +182,7 @@ bool Slice::normalize() {
     if (_ideal->removeStrictMultiples(*it))
       removedAny = true;
 
-  PruneSubtractFilter pruneFilter(getLcm());
+  PruneSubtractFilter pruneFilter(_ideal, getLcm());
   _subtract->filter(pruneFilter);
 
   return removedAny;
@@ -213,8 +221,8 @@ Slice::Slice(Ideal* ideal,
   _subtract(subtract) {
   ASSERT(ideal != 0);
   ASSERT(subtract != 0);
-  ASSERT(varCount == ideal->getVariableCount());
-  ASSERT(varCount == subtract->getVariableCount());
+  ASSERT(varCount == ideal->getVarCount());
+  ASSERT(varCount == subtract->getVarCount());
 }
 
 void Slice::reset(Ideal* ideal, Ideal* subtract, size_t varCount) {
@@ -231,8 +239,21 @@ void Slice::reset(Ideal* ideal, Ideal* subtract, size_t varCount) {
 
   ASSERT(ideal != 0);
   ASSERT(subtract != 0);
-  ASSERT(varCount == ideal->getVariableCount());
-  ASSERT(varCount == subtract->getVariableCount());
+  ASSERT(varCount == ideal->getVarCount());
+  ASSERT(varCount == subtract->getVarCount());
+}
+
+void Slice::clear() {
+  _varCount = 0;
+
+  delete _ideal;
+  _ideal = 0;
+
+  delete _subtract;
+  _subtract = 0;
+  
+  _multiply.clear();
+  _lcm.clear();
 }
 
 Slice::Slice(Ideal* ideal,
@@ -243,8 +264,8 @@ Slice::Slice(Ideal* ideal,
   _lcm(multiply.getVarCount()),
   _ideal(ideal),
   _subtract(subtract) {
-  ASSERT(multiply.getVarCount() == ideal->getVariableCount());
-  ASSERT(multiply.getVarCount() == subtract->getVariableCount());
+  ASSERT(multiply.getVarCount() == ideal->getVarCount());
+  ASSERT(multiply.getVarCount() == subtract->getVarCount());
 }
 
 Slice::Slice(Ideal* ideal,
@@ -255,8 +276,8 @@ Slice::Slice(Ideal* ideal,
   _lcm(multiply.getVarCount()),
   _ideal(ideal),
   _subtract(subtract) {
-  ASSERT(multiply.getVarCount() == ideal->getVariableCount());
-  ASSERT(multiply.getVarCount() == subtract->getVariableCount());
+  ASSERT(multiply.getVarCount() == ideal->getVarCount());
+  ASSERT(multiply.getVarCount() == subtract->getVarCount());
 
   _multiply.product(multiply, pivot);
 }

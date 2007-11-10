@@ -15,11 +15,12 @@ class Action {
   virtual const char* getDescription() const = 0;
   virtual Action* createNew() const = 0;
 
-  virtual bool acceptsNonParameter() const;
+  // processNonParameter() can be called at most once, and only if
+  // acceptsNonParameter() returns true.
   virtual bool processNonParameter(const char* str);
+  virtual bool acceptsNonParameter() const;
 
-  // TODO: add implementations everywhere and make pure virtual
-  virtual void obtainParameters(vector<Parameter*>& parameters);
+  virtual void obtainParameters(vector<Parameter*>& parameters) = 0;
 
   virtual void parseCommandLine(unsigned int tokenCount,
 				const char** tokens);

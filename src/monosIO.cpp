@@ -15,10 +15,12 @@ void MonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
   readVarsAndClearIdeal(ideal, lexer);
   
   lexer.expect('[');
-  do {
-    readTerm(ideal, lexer);
-  } while (lexer.match(','));
-  lexer.expect(']');
+  if (!lexer.match(']')) {
+    do {
+      readTerm(ideal, lexer);
+    } while (lexer.match(','));
+    lexer.expect(']');
+  }
   lexer.expect(';');
 }
 
@@ -149,6 +151,12 @@ void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer) {
   string varName;
   do {
     lexer.readIdentifier(varName);
+    if (names.contains(varName)) {
+      cerr << "ERROR (on line " << lexer.getLineNumber() << "): "
+	   << "Variable \"" << varName << "\" is declared twice." << endl;
+      exit(1);
+    }
+
     names.addVar(varName);
   } while (lexer.match(','));
 

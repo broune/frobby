@@ -15,9 +15,6 @@ class AssociatedPrimesFacade : Facade {
   void computeAPUsingIrrDecom(BigIdeal& ideal,
 			    const IrreducibleDecomParameters& params,
 			    ostream& out);
-
-  // Clears ideal.
-  void computeAPUsingUwe(BigIdeal& ideal, ostream& out);
 };
 
 

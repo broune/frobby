@@ -21,6 +21,8 @@ class TermList : public Ideal {
   void insert(const Exponent* exponents);
   void insert(const Ideal& ideal);
 
+  iterator begin();
+  iterator end();
   const_iterator begin() const;
   const_iterator end() const;
 
@@ -28,16 +30,14 @@ class TermList : public Ideal {
 
   bool isIncomparable(const Term& term) const;
 
-  size_t size() const; // TODO: remove this
-
-  size_t getVariableCount() const;
+  size_t getVarCount() const;
   size_t getGeneratorCount() const;
   bool isZeroIdeal() const;
 
   void getLcm(Term& lcm) const;
   void getGcd(Term& gcd) const;
 
-  bool contains(const Term& term) const;
+  bool contains(const Exponent* term) const;
 
   void minimize();
   void colon(const Term& by);
@@ -55,6 +55,8 @@ class TermList : public Ideal {
 
   static void* operator new(size_t size);
   void operator delete(void* p, size_t size);
+
+  virtual void removeDuplicates();
  
  private:
   class ExponentAllocator {

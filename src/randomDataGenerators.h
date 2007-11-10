@@ -8,7 +8,6 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
 			 unsigned int variableCount,
 			 unsigned int generatorCount);
 
-// TODO: rename input to instance
-void generateRandomFrobeniusInput(vector<Degree>& degrees);
+void generateRandomFrobeniusInstance(vector<Degree>& degrees);
 
 #endif

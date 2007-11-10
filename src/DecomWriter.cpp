@@ -1,6 +1,10 @@
 #include "stdinc.h"
 #include "DecomWriter.h"
 
+#include "io.h"
+#include "TermTranslator.h"
+#include "Term.h"
+
 DecomWriter::DecomWriter(const VarNames& names,
 			 const TermTranslator* translator,
 			 ostream& out):

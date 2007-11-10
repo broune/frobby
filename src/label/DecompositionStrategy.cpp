@@ -30,11 +30,14 @@ DecompositionStrategy::~DecompositionStrategy() {
 
   flushIfPossible();
 
+  delete _solutions.top();
   _solutions.pop();
   ASSERT(_solutions.empty());
     
   _ioHandler->doneWritingIdeal(*_out);
   _out->flush();
+
+  delete _ioHandler;
 }
 
 void DecompositionStrategy::getName(string& name) const {

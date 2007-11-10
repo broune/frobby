@@ -3,6 +3,7 @@
 
 #include "ParameterGroup.h"
 #include "BoolParameter.h"
+#include "StringParameter.h"
 
 class IrreducibleDecomParameters : public ParameterGroup {
  public:
@@ -16,8 +17,10 @@ class IrreducibleDecomParameters : public ParameterGroup {
   bool getPrintStatistics() const;
   bool getSkipRedundant() const;
   bool getUseBound() const;
-  bool getUsePartition() const;
+  bool getUseIndependence() const;
   bool getUseSlice() const;
+  
+  const string& getSplit() const;
 
  private:
   BoolParameter _doBenchmark;
@@ -26,8 +29,10 @@ class IrreducibleDecomParameters : public ParameterGroup {
   BoolParameter _printStatistics;
   BoolParameter _skipRedundant;
   BoolParameter _useBound;
-  BoolParameter _usePartition;
+  BoolParameter _useIndependence;
   BoolParameter _useSlice;
+
+  StringParameter _split;
 };
 
 #endif

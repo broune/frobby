@@ -5,6 +5,7 @@
 #include "TermTree.h"
 #include "OldPartition.h"
 
+#include "../Ideal.h"
 #include "../Term.h"
 
 LabelAlgorithm::LabelAlgorithm():
@@ -20,15 +21,19 @@ void LabelAlgorithm::setUsePartition(bool usePartition) {
   _usePartition = usePartition;
 }
 
-void LabelAlgorithm::runAndDeleteIdealAndReset(TermTree* tree) {
+void LabelAlgorithm::runAndDeleteIdealAndReset(Ideal* ideal) {
+  TermTree tree(ideal->getVarCount());
+  tree.insert(ideal);
+  delete ideal;
+
+  _dimension = tree.getDimension();
+
   ASSERT(_dimension > 1);
 
-  _dimension = tree->getDimension();
   Term b(_dimension);
-  recurse(b, *tree, false);
+  recurse(b, tree, false);
 
   delete _strategy;
-  delete tree;
   _strategy = 0;
   _usePartition = true;
 }
