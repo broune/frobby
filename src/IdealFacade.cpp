@@ -54,7 +54,7 @@ void IdealFacade::printAnalysis(ostream& out, BigIdeal& ideal) {
   beginAction("Computing and printing analyze.");
 
   out << ideal.getGeneratorCount() << " generators\n"
-      << ideal.getNames().getVarCount() << " variables\n"
+      << ideal.getVarCount() << " variables\n"
       << "TODO: implement more analyze" << endl;
 
 

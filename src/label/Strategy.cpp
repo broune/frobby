@@ -2,14 +2,10 @@
 #include "Strategy.h"
 
 #include "PrintDebugStrategy.h"
-#include "FrobeniusStrategy.h"
-#include "BenchmarkStrategy.h"
-#include "DecompositionStrategy.h"
 #include "StatisticsStrategy.h"
 #include "CompositeStrategy.h"
 #include "PrintProgressStrategy.h"
 #include "SkipRedundantStrategy.h"
-#include "LabelAlgorithm.h"
 
 Strategy::~Strategy() {
 }

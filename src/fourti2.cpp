@@ -27,7 +27,7 @@ namespace fourti2 {
       exit(0);
     }
 
-    for (size_t i = 0; i < ideal.getNames().getVarCount(); ++i) {
+    for (size_t i = 0; i < ideal.getVarCount(); ++i) {
       lexer.readInteger(tmp);
       if (tmp > 0)
 	ideal.getLastTermExponentRef(i) = tmp;

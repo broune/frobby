@@ -2,7 +2,6 @@
 #include "BigIdeal.h"
 
 #include "VarNames.h"
-#include "TermList.h"
 #include "TermTranslator.h"
 #include "Ideal.h"
 
@@ -283,7 +282,7 @@ BigIdeal::buildIdeal(BigIdeal* bigIdeal,
                      size_t varCount,
 		     bool artinize) {
   vector<bool> hasArtinianPower(varCount);
-  Ideal* ideal = new TermList(varCount);
+  Ideal* ideal = new Ideal(varCount);
 
   // Populate hasArtinianPower and ideal with data.
   Term term(varCount);

@@ -1,4 +1,4 @@
-vars a;
+vars a, b, c, d;
 [
 1
 ];

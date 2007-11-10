@@ -2,14 +2,14 @@
 #include "randomDataGenerators.h"
 
 #include "BigIdeal.h"
-#include "TermList.h"
+#include "Ideal.h"
 #include "Term.h"
 
 bool generateRandomIdeal(BigIdeal& bigIdeal,
 			 unsigned int exponentRange,
 			 unsigned int variableCount,
 			 unsigned int generatorCount) {
-  TermList ideal(variableCount);
+  Ideal ideal(variableCount);
   Term term(variableCount);
 
   unsigned int generatorsToGo = generatorCount;

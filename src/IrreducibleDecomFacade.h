@@ -29,8 +29,7 @@ class IrreducibleDecomFacade : private Facade {
 			      mpz_class& frobeniusNumber);
 
  private:
-  void runLabelAlgorithm(Ideal* ideal, TermTranslator* translator,
-			 Strategy* strategy);
+  void runLabelAlgorithm(Ideal* ideal, Strategy* strategy);
   void runSliceAlgorithm(Ideal* ideal, DecomConsumer* consumer,
 			 SliceStrategy* strategy);
 

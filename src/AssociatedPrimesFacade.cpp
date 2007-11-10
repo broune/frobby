@@ -5,7 +5,7 @@
 #include "IrreducibleDecomParameters.h"
 #include "BigIdeal.h"
 #include "IOFacade.h"
-#include "TermList.h"
+#include "Ideal.h"
 #include "DecomRecorder.h"
 #include "TermTranslator.h"
 
@@ -25,7 +25,7 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   TermTranslator* translator;
   bigIdeal.buildAndClear(ideal, translator, false);
 
-  TermList decom(ideal->getVarCount());
+  Ideal decom(ideal->getVarCount());
 
   facade.computeIrreducibleDecom(ideal, new DecomRecorder(&decom));
 
