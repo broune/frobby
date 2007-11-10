@@ -1,6 +1,16 @@
 #include "../stdinc.h"
 #include "Strategy.h"
 
+#include "PrintDebugStrategy.h"
+#include "FrobeniusStrategy.h"
+#include "BenchmarkStrategy.h"
+#include "DecompositionStrategy.h"
+#include "StatisticsStrategy.h"
+#include "CompositeStrategy.h"
+#include "PrintProgressStrategy.h"
+#include "SkipRedundantStrategy.h"
+#include "LabelAlgorithm.h"
+
 Strategy::~Strategy() {
 }
 
@@ -33,4 +43,20 @@ void Strategy::endingPartitioning(int position,
   getName(name);
   cerr << "ERROR: endingPartitioning not implemented in " << name << "." << endl;
   ASSERT(false);
+}
+
+Strategy* Strategy::addDebugOutput(Strategy* strategy) {
+  return new CompositeStrategy(strategy, new PrintDebugStrategy());
+}
+
+Strategy* Strategy::addStatistics(Strategy* strategy, size_t varCount) {
+  return new CompositeStrategy(strategy, new StatisticsStrategy(varCount));
+}
+
+Strategy* Strategy::addPrintProgress(Strategy* strategy) {
+  return new CompositeStrategy(strategy, new PrintProgressStrategy());
+}
+
+Strategy* Strategy::addSkipRedundant(Strategy* strategy, size_t varCount) {
+  return new SkipRedundantStrategy(strategy, varCount);
 }
