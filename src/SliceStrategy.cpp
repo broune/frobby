@@ -1,6 +1,8 @@
 #include "stdinc.h"
 #include "SliceStrategy.h"
 
+#include "Slice.h"
+#include "Term.h"
 #include "Ideal.h"
 #include <vector>
 
@@ -36,8 +38,8 @@ class LabelSliceStrategy : public SliceStrategy {
 
     // TODO: This is duplicate code from PivotSliceStrategy. Factor
     // out into Slice.
-    for (Ideal::const_iterator it = slice.getIdeal()->begin();
-	 it != slice.getIdeal()->end(); ++it) {
+    for (Ideal::const_iterator it = slice.getIdeal().begin();
+	 it != slice.getIdeal().end(); ++it) {
       for (size_t var = 0; var < slice.getVarCount(); ++var)
 	if ((*it)[var] > 0)
 	  ++co[var];
@@ -57,8 +59,8 @@ class PivotSliceStrategy : public SliceStrategy {
 
     Term co(slice.getVarCount());
 
-    for (Ideal::const_iterator it = slice.getIdeal()->begin();
-	 it != slice.getIdeal()->end(); ++it) {
+    for (Ideal::const_iterator it = slice.getIdeal().begin();
+	 it != slice.getIdeal().end(); ++it) {
       for (size_t var = 0; var < slice.getVarCount(); ++var)
 	if ((*it)[var] > 0)
 	  ++co[var];
@@ -72,10 +74,6 @@ class PivotSliceStrategy : public SliceStrategy {
 
     pivot.setToIdentity();
     pivot[maxOffset] = 1;
-
-    ASSERT(!pivot.isIdentity()); 
-    ASSERT(!slice.getIdeal()->contains(pivot));
-    ASSERT(!slice.getSubtract()->contains(pivot));
   }
 }; 
 
@@ -161,8 +159,8 @@ class DebugSliceStrategy : public SliceStrategy {
   void startingContent(const Slice& slice) {
     ++_level;
     cerr << "DEBUG " << _level
-	 << ": computing content of the following slice." << endl;
-    slice.print();
+	 << ": computing content of the following slice." << endl
+	 << slice << endl;
     _strategy->startingContent(slice);
   }
 

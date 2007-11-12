@@ -131,7 +131,7 @@ commit: test
 
 # ***** Distribution
 
-distribution: test tidy
+distribution: tidy
 	make depend
 	cd ..;tar --create --file=frobby_v$(ver).tar.gz frobby/ --gzip \
 	  --exclude=*/data/* --exclude=*/data \

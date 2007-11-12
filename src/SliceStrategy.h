@@ -1,9 +1,10 @@
 #ifndef SLICE_STRATEGY_GUARD
 #define SLICE_STRATEGY_GUARD
 
-#include "Slice.h"
-#include "Term.h"
 #include <string>
+
+class Slice;
+class Term;
 
 class SliceStrategy {
  public:

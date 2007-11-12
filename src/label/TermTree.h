@@ -2,7 +2,7 @@
 #define TERM_TREE_GUARD
 
 #include "../Term.h"
-#include "../TermList.h"
+#include "../Ideal.h"
 
 #include <list>
 #include "Allocator.h"
@@ -16,7 +16,7 @@ public:
   TermTree(unsigned int dimension, unsigned int position = 0);
   virtual ~TermTree();
 
-  void getTerms(TermList& terms) const;
+  void getTerms(Ideal& terms) const;
   void insert(const Ideal* ideal);
 
   TermTree& operator=(const TermTree& tree);

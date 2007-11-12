@@ -31,22 +31,28 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
 
   beginAction("Computing associated primes from irreducible decomposition.");
 
-  // Take radical.
-  Ideal::iterator stop = decom.end();
-  for (Ideal::iterator it = decom.begin(); it != stop; ++it) {
+
+  Ideal radical(bigIdeal.getVarCount());
+  Term tmp(bigIdeal.getVarCount());
+
+  Ideal::const_iterator stop = decom.end();
+  for (Ideal::const_iterator it = decom.begin(); it != stop; ++it) {
     for (size_t var = 0; var < decom.getVarCount(); ++var) {
       if (translator->getExponent(var, (*it)[var]) == 0)
-	(*it)[var] = 0;
+	tmp[var] = 0;
       else
-	(*it)[var] = 1;
+	tmp[var] = 1;
     }
+    radical.insert(tmp);
   }
+  decom.clear();
   delete translator;
 
-  decom.removeDuplicates();
+  radical.removeDuplicates();
 
   bigIdeal.clear();
-  bigIdeal.insert(decom);
+  bigIdeal.insert(radical);
+  radical.clear();
 
   IOFacade ioFacade(isPrintingActions());
   ioFacade.writeIdeal(out, bigIdeal);

@@ -6,8 +6,8 @@
 #include "Projection.h"
 #include "Ideal.h"
 #include <vector>
+#include "Slice.h"
 
-class Slice;
 class Ideal;
 class Term;
 
@@ -33,11 +33,8 @@ class IndependenceSplitter : public DecomConsumer {
 
  private:
   struct Child {
-    Child(): decom(0), ideal(0), subtract(0) {}
-
-    Ideal* decom;
-    Ideal* ideal;
-    Ideal* subtract;
+    Ideal decom;
+    Slice slice;
     Projection projection;
 
     bool operator<(const Child& child) const;

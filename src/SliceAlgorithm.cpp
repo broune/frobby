@@ -38,10 +38,9 @@ void SliceAlgorithm::runAndDeleteIdealAndReset(Ideal* ideal) {
   ASSERT(_decomConsumer != 0);
   ASSERT(_strategy != 0);
 
-  if (!ideal->isZeroIdeal()) {
-    Slice slice(ideal->clone(),
-		new Ideal(ideal->getVarCount()),
-		Term(ideal->getVarCount()));
+  if (ideal->getGeneratorCount()) {
+    Ideal subtract(ideal->getVarCount());
+    Slice slice(*ideal, subtract);
     content(slice);
   }
 
@@ -95,10 +94,10 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
 void SliceAlgorithm::labelSplit2(Slice& slice) {
   size_t var = _strategy->getLabelSplitVariable(slice);
 
-  Ideal* ideal = slice.getIdeal()->createNew(slice.getVarCount());
+  Ideal* ideal = new Ideal(slice.getVarCount());
   
-  Ideal::const_iterator stop = slice.getIdeal()->end();
-  for (Ideal::const_iterator it = slice.getIdeal()->begin();
+  Ideal::const_iterator stop = slice.getIdeal().end();
+  for (Ideal::const_iterator it = slice.getIdeal().begin();
        it != stop; ++it)
     if ((*it)[var] == 0)
       ideal->insert(*it);
@@ -108,21 +107,19 @@ void SliceAlgorithm::labelSplit2(Slice& slice) {
   ideal->insert(pivot);
   
   size_t childCount = 0;
-  for (Ideal::const_iterator it = slice.getIdeal()->begin();
+  for (Ideal::const_iterator it = slice.getIdeal().begin();
        it != stop; ++it) {
     if ((*it)[var] != 1)
       continue;
     if (childCount > 0)
-      slice.getSubtract()->insert(pivot); // This is the previous pivot
+      slice.getSubtract().insert(pivot); // This is the previous pivot
 
     pivot = *it;
     pivot[var] -= 1;
 
     {
-      Slice child(ideal->createMinimizedColon(pivot),
-		  slice.getSubtract()->createMinimizedColon(pivot),
+      Slice child(*ideal, slice.getSubtract(),
 		  slice.getMultiply(), pivot);
-
       child.normalize();
       content(child);
     }
@@ -134,8 +131,8 @@ void SliceAlgorithm::labelSplit2(Slice& slice) {
   pivot.setToIdentity();
   pivot[var] = 1;
 
-  slice.getIdeal()->colonReminimize(pivot);
-  slice.getSubtract()->colonReminimize(pivot);
+  slice.getIdeal().colonReminimize(pivot);
+  slice.getSubtract().colonReminimize(pivot);
   slice.getMultiply()[var] += 1;
   slice.normalize();
 
@@ -145,14 +142,14 @@ void SliceAlgorithm::labelSplit2(Slice& slice) {
 
 void SliceAlgorithm::labelSplit(Slice& slice) {
   size_t var = _strategy->getLabelSplitVariable(slice);
-  slice.getIdeal()->singleDegreeSort(var);
+  slice.getIdeal().singleDegreeSort(var);
 
-  Ideal* cumulativeSubtract = slice.getSubtract();
+  Ideal* cumulativeSubtract = &(slice.getSubtract());
   Term labelMultiply(slice.getVarCount());
   Term pivot(slice.getVarCount());
 
-  for (Ideal::const_iterator it = slice.getIdeal()->begin();
-       it != slice.getIdeal()->end(); ++it) {
+  for (Ideal::const_iterator it = slice.getIdeal().begin();
+       it != slice.getIdeal().end(); ++it) {
     if ((*it)[var] == 0)
       continue;
 
@@ -160,8 +157,7 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
     pivot[var] -= 1;
 
     {
-      Slice child(slice.getIdeal()->createMinimizedColon(pivot),
-		  cumulativeSubtract->createMinimizedColon(pivot),
+      Slice child(slice.getIdeal(), *cumulativeSubtract,
 		  slice.getMultiply(), pivot);
       child.normalize();
       content(child);
@@ -169,13 +165,13 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
 
     Ideal::const_iterator next = it;
     ++next;
-    if (next != slice.getIdeal()->end() && (*it)[var] == (*next)[var]) {
-      if (cumulativeSubtract == slice.getSubtract())
-	cumulativeSubtract = slice.getSubtract()->clone();
+    if (next != slice.getIdeal().end() && (*it)[var] == (*next)[var]) {
+      if (cumulativeSubtract == &(slice.getSubtract()))
+	cumulativeSubtract = new Ideal(slice.getSubtract());
       cumulativeSubtract->insert(pivot);
-    } else if (cumulativeSubtract != slice.getSubtract()) {
+    } else if (cumulativeSubtract != &(slice.getSubtract())) {
       delete cumulativeSubtract;
-      cumulativeSubtract = slice.getSubtract();
+      cumulativeSubtract = &(slice.getSubtract());
     }
   }
 }
@@ -184,19 +180,22 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
   Term pivot(slice.getVarCount());
   _strategy->getPivot(pivot, slice);
 
+  ASSERT(!pivot.isIdentity()); 
+  ASSERT(!slice.getIdeal().contains(pivot));
+  ASSERT(!slice.getSubtract().contains(pivot));
+
   // Handle inner slice.
   {
-    Slice inner(slice.getIdeal()->createMinimizedColon(pivot),
-		slice.getSubtract()->createMinimizedColon(pivot),
+    Slice inner(slice.getIdeal(), slice.getSubtract(),
 		slice.getMultiply(), pivot);
     inner.normalize();
     content(inner);
   }
 
   // Handle outer slice.
-  slice.getIdeal()->removeStrictMultiples(pivot);
+  slice.getIdeal().removeStrictMultiples(pivot);
   if (pivot.getSizeOfSupport() > 1)
-    slice.getSubtract()->insert(pivot);
+    slice.getSubtract().insert(pivot);
   
   content(slice);
 }
