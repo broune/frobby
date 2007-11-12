@@ -5,73 +5,80 @@
 
 class Ideal {
   typedef vector<Exponent*> Cont;
+  typedef Cont::iterator iterator;
 
 public:
-  Ideal(unsigned int varCount);
+  Ideal(unsigned int varCount = 0);
   Ideal(const Ideal& ideal);
+  ~Ideal();
 
-  typedef Cont::iterator iterator;
+  // *** Accessors
+
   typedef Cont::const_iterator const_iterator;
 
-  iterator begin() {return _terms.begin();}
-  iterator end() {return _terms.end();}
   const_iterator begin() const {return _terms.begin();}
   const_iterator end() const {return _terms.end();}
   size_t getVarCount() const {return _varCount;}
   size_t getGeneratorCount() const {return _terms.size();}
 
   bool isIncomparable(const Term& term) const;
+  bool isIncomparable(const Exponent* term) const;
 
-  bool isZeroIdeal() const;
+  bool contains(const Term& term) const;
+  bool contains(const Exponent* term) const;
+
+  bool isIrreducible() const;
 
   void getLcm(Term& lcm) const;
   void getGcd(Term& gcd) const;
 
-  bool contains(const Exponent* term) const;
+  void print(ostream& out) const;
+  friend ostream& operator<<(ostream& out, const Ideal& ideal) {
+    ideal.print(out);
+    return out;
+  }
+
+  // *** Mutators
+
+  void insert(const Term& term);
+  void insert(const Exponent* term);
+  void insert(const Ideal& term);
+
+  // Remove non-redundant generators.
+  void minimize();
+
+  // Replace each generator g by g : by.
+  void colon(const Term& by);
+
+  // Equivalent to calling colon(by) and then minimize.
+  void colonReminimize(const Term& by);
+
+  // Perform colon by var raised to exp and then minimize.
+  void colonReminimize(size_t var, Exponent exp);
+
+  // a is a strict multiple of b if b[i] > 0 implies that a[i] > b[i].
+  void removeStrictMultiples(const Exponent* exponent);
+
+  // Remove duplicate generators.
+  void removeDuplicates();
+
+  // Sort the generators in ascending order according to the exponent of var.
+  void singleDegreeSort(size_t var);
+
+  // Removes all generators, and optionally sets the number of variables.
+  void clear();
+  void clearAndSetVarCount(size_t varCount);
 
 
-  class FilterFunction {
-  public:
-    virtual ~FilterFunction() {}
-    virtual bool operator()(const Exponent* term) = 0;
-  };
+  Ideal& operator=(const Ideal& ideal);
 
-  // Returns true if any terms were removed.
-  virtual bool filter(FilterFunction& function);
+  void swap(Ideal& ideal);
 
-  virtual ~Ideal();
-
-  virtual void insert(const Exponent* term);
-  virtual void insert(const Term& term);
-  virtual void insert(const Ideal& term);
-
-
-  virtual void singleDegreeSort(size_t variable);
-
-
-  virtual void minimize();
-  virtual void colon(const Term& by);
-  virtual void colonReminimize(const Term& by);
-  virtual void colonReminimize(size_t var, Exponent exp);
-
-  virtual Ideal* createMinimizedColon(const Term& by) const;
-  virtual Ideal* clone() const;
-  virtual Ideal* createNew(size_t varCount) const;
-  virtual void clear();
-
-  // Returns true if any were removed.
-  virtual bool removeStrictMultiples(const Exponent* exponent);
-
-  virtual void print() const;
-
-  bool isIrreducible() const;
-
-  virtual void removeDuplicates();
-  /*
-  static void* operator new(size_t size);
-  void operator delete(void* p, size_t size);
-  */
-
+  // Removes those generators m such that pred(m) evaluates to
+  // true. Returns true if any generators were removed.
+  template<class Predicate>
+    bool removeIf(Predicate pred);
+  
  protected:
   class ExponentAllocator {
   public:
@@ -80,6 +87,8 @@ public:
 
     Exponent* allocate();
     void reset(size_t newVarCount);
+
+    void swap(ExponentAllocator& allocator);
 
   private:
     ExponentAllocator(const ExponentAllocator&);
@@ -100,5 +109,16 @@ public:
   vector<Exponent*> _terms;
   ExponentAllocator _allocator;
 };
+
+template<class Predicate>
+inline bool Ideal::removeIf(Predicate pred) {
+  iterator newEnd = std::remove_if(_terms.begin(), _terms.end(), pred);
+
+  if (newEnd != _terms.end()) {
+    _terms.erase(newEnd, _terms.end());
+    return true;
+  } else
+    return false;
+}
 
 #endif

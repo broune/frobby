@@ -4,89 +4,80 @@
 #include "Ideal.h"
 #include "DecomConsumer.h"
 
-class PruneSubtractFilter : public Ideal::FilterFunction {
-public:
-  PruneSubtractFilter(const Ideal* ideal, const Term& lcm):
-    _ideal(ideal), _lcm(lcm) {}
-
-  virtual bool operator()(const Exponent* term) {
-    return
-      ::strictlyDivides(term, _lcm, _lcm.getVarCount()) &&
-      !_ideal->contains(term);
-  }
-
-private:
-  const Ideal* _ideal;
-  const Term& _lcm;
-};
-
-class DoubleLcmFilter : public Ideal::FilterFunction {
-public:
-  DoubleLcmFilter(size_t varCount):
-    _lcm(0),
-    _varCount(varCount) {
-  }
-
-  void setLcm(const Exponent* lcm) {
-    _lcm = lcm;
-  }
-
-  virtual bool operator()(const Exponent* term) {
-    bool seenMatch = false;
-    for (size_t var = 0; var < _varCount; ++var) {
-      if (term[var] == _lcm[var]) {
-	if (seenMatch)
-	  return false;
-	seenMatch = true;
-      }
-    }
-    return true;
-  }
-
-private:
-  const Exponent* _lcm;
-  size_t _varCount;
-};
-
-// It is a prerequisite that the slice has already been simplified,
-// especially that it has been minimized and that it is normal.
-bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
-  if (_varCount != 2)
-    return false;
-
-  _ideal->singleDegreeSort(0);
-
-  static Term term(2);
-
-  Ideal::const_iterator stop = _ideal->end();
-  Ideal::const_iterator it = _ideal->begin();
-  ASSERT(it != stop);
-
-  while (true) {
-    term[1] = (*it)[1] - 1;
-    
-    ++it;
-    if (it == stop)
-      break;
-
-    term[0] = (*it)[0] - 1;
-
-    ASSERT(!_subtract->contains(term));
-    ASSERT(!_ideal->contains(term));
-
-    term[0] += _multiply[0];
-    term[1] += _multiply[1];
-
-    consumer->consume(term);
-  }
-
-  return true;
+Slice::Slice():
+  _varCount(0),
+  _multiply(),
+  _lcm(),
+  _ideal(),
+  _subtract() {
 }
 
-// It is a prerequisite that the slice has already been simplified.
-bool Slice::baseCase(DecomConsumer* consumer) {
-  // It is assumed that the slice is normalized.
+Slice::Slice(const Ideal& ideal, const Ideal& subtract):
+  _varCount(ideal.getVarCount()),
+  _multiply(ideal.getVarCount()),
+  _lcm(ideal.getVarCount()),
+  _ideal(ideal),
+  _subtract(subtract) {
+  ASSERT(subtract.getVarCount() == ideal.getVarCount());
+}
 
+Slice::Slice(const Ideal& ideal, const Ideal& subtract,
+	     const Term& multiply):
+  _varCount(multiply.getVarCount()),
+  _multiply(multiply),
+  _lcm(multiply.getVarCount()),
+  _ideal(ideal),
+  _subtract(subtract) {
+  ASSERT(multiply.getVarCount() == ideal.getVarCount());
+  ASSERT(multiply.getVarCount() == subtract.getVarCount());
+}
+
+Slice::Slice(const Ideal& ideal,
+	     const Ideal& subtract,
+	     const Term& multiply, const Term& pivot):
+  _varCount(multiply.getVarCount()),
+  _multiply(multiply.getVarCount()),
+  _lcm(multiply.getVarCount()),
+  _ideal(ideal),
+  _subtract(subtract) {
+  ASSERT(multiply.getVarCount() == ideal.getVarCount());
+  ASSERT(multiply.getVarCount() == subtract.getVarCount());
+  ASSERT(multiply.getVarCount() == pivot.getVarCount());
+
+  _ideal.colonReminimize(pivot);
+  _subtract.colonReminimize(pivot);
+  _multiply.product(multiply, pivot);
+}
+
+const Term& Slice::getLcm() const {
+  _ideal.getLcm(_lcm);
+  return _lcm;
+}
+
+void Slice::print(ostream& out) const {
+  out << "Slice (multiply: " << _multiply << '\n'
+      << " ideal: " << _ideal << '\n'
+      << " subtract: " << _subtract << '\n'
+      << ')';
+}
+
+void Slice::clearAndSetVarCount(size_t varCount) {
+  _varCount = varCount;
+  _ideal.clearAndSetVarCount(varCount);
+  _subtract.clearAndSetVarCount(varCount);
+  _multiply.reset(varCount);
+  _lcm.reset(varCount);
+}
+
+void Slice::swap(Slice& slice) {
+  std::swap(_varCount, slice._varCount);
+  _multiply.swap(slice._multiply);
+  _lcm.swap(slice._lcm);
+  _ideal.swap(slice._ideal);
+  _subtract.swap(slice._subtract);
+}
+
+bool Slice::baseCase(DecomConsumer* consumer) {
   if (twoVarBaseCase(consumer))
     return true;
 
@@ -100,205 +91,210 @@ bool Slice::baseCase(DecomConsumer* consumer) {
   if (!lcm.isSquareFree())
     return false;
 
-  // We have reached the square free base case. The content is
-  // non-empty if and only if ideal has the form <x_1, ..., x_n>.
-  if (_ideal->getGeneratorCount() != _varCount)
-    return true;
-
-  // This might appear to rest on an assumption that ideal is
-  // minimized and thus has no duplicates. This is not the case, since
-  // we checked that each variable appears in some minimal generator.
-  if (_ideal->isIrreducible())
+  // We have reached the square free base case. The content is empty
+  // unless ideal has the form <x_1, ..., x_n>.
+  if (_ideal.getGeneratorCount() == _varCount &&
+      _ideal.isIrreducible())
     consumer->consume(_multiply);
 
   return true;
 }
 
 void Slice::simplify() {
+  // It would make sense to normalize here, but we ensure elsewhere
+  // that the slice is already normalized. This ASSERT is here to
+  // catch it if this changes.
   ASSERT(!normalize());
+  removeDoubleLcm();
 
-  Term tmp(_varCount);
-  Term lcm(_varCount);
-  Term gcd(_varCount);
+  while (applyLowerBound()) {
+    while (applyLowerBound())
+      ;
 
-  filterDoubleLcm();
+    bool changed1 = normalize();
+    bool changed2 = removeDoubleLcm();
 
- beginning:
-  bool changed = false;
-
-  while (true) {
-    Ideal::const_iterator idealBegin = _ideal->begin();
-    Ideal::const_iterator idealEnd = _ideal->end();
-
-    lcm.setToIdentity();
-    for (size_t offset = 0; offset < _varCount; ++offset) {
-      bool first = true;
-      for (Ideal::const_iterator it = idealBegin; it != idealEnd; ++it) {
-	if ((*it)[offset] == 0)
-	  continue;
-	if (first) {
-	  tmp = *it;
-	  first = false;
-	} else {
-	  tmp.gcd(tmp, *it);
-	}
-      }
-      if (first)
-	return; // we reached a basecase, so no reason to simplify further
-      if (!first) {
-	tmp[offset] -= 1;
-	lcm.lcm(lcm, tmp);
-      }
-    }    
-
-    if (lcm.isIdentity())
+    if (!changed1 && !changed2)
       break;
-
-    changed = true;
-
-    _subtract->colon(lcm);
-    _ideal->colonReminimize(lcm);
-    _multiply.product(_multiply, lcm);
   }
 
-  if (changed) {
-    bool b1 = normalize();
-    bool b2 = filterDoubleLcm();
+  pruneSubtract();
 
-    if (b1 || b2)
-      goto beginning;
-  }
-
-  _subtract->minimize();
+  ASSERT(!normalize());
+  ASSERT(!pruneSubtract());
+  ASSERT(!removeDoubleLcm());
+  ASSERT(!applyLowerBound());
 }
 
+// Helper class for normalize().
+class StrictMultiplePredicate {
+public:
+  StrictMultiplePredicate(const Exponent* term, size_t varCount):
+    _term(term), _varCount(varCount) {
+  }
+
+  bool operator()(const Exponent* term) {
+    return ::strictlyDivides(_term, term, _varCount);
+  }
+  
+private:
+  const Exponent* _term;
+  size_t _varCount;
+};
+
 bool Slice::normalize() {
-  if (_subtract->getGeneratorCount() == 0)
-    return false;
-
   bool removedAny = false;
-  for (Ideal::const_iterator it = _subtract->begin();
-       it != _subtract->end(); ++it)
-    if (_ideal->removeStrictMultiples(*it))
-      removedAny = true;
 
-  PruneSubtractFilter pruneFilter(_ideal, getLcm());
-  _subtract->filter(pruneFilter);
+  Ideal::const_iterator stop = _subtract.end();
+  for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it) {
+    StrictMultiplePredicate pred(*it, _varCount);
+    if (_ideal.removeIf(pred))
+      removedAny = true;
+  }
 
   return removedAny;
 }
 
-bool Slice::filterDoubleLcm() {
+// Helper class for pruneSubtract().
+class PruneSubtractPredicate {
+public:
+  PruneSubtractPredicate(const Ideal& ideal, const Term& lcm):
+    _ideal(ideal), _lcm(lcm) {}
+
+  bool operator()(const Exponent* term) {
+    return
+      !::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
+      _ideal.contains(term);
+  }
+  
+private:
+  const Ideal& _ideal;
+  const Term& _lcm;
+};
+
+bool Slice::pruneSubtract() {
+  if (_subtract.getGeneratorCount() == 0)
+    return false;
+
+  PruneSubtractPredicate pred(_ideal, getLcm());
+  return _subtract.removeIf(pred);
+}
+
+// Helper class for removeDoubleLcm().
+class DoubleLcmPredicate {
+public:
+  DoubleLcmPredicate(const Term& lcm):
+    _lcm(lcm) {
+  }
+
+  bool operator()(const Exponent* term) {
+    bool seenMatch = false;
+    for (size_t var = 0; var < _lcm.getVarCount(); ++var) {
+      if (term[var] == _lcm[var]) {
+	if (seenMatch)
+	  return true;
+	seenMatch = true;
+      }
+    }
+    return false;
+  }
+
+private:
+  const Term& _lcm;
+};
+
+bool Slice::removeDoubleLcm() {
   bool removedAny = false;
 
-  DoubleLcmFilter filter(_varCount);
   while (true) {
-    filter.setLcm(getLcm());
-    if (!_ideal->filter(filter))
+    DoubleLcmPredicate pred(getLcm());
+    if (!_ideal.removeIf(pred))
       break;
 
     removedAny = true;
   };
-  
+
   return removedAny;
 }
 
-Slice::Slice():
-  _varCount(0),
-  _multiply(0),
-  _lcm(0),
-  _ideal(0),
-  _subtract(0) {
+bool Slice::applyLowerBound() {
+  Term bound(_varCount);
+
+  getLowerBound(bound);
+  if (bound.isIdentity())
+    return false;
+
+  _subtract.colonReminimize(bound);
+  _ideal.colonReminimize(bound);
+  _multiply.product(_multiply, bound);
+
+  return true;
 }
 
-Slice::Slice(Ideal* ideal,
-	     Ideal* subtract,
-	     size_t varCount):
-  _varCount(varCount),
-  _multiply(varCount),
-  _lcm(varCount),
-  _ideal(ideal),
-  _subtract(subtract) {
-  ASSERT(ideal != 0);
-  ASSERT(subtract != 0);
-  ASSERT(varCount == ideal->getVarCount());
-  ASSERT(varCount == subtract->getVarCount());
-}
+void Slice::getLowerBound(Term& bound, size_t var) const {
+  bool seenAny = false;
 
-void Slice::reset(Ideal* ideal, Ideal* subtract, size_t varCount) {
-  _varCount = varCount;
+  Ideal::const_iterator stop = _ideal.end();
+  for (Ideal::const_iterator it = _ideal.begin(); it != stop; ++it) {
+    if ((*it)[var] == 0)
+      continue;
 
-  delete _ideal;
-  _ideal = ideal;
-
-  delete _subtract;
-  _subtract = subtract;
+    if (seenAny)
+      bound.gcd(bound, *it);
+    else {
+      bound = *it;
+      seenAny = true;
+    }
+  }
   
-  _multiply.reset(varCount);
-  _lcm.reset(varCount);
-
-  ASSERT(ideal != 0);
-  ASSERT(subtract != 0);
-  ASSERT(varCount == ideal->getVarCount());
-  ASSERT(varCount == subtract->getVarCount());
+  if (seenAny) {
+    ASSERT(bound[var] >= 1);
+    bound[var] -= 1;
+  } else
+    bound.setToIdentity();
 }
 
-void Slice::clear() {
-  _varCount = 0;
+void Slice::getLowerBound(Term& bound) const {
+  ASSERT(_varCount > 0);
+  Term tmp(_varCount);
 
-  delete _ideal;
-  _ideal = 0;
-
-  delete _subtract;
-  _subtract = 0;
-  
-  _multiply.clear();
-  _lcm.clear();
+  getLowerBound(bound, 0);
+  for (size_t var = 1; var < _varCount; ++var) {
+    getLowerBound(tmp, var);
+    bound.lcm(bound, tmp);
+  }
 }
 
-Slice::Slice(Ideal* ideal,
-	     Ideal* subtract,
-	     const Term& multiply):
-  _varCount(multiply.getVarCount()),
-  _multiply(multiply),
-  _lcm(multiply.getVarCount()),
-  _ideal(ideal),
-  _subtract(subtract) {
-  ASSERT(multiply.getVarCount() == ideal->getVarCount());
-  ASSERT(multiply.getVarCount() == subtract->getVarCount());
-}
+bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
+  if (_varCount != 2)
+    return false;
 
-Slice::Slice(Ideal* ideal,
-	     Ideal* subtract,
-	     const Term& multiply, const Term& pivot):
-  _varCount(multiply.getVarCount()),
-  _multiply(multiply.getVarCount()),
-  _lcm(multiply.getVarCount()),
-  _ideal(ideal),
-  _subtract(subtract) {
-  ASSERT(multiply.getVarCount() == ideal->getVarCount());
-  ASSERT(multiply.getVarCount() == subtract->getVarCount());
+  _ideal.singleDegreeSort(0);
 
-  _multiply.product(multiply, pivot);
-}
+  static Term term(2);
 
-Slice::~Slice() {
-  delete _ideal;
-  delete _subtract;
-}
+  Ideal::const_iterator stop = _ideal.end();
+  Ideal::const_iterator it = _ideal.begin();
+  ASSERT(it != stop);
 
-const Term& Slice::getLcm() const {
-  _ideal->getLcm(_lcm);
-  return _lcm;
-}
+  while (true) {
+    term[1] = (*it)[1] - 1;
+    
+    ++it;
+    if (it == stop)
+      break;
 
-void Slice::print() const {
-  cerr << "SLICE: Multiply: " << _multiply << endl;
-  cerr << "Ideal: ";
-  _ideal->print();
+    term[0] = (*it)[0] - 1;
 
-  cerr << "Subtract: ";
-  _subtract->print();
+    ASSERT(!_ideal.contains(term));
 
-  cerr << flush;
+    if (!_subtract.contains(term)) {
+      term[0] += _multiply[0];
+      term[1] += _multiply[1];
+      
+      consumer->consume(term);
+    }
+  }
+
+  return true;
 }

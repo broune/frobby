@@ -231,6 +231,9 @@ class Term {
   }
 
   Term& operator=(const Term& term) {
+    if (_varCount != term._varCount)
+      reset(term._varCount);
+      
     ASSERT(_varCount == term._varCount);
     return (*this) = term._exponents;
   }
@@ -350,7 +353,7 @@ class Term {
   }
 
   void swap(Term& term) {
-    ASSERT(_varCount == term._varCount);
+    std::swap(_varCount, term._varCount);
 
     Exponent* tmp = _exponents;
     _exponents = term._exponents;
@@ -358,13 +361,12 @@ class Term {
   }
 
   void reset(size_t newVarCount) {
-    if (newVarCount == _varCount)
-      setToIdentity();
-    else {
+    if (newVarCount != _varCount) {
       deallocate(_exponents, _varCount);
       _varCount = newVarCount;
       _exponents = allocate(newVarCount);
     }
+    setToIdentity();  
   }
 
   void clear() {

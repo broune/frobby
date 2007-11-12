@@ -1,7 +1,7 @@
 #include "../stdinc.h"
 #include "TermTree.h"
 
-#include "../TermList.h"
+#include "../Ideal.h"
 
 class Node {
 public:
@@ -155,7 +155,7 @@ TermTree::~TermTree() {
   delete (Allocator<Node>*)_allocator;
 }
 
-void TermTree::getTerms(TermList& terms) const {
+void TermTree::getTerms(Ideal& terms) const {
   TreeIterator it(*this);
   Term term(_dimension);
   while (!it.atEnd()) {
