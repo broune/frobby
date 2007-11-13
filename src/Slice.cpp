@@ -5,20 +5,7 @@
 #include "DecomConsumer.h"
 
 Slice::Slice():
-  _varCount(0),
-  _multiply(),
-  _lcm(),
-  _ideal(),
-  _subtract() {
-}
-
-Slice::Slice(const Ideal& ideal, const Ideal& subtract):
-  _varCount(ideal.getVarCount()),
-  _multiply(ideal.getVarCount()),
-  _lcm(ideal.getVarCount()),
-  _ideal(ideal),
-  _subtract(subtract) {
-  ASSERT(subtract.getVarCount() == ideal.getVarCount());
+  _varCount(0) {
 }
 
 Slice::Slice(const Ideal& ideal, const Ideal& subtract,
@@ -30,23 +17,6 @@ Slice::Slice(const Ideal& ideal, const Ideal& subtract,
   _subtract(subtract) {
   ASSERT(multiply.getVarCount() == ideal.getVarCount());
   ASSERT(multiply.getVarCount() == subtract.getVarCount());
-}
-
-Slice::Slice(const Ideal& ideal,
-	     const Ideal& subtract,
-	     const Term& multiply, const Term& pivot):
-  _varCount(multiply.getVarCount()),
-  _multiply(multiply.getVarCount()),
-  _lcm(multiply.getVarCount()),
-  _ideal(ideal),
-  _subtract(subtract) {
-  ASSERT(multiply.getVarCount() == ideal.getVarCount());
-  ASSERT(multiply.getVarCount() == subtract.getVarCount());
-  ASSERT(multiply.getVarCount() == pivot.getVarCount());
-
-  _ideal.colonReminimize(pivot);
-  _subtract.colonReminimize(pivot);
-  _multiply.product(multiply, pivot);
 }
 
 const Term& Slice::getLcm() const {
@@ -75,6 +45,15 @@ void Slice::swap(Slice& slice) {
   _lcm.swap(slice._lcm);
   _ideal.swap(slice._ideal);
   _subtract.swap(slice._subtract);
+}
+
+void Slice::innerSlice(const Term& pivot) {
+  ASSERT(getVarCount() == pivot.getVarCount());
+
+  _ideal.colonReminimize(pivot);
+  _subtract.colonReminimize(pivot);
+  _multiply.product(_multiply, pivot);
+  normalize();
 }
 
 bool Slice::baseCase(DecomConsumer* consumer) {
@@ -220,7 +199,12 @@ bool Slice::removeDoubleLcm() {
 bool Slice::applyLowerBound() {
   Term bound(_varCount);
 
-  getLowerBound(bound);
+  if (!getLowerBound(bound)) {
+    _ideal.clear();
+    _subtract.clear();
+    return false;
+  }
+
   if (bound.isIdentity())
     return false;
 
@@ -231,14 +215,28 @@ bool Slice::applyLowerBound() {
   return true;
 }
 
-void Slice::getLowerBound(Term& bound, size_t var) const {
+bool Slice::getLowerBound(Term& bound, size_t var) const {
   bool seenAny = false;
+
+  //const Term& lcm = getLcm();
+  const Term& lcm = _lcm; // TODO: fix
 
   Ideal::const_iterator stop = _ideal.end();
   for (Ideal::const_iterator it = _ideal.begin(); it != stop; ++it) {
     if ((*it)[var] == 0)
       continue;
-
+    
+    bool relevant = true;
+    for (size_t var2 = 0; var2 < _varCount; ++var2) {
+      if (var2 != var && (*it)[var2] == lcm[var2]) {
+	relevant = false;
+	break;
+      }
+    }
+    
+    if (!relevant)
+      continue;
+    
     if (seenAny)
       bound.gcd(bound, *it);
     else {
@@ -246,23 +244,30 @@ void Slice::getLowerBound(Term& bound, size_t var) const {
       seenAny = true;
     }
   }
-  
+
   if (seenAny) {
     ASSERT(bound[var] >= 1);
     bound[var] -= 1;
-  } else
-    bound.setToIdentity();
+    return true;
+  } else {
+    // In this case the content is empty.
+    return false;
+  }
 }
 
-void Slice::getLowerBound(Term& bound) const {
+bool Slice::getLowerBound(Term& bound) const {
   ASSERT(_varCount > 0);
   Term tmp(_varCount);
 
-  getLowerBound(bound, 0);
+  if (!getLowerBound(bound, 0))
+    return false;
   for (size_t var = 1; var < _varCount; ++var) {
-    getLowerBound(tmp, var);
+    if (!getLowerBound(tmp, var))
+      return false;
     bound.lcm(bound, tmp);
   }
+
+  return true;
 }
 
 bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
@@ -275,7 +280,8 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
 
   Ideal::const_iterator stop = _ideal.end();
   Ideal::const_iterator it = _ideal.begin();
-  ASSERT(it != stop);
+  if (it == stop)
+    return true;
 
   while (true) {
     term[1] = (*it)[1] - 1;

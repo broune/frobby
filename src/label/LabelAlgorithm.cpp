@@ -21,10 +21,10 @@ void LabelAlgorithm::setUsePartition(bool usePartition) {
   _usePartition = usePartition;
 }
 
-void LabelAlgorithm::runAndDeleteIdealAndReset(Ideal* ideal) {
-  TermTree tree(ideal->getVarCount());
+void LabelAlgorithm::runAndClear(Ideal& ideal) {
+  TermTree tree(ideal.getVarCount());
   tree.insert(ideal);
-  delete ideal;
+  ideal.clear();
 
   _dimension = tree.getDimension();
 

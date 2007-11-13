@@ -17,11 +17,9 @@ public:
   virtual ~TermTree();
 
   void getTerms(Ideal& terms) const;
-  void insert(const Ideal* ideal);
+  void insert(const Ideal& ideal);
 
   TermTree& operator=(const TermTree& tree);
-
- private:
 
  public:	    
   class TreeWalker {

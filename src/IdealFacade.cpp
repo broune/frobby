@@ -14,7 +14,8 @@ void IdealFacade::minimize(BigIdeal& bigIdeal) {
 
   Ideal* ideal;
   TermTranslator* translator;
-  bigIdeal.buildAndClear(ideal, translator, false, false);
+
+  bigIdeal.buildAndClear(ideal, translator);
 
   ideal->minimize();
 

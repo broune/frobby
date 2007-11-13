@@ -34,17 +34,17 @@ void SliceAlgorithm::setUseIndependence(bool useIndependence) {
   _useIndependence = useIndependence;
 }
 
-void SliceAlgorithm::runAndDeleteIdealAndReset(Ideal* ideal) {
+void SliceAlgorithm::runAndClear(Ideal& ideal) {
   ASSERT(_decomConsumer != 0);
   ASSERT(_strategy != 0);
 
-  if (ideal->getGeneratorCount()) {
-    Ideal subtract(ideal->getVarCount());
-    Slice slice(*ideal, subtract);
+  if (ideal.getGeneratorCount() > 0) {
+    ideal.minimize();
+    Slice slice(ideal, Ideal(ideal.getVarCount()), Term(ideal.getVarCount()));
     content(slice);
   }
 
-  delete ideal;
+  ideal.clear();
 
   // Now reset the fields to their default values.
   delete _decomConsumer;
@@ -118,9 +118,8 @@ void SliceAlgorithm::labelSplit2(Slice& slice) {
     pivot[var] -= 1;
 
     {
-      Slice child(*ideal, slice.getSubtract(),
-		  slice.getMultiply(), pivot);
-      child.normalize();
+      Slice child(*ideal, slice.getSubtract(), slice.getMultiply());
+      child.innerSlice(pivot);
       content(child);
     }
     ++childCount;
@@ -130,12 +129,7 @@ void SliceAlgorithm::labelSplit2(Slice& slice) {
 
   pivot.setToIdentity();
   pivot[var] = 1;
-
-  slice.getIdeal().colonReminimize(pivot);
-  slice.getSubtract().colonReminimize(pivot);
-  slice.getMultiply()[var] += 1;
-  slice.normalize();
-
+  slice.innerSlice(pivot);
 
   content(slice);
 }
@@ -157,9 +151,8 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
     pivot[var] -= 1;
 
     {
-      Slice child(slice.getIdeal(), *cumulativeSubtract,
-		  slice.getMultiply(), pivot);
-      child.normalize();
+      Slice child(slice.getIdeal(), *cumulativeSubtract, slice.getMultiply());
+      child.innerSlice(pivot);
       content(child);
     }
 
@@ -186,9 +179,8 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
 
   // Handle inner slice.
   {
-    Slice inner(slice.getIdeal(), slice.getSubtract(),
-		slice.getMultiply(), pivot);
-    inner.normalize();
+    Slice inner(slice.getIdeal(), slice.getSubtract(), slice.getMultiply());
+    inner.innerSlice(pivot);
     content(inner);
   }
 
@@ -210,7 +202,7 @@ void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
     if (simplifiedAndDependent || !independenceSplit(slice)) {
       switch (_strategy->getSplitType(slice)) {
       case SliceStrategy::LabelSplit:
-	labelSplit2(slice);
+	labelSplit(slice);
 	break;
 
       case SliceStrategy::PivotSplit:

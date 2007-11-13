@@ -23,7 +23,8 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   
   Ideal* ideal;
   TermTranslator* translator;
-  bigIdeal.buildAndClear(ideal, translator, false);
+  bigIdeal.buildAndClear(ideal, translator);
+  translator->addArtinianPowers(*ideal);
 
   Ideal decom(ideal->getVarCount());
 
