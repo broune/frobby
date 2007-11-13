@@ -27,13 +27,9 @@ public:
 
   bool operator==(const BigIdeal& b) const;
 
-  // Returns the number of artinian generators that have been added
-  // that do not come from the input itself.
-  size_t buildAndClear(Ideal*& tree,
-		       TermTranslator*& translator,
-		       bool generisize,
-		       bool artinize = true);
-
+  void buildAndClear(Ideal*& tree,
+		     TermTranslator*& translator);
+    
   static TermTranslator* buildAndClear(const vector<BigIdeal*>& bigIdeals,
 				       vector<Ideal*>& ideals);
 
@@ -67,37 +63,9 @@ private:
   static bool bigTermCompare(const vector<mpz_class>& a,
 			     const vector<mpz_class>& b);
 
-  void makeGeneric();
-
-  static vector<vector<mpz_class> >*
-    buildDecompressionMaps
-    (const vector<map<mpz_class, Exponent> >&
-     compressionMaps,
-     size_t generisized,
-     size_t varCount);
-
-    static Ideal*
-    buildIdeal(BigIdeal* ideal,
-	       vector<map<mpz_class, Exponent> >& compressionMaps,
-	       vector<vector<mpz_class> >& decompressionMaps,
-	       size_t varCount,
-	       bool artinize);
-
-    static void makeCompressionMap
-      (int position,
-       const vector<BigIdeal*> ideals,
-       map<mpz_class, Exponent>& compressionMap);
-
-    void makeCompressionMap(int position,
-			    map<mpz_class, Exponent>& compressionMap);
-
-    static void makeCompressionMap
-      (vector<mpz_class>& exponents,
-       map<mpz_class, Exponent>& compressionMap);
-
-    vector<string> _variables;
-    vector<vector<mpz_class> > _terms;
-    VarNames _names;
+  vector<string> _variables;
+  vector<vector<mpz_class> > _terms;
+  VarNames _names;
 };
 
 #endif

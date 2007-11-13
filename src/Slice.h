@@ -9,17 +9,7 @@ class DecomConsumer;
 class Slice {
  public:
   Slice();
-  Slice(const Ideal& ideal, const Ideal& subtract);
-  Slice(const Ideal& ideal, const Ideal& subtract,
-	const Term& multiply);
-
-  // Computes an inner slice with the specified pivot,
-  // i.e. getMultiply() will return the product of multiply and pivot,
-  // and getIdeal() and getSubtract() will return ideal and subtract
-  // after having taken the colon by pivot.
-  Slice(const Ideal& ideal, const Ideal& subtract,
-	const Term& multiply, const Term& pivot);
-
+  Slice(const Ideal& ideal, const Ideal& subtract, const Term& multiply);
 
   // *** Accessors
 
@@ -54,6 +44,11 @@ class Slice {
   // copies.
   void swap(Slice& slice);
 
+  // Computes an inner slice with the specified pivot, i.e. a colon by
+  // pivot is applied to getMultiply() and getSubtract(), while
+  // getMultiply() is multiplied by pivot. 
+  void innerSlice(const Term& pivot);
+
   // Returns true if a base case is reached, and in that case outputs
   // the content to consumer. The slice must be fully simplified.
   //
@@ -82,7 +77,7 @@ class Slice {
   // Removes those generators g of getIdeal() such that g[i] equals
   // getLcm()[i] for two distinct i. This is done iteratively until no
   // more generators can be removed in this way. Returns true if any
-  // generators were removed.
+  // generators were removed or a base case has been detected.
   bool removeDoubleLcm();
 
   // Calculates a lower bound on the content of the slice (see
@@ -97,13 +92,14 @@ class Slice {
  private:
   // Calculates the gcd of those generators of getIdeal() that are
   // divisible by var. This gcd is then divided by var to yield a
-  // lower bound on the content of the slice.
-  void getLowerBound(Term& bound, size_t var) const;
+  // lower bound on the content of the slice. Returns false if a base
+  // case is detected.
+  bool getLowerBound(Term& bound, size_t var) const;
 
   // Calculates the lcm of the lower bounds from the getLowerBound
   // that takes a variable. This is a lower bound on the content of
-  // the slice.
-  void getLowerBound(Term& bound) const;
+  // the slice. Returns false if a base case is detected.
+  bool getLowerBound(Term& bound) const;
 
   // Returns true if getGeneratorCount() returns 2, in which case the
   // content of the slice is output to consumer. It is a prerequisite

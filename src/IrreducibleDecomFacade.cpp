@@ -39,11 +39,12 @@ computeIrreducibleDecom(Ideal* ideal, DecomConsumer* decomConsumer) {
       exit(1);
     }
     
-    runSliceAlgorithm(ideal, decomConsumer, strategy);
+    runSliceAlgorithm(*ideal, decomConsumer, strategy);
+    delete ideal;
   } else {
     Strategy* strategy =
       new DecompositionStrategy(decomConsumer, ideal->getVarCount());
-    runLabelAlgorithm(ideal, strategy);
+    runLabelAlgorithm(*ideal, strategy);
   }
 
   endAction();
@@ -68,7 +69,8 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
 
   Ideal* terms = 0;
   TermTranslator* translator = 0;
-  ideal.buildAndClear(terms, translator, false);
+  ideal.buildAndClear(terms, translator);
+  translator->addArtinianPowers(*terms);
 
   DecomConsumer* decomConsumer;
   if (_parameters.getDoBenchmark())
@@ -79,14 +81,13 @@ computeIrreducibleDecom(BigIdeal& ideal, ostream& out) {
   endAction();
 
   computeIrreducibleDecom(terms, decomConsumer);
-  
+
   delete translator;
-  
 }
 
 void IrreducibleDecomFacade::
 computeFrobeniusNumber(const vector<mpz_class>& instance,
-		       BigIdeal& ideal, 
+		       BigIdeal& bigIdeal, 
 		       mpz_class& frobeniusNumber) {
   beginAction
     ("Optimizing over irreducible decomposition using label algorithm.");
@@ -103,24 +104,25 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
     return;
   }
 
-  Ideal* terms;
+  Ideal* ideal;
   TermTranslator* translator;
-  ideal.buildAndClear(terms, translator, false);
+  bigIdeal.buildAndClear(ideal, translator);
+  translator->addArtinianPowers(*ideal);
 
   Strategy* strategy = new FrobeniusStrategy
-    (instance, &frobeniusNumber, ideal.getVarCount(),
+    (instance, &frobeniusNumber, ideal->getVarCount(),
      translator, _parameters.getUseBound());
-  runLabelAlgorithm(terms, strategy);
+  runLabelAlgorithm(*ideal, strategy);
   delete translator;
+  delete ideal;
 
   endAction();
 }
 
 void IrreducibleDecomFacade::
-runSliceAlgorithm(Ideal* ideal, DecomConsumer* consumer,
+runSliceAlgorithm(Ideal& ideal, DecomConsumer* consumer,
 		  SliceStrategy* strategy) {
   ASSERT(strategy != 0);
-  ASSERT(ideal != 0);
   ASSERT(consumer != 0);
 
   if (_parameters.getPrintStatistics())
@@ -135,30 +137,29 @@ runSliceAlgorithm(Ideal* ideal, DecomConsumer* consumer,
   alg.setUseIndependence(_parameters.getUseIndependence());
   alg.setConsumer(consumer);
   alg.setStrategy(strategy);
-  alg.runAndDeleteIdealAndReset(ideal);
+  alg.runAndClear(ideal);
 }
 
 // All parameters are deleted.
 void IrreducibleDecomFacade::
-runLabelAlgorithm(Ideal* ideal, Strategy* strategy) {
-  ASSERT(ideal != 0);
+runLabelAlgorithm(Ideal& ideal, Strategy* strategy) {
   ASSERT(strategy != 0);
 
   if (_parameters.getPrintProgress())
     strategy = Strategy::addDebugOutput(strategy);
 
   if (_parameters.getPrintStatistics())
-    strategy = Strategy::addStatistics(strategy, ideal->getVarCount());
+    strategy = Strategy::addStatistics(strategy, ideal.getVarCount());
 
   if (_parameters.getPrintDebug())
     strategy = Strategy::addDebugOutput(strategy);
 
   if (_parameters.getSkipRedundant())
-    strategy = Strategy::addSkipRedundant(strategy, ideal->getVarCount());
+    strategy = Strategy::addSkipRedundant(strategy, ideal.getVarCount());
 
   // Run algorithm
   LabelAlgorithm algo;
   algo.setStrategy(strategy);
   algo.setUsePartition(_parameters.getUseIndependence());
-  algo.runAndDeleteIdealAndReset(ideal);
+  algo.runAndClear(ideal);
 }

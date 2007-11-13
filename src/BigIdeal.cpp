@@ -57,58 +57,30 @@ bool BigIdeal::operator==(const BigIdeal& b) const {
   return _terms == b._terms;
 }
 
-size_t BigIdeal::buildAndClear(Ideal*& ideal,
-			       TermTranslator*& translator,
-			       bool generisize,
-			       bool artinize) {
-  size_t initialSize = getGeneratorCount();
-  if (generisize)
-    makeGeneric();
-
-  vector<map<mpz_class, Exponent> > compressionMaps(_names.getVarCount());
-  for (size_t variable = 0; variable < _names.getVarCount(); ++variable)
-    makeCompressionMap(variable, compressionMaps[variable]);
-
-  vector<vector<mpz_class> >* decompressionMaps =
-    buildDecompressionMaps(compressionMaps,
-			   generisize ? _terms.size() : 0,
-			   _names.getVarCount());
-
-  ideal = buildIdeal(this,
-		    compressionMaps, *decompressionMaps,
-		    _names.getVarCount(), artinize);
-
-
-  translator = new TermTranslator(_names, decompressionMaps);
-
-  _terms.clear();
-  return ideal->getGeneratorCount() - initialSize;
+void BigIdeal::buildAndClear(Ideal*& ideal, TermTranslator*& translator) {
+  translator = new TermTranslator(*this);
+  ideal = new Ideal(getVarCount());
+  translator->shrinkBigIdeal(*this, *ideal);
+  clear();
 }
 
-TermTranslator* BigIdeal::buildAndClear
-(const vector<BigIdeal*>& bigIdeals,
- vector<Ideal*>& ideals) {
+TermTranslator* BigIdeal::buildAndClear(const vector<BigIdeal*>& bigIdeals,
+					vector<Ideal*>& ideals) {
   ASSERT(!bigIdeals.empty());
+
+  TermTranslator* translator = new TermTranslator(bigIdeals);
+
   ideals.clear();
-
-  size_t varCount = bigIdeals[0]->_names.getVarCount();
-
-  vector<map<mpz_class, Exponent> > compressionMaps(varCount);
-  for (size_t variable = 0; variable < varCount; ++variable)
-    makeCompressionMap(variable, bigIdeals, compressionMaps[variable]);
-
-  vector<vector<mpz_class> >* decompressionMaps =
-    buildDecompressionMaps(compressionMaps, 0, varCount);
-
   for (size_t i = 0; i < bigIdeals.size(); ++i) {
-    Ideal* ideal =
-      buildIdeal(bigIdeals[i], compressionMaps, *decompressionMaps,
-		 varCount, false);
+    Ideal* ideal = new Ideal(bigIdeals[i]->getVarCount());
+    translator->shrinkBigIdeal(*(bigIdeals[i]), *ideal);
+
+    bigIdeals[i]->clear();
 
     ideals.push_back(ideal);
   }
 
-  return new TermTranslator(bigIdeals[0]->_names, decompressionMaps);
+  return translator;
 }
 
 vector<mpz_class>& BigIdeal::operator[](unsigned int index) {
@@ -232,136 +204,4 @@ bool BigIdeal::bigTermCompare(const vector<mpz_class>& a,
       return false;
   }
   return false;
-}
-
-void BigIdeal::makeGeneric() {
-  std::sort(_terms.begin(), _terms.end());
-
-  for (unsigned int i = 0; i < _terms.size(); ++i)
-    for (unsigned int j = 0; j < _terms[i].size(); ++j)
-      if (_terms[i][j] != 0)
-	_terms[i][j] = _terms[i][j] * _terms.size() + i;
-}
-
-vector<vector<mpz_class> >*
-BigIdeal::buildDecompressionMaps
-(const vector<map<mpz_class, Exponent> >&
- compressionMaps,
- size_t generisized, // 0 if no generisizing, _terms.size() otherwise.
- size_t varCount) {
-  vector<vector<mpz_class> >* decompressionMaps =
-    new vector<vector<mpz_class> >(varCount);
-
-  for (size_t variable = 0; variable < varCount; ++variable) {
-    const map<mpz_class, Exponent>& compressionMap =
-      compressionMaps[variable];
-    vector<mpz_class>& decompressionMap = (*decompressionMaps)[variable];
-
-    // The +1 is for the Artinian power we add later.
-    decompressionMap.reserve(compressionMap.size() + 1);
-    map<mpz_class, Exponent>::const_iterator it = compressionMap.begin();
-    for (; it != compressionMap.end(); ++it) {
-      ASSERT(it->second == decompressionMap.size());
-      if (generisized != 0)
-	decompressionMap.push_back(it->first / generisized);
-      else
-	decompressionMap.push_back(it->first);
-    }
-
-    // For the possible added artinian power.
-    decompressionMap.push_back(0);
-  }
-
-  return decompressionMaps;
-}
-
-Ideal*
-BigIdeal::buildIdeal(BigIdeal* bigIdeal,
-                     vector<map<mpz_class, Exponent> >& compressionMaps,
-		     vector<vector<mpz_class> >& decompressionMaps,
-                     size_t varCount,
-		     bool artinize) {
-  vector<bool> hasArtinianPower(varCount);
-  Ideal* ideal = new Ideal(varCount);
-
-  // Populate hasArtinianPower and ideal with data.
-  Term term(varCount);
-  for (size_t i = 0; i < bigIdeal->_terms.size(); ++i) {
-    int artinianVariable = -1;
-    for (size_t variable = 0; variable < varCount; ++variable) {
-      term[variable] = compressionMaps[variable][bigIdeal->_terms[i][variable]];
-      if (term[variable] != 0) {
-	if (artinianVariable == -1)
-	  artinianVariable = variable;
-	else
-	  artinianVariable = -2;
-      }
-    }
-    ideal->insert(term);
-
-    if (artinianVariable >= 0)
-      hasArtinianPower[artinianVariable] = true;
-  }
-
-  if (artinize) {
-    // Add any missing Artinian powers.
-    for (size_t variable = 0; variable < varCount; ++variable) {
-      if (hasArtinianPower[variable])
-	continue;
-
-      Exponent power = decompressionMaps[variable].size() - 1;
-      term.setToIdentity();
-      term[variable] = power;
-      ideal->insert(term);
-    }
-  }
-
-  return ideal;
-}
-
-void BigIdeal::makeCompressionMap
-(int position,
- const vector<BigIdeal*> ideals,
- map<mpz_class, Exponent>& compressionMap) {
-  // Collect the exponents.
-  vector<mpz_class> exponents;
-  for (size_t i = 0; i < ideals.size(); ++i)
-    for (size_t j = 0; j < ideals[i]->_terms.size(); ++j)
-      exponents.push_back(ideals[i]->_terms[j][position]);
-
-  makeCompressionMap(exponents, compressionMap);
-}
-
-void BigIdeal::makeCompressionMap(int position,
-				  map<mpz_class, Exponent>& compressionMap) {
-  // Collect the exponents.
-  vector<mpz_class> exponents;
-  exponents.reserve(_terms.size());
-  for (size_t i = 0; i < _terms.size(); ++i)
-    exponents.push_back(_terms[i][position]);
-
-  makeCompressionMap(exponents, compressionMap);
-}
-
-void BigIdeal::makeCompressionMap
-    (vector<mpz_class>& exponents,
-     map<mpz_class, Exponent>& compressionMap) {
-  // Sort the exponents and remove duplicates.
-  std::sort(exponents.begin(), exponents.end());
-  vector<mpz_class>::iterator uniqueEnd =
-    unique(exponents.begin(), exponents.end());
-  exponents.erase(uniqueEnd, exponents.end());
-
-  if (exponents.empty())
-    return;
-
-  // Construct the map from large exponents to small id numbers. The
-  // map preserves order.
-  compressionMap.clear();
-  compressionMap[0] = 0;
-  Exponent maxId = 0;
-
-  size_t startingIndex = (exponents[0] == 0 ? 1 : 0);
-  for (size_t i = startingIndex; i < exponents.size(); ++i)
-    compressionMap[exponents[i]] = ++maxId;
 }

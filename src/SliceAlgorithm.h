@@ -23,9 +23,9 @@ class SliceAlgorithm {
   void setStrategy(SliceStrategy* strategy);
   void setUseIndependence(bool useIndependence);
 
-  // Runs the algorithm and deletes the ideal, the consumer and the
-  // strategy.
-  void runAndDeleteIdealAndReset(Ideal* ideal);
+  // Runs the algorithm and clears ideal. Then deletes the strategy
+  // and consumer.
+  void runAndClear(Ideal& ideal);
 
  private:
   void content(Slice& slice, bool simplifiedAndDependent = false);

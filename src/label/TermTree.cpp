@@ -165,12 +165,12 @@ void TermTree::getTerms(Ideal& terms) const {
   }
 }
 
-void TermTree::insert(const Ideal* ideal) {
-  ASSERT(_dimension == ideal->getVarCount());
+void TermTree::insert(const Ideal& ideal) {
+  ASSERT(_dimension == ideal.getVarCount());
   Term tmp(_dimension);
 
-  Ideal::const_iterator stop = ideal->end();
-  for (Ideal::const_iterator it = ideal->begin(); it != ideal->end(); ++it) {
+  Ideal::const_iterator stop = ideal.end();
+  for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it) {
     tmp = *it;
     insert(tmp);
   }

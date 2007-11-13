@@ -13,7 +13,8 @@ public:
   void setStrategy(Strategy* strategy);
   void setUsePartition(bool usePartition);
 
-  void runAndDeleteIdealAndReset(Ideal* ideal);
+  // Runs the algorithm and clears ideal. Then deletes the strategy.
+  void runAndClear(Ideal& ideal);
 
 private:
   bool performPartition(const Term& b, const TermTree& tree);
