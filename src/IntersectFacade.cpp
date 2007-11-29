@@ -23,7 +23,7 @@ BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
   size_t variableCount = names.getVarCount();
 
   vector<Ideal*> ideals2;
-  TermTranslator* translator = BigIdeal::buildAndClear(ideals, ideals2);
+  TermTranslator translator(ideals, ideals2);
 
   Ideal* intersection = new Ideal(variableCount);
   Term identity(variableCount);
@@ -43,9 +43,8 @@ BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
   }
 
   BigIdeal* bigIdeal = new BigIdeal(names);
-  bigIdeal->insert(*intersection, *translator);
+  bigIdeal->insert(*intersection, translator);
   delete intersection;
-  delete translator;
 
   endAction();
   return bigIdeal;

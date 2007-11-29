@@ -2,17 +2,46 @@
 #include "TermTranslator.h"
 
 #include "Term.h"
+#include "Ideal.h"
+#include "BigIdeal.h"
+#include "VarNames.h"
 
 #include <iterator>
 #include <sstream>
 
-#include "Ideal.h"
-#include "BigIdeal.h"
+TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal) {
+  vector<BigIdeal*> bigIdeals;
+  bigIdeals.push_back((BigIdeal*)&bigIdeal);
+  initialize(bigIdeals);
 
-void collectAndSortExponents(const vector<BigIdeal*>& ideals,
-			     vector<mpz_class>& exponents,
-			     size_t var) {
+  shrinkBigIdeal(bigIdeal, ideal);
+}
+
+TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
+			       vector<Ideal*>& ideals) {
+  ASSERT(!bigIdeals.empty());
+
+  initialize(bigIdeals);
+
+  for (size_t i = 0; i < bigIdeals.size(); ++i) {
+    ideals.push_back(new Ideal());
+    shrinkBigIdeal(*(bigIdeals[i]), *(ideals.back()));
+  }
+}
+
+// Helper function for initialize.
+//
+// Assign int IDs to big integer exponents. The correspondence
+// preserves order, except that the largest ID maps to 0, which is
+// necessary to support adding artinian powers. Only the exponents
+// that actually appear in generators of the ideals are translated,
+// except that 0 is guaranteed to be included and to be assigned the
+// ID 0.
+void makeExponents(const vector<BigIdeal*>& ideals,
+		   vector<mpz_class>& exponents,
+		   size_t var) {
   exponents.clear();
+  exponents.push_back(0); // 0 must be included
 
   // Reserve sufficient capacity for the exponents.
   size_t termCount = 0;
@@ -30,70 +59,39 @@ void collectAndSortExponents(const vector<BigIdeal*>& ideals,
 
   // Sort and remove duplicates.
   sort(exponents.begin(), exponents.end());
-  exponents.erase(unique(exponents.begin(), exponents.end()), exponents.end());
-}
-
-void makeCompressionMap
-(vector<mpz_class>& exponents,
- map<mpz_class, Exponent>& compressionMap) {
-
-  // Construct the map from large exponents to small id numbers. The
-  // map preserves order.
-  compressionMap.clear();
-  compressionMap[0] = 0;
-  Exponent maxId = 0;
-
-  size_t startingIndex = (exponents[0] == 0 ? 1 : 0);
-  for (size_t i = startingIndex; i < exponents.size(); ++i)
-    compressionMap[exponents[i]] = ++maxId;
-}
-
-TermTranslator::TermTranslator(const BigIdeal& bigIdeal) {
-  vector<BigIdeal*> bigIdeals;
-  bigIdeals.push_back((BigIdeal*)&bigIdeal);
-  initialize(bigIdeals);
-}
-
-TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals) {
-  initialize(bigIdeals);
+  exponents.erase(unique(exponents.begin(), exponents.end()),
+		  exponents.end());
+  exponents.push_back(0);
 }
 
 void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals) {
   ASSERT(!bigIdeals.empty());
-  size_t varCount = bigIdeals[0]->getVarCount();
-
 #ifdef DEBUG
   for (size_t i = 0; i < bigIdeals.size(); ++i)
-    ASSERT(bigIdeals[i]->getVarCount() == varCount);
+    ASSERT(bigIdeals[i]->getNames() == bigIdeals[0]->getNames());
 #endif
 
-  _compressionMaps.resize(varCount);
 
-  _decompressionMaps = new vector<vector<mpz_class> >(varCount);
-  for (size_t var = 0; var < varCount; ++var) {
-    collectAndSortExponents(bigIdeals, (*_decompressionMaps)[var], var);
-    makeCompressionMap((*_decompressionMaps)[var], _compressionMaps[var]);
-    (*_decompressionMaps)[var].push_back(0);
-  }
+  size_t varCount = bigIdeals[0]->getVarCount();
+
+  _exponents.resize(varCount);
+
+  for (size_t var = 0; var < varCount; ++var)
+    makeExponents(bigIdeals, _exponents[var], var);
 
   makeStrings(bigIdeals[0]->getNames());
 }
 
-
-void TermTranslator::shrinkBigIdeal
-(const BigIdeal& bigIdeal, Ideal& ideal) const {
+void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
+				    Ideal& ideal) const {
   size_t varCount = bigIdeal.getVarCount();
 
   ideal.clearAndSetVarCount(varCount);
 
   Term term(varCount);
   for (size_t i = 0; i < bigIdeal.getGeneratorCount(); ++i) {
-    for (size_t var = 0; var < varCount; ++var) {
-      map<mpz_class, Exponent>::const_iterator it =
-	_compressionMaps[var].find(bigIdeal.getExponent(i, var));
-      ASSERT(it != _compressionMaps[var].end());
-      term[var] = it->second;
-    }
+    for (size_t var = 0; var < varCount; ++var)
+      term[var] = shrinkExponent(var, bigIdeal.getExponent(i, var));
     ideal.insert(term);
   }
 }
@@ -103,7 +101,7 @@ void TermTranslator::addArtinianPowers(Ideal& ideal) const {
 
   // Find out which variables already have artinian powers.
   vector<bool> hasArtinianPower(varCount);
-  
+
   Ideal::const_iterator stop = ideal.end();
   for (Ideal::const_iterator term = ideal.begin(); term != stop; ++term) {
     if (getSizeOfSupport(*term, varCount) > 1)
@@ -122,7 +120,7 @@ void TermTranslator::addArtinianPowers(Ideal& ideal) const {
       continue;
 
     Term artinian(varCount);
-    artinian[var] = (*_decompressionMaps)[var].size() - 1;
+    artinian[var] = _exponents[var].size() - 1;
     ideal.insert(artinian);
   }
 }
@@ -130,36 +128,28 @@ void TermTranslator::addArtinianPowers(Ideal& ideal) const {
 void TermTranslator::print(ostream& out) const {
   out << "TermTranslator(" << endl;
   for (int variable = 0;
-       variable < (int)_decompressionMaps->size(); ++variable) {
+       variable < (int)_exponents.size(); ++variable) {
     out << " variable " << (variable + 1) << ": ";
-    copy((*(_decompressionMaps))[variable].begin(),
-	 (*(_decompressionMaps))[variable].end(),
+    copy(_exponents[variable].begin(),
+	 _exponents[variable].end(),
 	 ostream_iterator<mpz_class>(out, " "));
     out << endl;
   }
   out << ")" << endl;
 }
 
-TermTranslator::TermTranslator(const VarNames& names,
-			       vector<vector<mpz_class> >* decompressionMaps):
-  _decompressionMaps(decompressionMaps) {
-  ASSERT(decompressionMaps != 0);
-
-  makeStrings(names);
-}
-
 void TermTranslator::makeStrings(const VarNames& names) {
-  _stringDecompressionMaps.resize(_decompressionMaps->size());
-  for (unsigned int i = 0; i < _decompressionMaps->size(); ++i) {
-    _stringDecompressionMaps[i].resize((*_decompressionMaps)[i].size());
-    for (unsigned int j = 0; j < (*_decompressionMaps)[i].size(); ++j) {
+  _stringDecompressionMaps.resize(_exponents.size());
+  for (unsigned int i = 0; i < _exponents.size(); ++i) {
+    _stringDecompressionMaps[i].resize(_exponents[i].size());
+    for (unsigned int j = 0; j < _exponents[i].size(); ++j) {
       char* str = 0;
 
-      if ((*_decompressionMaps)[i][j] != 0) {
+      if (_exponents[i][j] != 0) {
 	stringstream out;
 	out << names.getName(i);
-	if ((*_decompressionMaps)[i][j] != 1) 
-	  out << '^' << (*_decompressionMaps)[i][j];
+	if (_exponents[i][j] != 1) 
+	  out << '^' << _exponents[i][j];
       
 	str = new char[out.str().size() + 1];
 	strcpy(str, out.str().c_str());
@@ -170,7 +160,6 @@ void TermTranslator::makeStrings(const VarNames& names) {
 }
 
 TermTranslator::~TermTranslator() {
-  delete _decompressionMaps;
   for (size_t i = 0; i < _stringDecompressionMaps.size(); ++i)
     for (size_t j = 0; j < _stringDecompressionMaps[i].size(); ++j)
       delete[] _stringDecompressionMaps[i][j];
@@ -179,17 +168,17 @@ TermTranslator::~TermTranslator() {
 const mpz_class& TermTranslator::
 getExponent(int variable, Exponent exponent) const {
   ASSERT(0 <= variable);
-  ASSERT(variable < (int)_decompressionMaps->size());
-  ASSERT(exponent < (*_decompressionMaps)[variable].size());
+  ASSERT(variable < (int)_exponents.size());
+  ASSERT(exponent < _exponents[variable].size());
   
-  return (*_decompressionMaps)[variable][exponent];
+  return _exponents[variable][exponent];
 }
 
 const char* TermTranslator::
 getExponentString(int variable, Exponent exponent) const {
   ASSERT(0 <= variable);
-  ASSERT(variable < (int)_decompressionMaps->size());
-  ASSERT(exponent < (*_decompressionMaps)[variable].size());
+  ASSERT(variable < (int)_exponents.size());
+  ASSERT(exponent < _exponents[variable].size());
 
   return (_stringDecompressionMaps[variable][exponent]);
 }
@@ -201,7 +190,21 @@ getExponent(int variable, const Term& term) const {
 
 Exponent TermTranslator::getMaxId(int variable) const {
   ASSERT(0 <= variable);
-  ASSERT(variable < (int)_decompressionMaps->size());
+  ASSERT(variable < (int)_exponents.size());
   
-  return (*_decompressionMaps)[variable].size() - 1;
+  return _exponents[variable].size() - 1;
+}
+
+#include <algorithm>
+Exponent TermTranslator::shrinkExponent(size_t var,
+				    const mpz_class& exponent) const {
+  const vector<mpz_class>& exponents = _exponents[var];
+
+  // We subtract 1 from exponents.end() to skip past the 0 that is
+  // added there. Otherwise the range would not be sorted.
+  vector<mpz_class>::const_iterator it =
+    lower_bound(exponents.begin(), exponents.end() - 1, exponent);
+  ASSERT(*it == exponent);
+
+  return it - exponents.begin();
 }

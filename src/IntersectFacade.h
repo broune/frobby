@@ -10,7 +10,6 @@ class IntersectFacade : Facade {
  public:
   IntersectFacade(bool printActions);
 
-  // Ideals must not be empty.
   BigIdeal* intersect(const vector<BigIdeal*>& ideals);
 };
 
