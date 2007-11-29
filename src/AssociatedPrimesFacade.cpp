@@ -21,12 +21,12 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
 			ostream& out) {
   IrreducibleDecomFacade facade(isPrintingActions(), params);
   
-  Ideal* ideal;
-  TermTranslator* translator;
-  bigIdeal.buildAndClear(ideal, translator);
-  translator->addArtinianPowers(*ideal);
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal);
+  bigIdeal.clear();
+  translator.addArtinianPowers(ideal);
 
-  Ideal decom(ideal->getVarCount());
+  Ideal decom(ideal.getVarCount());
 
   facade.computeIrreducibleDecom(ideal, new DecomRecorder(&decom));
 
@@ -39,7 +39,7 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   Ideal::const_iterator stop = decom.end();
   for (Ideal::const_iterator it = decom.begin(); it != stop; ++it) {
     for (size_t var = 0; var < decom.getVarCount(); ++var) {
-      if (translator->getExponent(var, (*it)[var]) == 0)
+      if (translator.getExponent(var, (*it)[var]) == 0)
 	tmp[var] = 0;
       else
 	tmp[var] = 1;
@@ -47,7 +47,6 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
     radical.insert(tmp);
   }
   decom.clear();
-  delete translator;
 
   radical.removeDuplicates();
 

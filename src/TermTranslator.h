@@ -1,32 +1,50 @@
 #ifndef TERM_TRANSLATOR_GUARD
 #define TERM_TRANSLATOR_GUARD
 
-#include <iterator>
-
-class Term;
-
-#include "VarNames.h"
 #include <vector>
 #include <map>
 
 class BigIdeal;
 class Ideal;
+class Term;
+class VarNames;
 
+// TermTranslator handles translation between terms whose exponents
+// are infinite precision integers and terms whose exponents are 32
+// bit integers.
+//
+// This is done by assigning the big integers IDs that are 32 bit
+// integers such that the assignment of IDs preserves order of
+// exponents for each variable.
+//
+// The translation is done at the level of whole ideals.
+//
+// The big integer 0 is always assigned the ID 0.
 class TermTranslator {
 public:
-  TermTranslator(const BigIdeal& bigIdeal);
-  TermTranslator(const vector<BigIdeal*>& bigIdeals);
-
-  // Takes over ownership of decompressionMaps.
-  TermTranslator(const VarNames& names, 
-		 vector<vector<mpz_class> >* decompressionMaps);
+  // The constructors translate BigIdeals into Ideals, while
+  // initializing this to do the reverse translation.
+  TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal);
+  TermTranslator(const vector<BigIdeal*>& bigIdeals, vector<Ideal*>& ideals);
   ~TermTranslator();
 
+  // These methods translate from IDs to infinite precision integers.
   const mpz_class& getExponent(int variable, Exponent exponent) const;
   const mpz_class& getExponent(int variable, const Term& term) const;
+
+  // As getExponent, except the string "[var]^[e]" is returned.
   const char* getExponentString(int variable, Exponent exponent) const;
 
+  // The assigned IDs are those in the range [0, getMaxId()].
   Exponent getMaxId(int variable) const;
+
+  // Adds a generator of the form v^e for any variable v where
+  // generator of that form is not already present. e is chosen to be
+  // larger than any exponent (i.e. ID) already present, and it maps
+  // to 0. Note that this does NOT preserve order - the highest ID
+  // always maps to 0. The reason for this is that this is what is
+  // needed for computing irreducible decompositions.
+  void addArtinianPowers(Ideal& ideal) const;
 
   void print(ostream& out) const;
   friend ostream& operator<<(ostream& out, const TermTranslator& translator) {
@@ -34,21 +52,17 @@ public:
     return out;
   }
 
-  void shrinkBigIdeal(const BigIdeal& bigIdeal, Ideal& ideal) const;
-  void addArtinianPowers(Ideal& ideal) const;
-
 private:
   TermTranslator(const TermTranslator&); // not suported
   TermTranslator& operator=(const TermTranslator&); // not supported
 
-  void makeStrings(const VarNames& names);
-
-  vector<vector<mpz_class> >* _decompressionMaps;
-  vector<vector<const char*> > _stringDecompressionMaps;
-
-  vector<map<mpz_class, Exponent> > _compressionMaps;
-
   void initialize(const vector<BigIdeal*>& bigIdeals);
+  void makeStrings(const VarNames& names);
+  void shrinkBigIdeal(const BigIdeal& bigIdeal, Ideal& ideal) const;
+  Exponent shrinkExponent(size_t var, const mpz_class& exponent) const;
+
+  vector<vector<mpz_class> > _exponents;
+  vector<vector<const char*> > _stringDecompressionMaps;
 };
 
 #endif

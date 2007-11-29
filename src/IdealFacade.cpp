@@ -12,17 +12,13 @@ IdealFacade::IdealFacade(bool printActions):
 void IdealFacade::minimize(BigIdeal& bigIdeal) {
   beginAction("Minimizing ideal.");
 
-  Ideal* ideal;
-  TermTranslator* translator;
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal);
+  bigIdeal.clear();
 
-  bigIdeal.buildAndClear(ideal, translator);
+  ideal.minimize();
 
-  ideal->minimize();
-
-  bigIdeal.insert(*ideal, *translator);
-
-  delete ideal;
-  delete translator;
+  bigIdeal.insert(ideal, translator);
 
   endAction();
 }

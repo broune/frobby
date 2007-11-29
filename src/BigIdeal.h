@@ -27,12 +27,6 @@ public:
 
   bool operator==(const BigIdeal& b) const;
 
-  void buildAndClear(Ideal*& tree,
-		     TermTranslator*& translator);
-    
-  static TermTranslator* buildAndClear(const vector<BigIdeal*>& bigIdeals,
-				       vector<Ideal*>& ideals);
-
   vector<mpz_class>& operator[](unsigned int index);
 
   const vector<mpz_class>& operator[](unsigned int index) const;

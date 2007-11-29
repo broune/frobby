@@ -57,32 +57,6 @@ bool BigIdeal::operator==(const BigIdeal& b) const {
   return _terms == b._terms;
 }
 
-void BigIdeal::buildAndClear(Ideal*& ideal, TermTranslator*& translator) {
-  translator = new TermTranslator(*this);
-  ideal = new Ideal(getVarCount());
-  translator->shrinkBigIdeal(*this, *ideal);
-  clear();
-}
-
-TermTranslator* BigIdeal::buildAndClear(const vector<BigIdeal*>& bigIdeals,
-					vector<Ideal*>& ideals) {
-  ASSERT(!bigIdeals.empty());
-
-  TermTranslator* translator = new TermTranslator(bigIdeals);
-
-  ideals.clear();
-  for (size_t i = 0; i < bigIdeals.size(); ++i) {
-    Ideal* ideal = new Ideal(bigIdeals[i]->getVarCount());
-    translator->shrinkBigIdeal(*(bigIdeals[i]), *ideal);
-
-    bigIdeals[i]->clear();
-
-    ideals.push_back(ideal);
-  }
-
-  return translator;
-}
-
 vector<mpz_class>& BigIdeal::operator[](unsigned int index) {
   ASSERT(index < _terms.size());
   return _terms[index];
