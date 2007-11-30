@@ -1,0 +1,11 @@
+vars a;[a^2];
+vars b;[b^2];
+vars c;[c^2];
+
+vars a;[a^3];
+vars b;[b^4];
+vars c;[c^5];
+
+vars a;[a];
+vars b;[b];
+vars c;[c];

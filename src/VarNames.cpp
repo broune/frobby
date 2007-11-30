@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-const int VarNames::UNKNOWN = -1;
+const size_t VarNames::UNKNOWN = numeric_limits<size_t>::max();
 
 VarNames::VarNames() {
 }
@@ -19,15 +19,20 @@ VarNames::VarNames(size_t varCount) {
 void VarNames::addVar(const string& name) {
   ASSERT(name != "");
   ASSERT(!contains(name));
-  
+ 
   _nameToIndex[name] = _indexToName.size();
   _indexToName.push_back(name);
+
+  if (getVarCount() == UNKNOWN) {
+    cerr << "ERROR: Too many variables names." << endl;
+    exit(1);
+  }
 }
 
-int VarNames::getIndex(const string& name) const {
-  map<string, int>::const_iterator it = _nameToIndex.find(name);
+size_t VarNames::getIndex(const string& name) const {
+  map<string, size_t>::const_iterator it = _nameToIndex.find(name);
   if (it == _nameToIndex.end())
-    return -1;
+    return UNKNOWN;
   else
     return it->second;
 }
@@ -36,9 +41,8 @@ bool VarNames::contains(const string& name) const {
   return getIndex(name) != UNKNOWN;
 }
 
-const string& VarNames::getName(int index) const {
-  ASSERT(0 <= index &&
-	 (size_t)index < _indexToName.size());
+const string& VarNames::getName(size_t index) const {
+  ASSERT(index < _indexToName.size());
   
   return _indexToName[index];
 }

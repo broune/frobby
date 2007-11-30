@@ -75,7 +75,7 @@ computeIrreducibleDecom(BigIdeal& bigIdeal, ostream& out) {
   if (_parameters.getDoBenchmark())
     decomConsumer = new DecomIgnorer();
   else
-    decomConsumer = new DecomWriter(bigIdeal.getNames(), &translator, out);
+    decomConsumer = new DecomWriter(translator.getNames(), &translator, out);
   
   endAction();
 
@@ -101,8 +101,8 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
     return;
   }
 
-  Ideal ideal(bigIdeal.getVarCount()); 
-  TermTranslator translator(bigIdeal, ideal);
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal, false);
   bigIdeal.clear();
   translator.addArtinianPowers(ideal);
 

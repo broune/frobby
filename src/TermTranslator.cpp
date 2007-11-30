@@ -8,11 +8,14 @@
 
 #include <iterator>
 #include <sstream>
+#include <set>
+#include <algorithm>
 
-TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal) {
+TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal,
+			       bool sortVars) {
   vector<BigIdeal*> bigIdeals;
   bigIdeals.push_back((BigIdeal*)&bigIdeal);
-  initialize(bigIdeals);
+  initialize(bigIdeals, sortVars);
 
   shrinkBigIdeal(bigIdeal, ideal);
 }
@@ -21,7 +24,7 @@ TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
 			       vector<Ideal*>& ideals) {
   ASSERT(!bigIdeals.empty());
 
-  initialize(bigIdeals);
+  initialize(bigIdeals, true);
 
   for (size_t i = 0; i < bigIdeals.size(); ++i) {
     ideals.push_back(new Ideal());
@@ -39,7 +42,7 @@ TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
 // ID 0.
 void makeExponents(const vector<BigIdeal*>& ideals,
 		   vector<mpz_class>& exponents,
-		   size_t var) {
+		   const string& varName) {
   exponents.clear();
   exponents.push_back(0); // 0 must be included
 
@@ -52,6 +55,10 @@ void makeExponents(const vector<BigIdeal*>& ideals,
   // Collect the exponents
   exponents.push_back(0); // Zero must always be present.
   for (size_t ideal = 0; ideal < ideals.size(); ++ideal) {
+    size_t var = ideals[ideal]->getNames().getIndex(varName);
+    if (var == VarNames::UNKNOWN)
+      continue;
+
     size_t generatorCount = ideals[ideal]->getGeneratorCount();
     for (size_t term = 0; term < generatorCount; ++term)
       exponents.push_back(ideals[ideal]->getExponent(term, var));
@@ -64,34 +71,54 @@ void makeExponents(const vector<BigIdeal*>& ideals,
   exponents.push_back(0);
 }
 
-void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals) {
+void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
+				bool sortVars) {
   ASSERT(!bigIdeals.empty());
-#ifdef DEBUG
-  for (size_t i = 0; i < bigIdeals.size(); ++i)
-    ASSERT(bigIdeals[i]->getNames() == bigIdeals[0]->getNames());
-#endif
 
+  if (sortVars) {
+    set<string> variables;
+    for (size_t ideal = 0; ideal < bigIdeals.size(); ++ideal)
+      for (size_t var = 0; var < bigIdeals[ideal]->getVarCount(); ++var)
+	variables.insert(bigIdeals[ideal]->getNames().getName(var));
+    
+    for (set<string>::const_iterator var = variables.begin();
+	 var != variables.end(); ++var)
+      _names.addVar(*var);
+  } else {
+    ASSERT(bigIdeals.size() == 1);
+    _names = bigIdeals[0]->getNames();
+  }
 
-  size_t varCount = bigIdeals[0]->getVarCount();
+  _exponents.resize(_names.getVarCount());
 
-  _exponents.resize(varCount);
+  for (size_t var = 0; var < _names.getVarCount(); ++var)
+    makeExponents(bigIdeals, _exponents[var], _names.getName(var));
 
-  for (size_t var = 0; var < varCount; ++var)
-    makeExponents(bigIdeals, _exponents[var], var);
-
-  makeStrings(bigIdeals[0]->getNames());
+  makeStrings();
 }
 
 void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
 				    Ideal& ideal) const {
+  ideal.clearAndSetVarCount(_names.getVarCount());
+
+  // Figure out how bigIdeal's names map onto _names.
+  vector<size_t> newVars;
+  for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+    const string& name = bigIdeal.getNames().getName(var);
+    size_t newVar = _names.getIndex(name);
+    newVars.push_back(newVar);
+
+    ASSERT(newVar != VarNames::UNKNOWN);
+  }
+
+  // Insert generators after translating exponents and variables.
+  Term term(ideal.getVarCount());
   size_t varCount = bigIdeal.getVarCount();
-
-  ideal.clearAndSetVarCount(varCount);
-
-  Term term(varCount);
   for (size_t i = 0; i < bigIdeal.getGeneratorCount(); ++i) {
-    for (size_t var = 0; var < varCount; ++var)
-      term[var] = shrinkExponent(var, bigIdeal.getExponent(i, var));
+    for (size_t var = 0; var < varCount; ++var) {
+      size_t newVar = newVars[var];
+      term[newVar] = shrinkExponent(newVar, bigIdeal.getExponent(i, var));
+    }
     ideal.insert(term);
   }
 }
@@ -138,31 +165,31 @@ void TermTranslator::print(ostream& out) const {
   out << ")" << endl;
 }
 
-void TermTranslator::makeStrings(const VarNames& names) {
-  _stringDecompressionMaps.resize(_exponents.size());
+void TermTranslator::makeStrings() {
+  _stringExponents.resize(_exponents.size());
   for (unsigned int i = 0; i < _exponents.size(); ++i) {
-    _stringDecompressionMaps[i].resize(_exponents[i].size());
+    _stringExponents[i].resize(_exponents[i].size());
     for (unsigned int j = 0; j < _exponents[i].size(); ++j) {
       char* str = 0;
 
       if (_exponents[i][j] != 0) {
 	stringstream out;
-	out << names.getName(i);
+	out << _names.getName(i);
 	if (_exponents[i][j] != 1) 
 	  out << '^' << _exponents[i][j];
       
 	str = new char[out.str().size() + 1];
 	strcpy(str, out.str().c_str());
       }
-      _stringDecompressionMaps[i][j] = str;
+      _stringExponents[i][j] = str;
     }
   }
 }
 
 TermTranslator::~TermTranslator() {
-  for (size_t i = 0; i < _stringDecompressionMaps.size(); ++i)
-    for (size_t j = 0; j < _stringDecompressionMaps[i].size(); ++j)
-      delete[] _stringDecompressionMaps[i][j];
+  for (size_t i = 0; i < _stringExponents.size(); ++i)
+    for (size_t j = 0; j < _stringExponents[i].size(); ++j)
+      delete[] _stringExponents[i][j];
 }
 
 const mpz_class& TermTranslator::
@@ -180,7 +207,7 @@ getExponentString(int variable, Exponent exponent) const {
   ASSERT(variable < (int)_exponents.size());
   ASSERT(exponent < _exponents[variable].size());
 
-  return (_stringDecompressionMaps[variable][exponent]);
+  return (_stringExponents[variable][exponent]);
 }
 
 const mpz_class& TermTranslator::
@@ -195,7 +222,6 @@ Exponent TermTranslator::getMaxId(int variable) const {
   return _exponents[variable].size() - 1;
 }
 
-#include <algorithm>
 Exponent TermTranslator::shrinkExponent(size_t var,
 				    const mpz_class& exponent) const {
   const vector<mpz_class>& exponents = _exponents[var];
@@ -207,4 +233,8 @@ Exponent TermTranslator::shrinkExponent(size_t var,
   ASSERT(*it == exponent);
 
   return it - exponents.begin();
+}
+
+const VarNames& TermTranslator::getNames() const {
+  return _names;
 }
