@@ -20,14 +20,10 @@ SliceAlgorithm::SliceAlgorithm():
   _strategy(0) {
 }
 
-void SliceAlgorithm::setConsumer(DecomConsumer* consumer) {
-  delete _decomConsumer;
-  _decomConsumer = consumer;
-}
-
 void SliceAlgorithm::setStrategy(SliceStrategy* strategy) {
   delete _strategy;
   _strategy = strategy;
+  _decomConsumer = strategy;
 }
 
 void SliceAlgorithm::setUseIndependence(bool useIndependence) {
@@ -37,6 +33,7 @@ void SliceAlgorithm::setUseIndependence(bool useIndependence) {
 void SliceAlgorithm::runAndClear(Ideal& ideal) {
   ASSERT(_decomConsumer != 0);
   ASSERT(_strategy != 0);
+  ASSERT(_decomConsumer == _strategy);
 
   if (ideal.getGeneratorCount() > 0) {
     ideal.minimize();
@@ -44,12 +41,11 @@ void SliceAlgorithm::runAndClear(Ideal& ideal) {
     content(slice);
   }
 
+  ASSERT(_decomConsumer == _strategy);
+
   ideal.clear();
 
   // Now reset the fields to their default values.
-  delete _decomConsumer;
-  _decomConsumer = 0;
-
   delete _strategy;
   _strategy = 0;
 

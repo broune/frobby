@@ -15,7 +15,6 @@
 #include "SliceAlgorithm.h"
 #include "DecomWriter.h"
 #include "SliceStrategy.h"
-#include "DebugDecomConsumer.h"
 #include "DecomIgnorer.h"
 
 IrreducibleDecomFacade::
@@ -31,7 +30,7 @@ computeIrreducibleDecom(Ideal& ideal, DecomConsumer* decomConsumer) {
 
   if (_parameters.getUseSlice()) {
     SliceStrategy* strategy =
-      SliceStrategy::newStrategy(_parameters.getSplit());
+      SliceStrategy::newDecomStrategy(_parameters.getSplit(), decomConsumer);
     if (strategy == 0) {
       cerr << "ERROR: Unknown split strategy \""
 	   << _parameters.getSplit()
@@ -39,7 +38,7 @@ computeIrreducibleDecom(Ideal& ideal, DecomConsumer* decomConsumer) {
       exit(1);
     }
     
-    runSliceAlgorithm(ideal, decomConsumer, strategy);
+    runSliceAlgorithm(ideal, strategy);
   } else {
     Strategy* strategy =
       new DecompositionStrategy(decomConsumer, ideal.getVarCount());
@@ -115,22 +114,17 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 }
 
 void IrreducibleDecomFacade::
-runSliceAlgorithm(Ideal& ideal, DecomConsumer* consumer,
-		  SliceStrategy* strategy) {
+runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy) {
   ASSERT(strategy != 0);
-  ASSERT(consumer != 0);
 
   if (_parameters.getPrintStatistics())
     strategy = SliceStrategy::addStatistics(strategy);
 
-  if (_parameters.getPrintDebug()) {
+  if (_parameters.getPrintDebug())
     strategy = SliceStrategy::addDebugOutput(strategy);
-    consumer = new DebugDecomConsumer(consumer);
-  }
 
   SliceAlgorithm alg;
   alg.setUseIndependence(_parameters.getUseIndependence());
-  alg.setConsumer(consumer);
   alg.setStrategy(strategy);
   alg.runAndClear(ideal);
 }

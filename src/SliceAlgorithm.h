@@ -18,8 +18,7 @@ class SliceAlgorithm {
  public:
   SliceAlgorithm();
 
-  // These take over ownership of the parameter.
-  void setConsumer(DecomConsumer* consumer);
+  // setStrategy takes over ownership of the strategy.
   void setStrategy(SliceStrategy* strategy);
   void setUseIndependence(bool useIndependence);
 
