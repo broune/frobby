@@ -2,11 +2,12 @@
 #define SLICE_STRATEGY_GUARD
 
 #include <string>
+#include "DecomConsumer.h"
 
 class Slice;
 class Term;
 
-class SliceStrategy {
+class SliceStrategy : public DecomConsumer {
  public:
   virtual ~SliceStrategy();
 
@@ -23,7 +24,11 @@ class SliceStrategy {
   virtual void getPivot(Term& pivot, const Slice& slice);
   virtual size_t getLabelSplitVariable(const Slice& slice);
 
-  static SliceStrategy* newStrategy(const string& name);
+  virtual void consume(const Term& term) = 0;
+
+
+  static SliceStrategy* newDecomStrategy(const string& name,
+					 DecomConsumer* consumer);
   static SliceStrategy* addStatistics(SliceStrategy* strategy);
   static SliceStrategy* addDebugOutput(SliceStrategy* strategy);
 };

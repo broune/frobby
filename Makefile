@@ -25,7 +25,7 @@ rawSources = $(patsubst %, label/%, $(labelSources))			\
   AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp			\
   PrimaryDecomAction.cpp Slice.cpp					\
   IndependenceSplitter.cpp Projection.cpp DecomWriter.cpp		\
-  SliceStrategy.cpp DebugDecomConsumer.cpp lattice.cpp			\
+  SliceStrategy.cpp lattice.cpp						\
   LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp
 
 ldflags = -lgmpxx -lgmp

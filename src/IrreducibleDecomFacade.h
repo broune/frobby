@@ -26,8 +26,7 @@ class IrreducibleDecomFacade : private Facade {
 
  private:
   void runLabelAlgorithm(Ideal& ideal, Strategy* strategy);
-  void runSliceAlgorithm(Ideal& ideal, DecomConsumer* consumer,
-			 SliceStrategy* strategy);
+  void runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy);
 
   const IrreducibleDecomParameters& _parameters;
 };

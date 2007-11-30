@@ -28,7 +28,31 @@ size_t SliceStrategy::getLabelSplitVariable(const Slice& slice) {
   exit(1);
 }
 
-class LabelSliceStrategy : public SliceStrategy {
+class DecomSliceStrategy : public SliceStrategy {
+public:
+  DecomSliceStrategy(DecomConsumer* consumer):
+    _consumer(consumer) {
+    ASSERT(consumer != 0);
+  }
+
+  virtual ~DecomSliceStrategy() {
+    delete _consumer;
+  }
+
+  virtual void consume(const Term& term) {
+    _consumer->consume(term);
+  }
+
+private:
+  DecomConsumer* _consumer;
+};
+
+class LabelSliceStrategy : public DecomSliceStrategy {
+public:
+  LabelSliceStrategy(DecomConsumer* consumer):
+    DecomSliceStrategy(consumer) {
+  }
+
   SplitType getSplitType(const Slice& slice) {
     return LabelSplit;
   }
@@ -49,7 +73,12 @@ class LabelSliceStrategy : public SliceStrategy {
   }
 }; 
 
-class PivotSliceStrategy : public SliceStrategy {
+class PivotSliceStrategy : public DecomSliceStrategy {
+public:
+  PivotSliceStrategy(DecomConsumer* consumer):
+    DecomSliceStrategy(consumer) {
+  }
+  
   SplitType getSplitType(const Slice& slice) {
     return PivotSplit;
   }
@@ -75,28 +104,68 @@ class PivotSliceStrategy : public SliceStrategy {
     pivot.setToIdentity();
     pivot[maxOffset] = 1;
   }
-}; 
+};
 
-SliceStrategy* SliceStrategy::newStrategy(const string& name) {
+SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
+					       DecomConsumer* consumer) {
   if (name == "label")
-    return new LabelSliceStrategy();
+    return new LabelSliceStrategy(consumer);
   else if (name == "pivot")
-    return new PivotSliceStrategy();
+    return new PivotSliceStrategy(consumer);
 
   return 0;
 }
 
-class StatisticsSliceStrategy : public SliceStrategy {
+// A decorator (pattern) for a SliceStrategy that does nothing. The
+// purpose of this class is to act as a convenient base class for
+// other decorators.
+class DecoratorSliceStrategy : public SliceStrategy {
 public:
-  StatisticsSliceStrategy(SliceStrategy* strategy):
-    _strategy(strategy),
-    _level (0) {
+  DecoratorSliceStrategy(SliceStrategy* strategy):
+    _strategy(strategy) {
     ASSERT(strategy != 0);
   }
 
-  ~StatisticsSliceStrategy() {
+  ~DecoratorSliceStrategy() {
     delete _strategy;
+  }
 
+  void startingContent(const Slice& slice) {
+    _strategy->startingContent(slice);
+  }
+
+  void endingContent() {
+    _strategy->endingContent();
+  }
+
+  SplitType getSplitType(const Slice& slice) {
+    return _strategy->getSplitType(slice);
+  }
+
+  void getPivot(Term& pivot, const Slice& slice) {
+    _strategy->getPivot(pivot, slice);
+  }
+
+  size_t getLabelSplitVariable(const Slice& slice) {
+    return _strategy->getLabelSplitVariable(slice);
+  }
+
+  void consume(const Term& term) {
+    _strategy->consume(term);
+  }
+
+private:
+  SliceStrategy* _strategy;
+};
+
+class StatisticsSliceStrategy : public DecoratorSliceStrategy {
+public:
+  StatisticsSliceStrategy(SliceStrategy* strategy):
+    DecoratorSliceStrategy(strategy),
+    _level (0) {
+  }
+
+  ~StatisticsSliceStrategy() {
     cerr << "**** Statistics" << endl;
     size_t sum = 0;
     for (size_t l = 0; l < _calls.size(); ++l) {
@@ -113,30 +182,16 @@ public:
     ++_calls[_level];
     ++_level;
 
-    _strategy->startingContent(slice);
+    DecoratorSliceStrategy::startingContent(slice);
   }
 
   void endingContent() {
     --_level;
 
-    _strategy->endingContent();
-  }
-
-  SplitType getSplitType(const Slice& slice) {
-    return _strategy->getSplitType(slice);
-  }
-
-  void getPivot(Term& pivot, const Slice& slice) {
-    _strategy->getPivot(pivot, slice);
-  }
-
-  size_t getLabelSplitVariable(const Slice& slice) {
-    return _strategy->getLabelSplitVariable(slice);
+    DecoratorSliceStrategy::endingContent();
   }
 
 private:
-  SliceStrategy* _strategy;
-
   size_t _level;
   vector<size_t> _calls;
 };
@@ -145,15 +200,11 @@ SliceStrategy* SliceStrategy::addStatistics(SliceStrategy* strategy) {
   return new StatisticsSliceStrategy(strategy);
 }
 
-class DebugSliceStrategy : public SliceStrategy {
+class DebugSliceStrategy : public DecoratorSliceStrategy {
  public:
   DebugSliceStrategy(SliceStrategy* strategy):
-    _strategy(strategy),
+    DecoratorSliceStrategy(strategy),
     _level(0) {
-  }
-
-  ~DebugSliceStrategy() {
-    delete _strategy;
   }
 
   void startingContent(const Slice& slice) {
@@ -161,35 +212,38 @@ class DebugSliceStrategy : public SliceStrategy {
     cerr << "DEBUG " << _level
 	 << ": computing content of the following slice." << endl
 	 << slice << endl;
-    _strategy->startingContent(slice);
+
+    DecoratorSliceStrategy::startingContent(slice);
   }
 
   void endingContent() {
     cerr << "DEBUG " << _level
 	 << ": done computing content of that slice." << endl;
-    _strategy->endingContent();
     --_level;
-  }
 
-  SplitType getSplitType(const Slice& slice) {
-    return _strategy->getSplitType(slice);
+    DecoratorSliceStrategy::endingContent();
   }
 
   void getPivot(Term& pivot, const Slice& slice) {
-    _strategy->getPivot(pivot, slice);
+    DecoratorSliceStrategy::getPivot(pivot, slice);
     cerr << "DEBUG " << _level
 	 << ": performing pivot split on " << pivot << '.' << endl;
   }
 
   size_t getLabelSplitVariable(const Slice& slice) {
-    size_t var = _strategy->getLabelSplitVariable(slice);
+    size_t var = DecoratorSliceStrategy::getLabelSplitVariable(slice);
     cerr << "DEBUG " << _level
 	 << ": performing label split on var " << var << '.' << endl;
     return var;
   }
 
+  void consume(const Term& term) {
+    cerr << "DEBUG " << _level
+	 << ": Writing " << term << " to output." << endl;
+    DecoratorSliceStrategy::consume(term);
+  }
+
 private:
-  SliceStrategy* _strategy;
   size_t _level;
 };
 
