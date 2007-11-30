@@ -1,9 +1,9 @@
-vars b, a, c;
+vars b, a;
 [
  a^2,
  b
 ];
-vars c, b, a;
+vars a, c;
 [
  c^3,
  a^3

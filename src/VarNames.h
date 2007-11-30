@@ -11,13 +11,13 @@ public:
   void addVar(const string& name);
 
   // Returns VarNames::UNKNOWN if name is not known.
-  int getIndex(const string& name) const;
+  size_t getIndex(const string& name) const;
 
   bool contains(const string& name) const;
 
   // The returned reference can become invalid next time addVar is
   // called.
-  const string& getName(int index) const;
+  const string& getName(size_t index) const;
 
   size_t getVarCount() const;
 
@@ -28,7 +28,7 @@ public:
   friend ostream& operator<<(ostream& out, const VarNames& names) {
     out << "VarNames(";
     const char* prefix = "";
-    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+    for (size_t i = 0; i < names.getVarCount(); ++i) {
       out << prefix << (i + 1) << "<->\"" << names.getName(i) << '"';
       prefix = ", ";
     }
@@ -37,7 +37,7 @@ public:
     return out;
   }
 
-  static const int UNKNOWN;
+  static const size_t UNKNOWN;
 
   bool operator==(const VarNames& names) const {
     return _indexToName == names._indexToName;
@@ -45,7 +45,7 @@ public:
 
 private:
 
-  map<string, int> _nameToIndex;
+  map<string, size_t> _nameToIndex;
   vector<string> _indexToName;
 };
 

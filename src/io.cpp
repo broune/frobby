@@ -49,7 +49,7 @@ void IOHandler::readVarPower(int& var, mpz_class& power,
   string varName;
   lexer.readIdentifier(varName);
   var = names.getIndex(varName);
-  if (var == VarNames::UNKNOWN) {
+  if ((size_t)var == VarNames::UNKNOWN) {
     cerr << "ERROR: Unknown variable \"" << varName << "\". Maybe you forgot a *.\n";
     exit(0);
   }

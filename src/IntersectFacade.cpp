@@ -19,19 +19,17 @@ BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
   if (ideals.size() == 1)
     return new BigIdeal(*ideals[0]);
 
-  const VarNames& names = ideals[0]->getNames();
-  size_t variableCount = names.getVarCount();
-
   vector<Ideal*> ideals2;
   TermTranslator translator(ideals, ideals2);
+
+  const VarNames& names = translator.getNames();
+  size_t variableCount = names.getVarCount();
 
   Ideal* intersection = new Ideal(variableCount);
   Term identity(variableCount);
   intersection->insert(identity);
 
   for (size_t i = 0; i < ideals2.size(); ++i) {
-    ASSERT(names == ideals[i]->getNames());
-
     // Compute intersection
     Ideal* tmp = new Ideal(variableCount);
     ::intersect(tmp, intersection, ideals2[i]);

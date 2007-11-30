@@ -1,13 +1,13 @@
 #ifndef TERM_TRANSLATOR_GUARD
 #define TERM_TRANSLATOR_GUARD
 
+#include "VarNames.h"
+
 #include <vector>
-#include <map>
 
 class BigIdeal;
 class Ideal;
 class Term;
-class VarNames;
 
 // TermTranslator handles translation between terms whose exponents
 // are infinite precision integers and terms whose exponents are 32
@@ -23,8 +23,11 @@ class VarNames;
 class TermTranslator {
 public:
   // The constructors translate BigIdeals into Ideals, while
-  // initializing this to do the reverse translation.
-  TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal);
+  // initializing this to do the reverse translation. sortVars
+  // indicates whether or not the order of the variable names should
+  // be sorted. This cannot be turned off for the version taking
+  // several ideals.
+  TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal, bool sortVars = true);
   TermTranslator(const vector<BigIdeal*>& bigIdeals, vector<Ideal*>& ideals);
   ~TermTranslator();
 
@@ -52,17 +55,20 @@ public:
     return out;
   }
 
+  const VarNames& getNames() const;
+
 private:
   TermTranslator(const TermTranslator&); // not suported
   TermTranslator& operator=(const TermTranslator&); // not supported
 
-  void initialize(const vector<BigIdeal*>& bigIdeals);
-  void makeStrings(const VarNames& names);
+  void initialize(const vector<BigIdeal*>& bigIdeals, bool sortVars);
+  void makeStrings();
   void shrinkBigIdeal(const BigIdeal& bigIdeal, Ideal& ideal) const;
   Exponent shrinkExponent(size_t var, const mpz_class& exponent) const;
 
   vector<vector<mpz_class> > _exponents;
-  vector<vector<const char*> > _stringDecompressionMaps;
+  vector<vector<const char*> > _stringExponents;
+  VarNames _names;
 };
 
 #endif
