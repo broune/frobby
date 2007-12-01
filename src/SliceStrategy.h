@@ -6,6 +6,7 @@
 
 class Slice;
 class Term;
+class TermTranslator;
 
 class SliceStrategy : public DecomConsumer {
  public:
@@ -19,6 +20,8 @@ class SliceStrategy : public DecomConsumer {
   virtual void startingContent(const Slice& slice);
   virtual void endingContent();
 
+  virtual void simplify(Slice& slice);
+
   virtual SplitType getSplitType(const Slice& slice) = 0;
 
   virtual void getPivot(Term& pivot, const Slice& slice);
@@ -29,6 +32,12 @@ class SliceStrategy : public DecomConsumer {
 
   static SliceStrategy* newDecomStrategy(const string& name,
 					 DecomConsumer* consumer);
+
+  static SliceStrategy* newFrobeniusStrategy(const string& name,
+					     const vector<mpz_class>& instance,
+					     const TermTranslator* translator,
+					     mpz_class& frobeniusNumber);
+
   static SliceStrategy* addStatistics(SliceStrategy* strategy);
   static SliceStrategy* addDebugOutput(SliceStrategy* strategy);
 };
