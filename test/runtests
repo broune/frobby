@@ -17,9 +17,14 @@ cd test/decom
 time ./runtests -slice off
 cd ../..
 
-echo -n "frob: "
+echo -n "frob (slice): "
 cd test/frob
-time ./runtests
+time ./runtests -slice on
+cd ../..
+
+echo -n "frob (label): "
+cd test/frob
+time ./runtests -slice off
 cd ../..
 
 echo -n "intersect: "

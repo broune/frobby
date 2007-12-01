@@ -85,8 +85,7 @@ void IrreducibleDecomFacade::
 computeFrobeniusNumber(const vector<mpz_class>& instance,
 		       BigIdeal& bigIdeal, 
 		       mpz_class& frobeniusNumber) {
-  beginAction
-    ("Optimizing over irreducible decomposition using label algorithm.");
+  beginAction("Optimizing over irreducible decomposition.");
 
   if (_parameters.getSkipRedundant()) {
     cerr << "ERROR: Due to implementation issues, the Grobner basis" << endl
@@ -105,10 +104,26 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   bigIdeal.clear();
   translator.addArtinianPowers(ideal);
 
-  Strategy* strategy = new FrobeniusStrategy
-    (instance, &frobeniusNumber, ideal.getVarCount(),
-     &translator, _parameters.getUseBound());
-  runLabelAlgorithm(ideal, strategy);
+  if (_parameters.getUseSlice()) {
+    SliceStrategy* strategy = SliceStrategy::newFrobeniusStrategy
+      (_parameters.getSplit(), instance, &translator, frobeniusNumber);
+
+     // TODO: factor out common error code into SliceStrategy.
+     if (strategy == 0) {
+       cerr << "ERROR: Unknown split strategy \""
+	    << _parameters.getSplit()
+	    << "\"." << endl;
+       exit(1);
+     }
+
+     runSliceAlgorithm(ideal, strategy);
+
+  } else {
+    Strategy* strategy = new FrobeniusStrategy
+      (instance, &frobeniusNumber, ideal.getVarCount(),
+       &translator, _parameters.getUseBound());
+    runLabelAlgorithm(ideal, strategy);
+  }
 
   endAction();
 }

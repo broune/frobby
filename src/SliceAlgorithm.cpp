@@ -132,7 +132,7 @@ void SliceAlgorithm::labelSplit2(Slice& slice) {
 
 void SliceAlgorithm::labelSplit(Slice& slice) {
   size_t var = _strategy->getLabelSplitVariable(slice);
-  slice.getIdeal().singleDegreeSort(var);
+  slice.singleDegreeSortIdeal(var);
 
   Ideal* cumulativeSubtract = &(slice.getSubtract());
   Term labelMultiply(slice.getVarCount());
@@ -181,16 +181,13 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
   }
 
   // Handle outer slice.
-  slice.getIdeal().removeStrictMultiples(pivot);
-  if (pivot.getSizeOfSupport() > 1)
-    slice.getSubtract().insert(pivot);
-  
+  slice.outerSlice(pivot);
   content(slice);
 }
 
 void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
   if (!simplifiedAndDependent)
-    slice.simplify();
+    _strategy->simplify(slice);
 
   _strategy->startingContent(slice);
 

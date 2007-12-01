@@ -4,6 +4,7 @@
 #include "Slice.h"
 #include "Term.h"
 #include "Ideal.h"
+#include "TermTranslator.h"
 #include <vector>
 
 SliceStrategy::~SliceStrategy() {
@@ -13,6 +14,10 @@ void SliceStrategy::startingContent(const Slice& slice) {
 }
 
 void SliceStrategy::endingContent() {
+}
+
+void SliceStrategy::simplify(Slice& slice) {
+  slice.simplify();
 }
 
 void SliceStrategy::getPivot(Term& pivot, const Slice& slice) {
@@ -32,7 +37,6 @@ class DecomSliceStrategy : public SliceStrategy {
 public:
   DecomSliceStrategy(DecomConsumer* consumer):
     _consumer(consumer) {
-    ASSERT(consumer != 0);
   }
 
   virtual ~DecomSliceStrategy() {
@@ -40,6 +44,7 @@ public:
   }
 
   virtual void consume(const Term& term) {
+    ASSERT(_consumer != 0);
     _consumer->consume(term);
   }
 
@@ -126,37 +131,165 @@ public:
     ASSERT(strategy != 0);
   }
 
-  ~DecoratorSliceStrategy() {
+  virtual ~DecoratorSliceStrategy() {
     delete _strategy;
   }
 
-  void startingContent(const Slice& slice) {
+  virtual void startingContent(const Slice& slice) {
     _strategy->startingContent(slice);
   }
 
-  void endingContent() {
+  virtual void endingContent() {
     _strategy->endingContent();
   }
 
-  SplitType getSplitType(const Slice& slice) {
+  virtual void simplify(Slice& slice) {
+    _strategy->simplify(slice);
+  }
+
+  virtual SplitType getSplitType(const Slice& slice) {
     return _strategy->getSplitType(slice);
   }
 
-  void getPivot(Term& pivot, const Slice& slice) {
+  virtual void getPivot(Term& pivot, const Slice& slice) {
     _strategy->getPivot(pivot, slice);
   }
 
-  size_t getLabelSplitVariable(const Slice& slice) {
+  virtual size_t getLabelSplitVariable(const Slice& slice) {
     return _strategy->getLabelSplitVariable(slice);
   }
 
-  void consume(const Term& term) {
+  virtual void consume(const Term& term) {
     _strategy->consume(term);
   }
 
 private:
   SliceStrategy* _strategy;
 };
+
+class FrobeniusSliceStrategy : public DecoratorSliceStrategy {
+public:
+  FrobeniusSliceStrategy(SliceStrategy* strategy,
+			 const vector<mpz_class>& instance,
+			 const TermTranslator* translator,
+			 mpz_class& frobeniusNumber):
+    DecoratorSliceStrategy(strategy),
+    _instance(instance),
+    _translator(translator),
+    _frobeniusNumber(frobeniusNumber),
+    _maxDegree(-1) {
+    ASSERT(instance.size() == translator->getNames().getVarCount() + 1);
+  }
+
+  virtual ~FrobeniusSliceStrategy() {
+    _frobeniusNumber = _maxDegree;
+    for (size_t var = 0; var < _instance.size(); ++var)
+      _frobeniusNumber -= _instance[var];
+  }
+
+  virtual void simplify(Slice& slice) {
+    slice.simplify();
+
+    // This is becase we have not yet handled independence splits.
+    if (slice.getVarCount() != _translator->getNames().getVarCount())
+      return;
+
+    Term bound(slice.getVarCount());
+    mpz_class degree;
+
+    while (true) {
+      getUpperBound(slice, bound);
+      getDegree(bound, degree);
+
+      if (degree <= _maxDegree) {
+	slice.clear();
+	break;
+      }
+
+      Term colon(slice.getVarCount());
+      mpz_class degreeLess;
+      mpz_class difference;
+      for (size_t var = 0; var < slice.getVarCount(); ++var) {
+	if (bound[var] == slice.getMultiply()[var])
+	  continue;
+
+	difference = 
+	  _translator->getExponent(var, bound[var] + 1) -
+	  _translator->getExponent(var, slice.getMultiply()[var] + 1);
+	difference *= _instance[var + 1];
+
+	degreeLess = degree - difference;
+
+	if (degreeLess <= _maxDegree)
+	  colon[var] = 1;
+      }
+
+      if (colon.isIdentity())
+	break;
+
+      slice.innerSlice(colon);
+      slice.simplify();
+    }
+  }
+
+  virtual void consume(const Term& term) {
+    ASSERT(term.getVarCount() == _translator->getNames().getVarCount());
+
+    mpz_class degree;
+    getDegree(term, degree);
+    if (_maxDegree < degree)
+      _maxDegree = degree;
+  }
+
+private:
+  void getDegree(const Term& term, mpz_class& degree) {
+    degree = 0;
+    for (size_t var = 0; var < term.getVarCount(); ++var)
+      degree += _instance[var + 1] *
+	_translator->getExponent(var, term[var] + 1);
+  }
+
+  void getUpperBound(const Slice& slice, Term& bound) {
+    ASSERT(bound.getVarCount() == slice.getVarCount());
+
+    bound.product(slice.getLcm(), slice.getMultiply());
+
+    for (size_t var = 0; var < bound.getVarCount(); ++var)
+      --bound[var];
+
+    for (size_t var = 0; var < bound.getVarCount(); ++var) {
+      if (bound[var] == _translator->getMaxId(var) - 1) {
+	ASSERT(bound[var] > 0);
+	--bound[var];
+      }
+    }
+  }
+
+  bool isPromising(const Term& bound) {
+    mpz_class degree;
+    getDegree(bound, degree);
+    return degree > _maxDegree;
+  }
+
+  const vector<mpz_class> _instance;
+  const TermTranslator* _translator;
+  mpz_class& _frobeniusNumber;
+
+  mpz_class _maxDegree;
+};
+
+SliceStrategy* SliceStrategy::
+newFrobeniusStrategy(const string& name,
+		     const vector<mpz_class>& instance,
+		     const TermTranslator* translator,
+		     mpz_class& frobeniusNumber) {
+  SliceStrategy* strategy = newDecomStrategy(name, 0);
+  if (strategy == 0)
+    return 0;
+
+  return new FrobeniusSliceStrategy(strategy, instance,
+				    translator, frobeniusNumber);
+}
 
 class StatisticsSliceStrategy : public DecoratorSliceStrategy {
 public:

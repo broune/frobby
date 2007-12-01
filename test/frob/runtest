@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cat $1.out.gro $1 | ../../$frobby frobgrob 2> /dev/null | diff $1.ref -
+cat $1.out.gro $1 | ../../$frobby frobgrob $2 $3 $4 $5 $6 $7 2> /dev/null | diff $1.ref -
 
 if [ $? != 0 ]
 then

@@ -26,10 +26,7 @@ IndependenceSplitter::IndependenceSplitter(const Partition& partition,
 
   _childCount = _children.size();
 
-  // We do not need ideal or subtract anymore, so we can clear them
-  // now to save memory.
-  _slice.getIdeal().clear();
-  _slice.getSubtract().clear();
+  _slice.clear(); // to save memory
 
   // Handle the smallest children first to save memory.
   //sort(_children.begin(), _children.end());
@@ -49,7 +46,7 @@ void IndependenceSplitter::initializeChildren(const Partition& partition) {
     _children.resize(_children.size() + 1);
     Child& child = _children.back();
 
-    child.slice.clearAndSetVarCount(childVarCount);
+    child.slice.resetAndSetVarCount(childVarCount);
     child.projection.reset(partition, set);
     child.decom.clearAndSetVarCount(childVarCount);
   }
@@ -86,7 +83,7 @@ void IndependenceSplitter::populateChildIdealsAndSingletonDecom
     child->projection.project(exponents, *it);
     ASSERT(!isIdentity(exponents, child->projection.getRangeVarCount()));
 
-    child->slice.getIdeal().insert(exponents);
+    child->slice.insertIntoIdeal(exponents);
   }
 }
 
@@ -191,9 +188,8 @@ void IndependenceSplitter::setCurrentChild(size_t childIndex,
   _currentChild = childIndex;
   Child& child = _children[childIndex];
 
-  projSlice.clearAndSetVarCount(child.projection.getRangeVarCount());
-  projSlice.getIdeal().swap(child.slice.getIdeal());
-  projSlice.getSubtract().swap(child.slice.getSubtract());
+  projSlice.clear();
+  projSlice.swap(child.slice);
 
   child.projection.project(projSlice.getMultiply(), _slice.getMultiply());
 }

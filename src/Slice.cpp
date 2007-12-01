@@ -31,12 +31,25 @@ void Slice::print(ostream& out) const {
       << ')';
 }
 
-void Slice::clearAndSetVarCount(size_t varCount) {
+void Slice::resetAndSetVarCount(size_t varCount) {
   _varCount = varCount;
   _ideal.clearAndSetVarCount(varCount);
   _subtract.clearAndSetVarCount(varCount);
   _multiply.reset(varCount);
   _lcm.reset(varCount);
+}
+
+void Slice::clear() {
+  _ideal.clear();
+  _subtract.clear();
+}
+
+void Slice::singleDegreeSortIdeal(size_t var) {
+  _ideal.singleDegreeSort(var);
+}
+
+void Slice::insertIntoIdeal(const Exponent* term) {
+  _ideal.insert(term);
 }
 
 void Slice::swap(Slice& slice) {
@@ -56,26 +69,30 @@ void Slice::innerSlice(const Term& pivot) {
   normalize();
 }
 
+void Slice::outerSlice(const Term& pivot) {
+  ASSERT(getVarCount() == pivot.getVarCount());
+
+  _ideal.removeStrictMultiples(pivot);
+  if (pivot.getSizeOfSupport() > 1)
+    getSubtract().insert(pivot);
+}
+
 bool Slice::baseCase(DecomConsumer* consumer) {
   if (twoVarBaseCase(consumer))
     return true;
 
-  const Term& lcm = getLcm();
-
   // Check that each variable appears in some minimal generator.
-  if (lcm.getSizeOfSupport() != _varCount)
+  if (getLcm().getSizeOfSupport() < _varCount)
     return true;
 
-  // Check that ideal is square free.
-  if (!lcm.isSquareFree())
+  if (_ideal.getGeneratorCount() > _varCount)
     return false;
-
-  // We have reached the square free base case. The content is empty
-  // unless ideal has the form <x_1, ..., x_n>.
-  if (_ideal.getGeneratorCount() == _varCount &&
-      _ideal.isIrreducible())
-    consumer->consume(_multiply);
-
+  
+  // These things are ensured since the slice is simplified.
+  ASSERT(getLcm().isSquareFree());
+  ASSERT(_ideal.isIrreducible());
+  
+  consumer->consume(_multiply);
   return true;
 }
 

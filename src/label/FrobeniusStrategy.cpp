@@ -5,6 +5,8 @@
 #include "TermTree.h"
 #include "OldPartition.h"
 
+#include <iterator>
+
 #include "../TermTranslator.h"
 
 FrobeniusStrategy::FrobeniusStrategy(const vector<mpz_class>& degrees,

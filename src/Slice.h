@@ -15,7 +15,6 @@ class Slice {
 
   size_t getVarCount() const {return _varCount;}
 
-  Ideal& getIdeal() {return _ideal;}
   const Ideal& getIdeal() const {return _ideal;}
 
   Ideal& getSubtract() {return _subtract;}
@@ -38,7 +37,16 @@ class Slice {
 
   // Removes all generators of getIdeal() and getSubtract() and sets
   // getMultiply() to the identity. Also changes getVarCount() to varCount.
-  void clearAndSetVarCount(size_t varCount);
+  void resetAndSetVarCount(size_t varCount);
+
+  // Clears getIdeal() and getSubtract(). Does not change getMultiply().
+  void clear();
+
+  // Calls singleDegreeSort on getIdeal().
+  void singleDegreeSortIdeal(size_t var);
+
+  // Inserts term into getIdeal().
+  void insertIntoIdeal(const Exponent* term);
 
   // Efficiently swaps the values of *this and slice while avoiding
   // copies.
@@ -48,6 +56,11 @@ class Slice {
   // pivot is applied to getMultiply() and getSubtract(), while
   // getMultiply() is multiplied by pivot. 
   void innerSlice(const Term& pivot);
+
+  // Computes an outer slice with the specified pivot, i.e. strict
+  // multiples of pivot are removed from getIdeal(), and pivot is
+  // added to getSubtract() if necessary.
+  void outerSlice(const Term& pivot);
 
   // Returns true if a base case is reached, and in that case outputs
   // the content to consumer. The slice must be fully simplified.
