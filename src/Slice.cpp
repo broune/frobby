@@ -26,7 +26,7 @@ const Term& Slice::getLcm() const {
 
 void Slice::print(ostream& out) const {
   out << "Slice (multiply: " << _multiply << '\n'
-      << " ideal: " << _ideal << '\n'
+      << " ideal: " << getIdeal() << '\n'
       << " subtract: " << _subtract << '\n'
       << ')';
 }
@@ -85,12 +85,12 @@ bool Slice::baseCase(DecomConsumer* consumer) {
   if (getLcm().getSizeOfSupport() < _varCount)
     return true;
 
-  if (_ideal.getGeneratorCount() > _varCount)
+  if (getIdeal().getGeneratorCount() > _varCount)
     return false;
   
   // These things are ensured since the slice is simplified.
   ASSERT(getLcm().isSquareFree());
-  ASSERT(_ideal.isIrreducible());
+  ASSERT(getIdeal().isIrreducible());
   
   consumer->consume(_multiply);
   return true;
@@ -172,7 +172,7 @@ bool Slice::pruneSubtract() {
   if (_subtract.getGeneratorCount() == 0)
     return false;
 
-  PruneSubtractPredicate pred(_ideal, getLcm());
+  PruneSubtractPredicate pred(getIdeal(), getLcm());
   return _subtract.removeIf(pred);
 }
 
@@ -238,8 +238,8 @@ bool Slice::getLowerBound(Term& bound, size_t var) const {
   //const Term& lcm = getLcm();
   const Term& lcm = _lcm; // TODO: fix
 
-  Ideal::const_iterator stop = _ideal.end();
-  for (Ideal::const_iterator it = _ideal.begin(); it != stop; ++it) {
+  Ideal::const_iterator stop = getIdeal().end();
+  for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
     if ((*it)[var] == 0)
       continue;
     
@@ -295,8 +295,8 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
 
   static Term term(2);
 
-  Ideal::const_iterator stop = _ideal.end();
-  Ideal::const_iterator it = _ideal.begin();
+  Ideal::const_iterator stop = getIdeal().end();
+  Ideal::const_iterator it = getIdeal().begin();
   if (it == stop)
     return true;
 
@@ -309,7 +309,7 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
 
     term[0] = (*it)[0] - 1;
 
-    ASSERT(!_ideal.contains(term));
+    ASSERT(!getIdeal().contains(term));
 
     if (!_subtract.contains(term)) {
       term[0] += _multiply[0];
