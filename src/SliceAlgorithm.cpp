@@ -175,7 +175,7 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
 
   // Handle inner slice.
   {
-    Slice inner(slice.getIdeal(), slice.getSubtract(), slice.getMultiply());
+    Slice inner(slice);
     inner.innerSlice(pivot);
     content(inner);
   }

@@ -10,6 +10,27 @@
 SliceStrategy::~SliceStrategy() {
 }
 
+void SliceStrategy::doingIndependenceSplit(const Partition& partition) {
+  cerr << "ERROR: doingIndependenceSplit not implemented." << endl;
+  ASSERT(false);
+}
+
+void SliceStrategy::doingIndependentPart(const Partition& partition,
+					 int setId) {
+  cerr << "ERROR: doingIndependentPart not implemented." << endl;
+  ASSERT(false);
+}
+
+void SliceStrategy::doneWithIndependentPart() {
+  cerr << "ERROR: donWithIndependentPart not implemented." << endl;
+  ASSERT(false);
+}
+
+void SliceStrategy::doneWithIndependenceSplit() {
+  cerr << "ERROR: doingWithIndependenceSplit not implemented." << endl;
+  ASSERT(false);
+}
+
 void SliceStrategy::startingContent(const Slice& slice) {
 }
 

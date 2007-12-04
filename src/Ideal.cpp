@@ -55,6 +55,8 @@ bool Ideal::isIrreducible() const {
 }
 
 void Ideal::getLcm(Term& lcm) const {
+  ASSERT(lcm.getVarCount() == getVarCount());
+
   lcm.setToIdentity();
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)

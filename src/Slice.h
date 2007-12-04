@@ -54,7 +54,8 @@ class Slice {
 
   // Computes an inner slice with the specified pivot, i.e. a colon by
   // pivot is applied to getMultiply() and getSubtract(), while
-  // getMultiply() is multiplied by pivot. 
+  // getMultiply() is multiplied by pivot. The slice is then
+  // normalized.
   void innerSlice(const Term& pivot);
 
   // Computes an outer slice with the specified pivot, i.e. strict
@@ -71,12 +72,10 @@ class Slice {
   bool baseCase(DecomConsumer* consumer);
 
   // Simplies the slice such that normalize, pruneSubtract,
-  // removeDoubleLcm and applyLowerBound all return false. simplify
-  // works regardless, but it is optimized for the case where the
-  // slice is already normalized (an ASSERT catches if this is not
-  // so).
+  // removeDoubleLcm and applyLowerBound all return false.
   void simplify();
 
+ private:
   // Removes those generators of getIdeal() that are strict multiples
   // of some generator of getSubtract(). Returns true if any
   // generators were removed.
@@ -90,19 +89,15 @@ class Slice {
   // Removes those generators g of getIdeal() such that g[i] equals
   // getLcm()[i] for two distinct i. This is done iteratively until no
   // more generators can be removed in this way. Returns true if any
-  // generators were removed or a base case has been detected.
+  // generators were removed.
   bool removeDoubleLcm();
 
   // Calculates a lower bound on the content of the slice (see
-  // getLowerBound()) and takes the colon of getIdeal() and
-  // getSubtract() by that while multiplying it on to
-  // getMultiply(). Returns true if this changed the slice in any way,
-  // i.e. if the lower bound was different from the identity.
-  //
-  // Note that it can pay off to apply the lower bound repeatedly.
+  // getLowerBound()) and calls innerSlice with that lower bound. This
+  // is repeated until a fixed point is reached. Returns false if
+  // getIdeal() is unchanged or if an empty base case is detected.
   bool applyLowerBound();
 
- private:
   // Calculates the gcd of those generators of getIdeal() that are
   // divisible by var. This gcd is then divided by var to yield a
   // lower bound on the content of the slice. Returns false if a base
@@ -111,7 +106,7 @@ class Slice {
 
   // Calculates the lcm of the lower bounds from the getLowerBound
   // that takes a variable. This is a lower bound on the content of
-  // the slice. Returns false if a base case is detected.
+  // the slice. Returns false if an empty base case is detected.
   bool getLowerBound(Term& bound) const;
 
   // Returns true if getGeneratorCount() returns 2, in which case the
@@ -120,10 +115,13 @@ class Slice {
   // than a single generator.
   bool twoVarBaseCase(DecomConsumer* consumer);
 
+  void validate() const;
+
   size_t _varCount;
   Term _multiply;
-  mutable Term _lcm;
 
+  mutable Term _lcm;
+  mutable bool _lcmUpdated;
 
   Ideal _ideal;
   Ideal _subtract;
