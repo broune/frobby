@@ -69,6 +69,18 @@ public:
     _consumer->consume(term);
   }
 
+  virtual void doingIndependenceSplit(const Partition& partition) {
+  }
+
+  virtual void doingIndependentPart(const Partition& partition, int setId) {
+  }
+
+  virtual void doneWithIndependentPart() {
+  }
+
+  virtual void doneWithIndependenceSplit() {
+  }
+
 private:
   DecomConsumer* _consumer;
 };
