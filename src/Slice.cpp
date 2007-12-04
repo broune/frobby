@@ -13,6 +13,7 @@ Slice::Slice(const Ideal& ideal, const Ideal& subtract,
   _varCount(multiply.getVarCount()),
   _multiply(multiply),
   _lcm(multiply.getVarCount()),
+  _lcmUpdated(false),
   _ideal(ideal),
   _subtract(subtract) {
   ASSERT(multiply.getVarCount() == ideal.getVarCount());
@@ -20,7 +21,18 @@ Slice::Slice(const Ideal& ideal, const Ideal& subtract,
 }
 
 const Term& Slice::getLcm() const {
-  _ideal.getLcm(_lcm);
+#ifdef DEBUG
+  if (_lcmUpdated) {
+    Term tmp(_varCount);
+    _ideal.getLcm(tmp);
+    ASSERT(tmp == _lcm);
+  }
+#endif
+
+  if (!_lcmUpdated) {
+    getIdeal().getLcm(_lcm);
+    _lcmUpdated = true;
+  }
   return _lcm;
 }
 
@@ -37,11 +49,13 @@ void Slice::resetAndSetVarCount(size_t varCount) {
   _subtract.clearAndSetVarCount(varCount);
   _multiply.reset(varCount);
   _lcm.reset(varCount);
+  _lcmUpdated = true;
 }
 
 void Slice::clear() {
   _ideal.clear();
   _subtract.clear();
+  _lcmUpdated = false;
 }
 
 void Slice::singleDegreeSortIdeal(size_t var) {
@@ -50,12 +64,15 @@ void Slice::singleDegreeSortIdeal(size_t var) {
 
 void Slice::insertIntoIdeal(const Exponent* term) {
   _ideal.insert(term);
+  if (_lcmUpdated)
+    _lcm.lcm(_lcm, term);
 }
 
 void Slice::swap(Slice& slice) {
   std::swap(_varCount, slice._varCount);
   _multiply.swap(slice._multiply);
   _lcm.swap(slice._lcm);
+  std::swap(_lcmUpdated, slice._lcmUpdated);
   _ideal.swap(slice._ideal);
   _subtract.swap(slice._subtract);
 }
@@ -63,16 +80,27 @@ void Slice::swap(Slice& slice) {
 void Slice::innerSlice(const Term& pivot) {
   ASSERT(getVarCount() == pivot.getVarCount());
 
+  size_t size = _ideal.getGeneratorCount();
+
   _ideal.colonReminimize(pivot);
   _subtract.colonReminimize(pivot);
   _multiply.product(_multiply, pivot);
   normalize();
+
+  if (_ideal.getGeneratorCount() == size)
+    _lcm.colon(_lcm, pivot);
+  else
+    _lcmUpdated = false;
 }
 
 void Slice::outerSlice(const Term& pivot) {
   ASSERT(getVarCount() == pivot.getVarCount());
 
+  size_t count = getIdeal().getGeneratorCount();
   _ideal.removeStrictMultiples(pivot);
+  if (getIdeal().getGeneratorCount() != count)
+    _lcmUpdated = false;
+
   if (pivot.getSizeOfSupport() > 1)
     getSubtract().insert(pivot);
 }
@@ -97,22 +125,11 @@ bool Slice::baseCase(DecomConsumer* consumer) {
 }
 
 void Slice::simplify() {
-  // It would make sense to normalize here, but we ensure elsewhere
-  // that the slice is already normalized. This ASSERT is here to
-  // catch it if this changes.
-  ASSERT(!normalize());
   removeDoubleLcm();
 
-  while (applyLowerBound()) {
-    while (applyLowerBound())
-      ;
-
-    bool changed1 = normalize();
-    bool changed2 = removeDoubleLcm();
-
-    if (!changed1 && !changed2)
-      break;
-  }
+  while (applyLowerBound() ||
+	 removeDoubleLcm())
+    ;
 
   pruneSubtract();
 
@@ -144,8 +161,10 @@ bool Slice::normalize() {
   Ideal::const_iterator stop = _subtract.end();
   for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it) {
     StrictMultiplePredicate pred(*it, _varCount);
-    if (_ideal.removeIf(pred))
+    if (_ideal.removeIf(pred)) {
       removedAny = true;
+      _lcmUpdated = false;
+    }
   }
 
   return removedAny;
@@ -208,35 +227,34 @@ bool Slice::removeDoubleLcm() {
       break;
 
     removedAny = true;
+    _lcmUpdated = false;
   };
 
   return removedAny;
 }
 
 bool Slice::applyLowerBound() {
+  bool changed = false;
+
   Term bound(_varCount);
+  while (true) {
+    if (!getLowerBound(bound)) {
+      clear();
+      return false;
+    }
 
-  if (!getLowerBound(bound)) {
-    _ideal.clear();
-    _subtract.clear();
-    return false;
+    if (bound.isIdentity())
+      return changed;
+
+    innerSlice(bound);
+    changed = true;
   }
-
-  if (bound.isIdentity())
-    return false;
-
-  _subtract.colonReminimize(bound);
-  _ideal.colonReminimize(bound);
-  _multiply.product(_multiply, bound);
-
-  return true;
 }
 
 bool Slice::getLowerBound(Term& bound, size_t var) const {
   bool seenAny = false;
 
-  //const Term& lcm = getLcm();
-  const Term& lcm = _lcm; // TODO: fix
+  const Term& lcm = getLcm();
 
   Ideal::const_iterator stop = getIdeal().end();
   for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
@@ -291,7 +309,7 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
   if (_varCount != 2)
     return false;
 
-  _ideal.singleDegreeSort(0);
+  singleDegreeSortIdeal(0);
 
   static Term term(2);
 
@@ -320,4 +338,10 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
   }
 
   return true;
+}
+
+void Slice::validate() const {
+#ifdef DEBUG
+  getLcm();
+#endif
 }
