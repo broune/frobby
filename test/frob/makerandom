@@ -1,0 +1,12 @@
+#!/bin/bash
+
+../../$frobby genfrob $* > random.frob 2> /dev/null
+
+echo -n "1 " > random.frob.out.mat
+wc random.frob | sed "s/ *[0-9]* *\([0-9]*\) *.*/\1/" >> random.frob.out.mat
+cat random.frob >> random.frob.out.mat
+
+../../4ti2/4ti2gmp groebner random.frob.out > /dev/null
+rm random.frob.out.mat
+
+cat random.frob | ../../$frobby frobdyn > random.frob.ref 2> /dev/null
