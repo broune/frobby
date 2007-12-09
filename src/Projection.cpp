@@ -36,6 +36,18 @@ void Projection::reset(const Partition& partition,
   }
 }
 
+void Projection::reset(const vector<size_t>& inverseProjections) {
+  _offsets = inverseProjections;
+  // TODO: ASSERT valid
+}
+
+void Projection::setToIdentity(size_t varCount) {
+  _offsets.clear();
+  for (size_t var = 0; var < varCount; ++var)
+    _offsets.push_back(var);
+}
+
+
 size_t Projection::getDomainVar(size_t rangeVar) {
   ASSERT(rangeVar < getRangeVarCount());
   return _offsets[rangeVar];
@@ -51,6 +63,11 @@ void Projection::inverseProject(Term& to, const Exponent* from) const {
   size_t size = _offsets.size();
   for (size_t i = 0; i < size; ++i)
     to[_offsets[i]] = from[i];
+}
+
+size_t Projection::inverseProjectVar(size_t rangeVar) const {
+  ASSERT(rangeVar < _offsets.size());
+  return _offsets[rangeVar];
 }
 
 void Projection::print() const {

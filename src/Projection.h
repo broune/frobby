@@ -15,6 +15,9 @@ class Projection {
   Projection() {}
 
   void reset(const Partition& partition, int set);
+  void reset(const vector<size_t>& inverseProjections);
+  void setToIdentity(size_t varCount);
+
   size_t getRangeVarCount() const;
 
   size_t getDomainVar(size_t rangeVar);
@@ -22,6 +25,7 @@ class Projection {
   void project(Exponent* to, const Exponent* from) const;
 
   void inverseProject(Term& to, const Exponent* from) const;
+  size_t inverseProjectVar(size_t rangeVar) const;
 
   void print() const;
   

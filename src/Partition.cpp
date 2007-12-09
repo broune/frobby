@@ -44,6 +44,10 @@ size_t Partition::getSetCount(size_t minSize) const {
   return partitionCount;
 }
 
+size_t Partition::getSizeOfClassOf(size_t i) const {
+  return -_partitions[getRoot(i)];
+}
+
 size_t Partition::getSetSize(size_t set) const {
   for (size_t i = 0; i < _size; ++i) {
     if (i == getRoot(i)) {
