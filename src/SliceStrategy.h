@@ -8,19 +8,22 @@ class Slice;
 class Term;
 class TermTranslator;
 class Partition;
+class Projection;
+class Ideal;
 
 class SliceStrategy : public DecomConsumer {
  public:
   virtual ~SliceStrategy();
 
   // Methods for handling independence splits
-
-  // TODO: all strategies should implement independence splits, so
-  // these should be pure virtual.
-  virtual void doingIndependenceSplit(const Partition& partition);
-  virtual void doingIndependentPart(const Partition& partition, int setId);
-  virtual void doneWithIndependentPart();
-  virtual void doneWithIndependenceSplit();
+  virtual void doingIndependenceSplit(const Partition& partition,
+				      const Slice& slice,
+				      Ideal* mixedProjectionSubtract) = 0;
+  virtual void doingIndependentPart(const Projection& projection) = 0;
+  virtual bool doneWithIndependentPart() = 0;
+  virtual void doIndependentSingletonPart(Exponent exponent,
+					  const Projection& projection) = 0;
+  virtual void doneWithIndependenceSplit(const Partition& partition) = 0;
 
   // Methods to inform debug strategies when the algorothm starts
   // processing the content of a slice and when it stops.

@@ -27,7 +27,7 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
       ideal.insert(term);
       --generatorsToGo;
     }
-    
+
     --triesLeft;
   }
 
@@ -39,8 +39,8 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
 }
 
 void generateRandomFrobeniusInstance(vector<Degree>& degrees) {
-  int numberCount = 4 + (rand() % 6);
-  int mod = 4007;
+  int numberCount = 10;//;4 + (rand() % 6);
+  int mod = 100000;
 
   degrees.resize(numberCount);
 

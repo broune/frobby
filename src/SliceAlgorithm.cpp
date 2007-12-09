@@ -65,24 +65,24 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
 
   IndependenceSplitter indep(partition, slice);
 
-  DecomConsumer* oldConsumer = _decomConsumer;
-  _decomConsumer = &indep;
+  _strategy->doingIndependenceSplit(partition,
+				    slice,
+				    indep.getMixedProjectionSubtract());
 
-  bool decomMustBeEmpty = false;
+  slice.clear(); // to save memory
 
-  Slice projSlice;
   for (size_t i = 0; i < indep.getChildCount(); ++i) {
-    indep.setCurrentChild(i, projSlice);
-    content(projSlice, true);
-    if (indep.currentChildDecomIsEmpty()) {
-      decomMustBeEmpty = true;
-      break;
-    }
-  }
-  _decomConsumer = oldConsumer;
+    Slice& projSlice = indep.getSlice(i);
 
-  if (!decomMustBeEmpty)
-    indep.generateDecom(_decomConsumer);
+    _strategy->doingIndependentPart(indep.getProjection(i));
+
+    content(projSlice, true);
+
+    if (!_strategy->doneWithIndependentPart())
+      break;
+  }
+
+  _strategy->doneWithIndependenceSplit(partition);
 
   return true;
 }

@@ -213,7 +213,8 @@ $(outdir)DecomWriter.o: src/DecomWriter.cpp src/stdinc.h src/DecomWriter.h \
   src/VarNames.h src/DecomConsumer.h src/io.h src/TermTranslator.h \
   src/Term.h
 $(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
-  src/DecomConsumer.h src/Slice.h src/Term.h src/Ideal.h
+  src/DecomConsumer.h src/Slice.h src/Term.h src/Ideal.h \
+  src/TermTranslator.h src/VarNames.h src/Projection.h src/Partition.h
 $(outdir)lattice.o: src/lattice.cpp src/stdinc.h src/lattice.h src/BigIdeal.h \
   src/VarNames.h
 $(outdir)LatticeFacade.o: src/LatticeFacade.cpp src/stdinc.h src/LatticeFacade.h \

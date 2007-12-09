@@ -106,6 +106,11 @@ void Slice::outerSlice(const Term& pivot) {
 }
 
 bool Slice::baseCase(DecomConsumer* consumer) {
+  if (_varCount == 1) {
+    consumer->consume(_multiply);
+    return true;
+  }
+
   if (twoVarBaseCase(consumer))
     return true;
 

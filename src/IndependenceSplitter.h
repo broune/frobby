@@ -11,7 +11,7 @@
 class Ideal;
 class Term;
 
-class IndependenceSplitter : public DecomConsumer {
+class IndependenceSplitter {
  public:
   // Slice must be simplified and normalized.
   IndependenceSplitter(const Partition& partition, Slice& slice);
@@ -22,18 +22,13 @@ class IndependenceSplitter : public DecomConsumer {
 				 const Slice& slice);
 
   size_t getChildCount() const;
+  Ideal* getMixedProjectionSubtract();
 
-  // It is only allowed to set the current child to each value once.
-  void setCurrentChild(size_t child, Slice& slice);
-  bool currentChildDecomIsEmpty() const;
-
-  void generateDecom(DecomConsumer* consumer);
-
-  void consume(const Term& term);
+  Slice& getSlice(size_t part);
+  Projection& getProjection(size_t part);
 
  private:
   struct Child {
-    Ideal decom;
     Slice slice;
     Projection projection;
 
@@ -43,17 +38,9 @@ class IndependenceSplitter : public DecomConsumer {
   void initializeChildren(const Partition& partition);
   void populateChildIdealsAndSingletonDecom(const vector<Child*>& childAt);
   void populateChildSubtracts(const vector<Child*>& childAt);
-  
-  void generateDecom(DecomConsumer* consumer,
-		     size_t child,
-		     Term& partial);
 
   Slice& _slice;
   vector<Child> _children;
-  size_t _childCount;
-  bool _shouldSplit;
-  size_t _currentChild;
-  Term _singletonDecom;
   Ideal* _mixedProjectionSubtract;
 };
 
