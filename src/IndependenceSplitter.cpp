@@ -28,8 +28,30 @@ IndependenceSplitter::IndependenceSplitter(const Partition& partition,
   }
 
   // Handle the smallest children first to save memory.
-  //sort(_children.begin(), _children.end());
-  // commented out since it is not so hot to copy around the Ideals.
+  //
+  // A simple sort. The STL sort is not used to ensure that an
+  // efficient swap method is utilized.
+  for (size_t i = 0; i < _children.size(); ++i) {
+    for (size_t j = 1; j < _children.size(); ++j) {
+      Child& a = _children[j - 1];
+      Child& b = _children[j];
+      if (b < a)
+	a.swap(b);
+    }
+  }
+}
+
+bool IndependenceSplitter::Child::operator<(const Child& child) const {
+  if (slice.getVarCount() == child.slice.getVarCount())
+    return slice.getIdeal().getGeneratorCount() <
+      child.slice.getIdeal().getGeneratorCount();
+  else
+    return slice.getVarCount() < child.slice.getVarCount();
+}
+
+void IndependenceSplitter::Child::swap(Child& child) {
+  slice.swap(child.slice);
+  projection.swap(child.projection);
 }
 
 IndependenceSplitter::~IndependenceSplitter() {

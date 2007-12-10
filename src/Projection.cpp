@@ -76,3 +76,7 @@ void Projection::print() const {
     cerr << ' ' << _offsets[var];
   cerr << endl;
 }
+
+void Projection::swap(Projection& projection) {
+  _offsets.swap(projection._offsets);
+}

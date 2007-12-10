@@ -32,6 +32,7 @@ class IndependenceSplitter {
     Slice slice;
     Projection projection;
 
+    void swap(Child& child);
     bool operator<(const Child& child) const;
   };
 

@@ -28,6 +28,8 @@ class Projection {
   size_t inverseProjectVar(size_t rangeVar) const;
 
   void print() const;
+
+  void swap(Projection& projection);
   
  private:
   vector<size_t> _offsets;
