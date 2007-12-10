@@ -17,10 +17,9 @@ class SliceStrategy : public DecomConsumer {
   // Methods for handling independence splits
   virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) = 0;
-  virtual void doingIndependentPart(const Projection& projection) = 0;
+  virtual void doingIndependentPart(const Projection& projection,
+				    bool last) = 0;
   virtual bool doneWithIndependentPart() = 0;
-  virtual void doIndependentSingletonPart(Exponent exponent,
-					  const Projection& projection) = 0;
   virtual void doneWithIndependenceSplit() = 0;
 
   // Methods to inform debug strategies when the algorothm starts

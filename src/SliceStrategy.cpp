@@ -59,12 +59,8 @@ public:
 			     getCurrentConsumer()));
   }
  
-  virtual void doingIndependentPart(const Projection& projection) {
-    getCurrentSplit()->setCurrentPart(projection);
-  }
-
-  void doIndependentSingletonPart(Exponent exponent,
-				  const Projection& projection) {
+  virtual void doingIndependentPart(const Projection& projection, bool last) {
+    getCurrentSplit()->setCurrentPart(projection, last);
   }
 
   virtual bool doneWithIndependentPart() {
@@ -102,7 +98,7 @@ private:
 
     // Must set each part exactly once, and must call doneWithPart
     // after having called setCurrentPart().
-    bool setCurrentPart(const Projection& projection) {
+    bool setCurrentPart(const Projection& projection, bool last) {
       ASSERT(_currentPart == NO_PART);
 
       if (_consumer == 0)
@@ -279,14 +275,8 @@ public:
       (slice, mixedProjectionSubtract);
   }
 
-  void doIndependentSingletonPart(Exponent exponent,
-				  const Projection& projection) {
-    _strategy->doIndependentSingletonPart(exponent, projection);
-  }
-
-
-  virtual void doingIndependentPart(const Projection& projection) {
-    _strategy->doingIndependentPart(projection);
+  virtual void doingIndependentPart(const Projection& projection, bool last) {
+    _strategy->doingIndependentPart(projection, last);
   }
 
   virtual bool doneWithIndependentPart() {
@@ -597,7 +587,7 @@ public:
 	_grader));
   }
 
-  virtual void doingIndependentPart(const Projection& projection) {
+  virtual void doingIndependentPart(const Projection& projection, bool last) {
     getCurrentSplit()->setCurrentPart(projection);
   }
 
@@ -699,20 +689,13 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
       (slice, mixedProjectionSubtract);
   }
 
-  void doIndependentSingletonPart(Exponent exponent,
-				  const Projection& projection) {
+  virtual void doingIndependentPart(const Projection& projection, bool last) {
     cerr << "DEBUG " << _level
-	 << ": doing independent part (singleton)." << endl;
-    DecoratorSliceStrategy::doIndependentSingletonPart
-      (exponent, projection);
-    cerr << "DEBUG " << _level
-	 << ": done with that independent part (singleton)." << endl;
-  }
-
-  virtual void doingIndependentPart(const Projection& projection) {
-    cerr << "DEBUG " << _level
-	 << ": doing independent part." << endl;
-    DecoratorSliceStrategy::doingIndependentPart(projection);
+	 << ": doing independent part";
+    if (last)
+      cerr << " (last)";
+    cerr << '.' << endl;
+    DecoratorSliceStrategy::doingIndependentPart(projection, last);
   }
 
   virtual bool doneWithIndependentPart() {
