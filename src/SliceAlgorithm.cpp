@@ -66,7 +66,8 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
   for (size_t i = 0; i < indep.getChildCount(); ++i) {
     Slice& projSlice = indep.getSlice(i);
 
-    _strategy->doingIndependentPart(indep.getProjection(i));
+    bool last = (i == indep.getChildCount() - 1);
+    _strategy->doingIndependentPart(indep.getProjection(i), last);
 
     content(projSlice, true);
 
