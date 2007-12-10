@@ -34,7 +34,6 @@ size_t SliceStrategy::getLabelSplitVariable(const Slice& slice) {
   exit(1);
 }
 
-// TODO: remove _currentPart
 class DecomSliceStrategy : public SliceStrategy {
 public:
   DecomSliceStrategy(DecomConsumer* consumer):
@@ -79,100 +78,94 @@ private:
     IndependenceSplit(const Slice& slice,
 		      Ideal* mixedProjectionSubtract,
 		      DecomConsumer* consumer):
-      _lcm(slice.getMultiply()),
+      _partialTerm(slice.getMultiply()),
       _mixedProjectionSubtract(mixedProjectionSubtract),
-      _currentPart(NO_PART),
-      _consumer(consumer) {
-      _parts.reserve(slice.getVarCount() / 2);
+      _consumer(consumer),
+      _lastPartProjection(0) {
+      ASSERT(_consumer != 0);
     }
 
     ~IndependenceSplit() {
-      ASSERT(_last);
-      /*      if (_consumer != 0)
-	      generateDecom(0, _lcm);*/
     }
 
     virtual void consume(const Term& term) {
-      ASSERT(_currentPart < _parts.size());
-      ASSERT(_consumer != 0);
-
-      if (!_last) {
-	_parts[_currentPart].decom.insert(term);
-	return;
-      }
-
-      const Part& p = _parts.back();
-      p.projection->inverseProject(_lcm, term);
-      generateDecom(0, _lcm);
+      if (_lastPartProjection != 0) {
+	_lastPartProjection->inverseProject(_partialTerm, term);
+	generateDecom();
+      } else
+	_parts.back().decom.insert(term);
     }
 
     // Must set each part exactly once, and must call doneWithPart
     // after having called setCurrentPart().
     bool setCurrentPart(const Projection& projection, bool last) {
-      ASSERT(_currentPart == NO_PART);
+      ASSERT(_lastPartProjection == 0);
 
-      if (_consumer == 0)
-	return false;
-
-      _parts.resize(_parts.size() + 1);
-      _parts.back().projection = &projection;
-      _parts.back().decom.clearAndSetVarCount
-	(projection.getRangeVarCount());
-      _currentPart = _parts.size() - 1;
-
-      _last = last;
+      if (last)
+	_lastPartProjection = &projection;
+      else {
+	if (_parts.empty()) {
+	  // We reserve space to ensure that no reallocation will
+	  // happen. Each part has at least two variables, and the
+	  // last part is not stored.
+	  _parts.reserve(_partialTerm.getVarCount() / 2 - 1);
+	}
+	_parts.resize(_parts.size() + 1);
+	_parts.back().projection = &projection;
+	_parts.back().decom.clearAndSetVarCount(projection.getRangeVarCount());
+      }
 
       return true;
     }
 
     bool doneWithPart() {
-      ASSERT(_currentPart < _parts.size());
-      bool empty = (_parts[_currentPart].decom.getGeneratorCount() == 0);
-      _currentPart = NO_PART;
+      if (_lastPartProjection != 0)
+	return true;
 
-      if (empty) {
-	_parts.clear();
-	_consumer = 0;
-      }
-      return !empty;
+      bool hasDecom = (_parts.back().decom.getGeneratorCount() != 0);
+      return hasDecom;
     }
 
   private:
-    static const size_t NO_PART;
+    void generateDecom() {
+      if (_parts.empty())
+	outputDecom();
+      else
+	generateDecom(_parts.size() - 1);
+    }
 
-    void generateDecom(size_t part, Term& partialTerm) {
-      if (part == _parts.size() - 1) {
-	if (_mixedProjectionSubtract == 0 ||
-	    !_mixedProjectionSubtract->contains(partialTerm))
-	  _consumer->consume(partialTerm);
-	return;
-      }
-
+    void generateDecom(size_t part) {
+      ASSERT(part < _parts.size());
       const Part& p = _parts[part];
-      if (p.decom.getGeneratorCount() == 0) { // TODO: needed?
-	generateDecom(part + 1, partialTerm);
-	return;
-      }
 
       Ideal::const_iterator stop = p.decom.end();
       for (Ideal::const_iterator it = p.decom.begin(); it != stop; ++it) {
-	p.projection->inverseProject(partialTerm, *it);
-	generateDecom(part + 1, partialTerm);
+	p.projection->inverseProject(_partialTerm, *it);
+	if (part == 0)
+	  outputDecom();
+	else
+	  generateDecom(part - 1);
       }
+    }
+
+    void outputDecom() {
+      ASSERT(_consumer != 0);
+      if (_mixedProjectionSubtract == 0 ||
+	  !_mixedProjectionSubtract->contains(_partialTerm))
+	_consumer->consume(_partialTerm);
     }
 
     struct Part {
       const Projection* projection;
       Ideal decom;
     };
-
     vector<Part> _parts;
-    Term _lcm;
+
+    Term _partialTerm;
     Ideal* _mixedProjectionSubtract;
 
-    size_t _currentPart;
     DecomConsumer* _consumer;
-    bool _last;
+    const Projection* _lastPartProjection;
   };
 
   IndependenceSplit* getCurrentSplit() {
@@ -187,16 +180,10 @@ private:
     else
       return getCurrentSplit();
   }
-
   
-  size_t _currentPart;
   vector<IndependenceSplit*> _independenceSplits;
-
   DecomConsumer* _consumer;
 };
-
-const size_t DecomSliceStrategy::IndependenceSplit::NO_PART =
-numeric_limits<size_t>::max();
 
 
 class LabelSliceStrategy : public DecomSliceStrategy {
