@@ -7,7 +7,6 @@
 #include "TermTranslator.h"
 #include <vector>
 #include "Projection.h"
-#include "Partition.h"
 
 SliceStrategy::~SliceStrategy() {
 }
@@ -52,11 +51,10 @@ public:
     getCurrentConsumer()->consume(term);
   }
 
-  virtual void doingIndependenceSplit(const Partition& partition,
-				      const Slice& slice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) {
     _independenceSplits.push_back
-      (new IndependenceSplit(partition, slice,
+      (new IndependenceSplit(slice,
 			     mixedProjectionSubtract,
 			     getCurrentConsumer()));
   }
@@ -73,7 +71,7 @@ public:
     return getCurrentSplit()->doneWithPart();
   }
 
-  virtual void doneWithIndependenceSplit(const Partition& partition) {
+  virtual void doneWithIndependenceSplit() {
     delete getCurrentSplit();
     _independenceSplits.pop_back();
   }
@@ -81,8 +79,7 @@ public:
 private:
   class IndependenceSplit : public DecomConsumer {
   public:
-    IndependenceSplit(const Partition& partition,
-		      const Slice& slice,
+    IndependenceSplit(const Slice& slice,
 		      Ideal* mixedProjectionSubtract,
 		      DecomConsumer* consumer):
       _lcm(slice.getMultiply()),
@@ -276,11 +273,10 @@ public:
     delete _strategy;
   }
 
-  virtual void doingIndependenceSplit(const Partition& partition,
-				      const Slice& slice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) {
     _strategy->doingIndependenceSplit
-      (partition, slice, mixedProjectionSubtract);
+      (slice, mixedProjectionSubtract);
   }
 
   void doIndependentSingletonPart(Exponent exponent,
@@ -297,8 +293,8 @@ public:
     return _strategy->doneWithIndependentPart();
   }
 
-  virtual void doneWithIndependenceSplit(const Partition& partition) {
-    _strategy->doneWithIndependenceSplit(partition);
+  virtual void doneWithIndependenceSplit() {
+    _strategy->doneWithIndependenceSplit();
   }
 
   virtual void startingContent(const Slice& slice) {
@@ -591,8 +587,7 @@ public:
     getCurrentSplit()->consume(term);
   }
 
-  virtual void doingIndependenceSplit(const Partition& partition,
-				      const Slice& slice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) {
     _independenceSplits.push_back
       (new FrobeniusIndependenceSplit
@@ -610,7 +605,7 @@ public:
     return getCurrentSplit()->doneWithPart();
   }
 
-  virtual void doneWithIndependenceSplit(const Partition& partition) {
+  virtual void doneWithIndependenceSplit() {
     FrobeniusIndependenceSplit* oldSplit = getCurrentSplit();
     _independenceSplits.pop_back();
 
@@ -696,13 +691,12 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
     _level(0) {
   }
   
-  virtual void doingIndependenceSplit(const Partition& partition,
-				      const Slice& slice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) {
     cerr << "DEBUG " << _level
 	 << ": doing independence split." << endl;
     DecoratorSliceStrategy::doingIndependenceSplit
-      (partition, slice, mixedProjectionSubtract);
+      (slice, mixedProjectionSubtract);
   }
 
   void doIndependentSingletonPart(Exponent exponent,
@@ -727,10 +721,10 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
     return DecoratorSliceStrategy::doneWithIndependentPart();
   }
 
-  virtual void doneWithIndependenceSplit(const Partition& partition) {
+  virtual void doneWithIndependenceSplit() {
     cerr << "DEBUG " << _level
 	 << ": done with independence split." << endl;
-    DecoratorSliceStrategy::doneWithIndependenceSplit(partition);
+    DecoratorSliceStrategy::doneWithIndependenceSplit();
   }
 
   void startingContent(const Slice& slice) {

@@ -65,9 +65,7 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
 
   IndependenceSplitter indep(partition, slice);
 
-  _strategy->doingIndependenceSplit(partition,
-				    slice,
-				    indep.getMixedProjectionSubtract());
+  _strategy->doingIndependenceSplit(slice, indep.getMixedProjectionSubtract());
 
   slice.clear(); // to save memory
 
@@ -82,7 +80,7 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
       break;
   }
 
-  _strategy->doneWithIndependenceSplit(partition);
+  _strategy->doneWithIndependenceSplit();
 
   return true;
 }
