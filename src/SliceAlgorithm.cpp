@@ -16,14 +16,12 @@
 
 SliceAlgorithm::SliceAlgorithm():
   _useIndependence(true),
-  _decomConsumer(0),
   _strategy(0) {
 }
 
 void SliceAlgorithm::setStrategy(SliceStrategy* strategy) {
   delete _strategy;
   _strategy = strategy;
-  _decomConsumer = strategy;
 }
 
 void SliceAlgorithm::setUseIndependence(bool useIndependence) {
@@ -31,17 +29,13 @@ void SliceAlgorithm::setUseIndependence(bool useIndependence) {
 }
 
 void SliceAlgorithm::runAndClear(Ideal& ideal) {
-  ASSERT(_decomConsumer != 0);
   ASSERT(_strategy != 0);
-  ASSERT(_decomConsumer == _strategy);
 
   if (ideal.getGeneratorCount() > 0) {
     ideal.minimize();
     Slice slice(ideal, Ideal(ideal.getVarCount()), Term(ideal.getVarCount()));
     content(slice);
   }
-
-  ASSERT(_decomConsumer == _strategy);
 
   ideal.clear();
 
@@ -189,7 +183,7 @@ void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
 
   _strategy->startingContent(slice);
 
-  if (!slice.baseCase(_decomConsumer)) {
+  if (!slice.baseCase(_strategy)) {
     if (simplifiedAndDependent || !independenceSplit(slice)) {
       switch (_strategy->getSplitType(slice)) {
       case SliceStrategy::LabelSplit:
