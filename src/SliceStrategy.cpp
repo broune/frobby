@@ -34,6 +34,7 @@ size_t SliceStrategy::getLabelSplitVariable(const Slice& slice) {
   exit(1);
 }
 
+// TODO: remove _currentPart
 class DecomSliceStrategy : public SliceStrategy {
 public:
   DecomSliceStrategy(DecomConsumer* consumer):
@@ -86,14 +87,23 @@ private:
     }
 
     ~IndependenceSplit() {
-      if (_consumer != 0)
-	generateDecom(0, _lcm);
+      ASSERT(_last);
+      /*      if (_consumer != 0)
+	      generateDecom(0, _lcm);*/
     }
 
     virtual void consume(const Term& term) {
       ASSERT(_currentPart < _parts.size());
       ASSERT(_consumer != 0);
-      _parts[_currentPart].decom.insert(term);
+
+      if (!_last) {
+	_parts[_currentPart].decom.insert(term);
+	return;
+      }
+
+      const Part& p = _parts.back();
+      p.projection->inverseProject(_lcm, term);
+      generateDecom(0, _lcm);
     }
 
     // Must set each part exactly once, and must call doneWithPart
@@ -109,6 +119,8 @@ private:
       _parts.back().decom.clearAndSetVarCount
 	(projection.getRangeVarCount());
       _currentPart = _parts.size() - 1;
+
+      _last = last;
 
       return true;
     }
@@ -129,7 +141,7 @@ private:
     static const size_t NO_PART;
 
     void generateDecom(size_t part, Term& partialTerm) {
-      if (part == _parts.size()) {
+      if (part == _parts.size() - 1) {
 	if (_mixedProjectionSubtract == 0 ||
 	    !_mixedProjectionSubtract->contains(partialTerm))
 	  _consumer->consume(partialTerm);
@@ -137,7 +149,7 @@ private:
       }
 
       const Part& p = _parts[part];
-      if (p.decom.getGeneratorCount() == 0) {
+      if (p.decom.getGeneratorCount() == 0) { // TODO: needed?
 	generateDecom(part + 1, partialTerm);
 	return;
       }
@@ -160,6 +172,7 @@ private:
 
     size_t _currentPart;
     DecomConsumer* _consumer;
+    bool _last;
   };
 
   IndependenceSplit* getCurrentSplit() {
