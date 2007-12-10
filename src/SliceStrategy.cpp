@@ -333,31 +333,79 @@ private:
   SliceStrategy* _strategy;
 };
 
-class FrobeniusIndependenceSplit : public DecomConsumer {
+class TermGrader {
 public:
-  FrobeniusIndependenceSplit(const vector<mpz_class>& degrees,
-			     const TermTranslator* translator):
-    _bound(degrees.size()),
-    _toBeat(-1),
-    _improved(true),
-    _degrees(degrees),
-    _translator(translator),
-    _partValue(-1), 
-    _partProjection(&_projection) {
-    _projection.setToIdentity(degrees.size());
-    _outerPartProjection = _projection;
+  TermGrader(const vector<mpz_class>& varDegrees,
+	     const TermTranslator* translator):
+    _grades(varDegrees.size()) {
+
+    for (size_t var = 0; var < varDegrees.size(); ++var) {
+      size_t maxId = translator->getMaxId(var);
+      _grades[var].resize(maxId + 1);
+
+      for (Exponent e = 0; e <= maxId; ++e)
+	_grades[var][e] = varDegrees[var] * translator->getExponent(var, e);
+    }
+  }
+
+  void getDegree(const Term& term,
+		 const Projection& projection,
+		 mpz_class& degree) const {
+    ASSERT(term.getVarCount() == projection.getRangeVarCount());
+    degree = 0;
+    for (size_t var = 0; var < term.getVarCount(); ++var)
+      degree += getGrade(projection.inverseProjectVar(var), term[var]);
+  }
+
+  void getIncrementedDegree(const Term& term,
+			    const Projection& projection,
+			    mpz_class& degree) const {
+    ASSERT(term.getVarCount() == projection.getRangeVarCount());
+    degree = 0;
+    for (size_t var = 0; var < term.getVarCount(); ++var)
+      degree += getGrade(projection.inverseProjectVar(var), term[var] + 1);
+  }
+
+  const mpz_class& getGrade(size_t var, Exponent exponent) const {
+    ASSERT(var < _grades.size());
+    ASSERT(exponent < _grades[var].size());
+
+    return _grades[var][exponent];
   }
   
+  Exponent getMaxExponent(size_t var) const {
+    return _grades[var].size() - 1;
+  }
+
+  size_t getVarCount() const {
+    return _grades.size();
+  }
+
+private:
+  vector<vector<mpz_class> > _grades;
+};
+
+class FrobeniusIndependenceSplit : public DecomConsumer {
+public:
+  FrobeniusIndependenceSplit(const TermGrader& grader):
+    _grader(grader),
+    _bound(grader.getVarCount()),
+    _toBeat(-1),
+    _improved(true),
+    _partValue(-1), 
+    _partProjection(&_projection) {
+    _projection.setToIdentity(grader.getVarCount());
+    _outerPartProjection = _projection;
+  }
+
   FrobeniusIndependenceSplit(const Projection& projection,
 			     const Slice& slice,
 			     const mpz_class& toBeat,
-			     const vector<mpz_class>& degrees,
-			     const TermTranslator* translator):
+			     const TermGrader& grader):
+    _grader(grader),
     _bound(slice.getVarCount()),
     _toBeat(toBeat),
     _improved(true),
-    _degrees(degrees),
-    _translator(translator),
     _projection(projection) {
     getUpperBound(slice, _bound);
   }
@@ -400,7 +448,6 @@ public:
 
     Term zero(_partProjection->getRangeVarCount());
     _partProjection->inverseProject(_bound, zero);
-    _partValue = 0;
     getDegree(zero, _outerPartProjection, _partValue);
 
     static mpz_class tmp;
@@ -420,7 +467,9 @@ public:
     slice.simplify();
 
     Term bound(slice.getVarCount());
-    mpz_class degree;
+    static mpz_class degree;
+    static mpz_class degreeLess;
+    static mpz_class difference;
 
     while (true) {
       getUpperBound(slice, bound);
@@ -432,17 +481,14 @@ public:
       }
 
       Term colon(slice.getVarCount());
-      mpz_class degreeLess;
-      mpz_class difference;
       for (size_t var = 0; var < slice.getVarCount(); ++var) {
 	size_t outerVar = _outerPartProjection.inverseProjectVar(var);
 	if (bound[var] == slice.getMultiply()[var])
 	  continue;
 
-	difference = 
-	  _translator->getExponent(outerVar, bound[var] + 1) -
-	  _translator->getExponent(outerVar, slice.getMultiply()[var] + 1);
-	difference *= _degrees[outerVar];
+	difference =
+	  _grader.getGrade(outerVar, bound[var] + 1) -
+	  _grader.getGrade(outerVar, slice.getMultiply()[var] + 1);
 
 	degreeLess = degree - difference;
 
@@ -481,7 +527,7 @@ private:
       --bound[var];
 
     for (size_t var = 0; var < bound.getVarCount(); ++var)
-      if (bound[var] == _translator->getMaxId(var) - 1 &&
+      if (bound[var] == _grader.getMaxExponent(var) - 1 &&
 	  slice.getMultiply()[var] < bound[var])
 	--bound[var];
   }
@@ -489,20 +535,14 @@ private:
   void getDegree(const Term& term,
 		 const Projection& projection,
 		 mpz_class& degree) {
-    degree = 0;
-    for (size_t var = 0; var < projection.getRangeVarCount(); ++var) {
-      size_t outerVar = projection.inverseProjectVar(var);
-      degree += _degrees[outerVar] *
-	_translator->getExponent(outerVar, term[var] + 1);
-    }
+    _grader.getIncrementedDegree(term, projection, degree);
   }
+
+  const TermGrader& _grader;
 
   Term _bound;
   mpz_class _toBeat;
   bool _improved;
-
-  const vector<mpz_class>& _degrees;
-  const TermTranslator* _translator;
 
   mpz_class _partValue;
   const Projection* _partProjection;
@@ -510,8 +550,6 @@ private:
 
   Projection _projection;
 };
-
-
 
 // Ignores subtraction of mixed generators when doing independence
 // splits. This is no problem right now, but it would become a problem
@@ -527,12 +565,12 @@ public:
     DecoratorSliceStrategy(strategy),
     _instance(instance),
     _shiftedDegrees(instance.begin() + 1, instance.end()),
-    _translator(translator),
-    _frobeniusNumber(frobeniusNumber) {
+    _frobeniusNumber(frobeniusNumber),
+    _grader(_shiftedDegrees, translator) {
     ASSERT(instance.size() == translator->getNames().getVarCount() + 1);
 
     _independenceSplits.push_back
-      (new FrobeniusIndependenceSplit(_shiftedDegrees, _translator));
+      (new FrobeniusIndependenceSplit(_grader));
   }
 
   virtual ~FrobeniusSliceStrategy() {
@@ -561,8 +599,7 @@ public:
        (getCurrentSplit()->getCurrentPartProjection(),
 	slice,
 	getCurrentSplit()->getCurrentPartValue(),
-	_shiftedDegrees,
-	_translator));
+	_grader));
   }
 
   virtual void doingIndependentPart(const Projection& projection) {
@@ -590,10 +627,11 @@ private:
 
   const vector<mpz_class> _instance;
   const vector<mpz_class> _shiftedDegrees;
-  const TermTranslator* _translator;
   mpz_class& _frobeniusNumber;
 
   vector<FrobeniusIndependenceSplit*> _independenceSplits;
+
+  TermGrader _grader;
 };
 
 SliceStrategy* SliceStrategy::
