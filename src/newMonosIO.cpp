@@ -1,6 +1,8 @@
 #include "stdinc.h"
 #include "newMonosIO.h"
 
+#include <sstream>
+
 void NewMonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
   Lexer lexer(in);
   lexer.expect('(');
@@ -12,15 +14,17 @@ void NewMonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
   } while (!lexer.match(')'));
 }
 
-void NewMonosIOHandler::startWritingIdeal(ostream& out,
+void NewMonosIOHandler::startWritingIdeal(FILE* out,
 				   const VarNames& names) {
-  out << "(monomial-ideal-with-order\n(lex-order";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i)
-    out << ' ' << names.getName(i);
-  out << ")\n";
+  fputs("(monomial-ideal-with-order\n(lex-order", out);
+  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+    putc(' ', out);
+    fputs(names.getName(i).c_str(), out);
+  }
+  fputs(")\n", out);
 }
 
-void NewMonosIOHandler::writeGeneratorOfIdeal(ostream& out,
+void NewMonosIOHandler::writeGeneratorOfIdeal(FILE* out,
 				       const vector<mpz_class>& generator,
 				       const VarNames& names) {
   bool someVar = false;
@@ -28,21 +32,25 @@ void NewMonosIOHandler::writeGeneratorOfIdeal(ostream& out,
     if ((generator[j]) == 0)
       continue;
     if (someVar)
-      out << '*';
+      putc('*', out);
     else
       someVar = true;
       
-    out << names.getName(j);
-    if ((generator[j]) != 1)
-      out << '^' << (generator[j]);
+    fputs(names.getName(j).c_str(), out);
+    if ((generator[j]) != 1) {
+      putc('^', out);
+      stringstream s;
+      s << generator[j];
+      fputs(s.str().c_str(), out);
+    }
   }
   if (!someVar)
-    out << 1;
-  out << '\n';
+    putc('1', out);
+  putc('\n', out);
 }
 
-void NewMonosIOHandler::doneWritingIdeal(ostream& out) {
-  out << ")\n";
+void NewMonosIOHandler::doneWritingIdeal(FILE* out) {
+  fputs(")\n", out);
 }
 
 void NewMonosIOHandler::readIrreducibleDecomposition(istream& in,
@@ -78,7 +86,7 @@ void NewMonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer) {
       readVarPower(var, power, ideal.getNames(), lexer);
       ASSERT(power > 0);
       if (ideal.getLastTermExponentRef(var) != 0) {
-	cout << "ERROR: a variable appears twice in irreducible ideal." << endl;
+	cerr << "ERROR: a variable appears twice in irreducible ideal." << endl;
 	exit(0);
       }
       ideal.getLastTermExponentRef(var) = power;

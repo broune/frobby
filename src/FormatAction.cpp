@@ -100,5 +100,5 @@ void FormatAction::perform() {
   else if (_sort || _canonicalize)
     idealFacade.sortGenerators(ideal);
 
-  facade.writeIdeal(cout, ideal, oformat.c_str());
+  facade.writeIdeal(stdout, ideal, oformat.c_str());
 }

@@ -36,7 +36,7 @@ void IOFacade::readIdeal(istream& in, BigIdeal& ideal, const char* format) {
   endAction();
 }
 
-void IOFacade::writeIdeal(ostream& out, BigIdeal& ideal, const char* format) {
+void IOFacade::writeIdeal(FILE* out, BigIdeal& ideal, const char* format) {
   beginAction("Writing monomial ideal.");
 
   IOHandler* handler = IOHandler::createIOHandler(format);

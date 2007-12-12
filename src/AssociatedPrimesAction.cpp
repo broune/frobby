@@ -50,7 +50,7 @@ void AssociatedPrimesAction::perform() {
   _algorithm.getValue(alg);
   if (alg == "irrdecom") {
     IrreducibleDecomParameters params;
-    facade.computeAPUsingIrrDecom(ideal, params, cout);
+    facade.computeAPUsingIrrDecom(ideal, params, stdout);
   } else {
     cout << "ERROR: Unknown algorithm parameter \"" << alg << "\"." << endl;
     exit(1);

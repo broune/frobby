@@ -35,5 +35,5 @@ void PrimaryDecomAction::perform() {
   ioFacade.readIdeal(cin, ideal);
 
   PrimaryDecomFacade facade(_printActions);
-  facade.computePrimaryDecom(ideal, cout);
+  facade.computePrimaryDecom(ideal, stdout);
 }

@@ -9,7 +9,7 @@ PrimaryDecomFacade::PrimaryDecomFacade(bool printActions):
 }
 
 void PrimaryDecomFacade::
-computePrimaryDecom(BigIdeal& ideal, ostream& out) {
+computePrimaryDecom(BigIdeal& ideal, FILE* out) {
   beginAction("Computing primary decomposition using the Uwe algorithm.\n");
 
   cerr << "ERROR: not implemented" << endl;

@@ -14,7 +14,7 @@ class AssociatedPrimesFacade : Facade {
   // Clears ideal.
   void computeAPUsingIrrDecom(BigIdeal& ideal,
 			    const IrreducibleDecomParameters& params,
-			    ostream& out);
+			    FILE* out);
 };
 
 

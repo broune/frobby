@@ -11,23 +11,23 @@ public:
 
   virtual void readIdeal(istream& in, BigIdeal& ideal) = 0;
 
-  void writeIdeal(ostream& out, const BigIdeal& ideal);
+  void writeIdeal(FILE* out, const BigIdeal& ideal);
 
   // Piecewise output of an ideal
-  virtual void startWritingIdeal(ostream& out,
+  virtual void startWritingIdeal(FILE* out,
 				 const VarNames& names) = 0;
 
-  virtual void writeGeneratorOfIdeal(ostream& out,
+  virtual void writeGeneratorOfIdeal(FILE* out,
 				     const vector<mpz_class>& generator,
 				     const VarNames& names) {
   }
 
-  virtual void writeGeneratorOfIdeal(ostream& out,
+  virtual void writeGeneratorOfIdeal(FILE* out,
 				     const vector<const char*>& generator,
 				     const VarNames& names) {
   }
 
-  virtual void doneWritingIdeal(ostream& out) = 0;
+  virtual void doneWritingIdeal(FILE* out) = 0;
 
 
   virtual void readIrreducibleDecomposition(istream& in,
