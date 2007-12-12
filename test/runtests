@@ -7,9 +7,9 @@ cd test/decom
 time ./runtests -slice on -split label
 cd ../..
 
-echo -n "decom (slice, split=pivot): "
+echo -n "decom (slice, split=minart): "
 cd test/decom
-time ./runtests -slice on -split pivot
+time ./runtests -slice on -split minart
 cd ../..
 
 echo -n "decom (label): "

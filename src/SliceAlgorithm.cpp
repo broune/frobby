@@ -159,22 +159,26 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
 }
 
 void SliceAlgorithm::pivotSplit(Slice& slice) {
-  Term pivot(slice.getVarCount());
-  _strategy->getPivot(pivot, slice);
-
-  ASSERT(!pivot.isIdentity()); 
-  ASSERT(!slice.getIdeal().contains(pivot));
-  ASSERT(!slice.getSubtract().contains(pivot));
-
-  // Handle inner slice.
+  // These scopes are made to preserve memory resources.
   {
     Slice inner(slice);
-    inner.innerSlice(pivot);
+
+    {
+      Term pivot(slice.getVarCount());
+      _strategy->getPivot(pivot, slice);
+
+      ASSERT(!pivot.isIdentity()); 
+      ASSERT(!slice.getIdeal().contains(pivot));
+      ASSERT(!slice.getSubtract().contains(pivot));
+
+      inner.innerSlice(pivot);
+      slice.outerSlice(pivot);
+    }
+
     content(inner);
   }
 
   // Handle outer slice.
-  slice.outerSlice(pivot);
   content(slice);
 }
 
