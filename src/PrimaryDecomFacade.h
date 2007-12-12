@@ -10,7 +10,7 @@ class PrimaryDecomFacade : private Facade {
   PrimaryDecomFacade(bool printActions);
 
   // Clears ideal.
-  void computePrimaryDecom(BigIdeal& ideal, ostream& out);
+  void computePrimaryDecom(BigIdeal& ideal, FILE* out);
 };
 
 #endif

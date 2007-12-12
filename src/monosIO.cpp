@@ -4,8 +4,6 @@
 #include "BigIdeal.h"
 #include "Lexer.h"
 
-#include <fstream>
-
 MonosIOHandler::MonosIOHandler():
   _justStartedWritingIdeal(false) {
 }
@@ -24,56 +22,64 @@ void MonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
   lexer.expect(';');
 }
 
-void MonosIOHandler::startWritingIdeal(ostream& out,
+#include <cstdio>
+#include <sstream>
+
+void MonosIOHandler::startWritingIdeal(FILE* out,
 				       const VarNames& names) {
-  out << "vars ";
+  fputs("vars ", out);
   const char* pre = "";
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-    out << pre << names.getName(i);
+    fputs(pre, out);
+    fputs(names.getName(i).c_str(), out);
     pre = ", ";
   }
-  out << ";\n[";
+  fputs(";\n[", out);
   
   _justStartedWritingIdeal = true;
 }
 
-void MonosIOHandler::writeGeneratorOfIdeal(ostream& out,
+void MonosIOHandler::writeGeneratorOfIdeal(FILE* out,
 					   const vector<mpz_class>& generator,
 					   const VarNames& names) {
-  if (_justStartedWritingIdeal)
+  if (_justStartedWritingIdeal) {
     _justStartedWritingIdeal = false;
-  else
-    out << ',';
-  out << "\n ";
-  
+    fputs("\n ", out);
+  } else
+    fputs(",\n ", out);
+
   bool someVar = false;
   size_t varCount = names.getVarCount();
   for (size_t j = 0; j < varCount; ++j) {
     if ((generator[j]) == 0)
       continue;
     if (someVar)
-      out << '*';
+      putchar('*');
     else
       someVar = true;
 
-    out << names.getName(j);
-    if ((generator[j]) != 1)
-      out << '^' << (generator[j]);
+    fputs(names.getName(j).c_str(), out);
+    if ((generator[j]) != 1) {
+      putchar('^');
+      stringstream o;
+      o << generator[j];
+      fputs(o.str().c_str(), out);
+    }
   }
   if (!someVar)
-    out << 1;
+    putchar('1');
 }
 
 void MonosIOHandler::writeGeneratorOfIdeal
-(ostream& out,
+(FILE* out,
  const vector<const char*>& generator,
  const VarNames& names) {
   if (_justStartedWritingIdeal) {
     _justStartedWritingIdeal = false;
-    out << '\n';
+    putchar('\n');
   }
   else
-    out << ",\n";
+    fputs(",\n", out);
 
   char separator = ' ';
   size_t varCount = names.getVarCount();
@@ -81,16 +87,18 @@ void MonosIOHandler::writeGeneratorOfIdeal
     const char* exp = generator[j];
     if (exp == 0)
       continue;
-
-    out << separator << exp;
+  
+    putchar(separator);
+    fputs(exp, out);
     separator = '*';
   }
+
   if (separator == ' ')
-    out << " 1";
+    fputs(" 1", out);
 }
 
-void MonosIOHandler::doneWritingIdeal(ostream& out) {
-  out << "\n];\n";
+void MonosIOHandler::doneWritingIdeal(FILE* out) {
+  fputs("\n];\n", out);
 }
 
 void MonosIOHandler::readIrreducibleDecomposition(istream& in,

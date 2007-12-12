@@ -18,7 +18,7 @@ AssociatedPrimesFacade::AssociatedPrimesFacade(bool printActions):
 void AssociatedPrimesFacade::
 computeAPUsingIrrDecom(BigIdeal& bigIdeal,
 			const IrreducibleDecomParameters& params,
-			ostream& out) {
+			FILE* out) {
   IrreducibleDecomFacade facade(isPrintingActions(), params);
   
   Ideal ideal(bigIdeal.getVarCount());

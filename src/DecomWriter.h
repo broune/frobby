@@ -14,7 +14,7 @@ class DecomWriter : public DecomConsumer {
 public:
   DecomWriter(const VarNames& names,
 	      const TermTranslator* translator,
-	      ostream& out);
+	      FILE* out);
   
   virtual ~DecomWriter();
   
@@ -27,7 +27,7 @@ private:
   IOHandler* _ioHandler;
   VarNames _names;
   const TermTranslator* _translator;
-  ostream& _out;
+  FILE* _out;
 };
 
 #endif

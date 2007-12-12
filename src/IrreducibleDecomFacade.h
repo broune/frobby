@@ -18,7 +18,7 @@ class IrreducibleDecomFacade : private Facade {
 			 const IrreducibleDecomParameters& parameters);
 
   // These all clear ideal.
-  void computeIrreducibleDecom(BigIdeal& ideal, ostream& out);
+  void computeIrreducibleDecom(BigIdeal& ideal, FILE* out);
   void computeIrreducibleDecom(Ideal& ideal, DecomConsumer* decomConsumer);
   void computeFrobeniusNumber(const vector<mpz_class>& instance,
 			      BigIdeal& ideal, 

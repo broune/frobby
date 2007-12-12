@@ -57,7 +57,7 @@ void IntersectAction::perform() {
   IntersectFacade facade(_printActions);
   BigIdeal* intersection = facade.intersect(ideals);
   
-  ioFacade.writeIdeal(cout, *intersection);
+  ioFacade.writeIdeal(stdout, *intersection);
 
   delete intersection;
   for (size_t i = 0; i < ideals.size(); ++i)

@@ -49,7 +49,7 @@ computeIrreducibleDecom(Ideal& ideal, DecomConsumer* decomConsumer) {
 }
 
 void IrreducibleDecomFacade::
-computeIrreducibleDecom(BigIdeal& bigIdeal, ostream& out) {
+computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out) {
   beginAction("Preparing to compute irreducible decomposition.");
 
   ASSERT(bigIdeal.getVarCount() >= 1);

@@ -35,5 +35,5 @@ void GenerateIdealAction::perform() {
   randomDataFacade.generateIdeal(ideal, _parameters);
 
   IOFacade ioFacade(_printActions);
-  ioFacade.writeIdeal(cout, ideal);
+  ioFacade.writeIdeal(stdout, ideal);
 }

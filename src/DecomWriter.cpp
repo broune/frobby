@@ -7,7 +7,7 @@
 
 DecomWriter::DecomWriter(const VarNames& names,
 			 const TermTranslator* translator,
-			 ostream& out):
+			 FILE* out):
   _tmp(names.getVarCount()),
   _varCount(names.getVarCount()),
   _names(names),
@@ -19,7 +19,7 @@ DecomWriter::DecomWriter(const VarNames& names,
 
 DecomWriter::~DecomWriter() {
   _ioHandler->doneWritingIdeal(_out);
-  _out << flush;
+  fflush(_out);
   
   delete _ioHandler;
 }

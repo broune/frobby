@@ -2,6 +2,7 @@
 #include "macaulay2IO.h"
 
 #include "monosIO.h"
+#include <sstream>
 
 Macaulay2IOHandler::Macaulay2IOHandler():
   _justStartedWritingIdeal(false) {
@@ -26,52 +27,56 @@ void Macaulay2IOHandler::readIdeal(istream& in,
   lexer.expectEOF();
 }
 
-void Macaulay2IOHandler::startWritingIdeal(ostream& out,
+void Macaulay2IOHandler::startWritingIdeal(FILE* out,
 					   const VarNames& names) {
-  out << "R = ZZ[{";
+  fputs("R = ZZ[{", out);
   ASSERT(!names.empty());
 
   const char* pre = "";
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-    out << pre << names.getName(i);
+    fputs(pre, out);
+    fputs(names.getName(i).c_str(), out);
     pre = ", ";
   }
-  out << "}];\n";
-
-  out << "I = monomialIdeal(";
+  fputs("}];\n", stdout);
+  fputs("I = monomialIdeal(", stdout);
 
   _justStartedWritingIdeal = true;
 }
 
 void Macaulay2IOHandler::
-writeGeneratorOfIdeal(ostream& out,
+writeGeneratorOfIdeal(FILE* out,
 		      const vector<mpz_class>& generator,
 		      const VarNames& names) {
-  if (_justStartedWritingIdeal)
+  if (_justStartedWritingIdeal) {
     _justStartedWritingIdeal = false;
-  else
-    out << ',';
-  out << "\n ";
+    fputs("\n ", out);
+  } else
+    fputs(",\n ", out);
 
   bool someVar = false;
   for (unsigned int j = 0; j < names.getVarCount(); ++j) {
     if ((generator[j]) == 0)
       continue;
     if (someVar)
-      out << '*';
+      putc('*', stdout);
     else
       someVar = true;
       
-    out << names.getName(j);
-    if ((generator[j]) != 1)
-      out << '^' << (generator[j]);
+    fputs(names.getName(j).c_str(), out);
+    if ((generator[j]) != 1) {
+      putc('^', stdout);
+      stringstream s;
+      s << generator[j];
+      fputs(s.str().c_str(), out);
+    }
   }
   if (!someVar)
-    out << 1;
+    putc('1', out);
 }
 
-void Macaulay2IOHandler::doneWritingIdeal(ostream& out) {
-  out << "\n);\n";
+void Macaulay2IOHandler::doneWritingIdeal(FILE* out) {
+  fputs("\n);\n", out);
 }
 
 void Macaulay2IOHandler::readIrreducibleDecomposition(istream& in,
@@ -103,7 +108,7 @@ void Macaulay2IOHandler::readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer) {
     readVarPower(var, power, ideal.getNames(), lexer);
     ASSERT(power > 0);
     if (ideal.getLastTermExponentRef(var) != 0) {
-      cout << "ERROR: a variable appears twice in irreducible ideal." << endl;
+      cerr << "ERROR: a variable appears twice in irreducible ideal." << endl;
       exit(0);
     }
     ideal.getLastTermExponentRef(var) = power;

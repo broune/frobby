@@ -13,18 +13,18 @@ public:
   
   virtual void readIdeal(istream& in, BigIdeal& ideal);
 
-  virtual void startWritingIdeal(ostream& out,
+  virtual void startWritingIdeal(FILE* out,
 				 const VarNames& names);
 
-  virtual void writeGeneratorOfIdeal(ostream& out,
+  virtual void writeGeneratorOfIdeal(FILE* out,
 				     const vector<mpz_class>& generator,
 				     const VarNames& names);
 
-  virtual void writeGeneratorOfIdeal(ostream& out,
+  virtual void writeGeneratorOfIdeal(FILE* out,
 				     const vector<const char*>& generator,
 				     const VarNames& names);
 
-  virtual void doneWritingIdeal(ostream& out);
+  virtual void doneWritingIdeal(FILE* out);
 
   virtual void readIrreducibleDecomposition(istream& in,
 					    BigIdeal& decom);
