@@ -214,10 +214,17 @@ public:
 
 class PivotSliceStrategy : public DecomSliceStrategy {
 public:
-  PivotSliceStrategy(DecomConsumer* consumer):
-    DecomSliceStrategy(consumer) {
+  enum Type {
+    Min,
+    Mid,
+    Max
+  };
+
+  PivotSliceStrategy(Type type, DecomConsumer* consumer):
+    DecomSliceStrategy(consumer),
+    _type(type) {
   }
-  
+ 
   SplitType getSplitType(const Slice& slice) {
     return PivotSplit;
   }
@@ -241,16 +248,31 @@ public:
     } while (lcm[maxOffset] <= 1);
 
     pivot.setToIdentity();
-    pivot[maxOffset] = 1;
+    Exponent& e = pivot[maxOffset];
+    if (_type == Min)
+      e = 1;
+    else if (_type == Mid)
+      e = lcm[maxOffset] / 2;
+    else {
+      ASSERT(_type == Max);
+      e = lcm[maxOffset] - 1;
+    }
   }
+
+private:
+  Type _type;
 };
 
 SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
 					       DecomConsumer* consumer) {
   if (name == "label")
     return new LabelSliceStrategy(consumer);
-  else if (name == "pivot")
-    return new PivotSliceStrategy(consumer);
+  else if (name == "minart")
+    return new PivotSliceStrategy(PivotSliceStrategy::Min, consumer);
+  else if (name == "midart")
+    return new PivotSliceStrategy(PivotSliceStrategy::Mid, consumer);
+  else if (name == "maxart")
+    return new PivotSliceStrategy(PivotSliceStrategy::Max, consumer);
 
   return 0;
 }
@@ -436,9 +458,13 @@ public:
     _partProjection->inverseProject(_bound, zero);
     getDegree(zero, _outerPartProjection, _partValue);
 
-    static mpz_class tmp;
-    getDegree(_bound, _projection, tmp);
-    _partValue = _toBeat - (tmp - _partValue);
+    if (_toBeat == -1)
+      _partValue = -1;
+    else {
+      static mpz_class tmp;
+      getDegree(_bound, _projection, tmp);
+      _partValue = _toBeat - (tmp - _partValue);
+    }
   }
 
   bool doneWithPart() {
@@ -450,47 +476,87 @@ public:
   }
 
   void simplify(Slice& slice) {
-    slice.simplify();
-
-    Term bound(slice.getVarCount());
-    static mpz_class degree;
-    static mpz_class degreeLess;
-    static mpz_class difference;
-
-    while (true) {
-      getUpperBound(slice, bound);
-      getDegree(bound, _outerPartProjection, degree);
-
-      if (degree <= _partValue) {
-	slice.clear();
-	break;
-      }
-
-      Term colon(slice.getVarCount());
-      for (size_t var = 0; var < slice.getVarCount(); ++var) {
-	size_t outerVar = _outerPartProjection.inverseProjectVar(var);
-	if (bound[var] == slice.getMultiply()[var])
-	  continue;
-
-	difference =
-	  _grader.getGrade(outerVar, bound[var] + 1) -
-	  _grader.getGrade(outerVar, slice.getMultiply()[var] + 1);
-
-	degreeLess = degree - difference;
-
-	if (degreeLess <= _partValue)
-	  colon[var] = 1;
-      }
-
-      if (colon.isIdentity())
-	break;
-
-      slice.innerSlice(colon);
+    if (_partValue == -1) {
       slice.simplify();
+      return;
     }
+
+    do
+      slice.simplify();
+    while (basicBoundSimplify(slice));
   }
 
 private:
+  // This has not turned out to work well.
+  bool involvedBoundSimplify(Slice& slice) {
+    if (slice.getIdeal().getGeneratorCount() == 0)
+      return false;
+
+    mpz_class degree;
+
+    Term colon(slice.getVarCount());
+    Term lcm(slice.getVarCount());
+    for (size_t var = 0; var < slice.getVarCount(); ++var) {
+      lcm.setToIdentity();
+
+      const Ideal& ideal = slice.getIdeal();
+      for (Ideal::const_iterator it = ideal.begin(); it != ideal.end(); ++it)
+	if ((*it)[var] <= 1)
+	  lcm.lcm(lcm, *it);
+
+      adjustToBound(slice, lcm);
+      getDegree(lcm, _outerPartProjection, degree);
+      if (degree <= _partValue)
+	colon[var] = 1;
+    }
+
+    if (colon.isIdentity())
+      return false;
+
+    slice.innerSlice(colon);
+    return true;
+  }
+
+  bool basicBoundSimplify(Slice& slice) {
+    if (slice.getIdeal().getGeneratorCount() == 0)
+      return false;
+
+    Term bound(slice.getVarCount());
+    mpz_class degree;
+    mpz_class degreeLess;
+    mpz_class difference;
+    
+    getUpperBound(slice, bound);
+    getDegree(bound, _outerPartProjection, degree);
+    
+    if (degree <= _partValue) {
+      slice.clear();
+      return false;
+    }
+
+    Term colon(slice.getVarCount());
+    for (size_t var = 0; var < slice.getVarCount(); ++var) {
+      size_t outerVar = _outerPartProjection.inverseProjectVar(var);
+      if (bound[var] == slice.getMultiply()[var])
+	continue;
+
+      difference =
+	_grader.getGrade(outerVar, bound[var] + 1) -
+	_grader.getGrade(outerVar, slice.getMultiply()[var] + 1);
+
+      degreeLess = degree - difference;
+
+      if (degreeLess <= _partValue)
+	colon[var] = 1;
+    }
+
+    if (colon.isIdentity())
+      return false;
+
+    slice.innerSlice(colon);
+    return true;
+  }
+
   void updateOuterPartProjection() {
     vector<size_t> inverses;
     for (size_t var = 0; var < _partProjection->getRangeVarCount(); ++var) {
@@ -506,11 +572,19 @@ private:
   void getUpperBound(const Slice& slice,
 		     Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
+    bound = slice.getLcm();
+    adjustToBound(slice, bound);
+  }
 
-    bound.product(slice.getLcm(), slice.getMultiply());
+  void adjustToBound(const Slice& slice, Term& bound) {
+    ASSERT(bound.getVarCount() == slice.getVarCount());
 
-    for (size_t var = 0; var < bound.getVarCount(); ++var)
+    bound.product(bound, slice.getMultiply());
+
+    for (size_t var = 0; var < bound.getVarCount(); ++var) {
+      ASSERT(bound[var] > 0);
       --bound[var];
+    }
 
     for (size_t var = 0; var < bound.getVarCount(); ++var)
       if (bound[var] == _grader.getMaxExponent(var) - 1 &&
