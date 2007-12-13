@@ -183,22 +183,23 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
 }
 
 void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
+  _strategy->startingContent(slice);
   if (!simplifiedAndDependent)
     _strategy->simplify(slice);
 
-  _strategy->startingContent(slice);
+  if (!slice.baseCase(_strategy) &&
+      (simplifiedAndDependent || !independenceSplit(slice))) {
+    switch (_strategy->getSplitType(slice)) {
+    case SliceStrategy::LabelSplit:
+      labelSplit(slice);
+      break;
 
-  if (!slice.baseCase(_strategy)) {
-    if (simplifiedAndDependent || !independenceSplit(slice)) {
-      switch (_strategy->getSplitType(slice)) {
-      case SliceStrategy::LabelSplit:
-	labelSplit(slice);
-	break;
+    case SliceStrategy::PivotSplit:
+      pivotSplit(slice);
+      break;
 
-      case SliceStrategy::PivotSplit:
-	pivotSplit(slice);
-	break;
-      }
+    default:
+      ASSERT(false);
     }
   }
 

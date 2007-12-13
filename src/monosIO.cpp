@@ -4,10 +4,9 @@
 #include "BigIdeal.h"
 #include "Lexer.h"
 
-MonosIOHandler::MonosIOHandler():
-  _justStartedWritingIdeal(false) {
+MonosIOHandler::MonosIOHandler() {
 }
-  
+
 void MonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
   Lexer lexer(in);
   readVarsAndClearIdeal(ideal, lexer);
@@ -37,64 +36,6 @@ void MonosIOHandler::startWritingIdeal(FILE* out,
   fputs(";\n[", out);
   
   _justStartedWritingIdeal = true;
-}
-
-void MonosIOHandler::writeGeneratorOfIdeal(FILE* out,
-					   const vector<mpz_class>& generator,
-					   const VarNames& names) {
-  if (_justStartedWritingIdeal) {
-    _justStartedWritingIdeal = false;
-    fputs("\n ", out);
-  } else
-    fputs(",\n ", out);
-
-  bool someVar = false;
-  size_t varCount = names.getVarCount();
-  for (size_t j = 0; j < varCount; ++j) {
-    if ((generator[j]) == 0)
-      continue;
-    if (someVar)
-      putchar('*');
-    else
-      someVar = true;
-
-    fputs(names.getName(j).c_str(), out);
-    if ((generator[j]) != 1) {
-      putchar('^');
-      stringstream o;
-      o << generator[j];
-      fputs(o.str().c_str(), out);
-    }
-  }
-  if (!someVar)
-    putchar('1');
-}
-
-void MonosIOHandler::writeGeneratorOfIdeal
-(FILE* out,
- const vector<const char*>& generator,
- const VarNames& names) {
-  if (_justStartedWritingIdeal) {
-    _justStartedWritingIdeal = false;
-    putchar('\n');
-  }
-  else
-    fputs(",\n", out);
-
-  char separator = ' ';
-  size_t varCount = names.getVarCount();
-  for (size_t j = 0; j < varCount; ++j) {
-    const char* exp = generator[j];
-    if (exp == 0)
-      continue;
-  
-    putchar(separator);
-    fputs(exp, out);
-    separator = '*';
-  }
-
-  if (separator == ' ')
-    fputs(" 1", out);
 }
 
 void MonosIOHandler::doneWritingIdeal(FILE* out) {

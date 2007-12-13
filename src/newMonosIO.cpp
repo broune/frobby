@@ -16,7 +16,7 @@ void NewMonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
 
 void NewMonosIOHandler::startWritingIdeal(FILE* out,
 				   const VarNames& names) {
-  fputs("(monomial-ideal-with-order\n(lex-order", out);
+  fputs("(monomial-ideal-with-order\n (lex-order", out);
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
     putc(' ', out);
     fputs(names.getName(i).c_str(), out);
@@ -27,25 +27,14 @@ void NewMonosIOHandler::startWritingIdeal(FILE* out,
 void NewMonosIOHandler::writeGeneratorOfIdeal(FILE* out,
 				       const vector<mpz_class>& generator,
 				       const VarNames& names) {
-  bool someVar = false;
-  for (unsigned int j = 0; j < names.getVarCount(); ++j) {
-    if ((generator[j]) == 0)
-      continue;
-    if (someVar)
-      putc('*', out);
-    else
-      someVar = true;
-      
-    fputs(names.getName(j).c_str(), out);
-    if ((generator[j]) != 1) {
-      putc('^', out);
-      stringstream s;
-      s << generator[j];
-      fputs(s.str().c_str(), out);
-    }
-  }
-  if (!someVar)
-    putc('1', out);
+  writeTerm(out, generator, names);
+  putc('\n', out);
+}
+
+void NewMonosIOHandler::writeGeneratorOfIdeal(FILE* out,
+				       const vector<const char*>& generator,
+				       const VarNames& names) {
+  writeTerm(out, generator, names);
   putc('\n', out);
 }
 

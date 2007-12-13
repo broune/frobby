@@ -8,14 +8,10 @@
 
 class Macaulay2IOHandler : public IOHandler {
 public:
-  Macaulay2IOHandler();
   virtual void readIdeal(istream& in,
 			 BigIdeal& ideal);
   virtual void startWritingIdeal(FILE* out,
 				 const VarNames& names);
-  virtual void writeGeneratorOfIdeal(FILE* out,
-				     const vector<mpz_class>& generator,
-				     const VarNames& names);
   virtual void doneWritingIdeal(FILE* out);
   virtual void readIrreducibleDecomposition(istream& in,
 					    BigIdeal& decom);
@@ -23,8 +19,6 @@ public:
   virtual IOHandler* createNew() const;
 
 private:
-  bool _justStartedWritingIdeal;
-
   void readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer);
   void readIrreducibleIdealList(BigIdeal& ideals, Lexer& lexer);
   void readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer);

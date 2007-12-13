@@ -16,14 +16,6 @@ public:
   virtual void startWritingIdeal(FILE* out,
 				 const VarNames& names);
 
-  virtual void writeGeneratorOfIdeal(FILE* out,
-				     const vector<mpz_class>& generator,
-				     const VarNames& names);
-
-  virtual void writeGeneratorOfIdeal(FILE* out,
-				     const vector<const char*>& generator,
-				     const VarNames& names);
-
   virtual void doneWritingIdeal(FILE* out);
 
   virtual void readIrreducibleDecomposition(istream& in,
@@ -39,8 +31,6 @@ private:
   void readIrreducibleIdealList(BigIdeal& ideals, Lexer& lexer);
 
   void readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer);
-
-  bool _justStartedWritingIdeal;
 };
 
 #endif

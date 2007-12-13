@@ -7,6 +7,7 @@ class VarNames;
 
 class IOHandler {
 public:
+  IOHandler();
   virtual ~IOHandler();
 
   virtual void readIdeal(istream& in, BigIdeal& ideal) = 0;
@@ -19,13 +20,11 @@ public:
 
   virtual void writeGeneratorOfIdeal(FILE* out,
 				     const vector<mpz_class>& generator,
-				     const VarNames& names) {
-  }
+				     const VarNames& names);
 
   virtual void writeGeneratorOfIdeal(FILE* out,
 				     const vector<const char*>& generator,
-				     const VarNames& names) {
-  }
+				     const VarNames& names);
 
   virtual void doneWritingIdeal(FILE* out) = 0;
 
@@ -51,6 +50,16 @@ public:
   void readTerm(BigIdeal& ideal, Lexer& lexer);
   void readVarPower(int& var, mpz_class& power,
 		    const VarNames& names, Lexer& lexer);
+
+  void writeTerm(FILE* out,
+		 const vector<mpz_class>& generator,
+		 const VarNames& names);
+
+  void writeTerm(FILE* out,
+		 const vector<const char*>& generator,
+		 const VarNames& names);
+
+  bool _justStartedWritingIdeal;
 };
 
 bool fileExists(const string& filename);
