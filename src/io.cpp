@@ -10,8 +10,13 @@
 #include "macaulay2IO.h"
 
 #include <fstream>
+#include <sstream>
 
 IOHandler::IOHandlerContainer IOHandler::_ioHandlers;
+
+IOHandler::IOHandler():
+  _justStartedWritingIdeal(false) {
+}
 
 IOHandler::~IOHandler() {
 }
@@ -28,6 +33,76 @@ void IOHandler::notImplemented(const char* operation) {
        << " does not implement "
        << operation << endl;
   exit(0);
+}
+
+void IOHandler::writeGeneratorOfIdeal(FILE* out,
+				      const vector<mpz_class>& generator,
+				      const VarNames& names) {
+  if (_justStartedWritingIdeal) {
+    _justStartedWritingIdeal = false;
+    fputs("\n", out);
+  } else
+    fputs(",\n", out);
+
+  writeTerm(out, generator, names);
+}
+
+void IOHandler::writeGeneratorOfIdeal
+(FILE* out,
+ const vector<const char*>& generator,
+ const VarNames& names) {
+  if (_justStartedWritingIdeal) {
+    _justStartedWritingIdeal = false;
+    fputs("\n", out);
+  }
+  else
+    fputs(",\n", out);
+
+  writeTerm(out, generator, names);
+}
+
+void IOHandler::writeTerm(FILE* out,
+			  const vector<mpz_class>& generator,
+			  const VarNames& names) {
+  char separator = ' ';
+  size_t varCount = generator.size();
+  for (size_t j = 0; j < varCount; ++j) {
+    if ((generator[j]) == 0)
+      continue;
+
+    putc(separator, out);
+    separator = '*';
+
+    fputs(names.getName(j).c_str(), out);
+    if ((generator[j]) != 1) {
+      putchar('^');
+      stringstream o;
+      o << generator[j];
+      fputs(o.str().c_str(), out);
+    }
+  }
+
+  if (separator == ' ');
+    putc('1', out);
+}
+
+void IOHandler::writeTerm(FILE* out,
+			  const vector<const char*>& generator,
+			  const VarNames& names) {
+  char separator = ' ';
+  size_t varCount = generator.size();
+  for (size_t j = 0; j < varCount; ++j) {
+    const char* exp = generator[j];
+    if (exp == 0)
+      continue;
+
+    putchar(separator);
+    fputs(exp, out);
+    separator = '*';
+  }
+
+  if (separator == ' ')
+    putc('1', out);
 }
 
 void IOHandler::readTerm(BigIdeal& ideal, Lexer& lexer) {
@@ -78,7 +153,7 @@ const IOHandler::IOHandlerContainer& IOHandler::getIOHandlers() {
     static Macaulay2IOHandler m2;
     _ioHandlers.push_back(&m2);
 
-    // We need a handler for 4ti2
+    // TODO: We need a handler for 4ti2
   }
 
   return _ioHandlers;

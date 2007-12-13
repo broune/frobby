@@ -19,6 +19,7 @@ class SliceAlgorithm {
 
  private:
   void content(Slice& slice, bool simplifiedAndDependent = false);
+
   void labelSplit(Slice& slice);
   void labelSplit2(Slice& slice);
   void pivotSplit(Slice& slice);

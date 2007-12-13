@@ -4,10 +4,6 @@
 #include "monosIO.h"
 #include <sstream>
 
-Macaulay2IOHandler::Macaulay2IOHandler():
-  _justStartedWritingIdeal(false) {
-}
-
 void Macaulay2IOHandler::readIdeal(istream& in,
 				   BigIdeal& ideal) {
   Lexer lexer(in);
@@ -42,37 +38,6 @@ void Macaulay2IOHandler::startWritingIdeal(FILE* out,
   fputs("I = monomialIdeal(", stdout);
 
   _justStartedWritingIdeal = true;
-}
-
-void Macaulay2IOHandler::
-writeGeneratorOfIdeal(FILE* out,
-		      const vector<mpz_class>& generator,
-		      const VarNames& names) {
-  if (_justStartedWritingIdeal) {
-    _justStartedWritingIdeal = false;
-    fputs("\n ", out);
-  } else
-    fputs(",\n ", out);
-
-  bool someVar = false;
-  for (unsigned int j = 0; j < names.getVarCount(); ++j) {
-    if ((generator[j]) == 0)
-      continue;
-    if (someVar)
-      putc('*', stdout);
-    else
-      someVar = true;
-      
-    fputs(names.getName(j).c_str(), out);
-    if ((generator[j]) != 1) {
-      putc('^', stdout);
-      stringstream s;
-      s << generator[j];
-      fputs(s.str().c_str(), out);
-    }
-  }
-  if (!someVar)
-    putc('1', out);
 }
 
 void Macaulay2IOHandler::doneWritingIdeal(FILE* out) {
