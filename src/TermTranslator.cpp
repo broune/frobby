@@ -32,6 +32,16 @@ TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
   }
 }
 
+// Helper function for extractExponents.
+bool mpzClassPointerLess(const mpz_class* a, const mpz_class* b) {
+  return *a < *b;
+}
+
+// Helper function for extractExponents.
+bool mpzClassPointerEqual(const mpz_class* a, const mpz_class* b) {
+  return *a == *b;
+}
+
 // Helper function for initialize.
 //
 // Assign int IDs to big integer exponents. The correspondence
@@ -39,36 +49,47 @@ TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
 // necessary to support adding artinian powers. Only the exponents
 // that actually appear in generators of the ideals are translated,
 // except that 0 is guaranteed to be included and to be assigned the
-// ID 0.
-void makeExponents(const vector<BigIdeal*>& ideals,
+// ID 0, and that a maximal ID is added, which also maps to zero.
+//
+// extractExponents changes the exponents that it extracts.
+void extractExponents(const vector<BigIdeal*>& ideals,
 		   vector<mpz_class>& exponents,
 		   const string& varName) {
-  exponents.clear();
-  exponents.push_back(0); // 0 must be included
+  vector<mpz_class*> exponentRefs;
 
-  // Reserve sufficient capacity for the exponents.
+  mpz_class zero(0);
+  exponentRefs.push_back(&zero); // 0 must be included
+
+  // Reserve sufficient capacity for the exponentRefs.
   size_t termCount = 0;
   for (size_t i = 0; i < ideals.size(); ++i)
     termCount += ideals[i]->getGeneratorCount();
-  exponents.reserve(termCount);
+  exponentRefs.reserve(termCount + 1); // + 1 because we added the 0 above.
 
   // Collect the exponents
-  exponents.push_back(0); // Zero must always be present.
-  for (size_t ideal = 0; ideal < ideals.size(); ++ideal) {
-    size_t var = ideals[ideal]->getNames().getIndex(varName);
+  for (size_t i = 0; i < ideals.size(); ++i) {
+    BigIdeal& ideal = *(ideals[i]);
+    size_t var = ideal.getNames().getIndex(varName);
     if (var == VarNames::UNKNOWN)
       continue;
 
-    size_t generatorCount = ideals[ideal]->getGeneratorCount();
+    size_t generatorCount = ideal.getGeneratorCount();
     for (size_t term = 0; term < generatorCount; ++term)
-      exponents.push_back(ideals[ideal]->getExponent(term, var));
+      exponentRefs.push_back(&(ideal.getExponent(term, var)));
   }
 
   // Sort and remove duplicates.
-  sort(exponents.begin(), exponents.end());
-  exponents.erase(unique(exponents.begin(), exponents.end()),
-		  exponents.end());
-  exponents.push_back(0);
+  std::sort(exponentRefs.begin(), exponentRefs.end(), mpzClassPointerLess);
+  exponentRefs.erase
+    (unique(exponentRefs.begin(), exponentRefs.end(), mpzClassPointerEqual),
+     exponentRefs.end());
+  exponentRefs.push_back(&zero);
+
+  exponents.clear();
+  exponents.resize(exponentRefs.size());
+  size_t size = exponentRefs.size();
+  for (size_t e = 0; e < size; ++e)
+    exponents[e] = *(exponentRefs[e]);
 }
 
 void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
@@ -92,9 +113,7 @@ void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
   _exponents.resize(_names.getVarCount());
 
   for (size_t var = 0; var < _names.getVarCount(); ++var)
-    makeExponents(bigIdeals, _exponents[var], _names.getName(var));
-
-  makeStrings();
+    extractExponents(bigIdeals, _exponents[var], _names.getName(var));
 }
 
 void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
@@ -165,7 +184,10 @@ void TermTranslator::print(ostream& out) const {
   out << ")" << endl;
 }
 
-void TermTranslator::makeStrings() {
+void TermTranslator::makeStrings() const {
+  if (!_stringExponents.empty())
+    return;
+
   _stringExponents.resize(_exponents.size());
   for (unsigned int i = 0; i < _exponents.size(); ++i) {
     _stringExponents[i].resize(_exponents[i].size());
@@ -206,6 +228,7 @@ getExponentString(int variable, Exponent exponent) const {
   ASSERT(0 <= variable);
   ASSERT(variable < (int)_exponents.size());
   ASSERT(exponent < _exponents[variable].size());
+  ASSERT(!_stringExponents.empty());
 
   return (_stringExponents[variable][exponent]);
 }

@@ -9,10 +9,10 @@ namespace fourti2 {
 
   void readTerm(BigIdeal& ideal, Lexer& lexer);
 
-  void readLatticeBasis(istream& in, BigIdeal& basis);
+  void readLatticeBasis(FILE* in, BigIdeal& basis);
   void writeLatticeBasis(ostream& out, const BigIdeal& basis);
 
-  void readGrobnerBasis(istream& in, BigIdeal& basis);
+  void readGrobnerBasis(FILE* in, BigIdeal& basis);
 }
 
 #endif

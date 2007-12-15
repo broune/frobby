@@ -32,7 +32,7 @@ void PrimaryDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 void PrimaryDecomAction::perform() {
   BigIdeal ideal;
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(cin, ideal);
+  ioFacade.readIdeal(stdin, ideal);
 
   PrimaryDecomFacade facade(_printActions);
   facade.computePrimaryDecom(ideal, stdout);

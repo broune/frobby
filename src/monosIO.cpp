@@ -3,11 +3,13 @@
 
 #include "BigIdeal.h"
 #include "Lexer.h"
+#include <cstdio>
+#include <sstream>
 
 MonosIOHandler::MonosIOHandler() {
 }
 
-void MonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
+void MonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   Lexer lexer(in);
   readVarsAndClearIdeal(ideal, lexer);
   
@@ -20,9 +22,6 @@ void MonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
   }
   lexer.expect(';');
 }
-
-#include <cstdio>
-#include <sstream>
 
 void MonosIOHandler::startWritingIdeal(FILE* out,
 				       const VarNames& names) {
@@ -42,8 +41,7 @@ void MonosIOHandler::doneWritingIdeal(FILE* out) {
   fputs("\n];\n", out);
 }
 
-void MonosIOHandler::readIrreducibleDecomposition(istream& in,
-						  BigIdeal& decom) {
+void MonosIOHandler::readIrreducibleDecomposition(FILE* in, BigIdeal& decom) {
   Lexer lexer(in);
   readVarsAndClearIdeal(decom, lexer);
   readIrreducibleIdealList(decom, lexer);

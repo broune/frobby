@@ -19,7 +19,7 @@ namespace fplll {
     out << "]\n";
   }
 
-  void readLatticeBasis(istream& in, BigIdeal& basis) {
+  void readLatticeBasis(FILE* in, BigIdeal& basis) {
     Lexer lexer(in);
 
     vector<vector<mpz_class> > tmp;

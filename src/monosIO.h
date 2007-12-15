@@ -11,14 +11,14 @@ class MonosIOHandler : public IOHandler {
 public:
   MonosIOHandler();
   
-  virtual void readIdeal(istream& in, BigIdeal& ideal);
+  virtual void readIdeal(FILE* in, BigIdeal& ideal);
 
   virtual void startWritingIdeal(FILE* out,
 				 const VarNames& names);
 
   virtual void doneWritingIdeal(FILE* out);
 
-  virtual void readIrreducibleDecomposition(istream& in,
+  virtual void readIrreducibleDecomposition(FILE* in,
 					    BigIdeal& decom);
 
   virtual const char* getFormatName() const;

@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-void NewMonosIOHandler::readIdeal(istream& in, BigIdeal& ideal) {
+void NewMonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   Lexer lexer(in);
   lexer.expect('(');
   lexer.expect("monomial-ideal-with-order");
@@ -42,8 +42,8 @@ void NewMonosIOHandler::doneWritingIdeal(FILE* out) {
   fputs(")\n", out);
 }
 
-void NewMonosIOHandler::readIrreducibleDecomposition(istream& in,
-					      BigIdeal& decom) {
+void NewMonosIOHandler::readIrreducibleDecomposition(FILE* in,
+						     BigIdeal& decom) {
   Lexer lexer(in);
   lexer.expect('(');
   lexer.expect("lexed-list-with-order");

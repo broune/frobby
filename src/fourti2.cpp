@@ -34,7 +34,7 @@ namespace fourti2 {
     }
   }
 
-  void readLatticeBasis(istream& in, BigIdeal& basis) {
+  void readLatticeBasis(FILE* in, BigIdeal& basis) {
     Lexer lexer(in);
 
     unsigned int rowCount;
@@ -67,22 +67,19 @@ namespace fourti2 {
     }
   }
 
-  void readGrobnerBasis(istream& in, BigIdeal& basis) {
+  void readGrobnerBasis(FILE* in, BigIdeal& basis) {
     Lexer lexer(in);
 
-    unsigned int termCount;
-    unsigned int dim;
+    size_t termCount;
+    size_t varCount;
 
     lexer.readInteger(termCount);
-    lexer.readInteger(dim);
+    lexer.readInteger(varCount);
 
-    VarNames names(dim - 1);
+    VarNames names(varCount - 1);
     basis.clearAndSetNames(names);
 
-    for (unsigned int i = 0; i < termCount; ++i)
+    for (size_t i = 0; i < termCount; ++i)
       readTerm(basis, lexer);
-
-    // We cannot do this when we want to read a grading afterwards.
-    //lexer.expectEOF();
   }
 }

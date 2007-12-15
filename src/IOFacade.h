@@ -10,16 +10,16 @@ class IOFacade : private Facade {
   IOFacade(bool printActions);
 
   bool isValidMonomialIdealFormat(const char* format);
-  void readIdeal(istream& in, BigIdeal& ideal, const char* format = "monos");
+  void readIdeal(FILE* in, BigIdeal& ideal, const char* format = "monos");
   void writeIdeal(FILE* out, BigIdeal& ideal, const char* format = "monos");
 
-  void readFrobeniusInstance(istream& in, vector<mpz_class>& instance);
+  void readFrobeniusInstance(FILE* in, vector<mpz_class>& instance);
   void readFrobeniusInstanceWithGrobnerBasis
-    (istream& in, BigIdeal& ideal, vector<mpz_class>& instance);
+    (FILE* in, BigIdeal& ideal, vector<mpz_class>& instance);
   void writeFrobeniusInstance(ostream& out, vector<mpz_class>& instance);
 
   bool isValidLatticeFormat(const char* format);
-  void readLattice(istream& in, BigIdeal& ideal, const char* format);
+  void readLattice(FILE* in, BigIdeal& ideal, const char* format);
   void writeLattice(ostream& out, const BigIdeal& ideal, const char* format);
 };
 

@@ -8,12 +8,11 @@
 
 class Macaulay2IOHandler : public IOHandler {
 public:
-  virtual void readIdeal(istream& in,
-			 BigIdeal& ideal);
+  virtual void readIdeal(FILE*, BigIdeal& ideal);
   virtual void startWritingIdeal(FILE* out,
 				 const VarNames& names);
   virtual void doneWritingIdeal(FILE* out);
-  virtual void readIrreducibleDecomposition(istream& in,
+  virtual void readIrreducibleDecomposition(FILE* in,
 					    BigIdeal& decom);
   virtual const char* getFormatName() const;
   virtual IOHandler* createNew() const;

@@ -42,7 +42,7 @@ void AssociatedPrimesAction::perform() {
   BigIdeal ideal;
 
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(cin, ideal);
+  ioFacade.readIdeal(stdin, ideal);
 
   AssociatedPrimesFacade facade(_printActions);
 

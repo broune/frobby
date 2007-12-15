@@ -10,6 +10,7 @@
 #include "macaulay2IO.h"
 
 #include <fstream>
+#include <cctype>
 #include <sstream>
 
 IOHandler::IOHandlerContainer IOHandler::_ioHandlers;
@@ -29,7 +30,7 @@ void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
 }
 
 void IOHandler::notImplemented(const char* operation) {
-  cerr << "Format " << getFormatName()
+  cerr << "ERROR: Format " << getFormatName()
        << " does not implement "
        << operation << endl;
   exit(0);
@@ -82,8 +83,8 @@ void IOHandler::writeTerm(FILE* out,
     }
   }
 
-  if (separator == ' ');
-    putc('1', out);
+  if (separator == ' ')
+    fputs(" 1", out);
 }
 
 void IOHandler::writeTerm(FILE* out,
@@ -96,13 +97,13 @@ void IOHandler::writeTerm(FILE* out,
     if (exp == 0)
       continue;
 
-    putchar(separator);
+    putc(separator, out);
     fputs(exp, out);
     separator = '*';
   }
 
   if (separator == ' ')
-    putc('1', out);
+    fputs(" 1", out);
 }
 
 void IOHandler::readTerm(BigIdeal& ideal, Lexer& lexer) {
@@ -180,16 +181,38 @@ void deleteFile(const string& filename) {
   system(("rm -f " + filename).c_str());
 }    
 
-void readFrobeniusInstance(istream& in, vector<mpz_class>& numbers) {
+bool getst(FILE* in, string& str) {
+  str.clear();
+
+  while (true) {
+    int c = getc(in);
+    if (isspace(c))
+      continue;
+    ungetc(c, in);
+    break;
+  }
+
+  while (true) {
+    int c = getc(in);
+    if (isspace(c) || c == EOF) {
+      ungetc(c, in);
+      break;
+    }
+     str += c;
+  }
+  
+   return !str.empty();
+}
+
+void readFrobeniusInstance(FILE* in, vector<mpz_class>& numbers) {
   numbers.clear();
 
   string number;
-  while (in >> number) {
+  while (getst(in, number)) {
     for (unsigned int i = 0; i < number.size(); ++i) {
       if (!('0' <= number[i] && number[i] <= '9')) {
 	cerr << "ERROR: Encountered character '"
-	     << number[i] <<
-	  "' while reading Frobenius instance." << endl;
+	     << number[i] << "' while reading Frobenius instance." << endl;
 	exit(0);
       }
     }

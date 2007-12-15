@@ -68,7 +68,7 @@ void LatticeFormatAction::perform() {
   }
 
   BigIdeal basis;
-  facade.readLattice(cin, basis, iformat.c_str());
+  facade.readLattice(stdin, basis, iformat.c_str());
 
   if (_zero) {
     LatticeFacade latticeFacade(_printActions);

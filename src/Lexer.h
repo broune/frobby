@@ -3,7 +3,7 @@
 
 class Lexer {
 public:
-  Lexer(istream& in);
+  Lexer(FILE* in);
 
   bool match(char c);
 
@@ -29,7 +29,7 @@ private:
   void eatWhite();
 
   mpz_class _integer;
-  istream& _in;
+  FILE* _in;
   unsigned int _lineNumber;
 };
 

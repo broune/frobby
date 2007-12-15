@@ -45,7 +45,7 @@ void IntersectAction::perform() {
 
     // Read ideal
     BigIdeal* ideal = new BigIdeal();
-    ioFacade.readIdeal(cin, *ideal);
+    ioFacade.readIdeal(stdin, *ideal);
     ideals.push_back(ideal);
   }
 

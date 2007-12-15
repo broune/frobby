@@ -36,7 +36,9 @@ public:
   const mpz_class& getExponent(int variable, const Term& term) const;
 
   // As getExponent, except the string "[var]^[e]" is returned.
+  // makeStrings must be called before getExponentString can be used.
   const char* getExponentString(int variable, Exponent exponent) const;
+  void makeStrings() const;
 
   // The assigned IDs are those in the range [0, getMaxId()].
   Exponent getMaxId(int variable) const;
@@ -62,12 +64,11 @@ private:
   TermTranslator& operator=(const TermTranslator&); // not supported
 
   void initialize(const vector<BigIdeal*>& bigIdeals, bool sortVars);
-  void makeStrings();
   void shrinkBigIdeal(const BigIdeal& bigIdeal, Ideal& ideal) const;
   Exponent shrinkExponent(size_t var, const mpz_class& exponent) const;
 
   vector<vector<mpz_class> > _exponents;
-  vector<vector<const char*> > _stringExponents;
+  mutable vector<vector<const char*> > _stringExponents;
   VarNames _names;
 };
 

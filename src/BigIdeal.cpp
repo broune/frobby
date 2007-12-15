@@ -161,6 +161,13 @@ const mpz_class& BigIdeal::getExponent(size_t term, size_t var) const {
   return _terms[term][var];
 }
 
+mpz_class& BigIdeal::getExponent(size_t term, size_t var) {
+  ASSERT(term < _terms.size());
+  ASSERT(var < _names.getVarCount());
+
+  return _terms[term][var];
+}
+
 void BigIdeal::setExponent(size_t term, size_t var, const mpz_class& exp) {
   ASSERT(term < _terms.size());
   ASSERT(var < _names.getVarCount());
