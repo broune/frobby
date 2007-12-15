@@ -7,8 +7,12 @@
 #include "TermTranslator.h"
 #include <vector>
 #include "Projection.h"
+#include "SliceAlgorithm.h"
 
 SliceStrategy::~SliceStrategy() {
+}
+
+void SliceStrategy::initialize(const Slice& slice) {
 }
 
 void SliceStrategy::startingContent(const Slice& slice) {
@@ -289,6 +293,10 @@ public:
 
   virtual ~DecoratorSliceStrategy() {
     delete _strategy;
+  }
+
+  virtual void initialize(const Slice& slice) {
+    _strategy->initialize(slice);
   }
 
   virtual void doingIndependenceSplit(const Slice& slice,
@@ -641,6 +649,15 @@ public:
     delete getCurrentSplit();
     _independenceSplits.pop_back();
     ASSERT(_independenceSplits.empty());
+  }
+
+  virtual void initialize(const Slice& slice) {
+    // The purpose of this is to initialize the bound so that it can
+    // be used right away, instead of waiting for the slice algorithm
+    // to produce some output first.
+    Term msm;
+    if (computeSingleMSM(slice, msm))
+      consume(msm);
   }
 
   virtual void simplify(Slice& slice) {
