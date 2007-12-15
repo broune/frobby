@@ -4,7 +4,9 @@
 class Ideal;
 class Slice;
 class SliceStrategy;
+class Term;
 
+// Computes the Maximal Standard Monomials (MSMs) of the input ideal.
 class SliceAlgorithm {
  public:
   SliceAlgorithm();
@@ -28,5 +30,9 @@ class SliceAlgorithm {
   bool _useIndependence;
   SliceStrategy* _strategy;
 };
+
+// For getting a single MSM. This may fail if slice.getIdeal() is
+// not artinian, in which case the return value is false.
+bool computeSingleMSM(const Slice& slice, Term& msm);
 
 #endif

@@ -14,6 +14,8 @@ class SliceStrategy : public DecomConsumer {
  public:
   virtual ~SliceStrategy();
 
+  virtual void initialize(const Slice& slice);
+
   // Methods for handling independence splits
   virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) = 0;

@@ -32,8 +32,8 @@ void SliceAlgorithm::runAndClear(Ideal& ideal) {
   ASSERT(_strategy != 0);
 
   if (ideal.getGeneratorCount() > 0) {
-    ideal.minimize();
     Slice slice(ideal, Ideal(ideal.getVarCount()), Term(ideal.getVarCount()));
+    _strategy->initialize(slice);
     content(slice);
   }
 
@@ -204,4 +204,103 @@ void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
   }
 
   _strategy->endingContent();
+}
+
+bool computeSingleMSM2(const Slice& slice, Term& msm) {
+  msm.reset(slice.getVarCount());
+  Term lcm(slice.getLcm());
+
+  for (size_t var = 0; var < msm.getVarCount(); ++var) {
+    msm[var] = lcm[var];
+    Ideal::const_iterator it = slice.getIdeal().begin();
+    Ideal::const_iterator end = slice.getIdeal().end();
+    for (; it != end; ++it) {
+      if (msm.dominates(*it)) {
+	ASSERT((*it)[var] > 0);
+	msm[var] = (*it)[var] - 1;
+      }
+    }
+  }
+
+#ifdef DEBUG
+  ASSERT(!slice.getIdeal().contains(msm));
+  for (size_t var = 0; var < msm.getVarCount(); ++var) {
+    msm[var] += 1;
+    ASSERT(slice.getIdeal().contains(msm));
+    msm[var] -= 1;
+  }
+#endif
+\
+  if (slice.getSubtract().contains(msm))
+    return false;
+
+  msm.product(msm, slice.getMultiply());
+  return true;
+}
+
+bool computeSingleMSM(const Slice& slice, Term& msm) {
+  for (size_t var = 0; var < msm.getVarCount(); ++var)
+    if (slice.getLcm()[0] == 0)
+      return false;
+
+  // Extract terms into a container we can alter without changing
+  // slice.
+  vector<const Exponent*> terms;
+  {
+    terms.reserve(slice.getIdeal().getGeneratorCount());
+    Ideal::const_iterator it = slice.getIdeal().begin();
+    Ideal::const_iterator end = slice.getIdeal().end();
+    for (; it != end; ++it)
+      terms.push_back(*it);
+  }
+
+  msm.reset(slice.getVarCount());
+  msm[0] = slice.getLcm()[0] - 1; // do offset 0 to avoid negative vars below
+  {
+    // Do things from the right so that the call do dominates below
+    // will exit earlier.
+    for (size_t var = msm.getVarCount() - 1; var >= 1; --var) {
+      msm[var] = slice.getLcm()[var];
+
+      bool foundLabel = false;
+      vector<const Exponent*>::iterator it = terms.begin();
+      vector<const Exponent*>::iterator end = terms.end();
+      for (; it != end; ++it) {
+	if (msm.dominates(*it)) {
+	  ASSERT((*it)[var] > 0);
+	  msm[var] = (*it)[var] - 1;
+	  foundLabel = true;
+	}
+      }
+      if (!foundLabel)
+	return false;
+
+      // Remove irrelevant terms
+      it = terms.begin();
+      for (; it != terms.end();) {
+	if ((*it)[var] <= msm[var])
+	  ++it;
+	else {
+	  if (it + 1 != terms.end())
+	    *it = terms.back();
+	  terms.pop_back();
+	}
+      }
+    }
+  }
+
+#ifdef DEBUG
+  ASSERT(!slice.getIdeal().contains(msm));
+  for (size_t var = 0; var < msm.getVarCount(); ++var) {
+    msm[var] += 1;
+    ASSERT(slice.getIdeal().contains(msm));
+    msm[var] -= 1;
+  }
+#endif
+
+  if (slice.getSubtract().contains(msm))
+    return false;
+
+  msm.product(msm, slice.getMultiply());
+  return true;
 }
