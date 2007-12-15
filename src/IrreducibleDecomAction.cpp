@@ -36,7 +36,7 @@ void IrreducibleDecomAction::perform() {
   BigIdeal ideal;
 
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(cin, ideal);
+  ioFacade.readIdeal(stdin, ideal);
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
   facade.computeIrreducibleDecom(ideal, stdout);

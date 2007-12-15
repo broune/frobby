@@ -15,6 +15,7 @@ DecomWriter::DecomWriter(const VarNames& names,
   _out(out) {
   _ioHandler = IOHandler::createIOHandler("monos");
   _ioHandler->startWritingIdeal(out, names);
+  _translator->makeStrings();
 }
 
 DecomWriter::~DecomWriter() {

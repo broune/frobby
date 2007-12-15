@@ -43,7 +43,7 @@ void FrobeniusAction::perform() {
   BigIdeal ideal;
 
   IOFacade ioFacade(_printActions);
-  ioFacade.readFrobeniusInstanceWithGrobnerBasis(cin, ideal, instance);
+  ioFacade.readFrobeniusInstanceWithGrobnerBasis(stdin, ideal, instance);
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
 

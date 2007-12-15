@@ -10,7 +10,7 @@ public:
   IOHandler();
   virtual ~IOHandler();
 
-  virtual void readIdeal(istream& in, BigIdeal& ideal) = 0;
+  virtual void readIdeal(FILE* in, BigIdeal& ideal) = 0;
 
   void writeIdeal(FILE* out, const BigIdeal& ideal);
 
@@ -29,7 +29,7 @@ public:
   virtual void doneWritingIdeal(FILE* out) = 0;
 
 
-  virtual void readIrreducibleDecomposition(istream& in,
+  virtual void readIrreducibleDecomposition(FILE* in,
 					    BigIdeal& decom) = 0;
 
   virtual const char* getFormatName() const = 0;
@@ -64,6 +64,6 @@ public:
 
 bool fileExists(const string& filename);
 void deleteFile(const string& filename);
-void readFrobeniusInstance(istream& in, vector<mpz_class>& numbers);
+void readFrobeniusInstance(FILE* in, vector<mpz_class>& numbers);
 
 #endif

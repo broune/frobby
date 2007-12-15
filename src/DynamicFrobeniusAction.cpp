@@ -32,7 +32,7 @@ void DynamicFrobeniusAction::perform() {
   vector<mpz_class> instance;
 
   IOFacade ioFacade(_printActions);
-  ioFacade.readFrobeniusInstance(cin, instance);
+  ioFacade.readFrobeniusInstance(stdin, instance);
 
   mpz_class frobeniusNumber;
 

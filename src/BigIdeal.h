@@ -23,6 +23,7 @@ public:
   mpz_class& getLastTermExponentRef(size_t var);
 
   const mpz_class& getExponent(size_t term, size_t var) const;
+  mpz_class& getExponent(size_t term, size_t var);
   void setExponent(size_t term, size_t var, const mpz_class& exp);
 
   bool operator==(const BigIdeal& b) const;

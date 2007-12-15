@@ -24,7 +24,7 @@ bool IOFacade::isValidMonomialIdealFormat(const char* format) {
   return valid;
 }
 
-void IOFacade::readIdeal(istream& in, BigIdeal& ideal, const char* format) {
+void IOFacade::readIdeal(FILE* in, BigIdeal& ideal, const char* format) {
   beginAction("Reading monomial ideal.");
 
   IOHandler* handler = IOHandler::createIOHandler(format);
@@ -49,7 +49,7 @@ void IOFacade::writeIdeal(FILE* out, BigIdeal& ideal, const char* format) {
 }
 
 void IOFacade::
-readFrobeniusInstance(istream& in, vector<mpz_class>& instance) {
+readFrobeniusInstance(FILE* in, vector<mpz_class>& instance) {
   beginAction("Reading Frobenius instance.");
 
   ::readFrobeniusInstance(in, instance);
@@ -58,7 +58,7 @@ readFrobeniusInstance(istream& in, vector<mpz_class>& instance) {
 }
 
 void IOFacade::readFrobeniusInstanceWithGrobnerBasis
-(istream& in, BigIdeal& ideal, vector<mpz_class>& instance) {
+(FILE* in, BigIdeal& ideal, vector<mpz_class>& instance) {
   beginAction("Reading frobenius instance with Grobner basis.");
 
   fourti2::readGrobnerBasis(in, ideal);
@@ -101,7 +101,7 @@ bool IOFacade::isValidLatticeFormat(const char* format) {
 }
 
 void IOFacade::
-readLattice(istream& in, BigIdeal& ideal, const char* format) {
+readLattice(FILE* in, BigIdeal& ideal, const char* format) {
   beginAction("Reading lattice basis.");
 
   if (strcmp(format, "4ti2") == 0)

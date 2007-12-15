@@ -86,7 +86,7 @@ void FormatAction::perform() {
   }
 
   BigIdeal ideal;
-  facade.readIdeal(cin, ideal, iformat.c_str());
+  facade.readIdeal(stdin, ideal, iformat.c_str());
 
   IdealFacade idealFacade(_printActions);
   if (_minimize)

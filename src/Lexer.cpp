@@ -1,7 +1,7 @@
 #include "stdinc.h"
 #include "Lexer.h"
 
-Lexer::Lexer(istream& in):
+Lexer::Lexer(FILE* in):
   _in(in),
   _lineNumber(1) {
 }
@@ -50,19 +50,8 @@ void Lexer::expectEOF() {
 }
 
 void Lexer::readInteger(mpz_class& integer) {
-  eatWhite();
-
-  char c = peek();
-  if (c == '-' || c == '+')
-    getChar();
-    
-  eatWhite();
-  if (!isdigit(peek()))
+  if (mpz_inp_str(integer.get_mpz_t(), _in, 10) == 0)
     error("an integer");
-    
-  _in >> integer;
-  if (c == '-')
-    integer *= -1;
 }
 
 void Lexer::readInteger(unsigned int& i) {
@@ -89,14 +78,16 @@ void Lexer::readIdentifier(string& identifier) {
 }
 
 int Lexer::getChar() {
-  int c = _in.get();
+  int c = getc(_in);
   if (c == '\n')
     ++_lineNumber;
   return c;
 }
 
 int Lexer::peek() {
-  return _in.peek();
+  int c = getc(_in);
+  ungetc(c, _in);
+  return c;
 }
 
 void Lexer::error(const string& expected) {

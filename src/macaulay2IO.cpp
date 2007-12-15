@@ -4,8 +4,7 @@
 #include "monosIO.h"
 #include <sstream>
 
-void Macaulay2IOHandler::readIdeal(istream& in,
-				   BigIdeal& ideal) {
+void Macaulay2IOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   Lexer lexer(in);
   readVarsAndClearIdeal(ideal, lexer);
 
@@ -44,7 +43,7 @@ void Macaulay2IOHandler::doneWritingIdeal(FILE* out) {
   fputs("\n);\n", out);
 }
 
-void Macaulay2IOHandler::readIrreducibleDecomposition(istream& in,
+void Macaulay2IOHandler::readIrreducibleDecomposition(FILE* in,
 						      BigIdeal& decom) {
   Lexer lexer(in);
   readVarsAndClearIdeal(decom, lexer);
