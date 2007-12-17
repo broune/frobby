@@ -228,6 +228,9 @@ private:
 };
 
 bool Slice::removeDoubleLcm() {
+  if (_ideal.getGeneratorCount() == 0)
+    return false;
+
   bool removedAny = false;
 
   while (true) {
@@ -243,20 +246,23 @@ bool Slice::removeDoubleLcm() {
 }
 
 bool Slice::applyLowerBound() {
+  if (_ideal.getGeneratorCount() == 0)
+    return false;
+
   bool changed = false;
   size_t timeSinceChange = 0;
 
   Term bound(_varCount);
-  size_t var = _lowerBoundHint % _varCount;
+  size_t var = _lowerBoundHint;
   while (timeSinceChange < _varCount) {
     if (!getLowerBound(bound, var)) {
       clear();
-      return false;
+      return true;
     }
     if (!bound.isIdentity()) {
       innerSlice(bound);
       timeSinceChange = 0;
-      changed = 0;
+      changed = true;
     } else
       ++timeSinceChange;
 
