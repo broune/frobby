@@ -130,12 +130,9 @@ bool Slice::baseCase(DecomConsumer* consumer) {
 }
 
 void Slice::simplify() {
-  removeDoubleLcm();
-
-  while (applyLowerBound() ||
-	 removeDoubleLcm())
-    ;
-
+  do
+    removeDoubleLcm();
+  while (applyLowerBound());
   pruneSubtract();
 
   ASSERT(!normalize());

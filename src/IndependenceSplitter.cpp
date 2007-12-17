@@ -188,11 +188,7 @@ bool IndependenceSplitter::shouldPerformSplit
       ++over2;
   }
 
-  if (at2 == 0 && over2 <= 1 &&
-      slice.getIdeal().getGeneratorCount() < 15)
-    return false;
-  else
-    return true;
+  return at2 > 0 || over2 > 1;
 }
 
 Ideal* IndependenceSplitter::getMixedProjectionSubtract() {
