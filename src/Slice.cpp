@@ -15,7 +15,8 @@ Slice::Slice(const Ideal& ideal, const Ideal& subtract,
   _lcm(multiply.getVarCount()),
   _lcmUpdated(false),
   _ideal(ideal),
-  _subtract(subtract) {
+  _subtract(subtract),
+  _lowerBoundHint(0) {
   ASSERT(multiply.getVarCount() == ideal.getVarCount());
   ASSERT(multiply.getVarCount() == subtract.getVarCount());
 }
@@ -91,6 +92,8 @@ void Slice::innerSlice(const Term& pivot) {
     _lcm.colon(_lcm, pivot);
   else
     _lcmUpdated = false;
+
+  _lowerBoundHint = pivot.getFirstNonZeroExponent();
 }
 
 void Slice::outerSlice(const Term& pivot) {
@@ -103,6 +106,8 @@ void Slice::outerSlice(const Term& pivot) {
 
   if (pivot.getSizeOfSupport() > 1)
     getSubtract().insert(pivot);
+
+  _lowerBoundHint = pivot.getFirstNonZeroExponent();
 }
 
 bool Slice::baseCase(DecomConsumer* consumer) {
@@ -130,9 +135,11 @@ bool Slice::baseCase(DecomConsumer* consumer) {
 }
 
 void Slice::simplify() {
-  do
-    removeDoubleLcm();
-  while (applyLowerBound());
+  removeDoubleLcm();
+  while (applyLowerBound() &&
+	 removeDoubleLcm())
+    ;
+
   pruneSubtract();
 
   ASSERT(!normalize());
@@ -237,20 +244,26 @@ bool Slice::removeDoubleLcm() {
 
 bool Slice::applyLowerBound() {
   bool changed = false;
+  size_t timeSinceChange = 0;
 
   Term bound(_varCount);
-  while (true) {
-    if (!getLowerBound(bound)) {
+  size_t var = _lowerBoundHint % _varCount;
+  while (timeSinceChange < _varCount) {
+    if (!getLowerBound(bound, var)) {
       clear();
       return false;
     }
+    if (!bound.isIdentity()) {
+      innerSlice(bound);
+      timeSinceChange = 0;
+      changed = 0;
+    } else
+      ++timeSinceChange;
 
-    if (bound.isIdentity())
-      return changed;
-
-    innerSlice(bound);
-    changed = true;
+    var = (var + 1) % _varCount;
   }
+
+  return changed;
 }
 
 bool Slice::getLowerBound(Term& bound, size_t var) const {

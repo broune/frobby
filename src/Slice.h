@@ -125,6 +125,8 @@ class Slice {
 
   Ideal _ideal;
   Ideal _subtract;
+
+  size_t _lowerBoundHint;
 };
 
 namespace std {
