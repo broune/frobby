@@ -250,21 +250,21 @@ bool Slice::applyLowerBound() {
     return false;
 
   bool changed = false;
-  size_t timeSinceChange = 0;
+  size_t stepsWithNoChange = 0;
 
   Term bound(_varCount);
   size_t var = _lowerBoundHint;
-  while (timeSinceChange < _varCount) {
+  while (stepsWithNoChange < _varCount) {
     if (!getLowerBound(bound, var)) {
       clear();
       return true;
     }
     if (!bound.isIdentity()) {
       innerSlice(bound);
-      timeSinceChange = 0;
+      stepsWithNoChange = 0;
       changed = true;
     } else
-      ++timeSinceChange;
+      ++stepsWithNoChange;
 
     var = (var + 1) % _varCount;
   }
@@ -281,7 +281,9 @@ bool Slice::getLowerBound(Term& bound, size_t var) const {
   for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
     if ((*it)[var] == 0)
       continue;
-    
+        
+    // Use the fact that terms with a maximal exponent somewhere not
+    // at var cannot be a var-label.
     bool relevant = true;
     for (size_t var2 = 0; var2 < _varCount; ++var2) {
       if (var2 != var && (*it)[var2] == lcm[var2]) {
