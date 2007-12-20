@@ -131,8 +131,11 @@ commit: test
 
 # ***** Distribution
 
-distribution: tidy
+distribution:
 	make depend
+	make fastdistribution VER="$(VER)"
+
+fastdistribution: tidy
 	cd ..;tar --create --file=frobby_v$(ver).tar.gz frobby/ --gzip \
 	  --exclude=*/data/* --exclude=*/data \
 	  --exclude=*/.hg/* --exclude=*/.hg --exclude=.hgignore\
@@ -140,8 +143,13 @@ distribution: tidy
 	  --exclude=*/save/* --exclude=*/save \
 	  --exclude=*/4ti2/* \
 	  --exclude=*.tar.gz \
-          --exclude=*~ --exclude=*.orig \
-          --exclude=gmon.out \
-          --exclude=*.stackdump
-	mv ../frobby_v$(ver).tar.gz .
-	ls -l frobby_v$(ver).tar.gz
+      --exclude=*/web/* \
+      --exclude=*/web \
+      --exclude=pullf \
+      --exclude=pushf \
+      --exclude=sync \
+      --exclude=*~ --exclude=*.orig \
+      --exclude=gmon.out \
+      --exclude=*.stackdump
+	mv ../frobby_v$(VER).tar.gz .
+	ls -l frobby_v$(VER).tar.gz
