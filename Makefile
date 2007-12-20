@@ -145,6 +145,7 @@ fastdistribution: tidy
 	  --exclude=*.tar.gz \
       --exclude=*/web/* \
       --exclude=*/web \
+      --exclude=*/tmp/* \
       --exclude=pullf \
       --exclude=pushf \
       --exclude=sync \
