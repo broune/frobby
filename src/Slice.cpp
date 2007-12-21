@@ -260,12 +260,40 @@ bool Slice::applyLowerBound() {
       return true;
     }
     if (!bound.isIdentity()) {
+      if (bound.getSizeOfSupport() == 1 &&
+	  bound.getFirstNonZeroExponent() == var) {
+	bool trivial = true;
+	Ideal::const_iterator stop = _ideal.end();
+	for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
+	  if (0 < (*it)[var] && (*it)[var] <= bound[var]) {
+	    trivial = false;
+	    break;
+	  }
+	}
+	stop = _subtract.end();
+	for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it) {
+	  if (0 < (*it)[var] && (*it)[var] <= bound[var]) {
+	    trivial = false;
+	    break;
+	  }
+	}
+
+
+	if (trivial) {
+	  innerSlice(bound);
+	  changed = true;
+	  ++stepsWithNoChange;
+	  goto bob;
+	}
+      }
+
       innerSlice(bound);
       stepsWithNoChange = 0;
       changed = true;
     } else
       ++stepsWithNoChange;
 
+  bob:
     var = (var + 1) % _varCount;
   }
 
