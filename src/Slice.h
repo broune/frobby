@@ -94,8 +94,9 @@ class Slice {
 
   // Calculates a lower bound on the content of the slice (see
   // getLowerBound()) and calls innerSlice with that lower bound. This
-  // is repeated until a fixed point is reached. Returns false if
-  // getIdeal() is unchanged or if an empty base case is detected.
+  // is repeated until a fixed point is reached. Returns false if no
+  // minimal generator of getIdeal() or getSubtract() has had their
+  // support changed or if an empty base case is detected.
   bool applyLowerBound();
 
   // Calculates the gcd of those generators of getIdeal() that are
@@ -115,7 +116,9 @@ class Slice {
   // than a single generator.
   bool twoVarBaseCase(DecomConsumer* consumer);
 
-  void validate() const;
+  // Returns true if colon by var^exponent does not change the support
+  // of any minimal generator of getIdeal() or getSubtract().
+  bool isTrivialColon(size_t var, size_t exponent);
 
   size_t _varCount;
   Term _multiply;
