@@ -111,25 +111,34 @@ void Slice::outerSlice(const Term& pivot) {
 }
 
 bool Slice::baseCase(DecomConsumer* consumer) {
-  if (_varCount == 1) {
-    consumer->consume(_multiply);
-    return true;
-  }
-
-  if (twoVarBaseCase(consumer))
+  if (getIdeal().getGeneratorCount() < _varCount)
     return true;
 
   // Check that each variable appears in some minimal generator.
   if (getLcm().getSizeOfSupport() < _varCount)
     return true;
 
-  if (getIdeal().getGeneratorCount() > _varCount)
-    return false;
-  
+  if (_varCount == 1) {
+    consumer->consume(_multiply);
+    return true;
+  }
+  if (_varCount == 2) {
+    twoVarBaseCase(consumer);
+    return true;
+  }
+
+  if (getIdeal().getGeneratorCount() > _varCount) {
+    if (getIdeal().getGeneratorCount() == _varCount + 1) {
+      oneMoreGeneratorBaseCase(consumer);
+      return true;
+    } else
+      return false;
+  }
+
   // These things are ensured since the slice is simplified.
   ASSERT(getLcm().isSquareFree());
   ASSERT(getIdeal().isIrreducible());
-  
+
   consumer->consume(_multiply);
   return true;
 }
@@ -245,20 +254,6 @@ bool Slice::removeDoubleLcm() {
   return removedAny;
 }
 
-bool Slice::isTrivialColon(size_t var, size_t exponent) {
-  Ideal::const_iterator stop = _ideal.end();
-  for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
-    if (0 < (*it)[var] && (*it)[var] <= exponent)
-      return false;
-
-  stop = _subtract.end();
-  for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
-    if (0 < (*it)[var] && (*it)[var] <= exponent)
-      return false;
-
-  return true;
-}
-
 bool Slice::applyLowerBound() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
@@ -356,9 +351,8 @@ bool Slice::getLowerBound(Term& bound) const {
   return true;
 }
 
-bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
-  if (_varCount != 2)
-    return false;
+void Slice::twoVarBaseCase(DecomConsumer* consumer) {
+  ASSERT(_varCount == 2);
 
   singleDegreeSortIdeal(0);
 
@@ -367,7 +361,7 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
   Ideal::const_iterator stop = getIdeal().end();
   Ideal::const_iterator it = getIdeal().begin();
   if (it == stop)
-    return true;
+    return;
 
   while (true) {
     term[1] = (*it)[1] - 1;
@@ -387,6 +381,51 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
       consumer->consume(term);
     }
   }
+}
+
+void Slice::oneMoreGeneratorBaseCase(DecomConsumer* consumer) {
+  ASSERT(_varCount + 1 == getIdeal().getGeneratorCount());
+
+  // Since the slice is fully simplified, we must be dealing with an
+  // artinian power in each variable, and then a single generator
+  // whose support is at least 2. We can then simply run through all
+  // the possibilities for that generator to be a label.
+
+  Ideal::const_iterator it = getIdeal().begin();
+  while (getSizeOfSupport(*it, _varCount) == 1) {
+    ++it;
+    ASSERT(it != getIdeal().end());
+  }
+
+  for (size_t var = 0; var < _varCount; ++var) {
+    ASSERT((*it)[var] <= 1);
+    if ((*it)[var] == 1)
+      _multiply[var] += getLcm()[var] - 1;
+  }
+
+  for (size_t var = 0; var < _varCount; ++var) {
+    if ((*it)[var] == 1) {
+      (*it)[var] = 0;
+      if (!getSubtract().contains(*it)) {
+	_multiply[var] -= getLcm()[var] - 1;
+	consumer->consume(_multiply);
+	_multiply[var] += getLcm()[var] - 1;
+      }
+      (*it)[var] = 1;
+    }
+  }
+}
+
+bool Slice::isTrivialColon(size_t var, size_t exponent) {
+  Ideal::const_iterator stop = _ideal.end();
+  for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
+    if (0 < (*it)[var] && (*it)[var] <= exponent)
+      return false;
+
+  stop = _subtract.end();
+  for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
+    if (0 < (*it)[var] && (*it)[var] <= exponent)
+      return false;
 
   return true;
 }

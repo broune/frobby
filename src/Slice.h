@@ -110,11 +110,15 @@ class Slice {
   // the slice. Returns false if an empty base case is detected.
   bool getLowerBound(Term& bound) const;
 
-  // Returns true if getGeneratorCount() returns 2, in which case the
-  // content of the slice is output to consumer. It is a prerequisite
-  // that the slice is fully simplified and that getIdeal() has more
-  // than a single generator.
-  bool twoVarBaseCase(DecomConsumer* consumer);
+  // Outputs the content of the slice to consumer. It is a
+  // precondition that the slice is fully simplified and that
+  // getVarCount() returns 2.
+  void twoVarBaseCase(DecomConsumer* consumer);
+
+  // Outputs the content of the slice to consmer. It is a precondition
+  // that the slice is fully simplified and that getVarCount() plus
+  // one equals getIdeal().getGeneratorCount().
+  void oneMoreGeneratorBaseCase(DecomConsumer* consumer);
 
   // Returns true if colon by var^exponent does not change the support
   // of any minimal generator of getIdeal() or getSubtract().
