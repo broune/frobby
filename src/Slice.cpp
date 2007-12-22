@@ -132,7 +132,7 @@ bool Slice::baseCase(DecomConsumer* consumer) {
       oneMoreGeneratorBaseCase(consumer);
       return true;
     }
-    if (twoMoreNonMaxBaseCase(consumer))
+    if (twoNonMaxBaseCase(consumer))
       return true;
     
     return false;
@@ -420,121 +420,103 @@ void Slice::oneMoreGeneratorBaseCase(DecomConsumer* consumer) {
   }
 }
 
-bool Slice::consumeIfMsm(Term& msm, DecomConsumer* consumer) {
-  if (getIdeal().contains(msm) || getSubtract().contains(msm))
-    return false;
-
-  Ideal::const_iterator stop = getIdeal().end();
-  for (size_t var = 0; var < _varCount; ++var) {
-    msm[var] += 1;
-    bool hasLabel = false;
-    for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
-      if (msm.dominates(*it)) {
-	hasLabel = true;
+bool getTheOnlyTwoNonMax(Ideal::const_iterator it,
+			 const Exponent*& first,
+			 const Exponent*& second,
+			 Ideal::const_iterator end,
+			 const Term& lcm) {
+  size_t count = 0;
+  for (; it != end; ++it) {
+    bool nonMax = true;
+    for (size_t var = 0; var < lcm.getVarCount(); ++var) {
+      if ((*it)[var] == lcm[var]) {
+	nonMax = false;
 	break;
       }
     }
-    msm[var] -= 1;
-
-    if (!hasLabel)
-      return false;
+    if (nonMax) {
+      if (count == 0)
+	first = *it;
+      else if (count == 1)
+	second = *it;
+      else
+	return false;
+      ++count;
+    }
   }
-
-  Term tmp(_varCount);
-  tmp.product(msm, _multiply);
-  consumer->consume(tmp);
-  return true;
+  return count == 2;
 }
 
-bool Slice::twoMoreNonMaxBaseCase(DecomConsumer* consumer) {
+bool Slice::twoNonMaxBaseCase(DecomConsumer* consumer) {
   const Term& lcm = getLcm();
-
   Ideal::const_iterator stop = getIdeal().end();
-  Ideal::const_iterator nonMax1 = getIdeal().begin();
-  for (; nonMax1 != stop; ++nonMax1) {
-    bool nonMax = true;
-    for (size_t var = 0; var < _varCount; ++var) {
-      if ((*nonMax1)[var] == lcm[var]) {
-	nonMax = false;
-	break;
-      }
-    }
-    if (nonMax)
-      break;
-  }
 
-  if (nonMax1 == stop)
+  const Exponent* nonMax1;
+  const Exponent* nonMax2;
+  if (!getTheOnlyTwoNonMax(getIdeal().begin(), nonMax1, nonMax2, stop, lcm))
     return false;
-
-  Ideal::const_iterator nonMax2 = nonMax1;
-  for (++nonMax2; nonMax2 != stop; ++nonMax2) {
-    bool nonMax = true;
-    for (size_t var = 0; var < _varCount; ++var) {
-      if ((*nonMax2)[var] == lcm[var]) {
-	nonMax = false;
-	break;
-      }
-    }
-    if (nonMax)
-      break;
-  }
-
-  if (nonMax2 == stop)
-    return false;
-
-  Ideal::const_iterator nonMax3 = nonMax2;
-  for (++nonMax3; nonMax3 != stop; ++nonMax3) {
-    bool nonMax = true;
-    for (size_t var = 0; var < _varCount; ++var) {
-      if ((*nonMax3)[var] == lcm[var]) {
-	nonMax = false;
-	break;
-      }
-    }
-    if (nonMax)
-      return false;
-  }
 
   Term msm(_lcm);
   for (size_t var = 0; var < _varCount; ++var)
     msm[var] -= 1;
-  Term hasLabel(_varCount);
+  Term tmp(_varCount);
 
   for (size_t var1 = 0; var1 < _varCount; ++var1) {
-    if ((*nonMax1)[var1] == 0)
+    if (nonMax1[var1] == 0)
+      continue;
+    if (nonMax1[var1] <= nonMax2[var1])
       continue;
 
-    msm[var1] = (*nonMax1)[var1] - 1;
-    if ((*nonMax2)[var1] > msm[var1]) {
-      consumeIfMsm(msm, consumer);
-    } else {
-      for (size_t var2 = 0; var2 < _varCount; ++var2) {
-	if (var1 == var2 || (*nonMax2)[var2] == 0)
-	  continue;
-	if ((*nonMax1)[var1] <= (*nonMax2)[var1])
-	  continue;
-	if ((*nonMax2)[var2] <= (*nonMax1)[var2])
+    for (size_t var2 = 0; var2 < _varCount; ++var2) {
+      if (var1 == var2 || nonMax2[var2] == 0)
+	continue;
+      if (nonMax2[var2] <= nonMax1[var2])
+	continue;
+
+      tmp[var1] = true;
+      tmp[var2] = true;
+      for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
+	if ((*it)[var1] >= nonMax1[var1] ||
+	    (*it)[var2] >= nonMax2[var2])
 	  continue;
 
-	msm[var2] = (*nonMax2)[var2] - 1;
-
-	consumeIfMsm(msm, consumer);
-
-	msm[var2] = lcm[var2] - 1;
+	for (size_t var = 0; var < lcm.getVarCount(); ++var) {
+	  if ((*it)[var] == lcm[var]) {
+	    tmp[var] = true;
+	    break;
+	  }
+	}
       }
-    }
 
-    msm[var1] = lcm[var1] - 1;
+      if (tmp.getSizeOfSupport() < _varCount)
+	continue;
+
+      msm[var1] = nonMax1[var1] - 1;
+      msm[var2] = nonMax2[var2] - 1;
+      if (!getSubtract().contains(msm)) {
+	tmp.product(msm, _multiply);
+	consumer->consume(tmp);
+      }
+      msm[var2] = lcm[var2] - 1;
+      msm[var1] = lcm[var1] - 1;
+    }
   }
 
-  for (size_t var2 = 0; var2 < _varCount; ++var2) {
-    if ((*nonMax2)[var2] == 0 || (*nonMax1)[var2] == (*nonMax2)[var2])
+  for (size_t var = 0; var < _varCount; ++var) {
+    Exponent e;
+    if (nonMax1[var] < nonMax2[var])
+      e = nonMax1[var];
+    else
+      e = nonMax2[var];
+    if (e == 0)
       continue;
 
-    msm[var2] = (*nonMax2)[var2] - 1;
-    if ((*nonMax1)[var2] > msm[var2])
-      consumeIfMsm(msm, consumer);
-    msm[var2] = lcm[var2] - 1;
+    msm[var] = e - 1;
+    if (!getSubtract().contains(msm)) {
+      tmp.product(msm, _multiply);
+      consumer->consume(tmp);
+    }
+    msm[var] = lcm[var] - 1;
   }
 
   return true;
