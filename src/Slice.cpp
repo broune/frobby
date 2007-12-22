@@ -131,8 +131,11 @@ bool Slice::baseCase(DecomConsumer* consumer) {
     if (getIdeal().getGeneratorCount() == _varCount + 1) {
       oneMoreGeneratorBaseCase(consumer);
       return true;
-    } else
-      return false;
+    }
+    if (twoMoreNonMaxBaseCase(consumer))
+      return true;
+    
+    return false;
   }
 
   // These things are ensured since the slice is simplified.
@@ -415,6 +418,126 @@ void Slice::oneMoreGeneratorBaseCase(DecomConsumer* consumer) {
       (*it)[var] = 1;
     }
   }
+}
+
+bool Slice::consumeIfMsm(Term& msm, DecomConsumer* consumer) {
+  if (getIdeal().contains(msm) || getSubtract().contains(msm))
+    return false;
+
+  Ideal::const_iterator stop = getIdeal().end();
+  for (size_t var = 0; var < _varCount; ++var) {
+    msm[var] += 1;
+    bool hasLabel = false;
+    for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
+      if (msm.dominates(*it)) {
+	hasLabel = true;
+	break;
+      }
+    }
+    msm[var] -= 1;
+
+    if (!hasLabel)
+      return false;
+  }
+
+  Term tmp(_varCount);
+  tmp.product(msm, _multiply);
+  consumer->consume(tmp);
+  return true;
+}
+
+bool Slice::twoMoreNonMaxBaseCase(DecomConsumer* consumer) {
+  const Term& lcm = getLcm();
+
+  Ideal::const_iterator stop = getIdeal().end();
+  Ideal::const_iterator nonMax1 = getIdeal().begin();
+  for (; nonMax1 != stop; ++nonMax1) {
+    bool nonMax = true;
+    for (size_t var = 0; var < _varCount; ++var) {
+      if ((*nonMax1)[var] == lcm[var]) {
+	nonMax = false;
+	break;
+      }
+    }
+    if (nonMax)
+      break;
+  }
+
+  if (nonMax1 == stop)
+    return false;
+
+  Ideal::const_iterator nonMax2 = nonMax1;
+  for (++nonMax2; nonMax2 != stop; ++nonMax2) {
+    bool nonMax = true;
+    for (size_t var = 0; var < _varCount; ++var) {
+      if ((*nonMax2)[var] == lcm[var]) {
+	nonMax = false;
+	break;
+      }
+    }
+    if (nonMax)
+      break;
+  }
+
+  if (nonMax2 == stop)
+    return false;
+
+  Ideal::const_iterator nonMax3 = nonMax2;
+  for (++nonMax3; nonMax3 != stop; ++nonMax3) {
+    bool nonMax = true;
+    for (size_t var = 0; var < _varCount; ++var) {
+      if ((*nonMax3)[var] == lcm[var]) {
+	nonMax = false;
+	break;
+      }
+    }
+    if (nonMax)
+      return false;
+  }
+
+  Term msm(_lcm);
+  for (size_t var = 0; var < _varCount; ++var)
+    msm[var] -= 1;
+  Term hasLabel(_varCount);
+
+  for (size_t var1 = 0; var1 < _varCount; ++var1) {
+    if ((*nonMax1)[var1] == 0)
+      continue;
+
+    msm[var1] = (*nonMax1)[var1] - 1;
+    if ((*nonMax2)[var1] > msm[var1]) {
+      consumeIfMsm(msm, consumer);
+    } else {
+      for (size_t var2 = 0; var2 < _varCount; ++var2) {
+	if (var1 == var2 || (*nonMax2)[var2] == 0)
+	  continue;
+	if ((*nonMax1)[var1] <= (*nonMax2)[var1])
+	  continue;
+	if ((*nonMax2)[var2] <= (*nonMax1)[var2])
+	  continue;
+
+	msm[var2] = (*nonMax2)[var2] - 1;
+
+	consumeIfMsm(msm, consumer);
+
+	msm[var2] = lcm[var2] - 1;
+      }
+    }
+
+    msm[var1] = lcm[var1] - 1;
+  }
+
+  for (size_t var2 = 0; var2 < _varCount; ++var2) {
+    if ((*nonMax2)[var2] == 0 || (*nonMax1)[var2] == (*nonMax2)[var2])
+      continue;
+
+    msm[var2] = (*nonMax2)[var2] - 1;
+    if ((*nonMax1)[var2] > msm[var2])
+      consumeIfMsm(msm, consumer);
+    msm[var2] = lcm[var2] - 1;
+  }
+
+  return true;
 }
 
 bool Slice::isTrivialColon(size_t var, size_t exponent) {
