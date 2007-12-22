@@ -115,13 +115,19 @@ class Slice {
   // getVarCount() returns 2.
   void twoVarBaseCase(DecomConsumer* consumer);
 
-  // Outputs the content of the slice to consmer. It is a precondition
-  // that the slice is fully simplified and that getVarCount() plus
-  // one equals getIdeal().getGeneratorCount().
+  // Outputs the content of the slice to consumer. It is a
+  // precondition that the slice is fully simplified and that
+  // getVarCount() plus one equals
+  // getIdeal().getGeneratorCount(). This will, due to simplification,
+  // be true if there is exactly one generator that is nowhere equal
+  // to the lcm of getIdeal().
   void oneMoreGeneratorBaseCase(DecomConsumer* consumer);
 
-  bool twoMoreNonMaxBaseCase(DecomConsumer* consumer);
-  bool consumeIfMsm(Term& msm, DecomConsumer* consumer);
+  // Outputs the content of the slice to consumer or returns false. It
+  // is a precondition that the slice is fully simplified. Returns
+  // true if there are exactly two generators that are nowhere equal
+  // to the lcm of getIdeal().
+  bool twoNonMaxBaseCase(DecomConsumer* consumer);
 
   // Returns true if colon by var^exponent does not change the support
   // of any minimal generator of getIdeal() or getSubtract().
