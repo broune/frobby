@@ -245,6 +245,20 @@ bool Slice::removeDoubleLcm() {
   return removedAny;
 }
 
+bool Slice::isTrivialColon(size_t var, size_t exponent) {
+  Ideal::const_iterator stop = _ideal.end();
+  for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
+    if (0 < (*it)[var] && (*it)[var] <= exponent)
+      return false;
+
+  stop = _subtract.end();
+  for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
+    if (0 < (*it)[var] && (*it)[var] <= exponent)
+      return false;
+
+  return true;
+}
+
 bool Slice::applyLowerBound() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
@@ -259,41 +273,27 @@ bool Slice::applyLowerBound() {
       clear();
       return true;
     }
-    if (!bound.isIdentity()) {
-      if (bound.getSizeOfSupport() == 1 &&
-	  bound.getFirstNonZeroExponent() == var) {
-	bool trivial = true;
-	Ideal::const_iterator stop = _ideal.end();
-	for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
-	  if (0 < (*it)[var] && (*it)[var] <= bound[var]) {
-	    trivial = false;
-	    break;
-	  }
-	}
-	stop = _subtract.end();
-	for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it) {
-	  if (0 < (*it)[var] && (*it)[var] <= bound[var]) {
-	    trivial = false;
-	    break;
-	  }
-	}
 
-
-	if (trivial) {
-	  innerSlice(bound);
-	  changed = true;
-	  ++stepsWithNoChange;
-	  goto bob;
-	}
+    size_t sizeOfSupport = bound.getSizeOfSupport();
+    if (sizeOfSupport > 0) {
+      if (sizeOfSupport == 1 &&
+	  bound.getFirstNonZeroExponent() == var &&
+	  isTrivialColon(var, bound[var])) {
+	// In this case, there is no need for reminimization or
+	// re-lower-bounding of this variable.
+	_ideal.colon(bound);
+	_subtract.colon(bound);
+	_multiply.product(_multiply, bound);
+	_lcm.colon(_lcm, bound);
+	++stepsWithNoChange;
+      } else {
+	innerSlice(bound);
+	stepsWithNoChange = 0;
+	changed = true;
       }
-
-      innerSlice(bound);
-      stepsWithNoChange = 0;
-      changed = true;
     } else
       ++stepsWithNoChange;
 
-  bob:
     var = (var + 1) % _varCount;
   }
 
@@ -389,10 +389,4 @@ bool Slice::twoVarBaseCase(DecomConsumer* consumer) {
   }
 
   return true;
-}
-
-void Slice::validate() const {
-#ifdef DEBUG
-  getLcm();
-#endif
 }
