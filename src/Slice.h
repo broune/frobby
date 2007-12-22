@@ -120,6 +120,9 @@ class Slice {
   // one equals getIdeal().getGeneratorCount().
   void oneMoreGeneratorBaseCase(DecomConsumer* consumer);
 
+  bool twoMoreNonMaxBaseCase(DecomConsumer* consumer);
+  bool consumeIfMsm(Term& msm, DecomConsumer* consumer);
+
   // Returns true if colon by var^exponent does not change the support
   // of any minimal generator of getIdeal() or getSubtract().
   bool isTrivialColon(size_t var, size_t exponent);

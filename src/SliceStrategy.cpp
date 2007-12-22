@@ -728,7 +728,8 @@ public:
   StatisticsSliceStrategy(SliceStrategy* strategy):
     DecoratorSliceStrategy(strategy),
     _level (0),
-    _consumeCount(0) {
+    _consumeCount(0),
+    _independenceSplitCount(0) {
   }
 
   ~StatisticsSliceStrategy() {
