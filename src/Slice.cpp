@@ -399,6 +399,7 @@ void Slice::oneMoreGeneratorBaseCase(DecomConsumer* consumer) {
 
   for (size_t var = 0; var < _varCount; ++var) {
     ASSERT((*it)[var] <= 1);
+    ASSERT((*it)[var] < getLcm()[var]);
     if ((*it)[var] == 1)
       _multiply[var] += getLcm()[var] - 1;
   }

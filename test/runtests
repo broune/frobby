@@ -14,7 +14,7 @@ cd ../..
 
 echo -n "decom (label): "
 cd test/decom
-time ./runtests -slice off
+time ./runtests -slice off -independence off
 cd ../..
 
 echo -n "frob (slice): "
