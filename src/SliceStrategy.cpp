@@ -727,23 +727,51 @@ class StatisticsSliceStrategy : public DecoratorSliceStrategy {
 public:
   StatisticsSliceStrategy(SliceStrategy* strategy):
     DecoratorSliceStrategy(strategy),
-    _level (0) {
+    _level (0),
+    _consumeCount(0) {
   }
 
   ~StatisticsSliceStrategy() {
     cerr << "**** Statistics" << endl;
     size_t sum = 0;
+    size_t baseSum = 0;
     for (size_t l = 0; l < _calls.size(); ++l) {
       sum += _calls[l];
+      baseSum += _baseCases[l];
       cerr << "Level " << l + 1 << " had "
-	   << _calls[l] << " calls. " << endl;
+	   << _calls[l] << " calls of which "
+	   << _baseCases[l] << " were base cases." << endl;
     }
-    cerr << endl << "Which makes for " << sum << " calls in all" << endl;
+    cerr << endl;
+
+    double baseRatio = double(baseSum) / sum;
+    cerr << "* recursive levels:    " << _calls.size() << endl
+	 << "* recursive calls:     " << sum << endl
+	 << "* terms consumed:      " << _consumeCount << endl 
+	 << "* base case calls:     "
+	    << baseSum << " (" << baseRatio<<')' << endl
+	 << "* independence splits: " << _independenceSplitCount << endl
+	 << "****" << endl;
+  }
+
+  virtual void doingIndependenceSplit(const Slice& s lice,
+				      Ideal* mixedProjectionSubtract) {
+    ++_independenceSplitCount;
+    DecoratorSliceStrategy::doingIndependenceSplit(slice,
+						   mixedProjectionSubtract);
   }
 
   void startingContent(const Slice& slice) {
-    if (_calls.size() == _level)
+    if (_level > 0)
+      _isBaseCase[_level - 1] = false;
+
+    if (_calls.size() == _level) {
       _calls.push_back(0);
+      _baseCases.push_back(0);
+      _isBaseCase.push_back(true);
+    }
+
+    _isBaseCase[_level] = true;
     ++_calls[_level];
     ++_level;
 
@@ -752,13 +780,25 @@ public:
 
   void endingContent() {
     --_level;
+    if (_isBaseCase[_level])
+      ++_baseCases[_level];
 
     DecoratorSliceStrategy::endingContent();
+  }
+
+  void consume(const Term& term) {
+    ++_consumeCount;
+
+    DecoratorSliceStrategy::consume(term);
   }
 
 private:
   size_t _level;
   vector<size_t> _calls;
+  vector<size_t> _baseCases;
+  vector<size_t> _isBaseCase;
+  size_t _consumeCount;
+  size_t _independenceSplitCount;
 };
 
 SliceStrategy* SliceStrategy::addStatistics(SliceStrategy* strategy) {
