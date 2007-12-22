@@ -754,7 +754,7 @@ public:
 	 << "****" << endl;
   }
 
-  virtual void doingIndependenceSplit(const Slice& s lice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) {
     ++_independenceSplitCount;
     DecoratorSliceStrategy::doingIndependenceSplit(slice,
