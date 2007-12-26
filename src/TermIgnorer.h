@@ -1,12 +1,12 @@
-#ifndef DECOM_IGNORER_GUARD
-#define DECOM_IGNORER_GUARD
+#ifndef TERM_IGNORER_GUARD
+#define TERM_IGNORER_GUARD
 
-#include "DecomConsumer.h"
+#include "TermConsumer.h"
 
 class Term;
 
 // Simply ignores everything it consumes.
-class DecomIgnorer : public DecomConsumer {
+class TermIgnorer : public TermConsumer {
  public:
   virtual void consume(const Term& term) {}
 };

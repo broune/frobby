@@ -75,6 +75,9 @@ ifeq ($(MODE), profile)
 	./bench
 	gprof ./frobby > prof
 endif
+ifeq ($(MODE), release)
+	strip bin/$(program)
+endif
 
 test: all
 ifdef TESTCASE

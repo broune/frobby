@@ -2,7 +2,7 @@
 #include "Slice.h"
 
 #include "Ideal.h"
-#include "DecomConsumer.h"
+#include "TermConsumer.h"
 
 Slice::Slice():
   _varCount(0) {
@@ -110,7 +110,7 @@ void Slice::outerSlice(const Term& pivot) {
   _lowerBoundHint = pivot.getFirstNonZeroExponent();
 }
 
-bool Slice::baseCase(DecomConsumer* consumer) {
+bool Slice::baseCase(TermConsumer* consumer) {
   if (getIdeal().getGeneratorCount() < _varCount)
     return true;
 
@@ -354,7 +354,7 @@ bool Slice::getLowerBound(Term& bound) const {
   return true;
 }
 
-void Slice::twoVarBaseCase(DecomConsumer* consumer) {
+void Slice::twoVarBaseCase(TermConsumer* consumer) {
   ASSERT(_varCount == 2);
 
   singleDegreeSortIdeal(0);
@@ -386,7 +386,7 @@ void Slice::twoVarBaseCase(DecomConsumer* consumer) {
   }
 }
 
-void Slice::oneMoreGeneratorBaseCase(DecomConsumer* consumer) {
+void Slice::oneMoreGeneratorBaseCase(TermConsumer* consumer) {
   ASSERT(_varCount + 1 == getIdeal().getGeneratorCount());
 
   // Since the slice is fully simplified, we must be dealing with an
@@ -448,7 +448,7 @@ bool getTheOnlyTwoNonMax(Ideal::const_iterator it,
   return count == 2;
 }
 
-bool Slice::twoNonMaxBaseCase(DecomConsumer* consumer) {
+bool Slice::twoNonMaxBaseCase(TermConsumer* consumer) {
   const Term& lcm = getLcm();
   Ideal::const_iterator stop = getIdeal().end();
 

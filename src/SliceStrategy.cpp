@@ -41,7 +41,7 @@ size_t SliceStrategy::getLabelSplitVariable(const Slice& slice) {
 
 class DecomSliceStrategy : public SliceStrategy {
 public:
-  DecomSliceStrategy(DecomConsumer* consumer):
+  DecomSliceStrategy(TermConsumer* consumer):
     _consumer(consumer) {
   }
 
@@ -78,11 +78,11 @@ public:
   }
 
 private:
-  class IndependenceSplit : public DecomConsumer {
+  class IndependenceSplit : public TermConsumer {
   public:
     IndependenceSplit(const Slice& slice,
 		      Ideal* mixedProjectionSubtract,
-		      DecomConsumer* consumer):
+		      TermConsumer* consumer):
       _partialTerm(slice.getMultiply()),
       _mixedProjectionSubtract(mixedProjectionSubtract),
       _consumer(consumer),
@@ -169,7 +169,7 @@ private:
     Term _partialTerm;
     Ideal* _mixedProjectionSubtract;
 
-    DecomConsumer* _consumer;
+    TermConsumer* _consumer;
     const Projection* _lastPartProjection;
   };
 
@@ -179,7 +179,7 @@ private:
     return _independenceSplits.back();
   }
 
-  DecomConsumer* getCurrentConsumer() {
+  TermConsumer* getCurrentConsumer() {
     if (_independenceSplits.empty())
       return _consumer;
     else
@@ -187,13 +187,13 @@ private:
   }
   
   vector<IndependenceSplit*> _independenceSplits;
-  DecomConsumer* _consumer;
+  TermConsumer* _consumer;
 };
 
 
 class LabelSliceStrategy : public DecomSliceStrategy {
 public:
-  LabelSliceStrategy(DecomConsumer* consumer):
+  LabelSliceStrategy(TermConsumer* consumer):
     DecomSliceStrategy(consumer) {
   }
 
@@ -225,7 +225,7 @@ public:
     Max
   };
 
-  PivotSliceStrategy(Type type, DecomConsumer* consumer):
+  PivotSliceStrategy(Type type, TermConsumer* consumer):
     DecomSliceStrategy(consumer),
     _type(type) {
   }
@@ -269,7 +269,7 @@ private:
 };
 
 SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
-					       DecomConsumer* consumer) {
+					       TermConsumer* consumer) {
   if (name == "label")
     return new LabelSliceStrategy(consumer);
   else if (name == "minart")
@@ -350,7 +350,7 @@ private:
   SliceStrategy* _strategy;
 };
 
-class FrobeniusIndependenceSplit : public DecomConsumer {
+class FrobeniusIndependenceSplit : public TermConsumer {
 public:
   FrobeniusIndependenceSplit(const TermGrader& grader):
     _grader(grader),
@@ -576,7 +576,7 @@ private:
 class FrobeniusSliceStrategy : public DecoratorSliceStrategy {
 public:
   FrobeniusSliceStrategy(SliceStrategy* strategy,
-			 DecomConsumer* consumer,
+			 TermConsumer* consumer,
 			 TermGrader& grader):
     DecoratorSliceStrategy(strategy),
     _consumer(consumer),
@@ -646,14 +646,14 @@ private:
     return _independenceSplits.back();
   }
 
-  DecomConsumer* _consumer;
+  TermConsumer* _consumer;
   vector<FrobeniusIndependenceSplit*> _independenceSplits;
   const TermGrader& _grader;
 };
 
 SliceStrategy* SliceStrategy::
 newFrobeniusStrategy(const string& name,
-		     DecomConsumer* consumer,
+		     TermConsumer* consumer,
 		     TermGrader& grader) {
   SliceStrategy* strategy = newDecomStrategy(name, 0);
   if (strategy == 0)

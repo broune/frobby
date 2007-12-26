@@ -15,9 +15,10 @@
 #include "SliceAlgorithm.h"
 #include "DecomWriter.h"
 #include "SliceStrategy.h"
-#include "DecomIgnorer.h"
+#include "TermIgnorer.h"
 #include "DecomRecorder.h"
 #include "TermGrader.h"
+#include "TermConsumer.h"
 
 IrreducibleDecomFacade::
 IrreducibleDecomFacade(bool printActions,
@@ -27,12 +28,12 @@ IrreducibleDecomFacade(bool printActions,
 }
 
 void IrreducibleDecomFacade::
-computeIrreducibleDecom(Ideal& ideal, DecomConsumer* decomConsumer) {
+computeIrreducibleDecom(Ideal& ideal, TermConsumer* consumer) {
   beginAction("Computing irreducible decomposition.");
 
   if (_parameters.getUseSlice()) {
     SliceStrategy* strategy =
-      SliceStrategy::newDecomStrategy(_parameters.getSplit(), decomConsumer);
+      SliceStrategy::newDecomStrategy(_parameters.getSplit(), consumer);
     if (strategy == 0) {
       cerr << "ERROR: Unknown split strategy \""
 	   << _parameters.getSplit()
@@ -43,7 +44,7 @@ computeIrreducibleDecom(Ideal& ideal, DecomConsumer* decomConsumer) {
     runSliceAlgorithm(ideal, strategy);
   } else {
     Strategy* strategy =
-      new DecompositionStrategy(decomConsumer, ideal.getVarCount());
+      new DecompositionStrategy(consumer, ideal.getVarCount());
     runLabelAlgorithm(ideal, strategy);
   }
 
@@ -72,15 +73,15 @@ computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out) {
   bigIdeal.clear();
   translator.addArtinianPowers(ideal);
 
-  DecomConsumer* decomConsumer;
+  TermConsumer* consumer;
   if (_parameters.getDoBenchmark())
-    decomConsumer = new DecomIgnorer();
+    consumer = new TermIgnorer();
   else
-    decomConsumer = new DecomWriter(translator.getNames(), &translator, out);
+    consumer = new DecomWriter(translator.getNames(), &translator, out);
   
   endAction();
 
-  computeIrreducibleDecom(ideal, decomConsumer);
+  computeIrreducibleDecom(ideal, consumer);
 }
 
 void IrreducibleDecomFacade::

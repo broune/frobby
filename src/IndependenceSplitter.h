@@ -1,7 +1,6 @@
 #ifndef INDEPENDENCE_SPLITTER_GUARD
 #define INDEPENDENCE_SPLITTER_GUARD
 
-#include "DecomConsumer.h"
 #include "Partition.h"
 #include "Projection.h"
 #include "Ideal.h"
