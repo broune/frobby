@@ -11,14 +11,14 @@ class TermTree;
 class TermTranslator;
 class OldPartition;
 class IOHandler;
-class DecomConsumer;
+class TermConsumer;
 
 class DecompositionStrategy : public Strategy {
   typedef list<Term> TermCont;
 
 public:
   // Ownership of decomConsumer is taken over.
-  DecompositionStrategy(DecomConsumer* decomConsumer,
+  DecompositionStrategy(TermConsumer* consumer,
 			unsigned int dimension);
 
   virtual ~DecompositionStrategy();
@@ -66,7 +66,7 @@ protected:
   stack<TermCont*> _solutions;
   vector<bool> _firstPartition;
 
-  DecomConsumer* _decomConsumer;
+  TermConsumer* _consumer;
 };
 
 #endif

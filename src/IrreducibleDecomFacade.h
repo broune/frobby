@@ -7,10 +7,9 @@ class IrreducibleDecomParameters;
 class BigIdeal;
 class Strategy;
 class TermTranslator;
-class DecomConsumer;
 class SliceStrategy;
 class Ideal;
-class DecomConsumer;
+class TermConsumer;
 
 class IrreducibleDecomFacade : private Facade {
  public:
@@ -19,7 +18,7 @@ class IrreducibleDecomFacade : private Facade {
 
   // These all clear ideal.
   void computeIrreducibleDecom(BigIdeal& ideal, FILE* out);
-  void computeIrreducibleDecom(Ideal& ideal, DecomConsumer* decomConsumer);
+  void computeIrreducibleDecom(Ideal& ideal, TermConsumer* consumer);
   void computeFrobeniusNumber(const vector<mpz_class>& instance,
 			      BigIdeal& ideal, 
 			      mpz_class& frobeniusNumber);

@@ -2,7 +2,7 @@
 #define DECOM_WRITER_GUARD
 
 #include "VarNames.h"
-#include "DecomConsumer.h"
+#include "TermConsumer.h"
 
 class IOHandler;
 class TermTranslator;
@@ -10,7 +10,7 @@ class Term;
 
 #include <vector>
 
-class DecomWriter : public DecomConsumer {
+class DecomWriter : public TermConsumer {
 public:
   DecomWriter(const VarNames& names,
 	      const TermTranslator* translator,

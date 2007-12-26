@@ -22,12 +22,6 @@ $(outdir)FrobeniusStrategy.o: src/label/FrobeniusStrategy.cpp \
 $(outdir)BenchmarkStrategy.o: src/label/BenchmarkStrategy.cpp \
   src/label/../stdinc.h src/label/BenchmarkStrategy.h \
   src/label/Strategy.h
-$(outdir)DecompositionStrategy.o: src/label/DecompositionStrategy.cpp \
-  src/label/../stdinc.h src/label/DecompositionStrategy.h \
-  src/label/Strategy.h src/label/../VarNames.h src/label/TermTree.h \
-  src/label/../Term.h src/label/../Ideal.h src/label/../Term.h \
-  src/label/Allocator.h src/label/OldPartition.h \
-  src/label/../DecomConsumer.h
 $(outdir)StatisticsStrategy.o: src/label/StatisticsStrategy.cpp \
   src/label/../stdinc.h src/label/StatisticsStrategy.h \
   src/label/Strategy.h src/label/TermTree.h src/label/../Term.h \
@@ -117,9 +111,9 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
   src/BoolParameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
   src/IOFacade.h src/TermTranslator.h src/Ideal.h src/Term.h \
-  src/SliceAlgorithm.h src/DecomWriter.h src/DecomConsumer.h \
-  src/SliceStrategy.h src/DecomIgnorer.h src/DecomRecorder.h \
-  src/TermGrader.h src/Projection.h
+  src/SliceAlgorithm.h src/DecomWriter.h src/TermConsumer.h \
+  src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h \
+  src/TermGrader.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
@@ -174,7 +168,7 @@ $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceAlgorithm.h src/Term.h src/VarNames.h src/io.h \
   src/TermTranslator.h src/Ideal.h src/Partition.h src/Slice.h \
-  src/DecomConsumer.h src/DecomWriter.h src/SliceStrategy.h \
+  src/DecomWriter.h src/TermConsumer.h src/SliceStrategy.h \
   src/IndependenceSplitter.h src/Projection.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
@@ -192,7 +186,7 @@ $(outdir)AssociatedPrimesFacade.o: src/AssociatedPrimesFacade.cpp src/stdinc.h \
   src/IrreducibleDecomFacade.h src/IrreducibleDecomParameters.h \
   src/ParameterGroup.h src/Parameter.h src/BoolParameter.h \
   src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
-  src/Ideal.h src/Term.h src/DecomRecorder.h src/DecomConsumer.h \
+  src/Ideal.h src/Term.h src/DecomRecorder.h src/TermConsumer.h \
   src/TermTranslator.h
 $(outdir)AssociatedPrimesAction.o: src/AssociatedPrimesAction.cpp src/stdinc.h \
   src/AssociatedPrimesAction.h src/Action.h src/BoolParameter.h \
@@ -204,17 +198,17 @@ $(outdir)PrimaryDecomAction.o: src/PrimaryDecomAction.cpp src/stdinc.h \
   src/Parameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
   src/Facade.h src/Timer.h src/PrimaryDecomFacade.h
 $(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h src/Term.h src/Ideal.h \
-  src/DecomConsumer.h
+  src/TermConsumer.h
 $(outdir)IndependenceSplitter.o: src/IndependenceSplitter.cpp src/stdinc.h \
-  src/IndependenceSplitter.h src/DecomConsumer.h src/Partition.h \
-  src/Projection.h src/Ideal.h src/Term.h src/Slice.h
+  src/IndependenceSplitter.h src/Partition.h src/Projection.h src/Ideal.h \
+  src/Term.h src/Slice.h
 $(outdir)Projection.o: src/Projection.cpp src/stdinc.h src/Projection.h src/Term.h \
   src/Partition.h
 $(outdir)DecomWriter.o: src/DecomWriter.cpp src/stdinc.h src/DecomWriter.h \
-  src/VarNames.h src/DecomConsumer.h src/io.h src/TermTranslator.h \
+  src/VarNames.h src/TermConsumer.h src/io.h src/TermTranslator.h \
   src/Term.h
 $(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
-  src/DecomConsumer.h src/Slice.h src/Term.h src/Ideal.h \
+  src/TermConsumer.h src/Slice.h src/Term.h src/Ideal.h \
   src/TermTranslator.h src/VarNames.h src/Projection.h \
   src/SliceAlgorithm.h src/TermGrader.h
 $(outdir)lattice.o: src/lattice.cpp src/stdinc.h src/lattice.h src/BigIdeal.h \
@@ -225,6 +219,6 @@ $(outdir)PrimaryDecomFacade.o: src/PrimaryDecomFacade.cpp src/stdinc.h \
   src/PrimaryDecomFacade.h src/Facade.h src/Timer.h src/BigIdeal.h \
   src/VarNames.h src/IOFacade.h
 $(outdir)DecomRecorder.o: src/DecomRecorder.cpp src/stdinc.h src/DecomRecorder.h \
-  src/DecomConsumer.h src/Term.h src/Ideal.h
-$(outdir)TermGrader.o: src/TermGrader.cpp src/stdinc.h src/TermGrader.h src/Term.h \
-  src/Projection.h
+  src/TermConsumer.h src/Term.h src/Ideal.h
+$(outdir)TermGrader.o: src/TermGrader.cpp src/stdinc.h src/TermGrader.h \
+  src/Projection.h src/TermTranslator.h src/VarNames.h src/Term.h

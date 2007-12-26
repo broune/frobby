@@ -2,7 +2,7 @@
 #define SLICE_STRATEGY_GUARD
 
 #include <string>
-#include "DecomConsumer.h"
+#include "TermConsumer.h"
 
 class Slice;
 class Term;
@@ -11,7 +11,7 @@ class Projection;
 class Ideal;
 class TermGrader;
 
-class SliceStrategy : public DecomConsumer {
+class SliceStrategy : public TermConsumer {
  public:
   virtual ~SliceStrategy();
 
@@ -51,10 +51,10 @@ class SliceStrategy : public DecomConsumer {
   // Static methods to create strategies.
 
   static SliceStrategy* newDecomStrategy(const string& name,
-					 DecomConsumer* consumer);
+					 TermConsumer* consumer);
 
   static SliceStrategy* newFrobeniusStrategy(const string& name,
-					     DecomConsumer* consumer,
+					     TermConsumer* consumer,
 					     TermGrader& grader);
 
   static SliceStrategy* addStatistics(SliceStrategy* strategy);

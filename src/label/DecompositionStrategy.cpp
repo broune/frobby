@@ -4,13 +4,13 @@
 #include "TermTree.h"
 #include "OldPartition.h"
 
-#include "../DecomConsumer.h"
+#include "../TermConsumer.h"
 
-DecompositionStrategy::DecompositionStrategy(DecomConsumer* decomConsumer,
+DecompositionStrategy::DecompositionStrategy(TermConsumer* consumer,
 					     unsigned int dimension):
   _dimension(dimension),
   _firstPartition(dimension),
-  _decomConsumer(decomConsumer) {
+  _consumer(consumer) {
   _solutions.push(new TermCont());
 }
 
@@ -23,7 +23,7 @@ DecompositionStrategy::~DecompositionStrategy() {
   _solutions.pop();
   ASSERT(_solutions.empty());
 
-  delete _decomConsumer;
+  delete _consumer;
 }
 
 void DecompositionStrategy::getName(string& name) const {
@@ -135,5 +135,5 @@ void DecompositionStrategy::flushIfPossible() {
 
 void DecompositionStrategy::writeSolution(const Term& b) {
   ASSERT(_dimension == b.getVarCount());
-  _decomConsumer->consume(b);
+  _consumer->consume(b);
 }

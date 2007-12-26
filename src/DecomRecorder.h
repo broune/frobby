@@ -1,13 +1,12 @@
 #ifndef DECOM_RECORDER_GUARD
 #define DECOM_RECORDER_GUARD
 
-#include "DecomConsumer.h"
+#include "TermConsumer.h"
 #include "Term.h"
 
 class Ideal;
-class Term;
 
-class DecomRecorder : public DecomConsumer {
+class DecomRecorder : public TermConsumer {
 public:
   // DecomRecorder does not take over ownership of recordInto.
   DecomRecorder(Ideal* recordInto);
