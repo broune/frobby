@@ -16,6 +16,8 @@
 #include "DecomWriter.h"
 #include "SliceStrategy.h"
 #include "DecomIgnorer.h"
+#include "DecomRecorder.h"
+#include "TermGrader.h"
 
 IrreducibleDecomFacade::
 IrreducibleDecomFacade(bool printActions,
@@ -105,9 +107,14 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   translator.addArtinianPowers(ideal);
 
   if (_parameters.getUseSlice()) {
+    Ideal i(ideal.getVarCount());
+    DecomRecorder recorder(&i);
+    vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
+    TermGrader grader(shiftedDegrees, &translator);
+    
     SliceStrategy* strategy = SliceStrategy::newFrobeniusStrategy
-      (_parameters.getSplit(), instance, &translator, frobeniusNumber);
-
+      (_parameters.getSplit(), &recorder, grader);
+    
      // TODO: factor out common error code into SliceStrategy.
      if (strategy == 0) {
        cerr << "ERROR: Unknown split strategy \""
@@ -118,6 +125,10 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 
      runSliceAlgorithm(ideal, strategy);
 
+     ASSERT(i.getGeneratorCount() == 1);
+     grader.getDegree(Term(*i.begin(), i.getVarCount()), frobeniusNumber);
+     for (size_t i = 0; i < instance.size(); ++i)
+       frobeniusNumber -= instance[i];
   } else {
     Strategy* strategy = new FrobeniusStrategy
       (instance, &frobeniusNumber, ideal.getVarCount(),

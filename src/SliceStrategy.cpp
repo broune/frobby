@@ -8,6 +8,7 @@
 #include <vector>
 #include "Projection.h"
 #include "SliceAlgorithm.h"
+#include "TermGrader.h"
 
 SliceStrategy::~SliceStrategy() {
 }
@@ -349,58 +350,6 @@ private:
   SliceStrategy* _strategy;
 };
 
-class TermGrader {
-public:
-  TermGrader(const vector<mpz_class>& varDegrees,
-	     const TermTranslator* translator):
-    _grades(varDegrees.size()) {
-
-    for (size_t var = 0; var < varDegrees.size(); ++var) {
-      size_t maxId = translator->getMaxId(var);
-      _grades[var].resize(maxId + 1);
-
-      for (Exponent e = 0; e <= maxId; ++e)
-	_grades[var][e] = varDegrees[var] * translator->getExponent(var, e);
-    }
-  }
-
-  void getDegree(const Term& term,
-		 const Projection& projection,
-		 mpz_class& degree) const {
-    ASSERT(term.getVarCount() == projection.getRangeVarCount());
-    degree = 0;
-    for (size_t var = 0; var < term.getVarCount(); ++var)
-      degree += getGrade(projection.inverseProjectVar(var), term[var]);
-  }
-
-  void getIncrementedDegree(const Term& term,
-			    const Projection& projection,
-			    mpz_class& degree) const {
-    ASSERT(term.getVarCount() == projection.getRangeVarCount());
-    degree = 0;
-    for (size_t var = 0; var < term.getVarCount(); ++var)
-      degree += getGrade(projection.inverseProjectVar(var), term[var] + 1);
-  }
-
-  const mpz_class& getGrade(size_t var, Exponent exponent) const {
-    ASSERT(var < _grades.size());
-    ASSERT(exponent < _grades[var].size());
-
-    return _grades[var][exponent];
-  }
-  
-  Exponent getMaxExponent(size_t var) const {
-    return _grades[var].size() - 1;
-  }
-
-  size_t getVarCount() const {
-    return _grades.size();
-  }
-
-private:
-  vector<vector<mpz_class> > _grades;
-};
-
 class FrobeniusIndependenceSplit : public DecomConsumer {
 public:
   FrobeniusIndependenceSplit(const TermGrader& grader):
@@ -627,24 +576,20 @@ private:
 class FrobeniusSliceStrategy : public DecoratorSliceStrategy {
 public:
   FrobeniusSliceStrategy(SliceStrategy* strategy,
-			 const vector<mpz_class>& instance,
-			 const TermTranslator* translator,
-			 mpz_class& frobeniusNumber):
+			 DecomConsumer* consumer,
+			 TermGrader& grader):
     DecoratorSliceStrategy(strategy),
-    _instance(instance),
-    _shiftedDegrees(instance.begin() + 1, instance.end()),
-    _frobeniusNumber(frobeniusNumber),
-    _grader(_shiftedDegrees, translator) {
-    ASSERT(instance.size() == translator->getNames().getVarCount() + 1);
+    _consumer(consumer),
+    _grader(grader) {
+    ASSERT(_consumer != 0);
 
     _independenceSplits.push_back
       (new FrobeniusIndependenceSplit(_grader));
   }
 
   virtual ~FrobeniusSliceStrategy() {
-    getCurrentSplit()->getBoundDegree(_frobeniusNumber);
-    for (size_t var = 0; var < _instance.size(); ++var)
-      _frobeniusNumber -= _instance[var];
+    ASSERT(_consumer != 0);
+    _consumer->consume(getCurrentSplit()->getBound());
 
     delete getCurrentSplit();
     _independenceSplits.pop_back();
@@ -701,26 +646,20 @@ private:
     return _independenceSplits.back();
   }
 
-  const vector<mpz_class> _instance;
-  const vector<mpz_class> _shiftedDegrees;
-  mpz_class& _frobeniusNumber;
-
+  DecomConsumer* _consumer;
   vector<FrobeniusIndependenceSplit*> _independenceSplits;
-
-  TermGrader _grader;
+  const TermGrader& _grader;
 };
 
 SliceStrategy* SliceStrategy::
 newFrobeniusStrategy(const string& name,
-		     const vector<mpz_class>& instance,
-		     const TermTranslator* translator,
-		     mpz_class& frobeniusNumber) {
+		     DecomConsumer* consumer,
+		     TermGrader& grader) {
   SliceStrategy* strategy = newDecomStrategy(name, 0);
   if (strategy == 0)
     return 0;
 
-  return new FrobeniusSliceStrategy(strategy, instance,
-				    translator, frobeniusNumber);
+  return new FrobeniusSliceStrategy(strategy, consumer, grader);
 }
 
 class StatisticsSliceStrategy : public DecoratorSliceStrategy {

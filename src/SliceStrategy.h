@@ -9,6 +9,7 @@ class Term;
 class TermTranslator;
 class Projection;
 class Ideal;
+class TermGrader;
 
 class SliceStrategy : public DecomConsumer {
  public:
@@ -53,9 +54,8 @@ class SliceStrategy : public DecomConsumer {
 					 DecomConsumer* consumer);
 
   static SliceStrategy* newFrobeniusStrategy(const string& name,
-					     const vector<mpz_class>& instance,
-					     const TermTranslator* translator,
-					     mpz_class& frobeniusNumber);
+					     DecomConsumer* consumer,
+					     TermGrader& grader);
 
   static SliceStrategy* addStatistics(SliceStrategy* strategy);
   static SliceStrategy* addDebugOutput(SliceStrategy* strategy);
