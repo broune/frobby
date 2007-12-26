@@ -420,6 +420,7 @@ void Slice::oneMoreGeneratorBaseCase(DecomConsumer* consumer) {
   }
 }
 
+// Helper function for the method twoNonMaxBaseCase.
 bool getTheOnlyTwoNonMax(Ideal::const_iterator it,
 			 const Exponent*& first,
 			 const Exponent*& second,
@@ -472,7 +473,11 @@ bool Slice::twoNonMaxBaseCase(DecomConsumer* consumer) {
 	continue;
       if (nonMax2[var2] <= nonMax1[var2])
 	continue;
-
+      
+      // Use tmp to record those variables for which labels have been
+      // found. If some variable has no label, then we are not dealing
+      // with an actual maximal standard monomial.
+      tmp.setToIdentity();
       tmp[var1] = true;
       tmp[var2] = true;
       for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
@@ -490,7 +495,7 @@ bool Slice::twoNonMaxBaseCase(DecomConsumer* consumer) {
 
       if (tmp.getSizeOfSupport() < _varCount)
 	continue;
-
+      
       msm[var1] = nonMax1[var1] - 1;
       msm[var2] = nonMax2[var2] - 1;
       if (!getSubtract().contains(msm)) {
