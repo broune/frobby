@@ -26,7 +26,8 @@ rawSources = $(patsubst %, label/%, $(labelSources))			\
   PrimaryDecomAction.cpp Slice.cpp					\
   IndependenceSplitter.cpp Projection.cpp DecomWriter.cpp		\
   SliceStrategy.cpp lattice.cpp						\
-  LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp
+  LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp		\
+  TermGrader.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\
