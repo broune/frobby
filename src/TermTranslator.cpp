@@ -14,7 +14,7 @@
 TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal,
 			       bool sortVars) {
   vector<BigIdeal*> bigIdeals;
-  bigIdeals.push_back((BigIdeal*)&bigIdeal);
+  bigIdeals.push_back(const_cast<BigIdeal*>(&bigIdeal));
   initialize(bigIdeals, sortVars);
 
   shrinkBigIdeal(bigIdeal, ideal);
