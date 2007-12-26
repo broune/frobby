@@ -108,8 +108,8 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   translator.addArtinianPowers(ideal);
 
   if (_parameters.getUseSlice()) {
-    Ideal i(ideal.getVarCount());
-    DecomRecorder recorder(&i);
+    Ideal maxSolution(ideal.getVarCount());
+    DecomRecorder recorder(&maxSolution);
     vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
     TermGrader grader(shiftedDegrees, &translator);
     
@@ -126,8 +126,9 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 
      runSliceAlgorithm(ideal, strategy);
 
-     ASSERT(i.getGeneratorCount() == 1);
-     grader.getDegree(Term(*i.begin(), i.getVarCount()), frobeniusNumber);
+     ASSERT(maxSolution.getGeneratorCount() == 1);
+     grader.getDegree(Term(*maxSolution.begin(), maxSolution.getVarCount()),
+		      frobeniusNumber);
      for (size_t i = 0; i < instance.size(); ++i)
        frobeniusNumber -= instance[i];
   } else {

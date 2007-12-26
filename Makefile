@@ -105,11 +105,13 @@ ifneq ($(MODE), analysis)
 	g++ $(objs) $(ldflags) -o $(outdir)$(program)
 endif
 
-# Compile and output object files
+# Compile and output object files.
+# In analysis mode no file is created, so create one
+# to allow dependency analysis to work.
 $(outdir)%.o: src/%.cpp | $(outdir)
 	  g++ ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
 ifeq ($(MODE), analysis)
-	  echo > $(outdir)$(<:.cpp=.o)
+	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
 endif
 
 # ***** Dependency management
