@@ -33,5 +33,5 @@ void GenerateFrobeniusAction::perform() {
   randomDataFacade.generateFrobeniusInstance(instance);
 
   IOFacade ioFacade(_printActions);
-  ioFacade.writeFrobeniusInstance(cout, instance);
+  ioFacade.writeFrobeniusInstance(stdout, instance);
 }

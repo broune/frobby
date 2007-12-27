@@ -21,7 +21,7 @@ class IdealFacade : private Facade {
   // Sorts the variables of ideal.
   void sortVariables(BigIdeal& ideal);
 
-  void printAnalysis(ostream& out, BigIdeal& ideal);
+  void printAnalysis(FILE* out, BigIdeal& ideal);
 };
 
 #endif

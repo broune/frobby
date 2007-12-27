@@ -16,11 +16,11 @@ class IOFacade : private Facade {
   void readFrobeniusInstance(FILE* in, vector<mpz_class>& instance);
   void readFrobeniusInstanceWithGrobnerBasis
     (FILE* in, BigIdeal& ideal, vector<mpz_class>& instance);
-  void writeFrobeniusInstance(ostream& out, vector<mpz_class>& instance);
+  void writeFrobeniusInstance(FILE* out, vector<mpz_class>& instance);
 
   bool isValidLatticeFormat(const char* format);
   void readLattice(FILE* in, BigIdeal& ideal, const char* format);
-  void writeLattice(ostream& out, const BigIdeal& ideal, const char* format);
+  void writeLattice(FILE* out, const BigIdeal& ideal, const char* format);
 };
 
 #endif

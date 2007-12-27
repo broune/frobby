@@ -34,13 +34,9 @@ bool SkipRedundantStrategy::consideringCall(const Term& b,
   
   _remember[position] = sameExponentAsNext;
 
-  //cout << "looking at possible skip for " << position << ' ' << b << endl;
-  //print(cout);
-
   if (_skip[position].getDivisor(b) != 0) {
     if (!sameExponentAsNext)
       _newSkip[position + 1].clear();
-    //cout << "skipped" << endl;
     return false;
   }
 
@@ -82,13 +78,9 @@ void SkipRedundantStrategy::endingCall(const Term& b,
   
 void SkipRedundantStrategy::foundSolution(const Term& b,
 					  bool startingPartition) {
-  //cout << "sol " << b << ' ' << startingPartition << endl;
-  //print(cout);
   if ((startingPartition && _skip[_dimension - 1].getDivisor(b) == 0) ||
       (!startingPartition && _skip[_dimension - 2].getDivisor(b) == 0))
     _strategy->foundSolution(b, startingPartition);
-  //else
-  //  cout << "skipped sol" << endl;
 }
 
 void SkipRedundantStrategy::
@@ -121,12 +113,9 @@ void SkipRedundantStrategy::doingPartitionSet(int position,
   _skip[nextPosition].clear();
   _skip[nextPosition].setThreshold(compressedB);
 
-  //cout << "compressing _skip. b=" << b << ", nextPosition=" << nextPosition << endl;
   Term term(_dimension);
   while (!it.atEnd()) {
     it.getTerm(term);
-
-    //cout << "compressing: " << term << endl;
 
     for (int i = _dimension - 1; i >= position; --i) {
       if (compressor[i] == 0xFFFFFFFF) {

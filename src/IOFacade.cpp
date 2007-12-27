@@ -79,11 +79,15 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
 }
 
 void IOFacade::
-writeFrobeniusInstance(ostream& out, vector<mpz_class>& instance) {
+writeFrobeniusInstance(FILE* out, vector<mpz_class>& instance) {
   beginAction("Writing Frobenius instance.");
 
-  copy(instance.begin(), instance.end(),
-       ostream_iterator<mpz_class>(out, "\n"));
+  for (size_t i = 0; i < instance.size(); ++i) {
+    if (i > 0)
+      fputc(' ', out);
+    gmp_fprintf(out, "%Zd", instance[i].get_mpz_t());
+  }
+  fputc('\n', out);
 
   endAction();
 }
@@ -115,7 +119,7 @@ readLattice(FILE* in, BigIdeal& ideal, const char* format) {
 }
 
 void IOFacade::
-writeLattice(ostream& out, const BigIdeal& ideal, const char* format) {
+writeLattice(FILE* out, const BigIdeal& ideal, const char* format) {
   beginAction("Writing lattice basis.");
 
   if (strcmp(format, "4ti2") == 0)

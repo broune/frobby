@@ -32,5 +32,5 @@ void AnalyzeAction::perform() {
   ioFacade.readIdeal(stdin, ideal);
 
   IdealFacade idealFacade(_printActions);
-  idealFacade.printAnalysis(cout, ideal);
+  idealFacade.printAnalysis(stdout, ideal);
 }

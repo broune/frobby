@@ -39,5 +39,5 @@ void DynamicFrobeniusAction::perform() {
   DynamicFrobeniusFacade frobeniusFacade(_printActions);
   frobeniusFacade.computeFrobeniusNumber(instance, frobeniusNumber);
 
-  cout << frobeniusNumber << endl;
+  gmp_fprintf(stdout, "%Zd\n", frobeniusNumber.get_mpz_t());
 }

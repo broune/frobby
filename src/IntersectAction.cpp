@@ -37,11 +37,13 @@ void IntersectAction::perform() {
   IOFacade ioFacade(_printActions);
   while (true) {
     // Check if there is more input.
-    char c;
-    cin >> c;
-    if (!cin)
+    int c;
+    do
+      c = getc(stdin);
+    while (isspace(c));
+    if (c == EOF)
       break;
-    cin.unget();
+    ungetc(c, stdin);
 
     // Read ideal
     BigIdeal* ideal = new BigIdeal();

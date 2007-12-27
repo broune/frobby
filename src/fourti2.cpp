@@ -6,14 +6,6 @@
 #include "io.h"
 
 namespace fourti2 {
-  void writeDegrees(ostream& out, const vector<Degree>& degrees) {
-    out << "1 " << degrees.size() << '\n';
-    out << degrees[0];
-    for (size_t i = 1; i < degrees.size(); ++i)
-      out << ' ' << degrees[i];
-    out << endl;
-  }
-  
   void readTerm(BigIdeal& ideal, Lexer& lexer) {
     ideal.newLastTerm();
 
@@ -53,17 +45,19 @@ namespace fourti2 {
     }
   }
 
-  void writeLatticeBasis(ostream& out, const BigIdeal& basis) {
+  void writeLatticeBasis(FILE* out, const BigIdeal& basis) {
     ASSERT(!basis.empty());
 
-    out << basis.getGeneratorCount() << ' ' << basis[0].size() << '\n';
+    fprintf(out, "%u %u\n",
+	    (unsigned int)basis.getGeneratorCount(),
+	    (unsigned int)basis[0].size());
     for (unsigned int i = 0; i < basis.getGeneratorCount(); ++i) {
       const char* prefix = "";
       for (unsigned int j = 0; j < basis[i].size(); ++j) {
-	out << prefix << basis[i][j];
+	gmp_fprintf(out, "%s%Zd", prefix, basis[i][j].get_mpz_t());
 	prefix = " ";
       }
-      out << '\n';
+      fputc('\n', out);
     }
   }
 
