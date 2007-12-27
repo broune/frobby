@@ -5,6 +5,8 @@
 #include "Ideal.h"
 #include "TermTranslator.h"
 
+#include <cstdio>
+
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
 }
@@ -47,13 +49,13 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
   endAction();
 }
 
-void IdealFacade::printAnalysis(ostream& out, BigIdeal& ideal) {
+void IdealFacade::printAnalysis(FILE* out, BigIdeal& ideal) {
   beginAction("Computing and printing analyze.");
 
-  out << ideal.getGeneratorCount() << " generators\n"
-      << ideal.getVarCount() << " variables\n"
-      << "TODO: implement more analyze" << endl;
-
+  fprintf(out, "%u generators\n", (unsigned int)ideal.getGeneratorCount());
+  fprintf(out, "%u variables\n", (unsigned int)ideal.getVarCount());
+  fprintf(out, "TODO: implement more analyses.\n");
+  fflush(out);
 
 /*
 TODO:

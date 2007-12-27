@@ -75,5 +75,5 @@ void LatticeFormatAction::perform() {
     latticeFacade.makeZeroesInLatticeBasis(basis);
   }
 
-  facade.writeLattice(cout, basis, oformat.c_str());
+  facade.writeLattice(stdout, basis, oformat.c_str());
 }

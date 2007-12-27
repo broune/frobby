@@ -95,17 +95,6 @@ performPartition(const Term& b, const TermTree& tree) {
     }
 
     _strategy->doingPartitionSet(tree.getPosition(), b, newB, partition, compressor, nextTree);
-    /*
-      cout << "--------------" << endl;
-      cout << "total dimension: " << _dimension << endl;
-      cout << "setSize: " << partition.getSetSize(i, tree.getPosition()) << endl;
-      cout << "compressor " << i << ":";
-      for (unsigned int j = 0; j < compressor.size(); ++j)
-      cout << ' ' << compressor[j];
-      cout << endl;
-      tree.print(cout);
-      nextTree.print(cout);
-    //*/
     if (nextTree.getPosition() == (int)_dimension - 1) {
       TermTree::TreeIterator tmpIt(nextTree);
       newB[_dimension - 1] = 	tmpIt.getExponent(_dimension - 1) - 1;

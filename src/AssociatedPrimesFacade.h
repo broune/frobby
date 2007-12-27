@@ -2,7 +2,6 @@
 #define ASSOCIATED_PRIMES_GUARD
 
 #include "Facade.h"
-#include <ostream>
 
 class IrreducibleDecomParameters;
 class BigIdeal;
@@ -13,8 +12,8 @@ class AssociatedPrimesFacade : Facade {
 
   // Clears ideal.
   void computeAPUsingIrrDecom(BigIdeal& ideal,
-			    const IrreducibleDecomParameters& params,
-			    FILE* out);
+			      const IrreducibleDecomParameters& params,
+			      FILE* out);
 };
 
 

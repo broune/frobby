@@ -5,18 +5,18 @@
 #include "Lexer.h"
 
 namespace fplll {
-  void writeLatticeBasis(ostream& out, const BigIdeal& basis) {
-    out << "[\n";
+  void writeLatticeBasis(FILE* out, const BigIdeal& basis) {
+    fputs("[\n", out);
     for (unsigned int i = 0; i < basis.getGeneratorCount(); ++i) {
-      out << " [";
+      fputs(" [", out);
       const char* prefix = "";
       for (unsigned int j = 0; j < basis[i].size(); ++j) {
-	out << prefix << basis[i][j];
+	gmp_fprintf(out, "%s%Zd", prefix, basis[i][j].get_mpz_t());
 	prefix = " ";
       }
-      out << "]\n";
+      fputs("]\n", out);
     }
-    out << "]\n";
+    fputs("]\n", out);
   }
 
   void readLatticeBasis(FILE* in, BigIdeal& basis) {

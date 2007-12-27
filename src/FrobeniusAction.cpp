@@ -50,5 +50,5 @@ void FrobeniusAction::perform() {
   mpz_class frobeniusNumber;
   facade.computeFrobeniusNumber(instance, ideal, frobeniusNumber);
 
-  cout << frobeniusNumber << endl;
+  gmp_fprintf(stdout, "%Zd\n", frobeniusNumber.get_mpz_t());
 }

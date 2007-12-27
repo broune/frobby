@@ -133,7 +133,7 @@ void IOHandler::readVarPower(int& var, mpz_class& power,
   if (lexer.match('^')) {
     lexer.readInteger(power);
     if (power <= 0) {
-      cout << "ERROR: Expected positive integer as exponent but got " << power << '.' << endl;
+      cerr << "ERROR: Expected positive integer as exponent but got " << power << '.' << endl;
       exit(0);
     }
   } else

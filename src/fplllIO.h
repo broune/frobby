@@ -4,7 +4,7 @@
 class BigIdeal;
 
 namespace fplll {
-  void writeLatticeBasis(ostream& out, const BigIdeal& basis);
+  void writeLatticeBasis(FILE* out, const BigIdeal& basis);
 
   void readLatticeBasis(FILE* in, BigIdeal& basis);
 }

@@ -75,9 +75,6 @@ ifeq ($(MODE), profile)
 	./bench
 	gprof ./frobby > prof
 endif
-ifeq ($(MODE), release)
-	strip bin/$(program)
-endif
 
 test: all
 ifdef TESTCASE
@@ -86,6 +83,9 @@ ifdef TESTCASE
 else
 	export frobby=bin/$(program); ./test/runtests
 endif
+
+bench: all
+	cd data;time ./runbench
 
 $(outdir): $(outdir)label
 	mkdir -p $(outdir)
@@ -104,6 +104,10 @@ $(outdir)$(program): $(objs) | $(outdir)
 ifneq ($(MODE), analysis)
 	g++ $(objs) $(ldflags) -o $(outdir)$(program)
 endif
+ifeq ($(MODE), release)
+	strip bin/$(program)
+endif
+
 
 # Compile and output object files.
 # In analysis mode no file is created, so create one

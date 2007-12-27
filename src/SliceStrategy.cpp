@@ -678,11 +678,11 @@ public:
     for (size_t l = 0; l < _calls.size(); ++l) {
       sum += _calls[l];
       baseSum += _baseCases[l];
-      cerr << "Level " << l + 1 << " had "
-	   << _calls[l] << " calls of which "
-	   << _baseCases[l] << " were base cases." << endl;
+      if (false)
+	cerr << "Level " << l + 1 << " had "
+	     << _calls[l] << " calls of which "
+	     << _baseCases[l] << " were base cases." << endl;
     }
-    cerr << endl;
 
     double baseRatio = double(baseSum) / sum;
     cerr << "* recursive levels:    " << _calls.size() << endl
