@@ -3,10 +3,12 @@
 
 int main(int argc, const char** argv) {
 #ifdef DEBUG
-  cerr << "This is a DEBUG build of Frobby. It is therefore SLOW." << endl;
+  fputs("This is a DEBUG build of Frobby. It is therefore SLOW.\n", stderr);
+  fflush(stderr);
 #endif
 #ifdef PROFILE
-  cerr << "This is a PROFILE build of Frobby. It is therefore SLOW." << endl;
+  fputs("This is a PROFILE build of Frobby. It is therefore SLOW.\n", stderr);
+  fflush(stderr);
 #endif
 
   srand(time(0));
@@ -22,7 +24,7 @@ int main(int argc, const char** argv) {
   Action* action = Action::createAction(actionName);
 
   if (action == 0) {
-    cerr << "ERROR: Unknown action \"" << actionName << "\"." << endl;
+    fprintf(stderr, "ERROR: Unknown action \"%s\".\n", actionName.c_str());
     return 1;
   }
 

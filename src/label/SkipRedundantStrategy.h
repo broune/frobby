@@ -46,8 +46,6 @@ public:
   virtual void endingPartitioning(int position,
 				  const Term& b);
 
-  void print(ostream& out);
-
 private:
   vector<TermTree> _skip;
   vector<vector<Term> > _newSkip;

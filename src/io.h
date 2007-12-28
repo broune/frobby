@@ -1,6 +1,8 @@
 #ifndef IO_GUARD
 #define IO_GUARD
 
+#include <vector>
+
 class Lexer;
 class BigIdeal;
 class VarNames;

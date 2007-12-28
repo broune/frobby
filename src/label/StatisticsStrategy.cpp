@@ -10,8 +10,8 @@ StatisticsStrategy::StatisticsStrategy(int dimension):
 
 StatisticsStrategy::~StatisticsStrategy() {
   for (unsigned int position = 0; position < _dimension; ++position)
-    cerr << "Level " << position + 1 << " had "
-	 << _callCounts[position] << " calls. " << endl;
+    fprintf(stderr, "Level %u had %u calls.\n",
+	    position + 1, _callCounts[position]);
 }
 
 void StatisticsStrategy::getName(string& name) const {

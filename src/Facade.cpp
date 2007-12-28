@@ -10,8 +10,10 @@ Facade::Facade(bool printActions):
 }
 
 void Facade::printMessage(const char* message) {
-  if (_printActions)
-    cerr << message << flush;
+  if (_printActions) {
+    fputs(message, stderr);
+    fflush(stderr);
+  }
 }
 
 void Facade::beginAction(const char* message) {
@@ -23,7 +25,7 @@ void Facade::beginAction(const char* message) {
   if (!_printActions)
     return;
 
-  cerr << message << flush;
+  printMessage(message);
   _timer.reset();
 }
 
@@ -36,7 +38,10 @@ void Facade::endAction() {
   if (!_printActions)
     return;
 
-  cerr << ' ' << _timer << endl;
+  fputc(' ', stderr);
+  _timer.print(stderr);
+  fputc('\n', stderr);
+  fflush(stderr);
 }
 
 bool Facade::isPrintingActions() const {

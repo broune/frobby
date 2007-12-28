@@ -2,6 +2,7 @@
 #define IDEAL_GUARD
 
 #include "Term.h"
+#include <vector>
 
 class Ideal {
   typedef vector<Exponent*> Cont;
@@ -32,11 +33,7 @@ public:
   void getLcm(Term& lcm) const;
   void getGcd(Term& gcd) const;
 
-  void print(ostream& out) const;
-  friend ostream& operator<<(ostream& out, const Ideal& ideal) {
-    ideal.print(out);
-    return out;
-  }
+  void print(FILE* file) const;
 
   // *** Mutators
 

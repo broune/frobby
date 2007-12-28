@@ -36,7 +36,3 @@ void StringParameter::processParameters(const char** params,
   
   _value = params[0];
 }
-
-void StringParameter::printState(ostream& out) {
-  out << getName() << " = \"" << _value << "\"";
-}

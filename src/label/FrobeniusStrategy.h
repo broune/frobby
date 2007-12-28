@@ -2,6 +2,7 @@
 #define FROBENIUS_ACTION_GUARD
 
 #include "Strategy.h"
+#include <vector>
 
 class TermTree;
 class TermTranslator;

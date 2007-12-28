@@ -2,6 +2,7 @@
 #define DYNAMIC_FROBENIUS_FACADE_GUARD
 
 #include "Facade.h"
+#include <vector>
 
 class Configuration;
 

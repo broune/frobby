@@ -142,16 +142,17 @@ void BigIdeal::sortVariables() {
     sorter.permute(_terms[i]);
 }
 
-void BigIdeal::print(ostream& out) const {
-  out << "/---- BigIdeal of " << _terms.size() << " terms:" << endl;
+void BigIdeal::print(FILE* file) const {
+  fprintf(stderr, "/---- BigIdeal of %lu terms:\n",
+	  (unsigned long)_terms.size());
   for (vector<vector<mpz_class> >::const_iterator it = _terms.begin();
        it != _terms.end(); ++it) {
     for (vector<mpz_class>::const_iterator entry = it->begin();
 	 entry != it->end(); ++entry)
-      out << *entry << ' ';
-    out << '\n';
+      gmp_fprintf(file, "%Zd ", entry->get_mpz_t());
+    fputc('\n', file);
   }
-  out << "----/ End of list." << endl;
+  fputs("----/ End of list.\n", file);
 }
 
 const mpz_class& BigIdeal::getExponent(size_t term, size_t var) const {

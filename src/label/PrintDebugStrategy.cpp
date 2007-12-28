@@ -6,7 +6,7 @@
 #include <iterator>
 
 PrintDebugStrategy::~PrintDebugStrategy() {
-  cerr << "The computation is done." << endl;
+  fputs("The computation is done.\n", stderr);
 }
 
 void PrintDebugStrategy::getName(string& name) const {
@@ -23,37 +23,42 @@ bool PrintDebugStrategy::startingCall(const Term& b,
 				      const TermTree& tree,
 				      bool startingPartition) {
   if (tree.getPosition() == 0) {
-    cerr << "Debug printing on. Starting the computation." << endl;
+    fputs("Debug printing on. Starting the computation.\n", stderr);
   }
   
   for (int i = 0; i < tree.getPosition(); ++i)
-    cerr << '^';
-  cerr << " Starting b=" << b
-       << " position=" << tree.getPosition() << endl;
-  
+    fputc('^', stderr);
+  fputs(" Starting b=", stderr);
+  b.print(stderr);
+  fprintf(stderr, " position=%lu\n", (unsigned long)tree.getPosition());
+
   return false;
 }
 
 void PrintDebugStrategy::endingCall(const Term& b,
 				    const TermTree& tree) {
   for (int i = 0; i < tree.getPosition(); ++i)
-    cerr << 'v';
-  cerr << " Ending b=" << b
-       << " position=" << tree.getPosition() << endl;
+    fputc('v', stderr);
+  fputs(" Ending b=", stderr);
+  b.print(stderr);
+  fprintf(stderr, " position=%lu\n", (unsigned long)tree.getPosition());
 }
 
 void PrintDebugStrategy::foundSolution(const Term& b,
 				       bool startingPartition) {
   for (unsigned int i = 0; i < b.getVarCount(); ++i)
-    cerr << '*';
-  cerr << " Found solution " << b << endl;
+    fputc('*', stderr);
+  fputs(" Found solution ", stderr);
+  b.print(stderr);
+  fputc('\n', stderr);
 }
 
 void PrintDebugStrategy::startingPartitioning(const Term& b,
 					      const Partition& partition,
 					      const TermTree& tree) {
-  fill_n(ostream_iterator<char>(cerr), tree.getPosition(), '-');
-  cerr << " starting partitioning" << endl;
+  for (int i = 0; i < tree.getPosition(); ++i)
+    fputc('-', stderr);
+  fputs(" starting partitioning\n", stderr);
 }
 
 void PrintDebugStrategy::doingPartitionSet(int position,
@@ -62,16 +67,16 @@ void PrintDebugStrategy::doingPartitionSet(int position,
 					   const Partition& partition,
 					   vector<Exponent> compressor,
 					   const TermTree& tree) {
-  cerr << "doing a set of the partition" << endl;
+  fputs("doing a set of the partition\n", stderr);
 }
 
 void PrintDebugStrategy::doneDoingPartitionSet
 (int position,
  const vector<Exponent>& compressor) {
-  cerr << "done doing that set of the partition" << endl;
+  fputs("done doing that set of the partition\n", stderr);
 }
 
 void PrintDebugStrategy::endingPartitioning(int position,
 					    const Term& b) {
-  cerr << "ending partitioning" << endl;
+  fputs("ending partitioning\n", stderr);
 }

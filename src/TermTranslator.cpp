@@ -171,17 +171,18 @@ void TermTranslator::addArtinianPowers(Ideal& ideal) const {
   }
 }
 
-void TermTranslator::print(ostream& out) const {
-  out << "TermTranslator(" << endl;
-  for (int variable = 0;
-       variable < (int)_exponents.size(); ++variable) {
-    out << " variable " << (variable + 1) << ": ";
-    copy(_exponents[variable].begin(),
-	 _exponents[variable].end(),
-	 ostream_iterator<mpz_class>(out, " "));
-    out << endl;
+void TermTranslator::print(FILE* file) const {
+  fputs("TermTranslator(\n", file);
+  for (size_t variable = 0; variable < _exponents.size(); ++variable) {
+    fprintf(file, " variable %lu: ", (unsigned long)(variable + 1));
+    for (size_t e = 0; e < _exponents.size(); ++e) {
+      if (e != 0)
+	fputc(' ', file);
+      gmp_fprintf(file, "%Zd", _exponents[variable][e].get_mpz_t());
+    }
+    fputc('\n', file);
   }
-  out << ")" << endl;
+  fputs(")\n", file);
 }
 
 void TermTranslator::makeStrings() const {

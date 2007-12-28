@@ -24,9 +24,12 @@ bool PrintProgressStrategy::consideringCall(const Term& b,
       _timeSinceLastReport.reset();
 
       double doneRatio = ((double)_workDone)/_workTotal;
-      cerr << setprecision(3)
-	   << _workDone << '/' << _workTotal << '='
-	   << doneRatio * 100.0 << "% done in " << _totalTime << '.' << endl;
+      fprintf(stderr, "%lu/%lu=%.3f%% done in ",
+	      (unsigned long)_workDone,
+	      (unsigned long)_workTotal,
+	      doneRatio * 100.0);
+      _totalTime.print(stderr);
+      fputs(".\n", stderr);
     }
 
     ++_workDone;

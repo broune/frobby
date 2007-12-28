@@ -22,6 +22,12 @@ $(outdir)FrobeniusStrategy.o: src/label/FrobeniusStrategy.cpp \
 $(outdir)BenchmarkStrategy.o: src/label/BenchmarkStrategy.cpp \
   src/label/../stdinc.h src/label/BenchmarkStrategy.h \
   src/label/Strategy.h
+$(outdir)DecompositionStrategy.o: src/label/DecompositionStrategy.cpp \
+  src/label/../stdinc.h src/label/DecompositionStrategy.h \
+  src/label/Strategy.h src/label/../VarNames.h src/label/TermTree.h \
+  src/label/../Term.h src/label/../Ideal.h src/label/../Term.h \
+  src/label/Allocator.h src/label/OldPartition.h \
+  src/label/../TermConsumer.h
 $(outdir)StatisticsStrategy.o: src/label/StatisticsStrategy.cpp \
   src/label/../stdinc.h src/label/StatisticsStrategy.h \
   src/label/Strategy.h src/label/TermTree.h src/label/../Term.h \

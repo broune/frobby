@@ -52,7 +52,7 @@ void IntersectAction::perform() {
   }
 
   if (ideals.empty()) {
-    cerr << "ERROR: intersection requires at least one ideal." << endl;
+    fputs("ERROR: intersection requires at least one ideal.\n", stderr);
     exit(1);
   }
 

@@ -105,10 +105,3 @@ bool OldPartition::compress(Term& term,
 
   return insideSet && !outsideSet;
 }
-
-void OldPartition::print(ostream& out) const {
-  out << "OldPartition(size=" << _size << " sets:";
-  for (int i = 0; i < _size; ++i)
-    out << ' ' << _partitions[i];
-  out << endl;
-}

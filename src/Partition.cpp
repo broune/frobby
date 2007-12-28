@@ -69,13 +69,13 @@ size_t Partition::getRoot(size_t i) const {
     return i;
 }
 
-void Partition::print(ostream& out) const {
-  out << "Partition(size=" << _size << " sets:";
-  for (size_t i = 0; i < _size; ++i)
-    out << ' ' << _partitions[i];
-  out << endl;
-}
-
 size_t Partition::getSize() const {
   return _size;
+}
+
+void Partition::print(FILE* file) const {
+  fprintf(file, "Partition(size=%lu sets:", (unsigned long)_size);
+  for (size_t i = 0; i < _size; ++i)
+    fprintf(file, " %li", (long)_partitions[i]);
+  fputc('\n', file);
 }

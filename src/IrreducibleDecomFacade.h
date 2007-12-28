@@ -2,6 +2,7 @@
 #define IRREDUCIBLE_DECOM_FACADE_GUARD
 
 #include "Facade.h"
+#include <vector>
 
 class IrreducibleDecomParameters;
 class BigIdeal;

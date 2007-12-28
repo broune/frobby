@@ -70,11 +70,11 @@ size_t Projection::inverseProjectVar(size_t rangeVar) const {
   return _offsets[rangeVar];
 }
 
-void Projection::print() const {
-  cerr << "Projection:";
+void Projection::print(FILE* file) const {
+  fputs("Projection:", file);
   for (size_t var = 0; var < _offsets.size(); ++var)
-    cerr << ' ' << _offsets[var];
-  cerr << endl;
+    fprintf(file, " %lu", (unsigned long)_offsets[var]);
+  fputc('\n', file);
 }
 
 void Projection::swap(Projection& projection) {

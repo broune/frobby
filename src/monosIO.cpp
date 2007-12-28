@@ -69,8 +69,8 @@ void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer) {
     readVarPower(var, power, ideal.getNames(), lexer);
     ASSERT(power > 0);
     if (ideal.getLastTermExponentRef(var) != 0) {
-      cerr << "ERROR: a variable appears twice in irreducible ideal." << endl;
-      exit(0);
+      fputs("ERROR: a variable appears twice in irreducible ideal.\n", stderr);
+      exit(1);
     }
     ideal.getLastTermExponentRef(var) = power;
   } while (lexer.match(','));
@@ -99,8 +99,9 @@ void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer) {
   do {
     lexer.readIdentifier(varName);
     if (names.contains(varName)) {
-      cerr << "ERROR (on line " << lexer.getLineNumber() << "): "
-	   << "Variable \"" << varName << "\" is declared twice." << endl;
+      fprintf(stdout,
+	      "ERROR (on line %u): Variable \"%s\" is declared twice.\n",
+	      lexer.getLineNumber(), varName.c_str());
       exit(1);
     }
 

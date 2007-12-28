@@ -2,6 +2,7 @@
 #define BIG_IDEAL_GUARD
 
 #include "VarNames.h"
+#include <vector>
 
 class TermTranslator;
 class Ideal;
@@ -52,7 +53,7 @@ public:
   // Sorts the variables.
   void sortVariables();
 
-  void print(ostream& out) const;
+  void print(FILE* file) const;
 
 private:
   static bool bigTermCompare(const vector<mpz_class>& a,

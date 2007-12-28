@@ -51,13 +51,9 @@ public:
   // needed for computing irreducible decompositions.
   void addArtinianPowers(Ideal& ideal) const;
 
-  void print(ostream& out) const;
-  friend ostream& operator<<(ostream& out, const TermTranslator& translator) {
-    translator.print(out);
-    return out;
-  }
-
   const VarNames& getNames() const;
+
+  void print(FILE* file) const;
 
 private:
   TermTranslator(const TermTranslator&); // not suported

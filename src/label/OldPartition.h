@@ -3,7 +3,6 @@
 
 class Term;
 
-// TODO: this class needs a complete overhaul.
 class OldPartition {
  public:
   OldPartition(int size);
@@ -23,8 +22,6 @@ class OldPartition {
 
   bool compress(Term& term,
 		const vector<Exponent>& compressor) const;
-
-  void print(ostream& out) const;
 
  private:
   int* _partitions;

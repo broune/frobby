@@ -77,13 +77,13 @@ void Ideal::getGcd(Term& gcd) const {
     gcd.gcd(gcd, *it);
 }
 
-void Ideal::print(ostream& out) const {
-  out << "//------------ Ideal:\n";
+void Ideal::print(FILE* file) const {
+  fputs("//------------ Ideal:\n", file);
   for (const_iterator it = _terms.begin(); it != _terms.end(); ++it) {
-    Term term(*it, _varCount);
-    out << term << '\n';
+    ::print(file, *it, _varCount);
+    fputc('\n', file);
   }
-  out << "------------\\\\";
+  fputs("------------\\\\", file);
 }
 
 void Ideal::insert(const Term& term) {

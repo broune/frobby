@@ -44,16 +44,9 @@ processParameters(const char** params, unsigned int paramCount) {
   else if (param == "on")
     _value = true;
   else {
-    cerr << "ERROR: Option -" << getName()
-	 << " was given the parameter \""
-	 << param
-	 << "\"." << endl
-	 << "The only valid parameters are \"on\" and \"off\"."
-	 << endl;
-    exit(0);
+    fprintf(stderr, "ERROR Option -%s was given the parameter \"%s\".\n"
+	    "The only valid parameters are \"on\" and \"off\".\n",
+	    getName(), param.c_str());
+    exit(1);
   }
-}
-
-void BoolParameter::printState(ostream& out) {
-  out << getName() << " = " << _value;
 }

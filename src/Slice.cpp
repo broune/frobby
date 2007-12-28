@@ -37,11 +37,14 @@ const Term& Slice::getLcm() const {
   return _lcm;
 }
 
-void Slice::print(ostream& out) const {
-  out << "Slice (multiply: " << _multiply << '\n'
-      << " ideal: " << getIdeal() << '\n'
-      << " subtract: " << _subtract << '\n'
-      << ')';
+void Slice::print(FILE* file) const {
+  fputs("Slice (multiply: ", file);
+  _multiply.print(file);
+  fputs("\n ideal: ", file);
+  getIdeal().print(file);
+  fputs("\n subtract: ", file);
+  _subtract.print(file);
+  fputs("\n)", file);
 }
 
 void Slice::resetAndSetVarCount(size_t varCount) {

@@ -2,6 +2,7 @@
 #define IO_FACADE_GUARD
 
 #include "Facade.h"
+#include <vector>
 
 class BigIdeal;
 

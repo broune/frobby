@@ -193,19 +193,17 @@ void TermTree::TreeWalker::goToRoot() {
   _level = 0;
 }
 
-void TermTree::TreeWalker::print(ostream& out) const {
-  out << "Walker(level=" << _level
-      << ", maxLevel=" << _maxLevel
-      << ", stack=[";
-  const char* prefix = "";
+void TermTree::TreeWalker::print(FILE* file) const {
+  fprintf(file, "Walker(level=%lu, maxLevel=%lu, stack=[",
+	  (unsigned long)_level, (unsigned long)_maxLevel);
+
   for (unsigned int i = 0; i <= _level; ++i) {
-    out << prefix << '('
-	<< _stack[i]
-	<< " E" << _stack[i]->_exponent
-	<< ')';
-    prefix = ",";
+    if (i != 0)
+      fputc(',', stderr);
+    fprintf(stderr, "(%p E%lu)",
+	    (void*)_stack[i], (unsigned long)_stack[i]->_exponent);
   }
-  out << "]" << endl;
+  fputs("]\n", stderr);
 }
 
 void TermTree::TreeWalker::insertUnder(Exponent exponent) {
@@ -346,8 +344,8 @@ bool TermTree::TreeIterator::atEnd() const {
   return _walker.atRoot();
 }
 
-void TermTree::TreeIterator::print(ostream& out) const {
-  _walker.print(out);
+void TermTree::TreeIterator::print(FILE* file) const {
+  _walker.print(file);
 }
 
 bool  TermTree::empty() const {
@@ -563,14 +561,17 @@ int TermTree::getPosition() const {
   return _position;
 }
 
-void TermTree::print(ostream& out) const {
+void TermTree::print(FILE* file) const {
 #ifdef DEBUG
   validate();
 #endif
 
-  out << "TREE (pos=" << _position << ", term=" << _threshold << "): ";
-  print(_root, out, _position);
-  out << endl;
+  fprintf(file, "TREE (pos=%lu, term=", (unsigned long)_position);
+  _threshold.print(file);
+  fputs("): ", file);
+
+  print(_root, file, _position);
+  fputc('\n', file);
 }
 
 bool TermTree::equalsHelper(const Node* a, const Node* b, unsigned int position) const {
@@ -734,19 +735,18 @@ void TermTree::removeNonDivisors(Node* node, const Term& term, unsigned int posi
   }
 }
 
-void TermTree::print(const Node* node, ostream& out, unsigned int position) const {
-  if (position == _dimension) {
+void TermTree::print(const Node* node, FILE* file, unsigned int position) const {
+  if (position == _dimension)
     return;
-  }
 
-  out << '[';
+  fputc('[', file);
   for (Node::iterator it = node->begin(); &*it != 0; ++it) {
     if (it != node->begin())
-      out << ',';
-    out << it->getExponent();
-    print(&*it, out, position + 1);
+      fputc(',', file);
+    fprintf(file, "%lu", (unsigned long)it->getExponent());
+    print(&*it, file, position + 1);
   }
-  out << ']';
+  fputc(']', file);
 }
 
 #ifdef DEBUG
@@ -761,12 +761,14 @@ void TermTree::validate(const Node* node, unsigned int position) const {
     return;
   
   if (node->empty()) {
-    cerr << "Validation Error: Inner node in TermTree has no children." << endl;
-    cerr << "This is at pos=" << position << endl;
-    cerr << "Complete tree:";
-    print(_root, cerr, _position);
-    cerr << endl;
+    fprintf(stderr, "Validation Error: Inner node "
+	    "in TermTree has no children.\n"
+	    "This is at pos=%lu\n"
+	    "Complete tree:", (unsigned long)position);
+    print(_root, stderr, _position);
+    fputc('\n', stderr);
     ASSERT(false);
+
   }
 
   for (Node::iterator it = node->begin(); &*it != 0; ++it) {

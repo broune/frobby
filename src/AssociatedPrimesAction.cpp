@@ -52,7 +52,8 @@ void AssociatedPrimesAction::perform() {
     IrreducibleDecomParameters params;
     facade.computeAPUsingIrrDecom(ideal, params, stdout);
   } else {
-    cerr << "ERROR: Unknown algorithm parameter \"" << alg << "\"." << endl;
+    fprintf(stderr, "ERROR: Unknown algorithm parameter \"%s\".\n",
+	    alg.c_str());
     exit(1);
   }
 }

@@ -1,8 +1,5 @@
 #include <gmp.h>
 #include <gmpxx.h>
-#include <iostream>
-#include <string>
-#include <vector>
 using namespace std;
 
 //#define LOG
@@ -24,6 +21,7 @@ _noInline();_noInline();_noInline();_noInline();_noInline();}}
 #endif
 
 #ifdef DEBUG
+#define PRINT
 #define IF_DEBUG(X) X
 #include <cassert>
 #define ASSERT(X) assert(X);

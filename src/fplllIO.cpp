@@ -35,10 +35,11 @@ namespace fplll {
       } while (!lexer.match(']'));
 
       if (tmp.front().size() != tmp.back().size()) {
-	cerr << "ERROR: Row 1 has " << tmp.front().size()
-	     << " entries, while row " << tmp.size()
-	     << " has " << tmp.back().size()
-	     << " entries." << endl;
+	fprintf(stderr, 
+		"ERROR: Row 1 has %u entries, while row %u has %u entries.\n",
+		(unsigned int)tmp.front().size(),
+		(unsigned int)tmp.size(),
+		(unsigned int)tmp.back().size());
 	exit(1);
       }
     } while (!lexer.match(']'));

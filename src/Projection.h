@@ -27,10 +27,10 @@ class Projection {
   void inverseProject(Term& to, const Exponent* from) const;
   size_t inverseProjectVar(size_t rangeVar) const;
 
-  void print() const;
-
   void swap(Projection& projection);
-  
+
+  void print(FILE* file) const;
+
  private:
   vector<size_t> _offsets;
 };

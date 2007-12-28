@@ -2,6 +2,7 @@
 #define PARAMETER_GROUP_GUARD
 
 #include "Parameter.h"
+#include <vector>
 
 class ParameterGroup : public Parameter {
  public:
@@ -10,7 +11,6 @@ class ParameterGroup : public Parameter {
 
   virtual bool process(const char** params, unsigned int paramCount);
   virtual void processParameters(const char** params, unsigned int paramCount);
-  virtual void printState(ostream& out);
 
   void addParameter(Parameter* parameter);
 

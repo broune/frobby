@@ -10,7 +10,6 @@ public:
   virtual const char* getParameterName() const;
   virtual void getValue(string& str) const;
   virtual void processParameters(const char** params, unsigned int paramCount);
-  virtual void printState(ostream& out);
 
   operator bool() const;
   BoolParameter& operator=(bool value);
