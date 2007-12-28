@@ -85,7 +85,7 @@ else
 endif
 
 bench: all
-	cd data;time ./runbench
+	cd data;time ./runbench $(OPTS)
 
 $(outdir): $(outdir)label
 	mkdir -p $(outdir)
@@ -105,7 +105,7 @@ ifneq ($(MODE), analysis)
 	g++ $(objs) $(ldflags) -o $(outdir)$(program)
 endif
 ifeq ($(MODE), release)
-	strip bin/$(program)
+	strip $(outdir)$(program)
 endif
 
 
