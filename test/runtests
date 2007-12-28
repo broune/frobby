@@ -41,3 +41,8 @@ echo -n "minimize: "
 cd test/minimize
 time ./runtests
 cd ../..
+
+echo -n "format: "
+cd test/format
+time ./runtests
+cd ../..
