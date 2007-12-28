@@ -1,0 +1,10 @@
+(monomial-ideal-with-order
+ (lex-order a A b abe)
+ a
+ b
+ A
+ abe
+ a*A*b*abe
+ a*A
+ b*abe
+)

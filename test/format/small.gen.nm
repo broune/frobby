@@ -1,0 +1,4 @@
+(monomial-ideal-with-order
+ (lex-order a b c d)
+ 1
+)
