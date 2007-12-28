@@ -2,6 +2,7 @@
 #define ACTION_GUARD
 
 #include "BoolParameter.h"
+#include <vector>
 
 class Parameter;
 

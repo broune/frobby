@@ -19,10 +19,10 @@ void RandomDataFacade::generateIdeal
 			  generateIdealParams.getVariableCount(),
 			  generateIdealParams.getGeneratorCount());
   endAction();
-
+  
   if (!fullSize)
-    cerr << "Generated ideal has fewer minimal generators than requested."
-	 << endl;
+    fputs("NOTE: Generated ideal has fewer minimal "
+	  "generators than requested.\n", stderr);
 }
 
 void RandomDataFacade::generateFrobeniusInstance(vector<mpz_class>& instance) {

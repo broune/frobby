@@ -37,35 +37,37 @@ void Parameter::checkCorrectParameterCount(unsigned int from,
   if (from <= paramCount && paramCount <= to)
     return;
 
-  cerr << "ERROR: Option -" << getName() << " takes ";
-  if (from == to)
-    cerr << from << " parameter, ";
-  else
-    cerr << "from " << from << " to " << to << " parameters, ";
+  fprintf(stderr, "ERROR: Option -%s takes ", getName());
+  if (from == to) {
+    if (from == 1)
+      fputs("one parameter, ", stderr);
+    else
+      fprintf(stderr, "%u parameters, ", from);
+  } else
+    fprintf(stderr, "from %u to %u parameters, ", from, to);
 
   if (paramCount == 0)
-    cerr << "but no parameters were provided." << endl;
+    fputs("but no parameters were provided.\n", stderr);
   else {
     if (paramCount == 1)
-      cerr << "but one parameter was provided." << endl;
+      fputs("but one parameter was provided.\n", stderr);
     else
-      cerr << "but " << paramCount
-	   << " parameters were provided." << endl;
+      fprintf(stderr, "but %u parameters were provided.\n", paramCount);
 
-    cerr << "The provided parameters were: ";
+    fputs("The provided parameters were: ", stderr);
     const char* prefix = "\"";
     for (unsigned int i = 0; i < paramCount; ++i) {
-      cerr << prefix << params[i] << '"';
+      fprintf(stderr, "%s%s\"", prefix, params[i]);
       prefix = ", \"";
     }
-    cerr << endl;
+    fputc('\n', stderr);
 
     if (paramCount > to)
-      cerr << "(Did you forget to put a - in front of one of the options?)" << endl;
+      fputs("(Did you forget to put a - in front of one of the options?)\n",
+	    stderr);
   }
     
-  cerr << endl
-       << "The option -" << getName() << " has the following description:"
-       << endl << _description << endl;
-  exit(0);
+  fprintf(stderr, "\nThe option -%s has the following description:\n%s\n",
+	  getName(), _description);
+  exit(1);
 }

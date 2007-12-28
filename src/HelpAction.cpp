@@ -40,7 +40,7 @@ bool HelpAction::processNonParameter(const char* str) {
 
   _topic = Action::createAction(str);
   if (_topic == 0) {
-    cerr << "ERROR: Unknown help topic \"" << str << "\"." << endl;
+    fprintf(stderr, "ERROR: Unknown help topic \"%s\".\n", str);
     return false;
   }
 

@@ -27,11 +27,7 @@ class Slice {
   // getIdeal().
   const Term& getLcm() const;
 
-  void print(ostream& out) const;
-  friend ostream& operator<<(ostream& out, const Slice& slice) {
-    slice.print(out);
-    return out;
-  }
+  void print(FILE* file) const;
 
   // *** Mutators
 

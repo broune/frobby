@@ -22,7 +22,7 @@ class Partition {
 
   size_t getSizeOfClassOf(size_t i) const;
 
-  void print(ostream& out) const;
+  void print(FILE* file) const;
 
  private:
   int* _partitions;

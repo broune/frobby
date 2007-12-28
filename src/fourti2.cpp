@@ -13,10 +13,10 @@ namespace fourti2 {
     lexer.readInteger(tmp);
 
     if (tmp > 0) {
-      cerr << "ERROR: Encountered positive entry as first entry in term.\n"
-	   << "This is impossible if using the required degree reverse "
-	   << "lexicographic term order." << endl;
-      exit(0);
+      fputs("ERROR: Encountered positive entry as first entry in term.\n"
+	    "This is impossible if using the required degree reverse "
+	    "lexicographic term order.\n", stderr);
+      exit(1);
     }
 
     for (size_t i = 0; i < ideal.getVarCount(); ++i) {

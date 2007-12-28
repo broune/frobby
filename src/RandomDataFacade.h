@@ -2,6 +2,7 @@
 #define RANDOM_DATA_FACADE_GUARD
 
 #include "Facade.h"
+#include <vector>
 
 class BigIdeal;
 class GenerateIdealParameters;

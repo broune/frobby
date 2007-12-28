@@ -2,6 +2,7 @@
 #define VAR_NAMES_GUARD
 
 #include <map>
+#include <vector>
 
 class VarNames {
 public:
@@ -25,26 +26,15 @@ public:
 
   bool empty() const;
 
-  friend ostream& operator<<(ostream& out, const VarNames& names) {
-    out << "VarNames(";
-    const char* prefix = "";
-    for (size_t i = 0; i < names.getVarCount(); ++i) {
-      out << prefix << (i + 1) << "<->\"" << names.getName(i) << '"';
-      prefix = ", ";
-    }
-    out << ")";
-
-    return out;
-  }
-
   static const size_t UNKNOWN;
 
   bool operator==(const VarNames& names) const {
     return _indexToName == names._indexToName;
   }
 
-private:
+  void print(FILE* file) const;
 
+private:
   map<string, size_t> _nameToIndex;
   vector<string> _indexToName;
 };

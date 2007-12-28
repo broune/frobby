@@ -20,8 +20,6 @@ public:
 
   virtual void processParameters(const char** params, unsigned int paramCount);
 
-  virtual void printState(ostream& out);
-
 private:
   string _value;
 };

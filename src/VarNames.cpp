@@ -24,7 +24,7 @@ void VarNames::addVar(const string& name) {
   _indexToName.push_back(name);
 
   if (getVarCount() == UNKNOWN) {
-    cerr << "ERROR: Too many variables names." << endl;
+    fputs("ERROR: Too many variables names.\n", stderr);
     exit(1);
   }
 }
@@ -58,4 +58,14 @@ void VarNames::clear() {
 
 bool VarNames::empty() const {
   return _indexToName.empty();
+}
+
+void VarNames::print(FILE* file) const {
+  fputs("VarNames(", file);
+  for (size_t i = 0; i < getVarCount(); ++i) {
+    if (i != 0)
+      fputs(", ", file);
+    fprintf(file, "%lu<->\"%s\"", (unsigned long)i + 1, getName(i).c_str());
+  }
+  fputc(')', file);
 }

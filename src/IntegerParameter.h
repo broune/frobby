@@ -17,7 +17,6 @@ public:
   IntegerParameter& operator=(unsigned int value);
 
   void processParameters(const char** params, unsigned int paramCount);
-  virtual void printState(ostream& out);
 
 private:
   unsigned int _value;

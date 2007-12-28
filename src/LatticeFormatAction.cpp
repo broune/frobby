@@ -58,13 +58,13 @@ void LatticeFormatAction::perform() {
   IOFacade facade(_printActions);
 
   if (!facade.isValidLatticeFormat(iformat.c_str())) {
-    cerr << "ERROR: Unknown input format \"" << iformat<< "\"." << endl;
-    exit(0);
+    fprintf(stderr, "ERROR: Unknown input format \"%s\".\n", iformat.c_str());
+    exit(1);
   }
 
   if (!facade.isValidLatticeFormat(oformat.c_str())) {
-    cerr << "ERROR: Unknown output format \"" << oformat<< "\"." << endl;
-    exit(0);
+    fprintf(stderr, "ERROR: Unknown output format \"%s\".\n", oformat.c_str());
+    exit(1);
   }
 
   BigIdeal basis;

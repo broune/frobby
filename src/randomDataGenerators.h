@@ -1,6 +1,8 @@
 #ifndef RANDOM_DATA_GENERATORS_GUARD
 #define RANDOM_DATA_GENERATORS_GUARD
 
+#include <vector>
+
 class BigIdeal;
 
 bool generateRandomIdeal(BigIdeal& bigIdeal,

@@ -40,10 +40,10 @@ void IntegerParameter::processParameters
 
   for (const char* it = param; *it != '\0'; ++it) {
     if (!isdigit(*it)) {
-      cerr << "ERROR: Option -" << getName()
-	   << " was given the parameter \""
-	   << params[0] << "\".\n"
-	   << "The only valid parameters are integers between 0 and 2^32-1." << endl;
+      fprintf(stderr, "ERROR: Option -%s was given the parameter \"%s\".\n"
+	      "The only valid parameters are integers "
+	      "between 0 and 2^32-1.\n",
+	      getName(), params[0]);
       exit(1);
     }
   }
@@ -53,16 +53,11 @@ void IntegerParameter::processParameters
   in >> integer;
 
   if (!integer.fits_uint_p()) {
-    cerr << "ERROR: Option -" << getName()
-	 << " was given the parameter " << params[0]
-	 << ".\nThis is outside the allowed range between 0 and 2^32-1."
-	 << endl;
+    fprintf(stderr, "ERROR: Option -%s was given the parameter %s.\n"
+	    "This is outside the allowed range [0, 2^32-1].\n",
+	    getName(), params[0]);
     exit(1);
   }
 
   _value = integer.get_ui();
-}
-
-void IntegerParameter::printState(ostream& out) {
-  out << getName() << " = " << _value;
 }

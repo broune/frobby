@@ -150,30 +150,3 @@ void SkipRedundantStrategy::endingPartitioning(int position,
   
   _strategy->endingPartitioning(position, b);
 }
-
-void SkipRedundantStrategy::print(ostream& out) {
-  // If there is a segmentation violation below, the flush will make
-  // it clear that this is where it happened, which is why it is there.
-  out << "SkipRedundantStrategy(dimension=" << flush;
-  out << _dimension << '\n';
-  out << " remember=";
-  copy(_remember.begin(), _remember.end(),
-       ostream_iterator<bool>(out));
-  out << '\n';
-
-  out << " skip=\n";
-  for (unsigned int i = 0; i < _dimension; ++i) {
-    out << "  " << i << ": ";
-    _skip[i].print(out);
-  }
-
-  out << " newSkip=\n";
-  for (unsigned int i = 0; i < _dimension; ++i) {
-    out << "  " << i << ": ";
-    copy(_newSkip[i].begin(), _newSkip[i].end(),
-	 ostream_iterator<Term>(out));
-    out << '\n';
-  }
-
-  out << ")" << endl;
-}

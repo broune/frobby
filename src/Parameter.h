@@ -15,8 +15,6 @@ class Parameter {
   virtual bool process(const char** params, unsigned int paramCount);
   virtual void processParameters(const char** params, unsigned int paramCount) = 0;
 
-  virtual void printState(ostream& out) = 0;
-
 protected:
   void checkCorrectParameterCount(unsigned int from,
 				  unsigned int to,

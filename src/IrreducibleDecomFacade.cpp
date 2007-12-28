@@ -35,9 +35,8 @@ computeIrreducibleDecom(Ideal& ideal, TermConsumer* consumer) {
     SliceStrategy* strategy =
       SliceStrategy::newDecomStrategy(_parameters.getSplit(), consumer);
     if (strategy == 0) {
-      cerr << "ERROR: Unknown split strategy \""
-	   << _parameters.getSplit()
-	   << "\"." << endl;
+      fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n",
+	      _parameters.getSplit().c_str());
       exit(1);
     }
     
@@ -90,13 +89,6 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 		       mpz_class& frobeniusNumber) {
   beginAction("Optimizing over irreducible decomposition.");
 
-  if (_parameters.getSkipRedundant()) {
-    cerr << "ERROR: Due to implementation issues, the Grobner basis" << endl
-	 << "based Frobenius feature does not support independence splits."
-	 << endl;
-    exit(1);
-  }
-
   if (instance.size() == 2) {
     frobeniusNumber = instance[0] * instance[1] - instance[0] - instance[1];
     return;
@@ -118,9 +110,8 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
     
      // TODO: factor out common error code into SliceStrategy.
      if (strategy == 0) {
-       cerr << "ERROR: Unknown split strategy \""
-	    << _parameters.getSplit()
-	    << "\"." << endl;
+       fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n",
+	       _parameters.getSplit().c_str());
        exit(1);
      }
 
@@ -135,6 +126,7 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
     Strategy* strategy = new FrobeniusStrategy
       (instance, &frobeniusNumber, ideal.getVarCount(),
        &translator, _parameters.getUseBound());
+    ASSERT(!_parameters.getUseIndependence());
     runLabelAlgorithm(ideal, strategy);
   }
 

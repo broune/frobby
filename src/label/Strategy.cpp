@@ -29,7 +29,9 @@ void Strategy::doneDoingPartitionSet(int position,
 				     const vector<Exponent>& compressor) {
   string name;
   getName(name);
-  cerr << "ERROR: doneDoingPartitionSet not implemented in " << name << "." << endl;
+  fprintf(stderr,
+	  "ERROR: doneDoingPartitionSet not implemented in %s.\n",
+	  name.c_str());
   ASSERT(false);
 }
 
@@ -37,7 +39,8 @@ void Strategy::endingPartitioning(int position,
 				  const Term& b) {
   string name;
   getName(name);
-  cerr << "ERROR: endingPartitioning not implemented in " << name << "." << endl;
+  fprintf(stderr, "ERROR: endingPartitioning not implemented in %s.\n",
+	  name.c_str());
   ASSERT(false);
 }
 

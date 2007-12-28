@@ -6,7 +6,7 @@
 #include "IrreducibleDecomFacade.h"
 
 FrobeniusAction::FrobeniusAction() {
-  _decomParameters.setSkipRedundant(false);
+  _decomParameters.setUseIndependence(false);
 }
 
 const char* FrobeniusAction::getName() const {
@@ -44,6 +44,14 @@ void FrobeniusAction::perform() {
 
   IOFacade ioFacade(_printActions);
   ioFacade.readFrobeniusInstanceWithGrobnerBasis(stdin, ideal, instance);
+
+  if (_decomParameters.getUseIndependence()) {
+    fputs("NOTE: Due to implementation issues, the Grobner basis\n"
+	  "based Frobenius feature using the Label algorithm does\n"
+	  "not support independence splits. They have been turned off.\n",
+	  stderr);
+    _decomParameters.setUseIndependence(false);
+  }
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
 

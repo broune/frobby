@@ -28,14 +28,15 @@ void SliceStrategy::simplify(Slice& slice) {
 
 void SliceStrategy::getPivot(Term& pivot, const Slice& slice) {
   ASSERT(false);
-  cerr << "ERROR: SliceStrategy::getPivot called but not defined." << endl;
+  fputs("ERROR: SliceStrategy::getPivot called but not defined.\n", stderr);
   exit(1);
 }
 
 size_t SliceStrategy::getLabelSplitVariable(const Slice& slice) {
   ASSERT(false);
-  cerr << "ERROR: SliceStrategy::getLabelSplitVariable called but not defined."
-       << endl;
+  fputs
+    ("ERROR: SliceStrategy::getLabelSplitVariable called but not defined.\n",
+     stderr);
   exit(1);
 }
 
@@ -672,26 +673,35 @@ public:
   }
 
   ~StatisticsSliceStrategy() {
-    cerr << "**** Statistics" << endl;
+    fputs("**** Statistics\n", stderr);
     size_t sum = 0;
     size_t baseSum = 0;
     for (size_t l = 0; l < _calls.size(); ++l) {
       sum += _calls[l];
       baseSum += _baseCases[l];
-      if (false)
-	cerr << "Level " << l + 1 << " had "
-	     << _calls[l] << " calls of which "
-	     << _baseCases[l] << " were base cases." << endl;
+      if (false) {
+	fprintf(stderr,
+		"Level %lu had %lu calls of which %lu were base cases.\n",
+		(unsigned long)l + 1,
+		(unsigned long)_calls[l],
+		(unsigned long)_baseCases[l]);
+      }
     }
 
     double baseRatio = double(baseSum) / sum;
-    cerr << "* recursive levels:    " << _calls.size() << endl
-	 << "* recursive calls:     " << sum << endl
-	 << "* terms consumed:      " << _consumeCount << endl 
-	 << "* base case calls:     "
-	    << baseSum << " (" << baseRatio<<')' << endl
-	 << "* independence splits: " << _independenceSplitCount << endl
-	 << "****" << endl;
+    fprintf(stderr,
+	    "* recursive levels:    %lu\n"
+	    "* recursive calls:     %lu\n"
+	    "* terms consumed:      %lu\n" 
+	    "* base case calls:     %lu (%f)\n"
+	    "* independence splits: %lu\n"
+	    "****\n",
+	    (unsigned long)_calls.size(),
+	    (unsigned long)sum,
+	    (unsigned long)_consumeCount,
+	    (unsigned long)baseSum,
+	    baseRatio,
+	    (unsigned long)_independenceSplitCount);
   }
 
   virtual void doingIndependenceSplit(const Slice& slice,
@@ -754,45 +764,51 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
   
   virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) {
-    cerr << "DEBUG " << _level
-	 << ": doing independence split." << endl;
+    fprintf(stderr, "DEBUG %lu: doing independence split.\n",
+	    (unsigned long)_level);
+    fflush(stderr);
     DecoratorSliceStrategy::doingIndependenceSplit
       (slice, mixedProjectionSubtract);
   }
 
   virtual void doingIndependentPart(const Projection& projection, bool last) {
-    cerr << "DEBUG " << _level
-	 << ": doing independent part";
+    fprintf(stderr, "DEBUG %lu: doing independent part", (unsigned long)_level);
     if (last)
-      cerr << " (last)";
-    cerr << '.' << endl;
+      fputs(" (last)", stderr);
+    fputs(".\n", stderr);
+    fflush(stderr);
     DecoratorSliceStrategy::doingIndependentPart(projection, last);
   }
 
   virtual bool doneWithIndependentPart() {
-    cerr << "DEBUG " << _level
-	 << ": done with that independent part." << endl;
+    fprintf(stderr, "DEBUG %lu: done with that independent part.",
+	    (unsigned long)_level);
+    fflush(stderr);
+    
     return DecoratorSliceStrategy::doneWithIndependentPart();
   }
-
+  
   virtual void doneWithIndependenceSplit() {
-    cerr << "DEBUG " << _level
-	 << ": done with independence split." << endl;
+    fprintf(stderr, "DEBUG %lu: done with independence split.\n",
+	    (unsigned long)_level);
+    fflush(stderr);
     DecoratorSliceStrategy::doneWithIndependenceSplit();
   }
 
   void startingContent(const Slice& slice) {
     ++_level;
-    cerr << "DEBUG " << _level
-	 << ": computing content of the following slice." << endl
-	 << slice << endl;
+    fprintf(stderr, "DEBUG %lu: computing content of the following slice.\n",
+	    (unsigned long)_level);
+    slice.print(stderr);
+    fflush(stderr);
 
     DecoratorSliceStrategy::startingContent(slice);
   }
 
   void endingContent() {
-    cerr << "DEBUG " << _level
-	 << ": done computing content of that slice." << endl;
+    fprintf(stderr, "DEBUG %lu: done computing content of that slice.\n",
+	    (unsigned long)_level);
+    fflush(stderr);
     --_level;
 
     DecoratorSliceStrategy::endingContent();
@@ -800,20 +816,28 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
 
   void getPivot(Term& pivot, const Slice& slice) {
     DecoratorSliceStrategy::getPivot(pivot, slice);
-    cerr << "DEBUG " << _level
-	 << ": performing pivot split on " << pivot << '.' << endl;
+    fprintf(stderr, "DEBUG %lu: performing pivot split on ",
+	    (unsigned long)_level);
+    pivot.print(stderr);
+    fputs(".\n", stderr);
+    fflush(stderr);
   }
 
   size_t getLabelSplitVariable(const Slice& slice) {
     size_t var = DecoratorSliceStrategy::getLabelSplitVariable(slice);
-    cerr << "DEBUG " << _level
-	 << ": performing label split on var " << var << '.' << endl;
+    fprintf(stderr, "DEBUG %lu: performing label split on var %lu.\n",
+	    (unsigned long)_level,
+	    (unsigned long)var);
+    fflush(stderr);
     return var;
   }
 
   void consume(const Term& term) {
-    cerr << "DEBUG " << _level
-	 << ": Writing " << term << " to output." << endl;
+    fprintf(stderr, "DEBUG %lu: Writing ", (unsigned long)_level);
+    term.print(stderr);
+    fputs(" to output.\n", stderr);
+    fflush(stderr);
+
     DecoratorSliceStrategy::consume(term);
   }
   

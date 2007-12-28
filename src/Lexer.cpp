@@ -58,8 +58,10 @@ void Lexer::readInteger(unsigned int& i) {
   readInteger(_integer);
 
   if (!_integer.fits_uint_p()) {
-    cerr << "ERROR: expected 32 bit unsigned integer but got " << _integer << "." << endl;
-    exit(0);
+    gmp_fprintf(stderr,
+		"ERROR: expected 32 bit unsigned integer but got %Zd.\n",
+		_integer.get_mpz_t());
+    exit(1);
   }
   i = _integer.get_ui();
 }
@@ -91,8 +93,8 @@ int Lexer::peek() {
 }
 
 void Lexer::error(const string& expected) {
-  cerr << "ERROR: expected " << expected << " at line "
-       << _lineNumber << '.' << endl;
+  fprintf(stderr, "ERROR: expected %s at line %u.\n",
+	  expected.c_str(), _lineNumber);
   exit(1);
 }
 

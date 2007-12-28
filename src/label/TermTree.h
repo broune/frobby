@@ -34,7 +34,7 @@ public:
     ~TreeWalker();
 
     void goToRoot();
-    void print(ostream& out) const;
+    void print(FILE* out) const;
     void insertUnder(Exponent exponent);
     void insertRightOf(Exponent exponent);
 
@@ -67,7 +67,7 @@ public:
     void getTerm(Term& term) const;
     Exponent getExponent(unsigned int position) const;
     bool atEnd() const;
-    void print(ostream& out) const;
+    void print(FILE* out) const;
 
   private:
     TreeWalker _walker;
@@ -128,7 +128,7 @@ public:
 
   int getPosition() const;
 
-  void print(ostream& out) const;
+  void print(FILE* out) const;
 
   bool equalsHelper(const Node* a, const Node* b, unsigned int position) const;
 
@@ -145,7 +145,7 @@ private:
   bool removeDivisors(Node* node, const Term& term, unsigned int position);
   void removeNonDivisors(Node* node, const Term& term, unsigned int position);
 
-  void print(const Node* node, ostream& out, unsigned int position) const;
+  void print(const Node* node, FILE* file, unsigned int position) const;
 
 
 #ifdef DEBUG

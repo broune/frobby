@@ -103,8 +103,9 @@ void Action::processOption(const string& optionName,
       return;
   }
 
-  cerr << "ERROR: Unknown option \"-" << optionName << "\"." << endl;
-  exit(0);
+  fprintf(stderr, "ERROR: Unknown option \"-%s\".\n",
+	  optionName.c_str());
+  exit(1);
 }
 
 void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
@@ -122,10 +123,10 @@ void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
     ASSERT(tokens[i][0] != '\0');
 
     if (tokens[i][0] != '-') {
-      cerr << "ERROR: Expected an option when reading \""
-	   << tokens[i][0] << "\", but options start with a dash (-)."
-	   << endl;
-      exit(0);
+      fprintf(stderr, "ERROR: Expected an option when reading "
+	      "\"%c\", but options start with a dash (-).\n",
+	      tokens[i][0]);
+      exit(1);
     }
 
     unsigned int paramCount = 0;

@@ -66,13 +66,13 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
 
   if (instance.size() != ideal.getVarCount() + 1) {
     if (instance.empty())
-      cerr << "ERROR: There is no Frobenius instance at end of input.";
+      fputs("ERROR: There is no Frobenius instance at end of input.\n",
+	    stderr);
     else
-      cerr <<
-	"ERROR: The Frobenius instance at end of input does not have\n"
-	"the amount of numbers that the first part of the input indicates.";
-    cerr << endl;
-    exit(0);
+      fputs("ERROR: The Frobenius instance at end of input does not have the\n"
+	    "amount of numbers that the first part of the input indicates.\n",
+	    stderr);
+    exit(1);
   }
 
   endAction();

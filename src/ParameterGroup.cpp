@@ -23,15 +23,9 @@ bool ParameterGroup::process(const char** params, unsigned int paramCount) {
 
 void ParameterGroup::processParameters(const char** params,
 				       unsigned int paramCount) {
+  fputs("INTERNAL ERROR: Called ParameterGroup::processParameters.\n", stderr);
   ASSERT(false);
-  cerr << "INTERNAL ERROR: Called ParameterGroup::processParameters" << endl;
   exit(1);
-}
-
-void ParameterGroup::printState(ostream& out) {
-  for (vector<Parameter*>::const_iterator it = _parameters.begin();
-       it != _parameters.end(); ++it)
-    (*it)->printState(out);
 }
 
 void ParameterGroup::addParameter(Parameter* parameter) {

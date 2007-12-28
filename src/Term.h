@@ -155,18 +155,17 @@ inline int lexCompare(const Exponent* a, const Exponent* b,
   return 0;
 }
 
-// Writes a to out.
-inline void print(ostream& out,
-	   const Exponent* a, size_t varCount) {
-  out << '(';
+// Writes e to file.
+inline void print(FILE* file, const Exponent* e, size_t varCount) {
+  fputc('(', file);
 
-  const char* prefix = "";
   for (size_t var = 0; var < varCount; ++var) {
-    out << prefix << a[var];
-    prefix = ", ";
+    if (var != 0)
+      fputs(", ", file);
+    fprintf(file, "%lu", (unsigned long)e[var]);
   }
 
-  out << ')';
+  fputc(')', file);
 }
 
 // Term represents a product of variables and does NOT include a
@@ -375,6 +374,9 @@ class Term {
     _varCount = 0;
   }
 
+  void print(FILE* file) const {
+    ::print(file, _exponents, _varCount);
+  }
 
   // A predicate that sorts according to lexicographic order.
   class LexComparator {
@@ -483,11 +485,6 @@ class Term {
   Exponent* _exponents;
   size_t _varCount;
 };
-
-inline ostream& operator<<(ostream& out, const Term& term) {
-  ::print(out, term.begin(), term.getVarCount());
-  return out;
-}
 
 namespace std {
   // This allows STL to swap terms more efficiently.

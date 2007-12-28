@@ -9,7 +9,7 @@ class IrreducibleDecomParameters : public ParameterGroup {
  public:
   IrreducibleDecomParameters();
 
-  void setSkipRedundant(bool value);
+  void setUseIndependence(bool value);
 
   bool getDoBenchmark() const;
   bool getPrintDebug() const;
