@@ -1,6 +1,7 @@
 #ifndef OLD_PARTITION_GUARD
 #define OLD_PARTITION_GUARD
 
+#include <vector>
 class Term;
 
 class OldPartition {

@@ -1,6 +1,8 @@
 #ifndef STRATEGY_GUARD
 #define STRATEGY_GUARD
 
+#include <vector>
+
 class Term;
 class TermTree;
 class OldPartition;
