@@ -46,3 +46,8 @@ echo -n "format: "
 cd test/format
 time ./runtests
 cd ../..
+
+echo -n "latformat: "
+cd test/latformat
+time ./runtests
+cd ../..

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+../../$frobby latformat $2 $3 $4 $5 $6 $7 -iformat 4ti2 -oformat fplll < $1 2> /dev/null| diff - $1.fplll
+
+if [ $? != 0 ]
+then
+  echo
+  echo "Test $1 failed (4ti2 to fplll)"
+  exit 1
+fi
+
+../../$frobby latformat $2 $3 $4 $5 $6 $7 -iformat fplll -oformat 4ti2 < $1.fplll 2> /dev/null| diff - $1
+
+if [ $? != 0 ]
+then
+  echo
+  echo "Test $1 failed (fplll to 4ti2)"
+  exit 1
+fi
+
+echo -n .
