@@ -3,7 +3,8 @@
 
 #include "Lexer.h"
 #include "BigIdeal.h"
-#include "VarNames.h"
+#include "TermTranslator.h"
+#include "Term.h"
 
 #include "newMonosIO.h"
 #include "monosIO.h"
@@ -12,6 +13,84 @@
 #include <fstream>
 #include <cctype>
 #include <sstream>
+
+IdealWriter::IdealWriter() {
+}
+
+IdealWriter::IdealWriter(FILE* file, const VarNames& names):
+  _file(file),
+  _names(names),
+  _translator(0) {
+}
+
+IdealWriter::IdealWriter(FILE* file, const TermTranslator* translator):
+  _file(file),
+  _names(translator->getNames()),
+  _translator(translator) {
+  _translator->makeStrings();
+}
+
+IdealWriter::~IdealWriter() {
+}
+
+void IdealWriter::writeTerm(const vector<const char*>& term, FILE* file) {
+  char separator = ' ';
+  size_t varCount = term.size();
+  for (size_t j = 0; j < varCount; ++j) {
+    const char* exp = term[j];
+    if (exp == 0)
+      continue;
+
+    putc(separator, file);
+    separator = '*';
+
+    fputs(exp, file);
+  }
+
+  if (separator == ' ')
+    fputs(" 1", file);
+}
+
+void IdealWriter::writeTerm(const Term& term,
+			    const TermTranslator* translator,
+			    FILE* file) {
+    char separator = ' ';
+    size_t varCount = term.getVarCount();
+    for (size_t j = 0; j < varCount; ++j) {
+      const char* exp = translator->getExponentString(j, term[j]);
+      if (exp == 0)
+	continue;
+
+      putc(separator, file);
+      separator = '*';
+
+      fputs(exp, file);
+    }
+
+    if (separator == ' ')
+      fputs(" 1", file);
+  }
+
+void IdealWriter::writeTerm(const vector<mpz_class>& term,
+			    const VarNames& names,
+			    FILE* file) {
+  char separator = ' ';
+  size_t varCount = term.size();
+  for (size_t j = 0; j < varCount; ++j) {
+    if ((term[j]) == 0)
+      continue;
+
+    putc(separator, file);
+    separator = '*';
+
+    fputs(names.getName(j).c_str(), file);
+    if ((term[j]) != 1)
+      gmp_printf("^%Zd", term[j].get_mpz_t());
+  }
+
+  if (separator == ' ')
+    fputs(" 1", file);
+}
 
 IOHandler::IOHandlerContainer IOHandler::_ioHandlers;
 
