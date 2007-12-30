@@ -44,7 +44,7 @@ void Slice::print(FILE* file) const {
   getIdeal().print(file);
   fputs("\n subtract: ", file);
   _subtract.print(file);
-  fputs("\n)", file);
+  fputc('\n', file);
 }
 
 void Slice::resetAndSetVarCount(size_t varCount) {

@@ -28,6 +28,9 @@ public:
   bool contains(const Term& term) const;
   bool contains(const Exponent* term) const;
 
+  // Returns true if some minimal generator strictly divides term.
+  bool strictlyContains(const Term& term) const;
+
   bool isIrreducible() const;
 
   void getLcm(Term& lcm) const;
@@ -53,7 +56,7 @@ public:
   // Perform colon by var raised to exp and then minimize.
   void colonReminimize(size_t var, Exponent exp);
 
-  // a is a strict multiple of b if b[i] > 0 implies that a[i] > b[i].
+  // Removes those generators that are strict multiples of exponent.
   void removeStrictMultiples(const Exponent* exponent);
 
   // Remove duplicate generators.

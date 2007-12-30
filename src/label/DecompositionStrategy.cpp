@@ -135,5 +135,11 @@ void DecompositionStrategy::flushIfPossible() {
 
 void DecompositionStrategy::writeSolution(const Term& b) {
   ASSERT(_dimension == b.getVarCount());
-  _consumer->consume(b);
+
+  Term& t = *(const_cast<Term*>(&b));
+  for (size_t var = 0; var < b.getVarCount(); ++var)
+    t[var] += 1;
+  _consumer->consume(t);
+  for (size_t var = 0; var < b.getVarCount(); ++var)
+    t[var] -= 1;
 }

@@ -28,6 +28,8 @@ public:
 
   size_t getVarCount() const;
 
+  void print(FILE* file) const;
+
 private:
   vector<vector<mpz_class> > _grades;
 };

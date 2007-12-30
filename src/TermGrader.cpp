@@ -57,3 +57,14 @@ Exponent TermGrader::getMaxExponent(size_t var) const {
 size_t TermGrader::getVarCount() const {
   return _grades.size();
 }
+
+void TermGrader::print(FILE* file) const {
+  fputs("Grader:\n", file);
+  for (size_t var = 0; var < _grades.size(); ++var) {
+    fprintf(file, " var %lu:", (unsigned long)var);
+    for (size_t e = 0; e < _grades[var].size(); ++e)
+      gmp_fprintf(file, " %lu->%Zd", (unsigned long)e,
+		  _grades[var][e].get_mpz_t());
+    fputc('\n', file);
+  }
+}
