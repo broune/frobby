@@ -43,7 +43,7 @@ public:
   // The assigned IDs are those in the range [0, getMaxId()].
   Exponent getMaxId(int variable) const;
 
-  // Adds a generator of the form v^e for any variable v where
+  // Adds a generator of the form v^e, e > 0, for any variable v where
   // generator of that form is not already present. e is chosen to be
   // larger than any exponent (i.e. ID) already present, and it maps
   // to 0. Note that this does NOT preserve order - the highest ID

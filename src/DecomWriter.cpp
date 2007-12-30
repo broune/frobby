@@ -10,23 +10,17 @@ DecomWriter::DecomWriter(const VarNames& names,
 			 FILE* out):
   _tmp(names.getVarCount()),
   _varCount(names.getVarCount()),
-  _names(names),
-  _translator(translator),
-  _out(out) {
-  _ioHandler = IOHandler::createIOHandler("monos");
-  _ioHandler->startWritingIdeal(out, names);
+  _writer(IOHandler::getIOHandler("monos")->createWriter(out, names)),
+  _translator(translator) {
   _translator->makeStrings();
 }
 
 DecomWriter::~DecomWriter() {
-  _ioHandler->doneWritingIdeal(_out);
-  fflush(_out);
-  
-  delete _ioHandler;
+  delete _writer;
 }
 
 void DecomWriter::consume(const Term& term) {
   for (size_t var = 0; var < _varCount; ++var)
     _tmp[var] = _translator->getExponentString(var, term[var] + 1);
-  _ioHandler->writeGeneratorOfIdeal(_out, _tmp, _names);
+  _writer->consume(_tmp);
 }

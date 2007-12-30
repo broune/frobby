@@ -9,16 +9,10 @@
 class NewMonosIOHandler : public IOHandler {
 public:
   virtual void readIdeal(FILE* in, BigIdeal& ideal);
-  virtual void startWritingIdeal(FILE* out,
-				 const VarNames& names);
-  virtual void writeGeneratorOfIdeal(FILE* out,
-				     const vector<mpz_class>& generator,
-				     const VarNames& names);
-  void writeGeneratorOfIdeal(FILE* out,
-			     const vector<const char*>& generator,
-			     const VarNames& names);
 
-  virtual void doneWritingIdeal(FILE* out);
+  virtual IdealWriter* createWriter
+    (FILE* file, const VarNames& names) const;
+
   virtual void readIrreducibleDecomposition(FILE* in,
 					    BigIdeal& decom);
   virtual const char* getFormatName() const;

@@ -15,9 +15,8 @@ IOFacade::IOFacade(bool printActions):
 bool IOFacade::isValidMonomialIdealFormat(const char* format) {
   beginAction("Validating monomial ideal format name.");
 
-  IOHandler* handler = IOHandler::createIOHandler(format);
+  IOHandler* handler = IOHandler::getIOHandler(format);
   bool valid = (handler != 0);
-  delete handler;
 
   endAction();
 
@@ -27,11 +26,10 @@ bool IOFacade::isValidMonomialIdealFormat(const char* format) {
 void IOFacade::readIdeal(FILE* in, BigIdeal& ideal, const char* format) {
   beginAction("Reading monomial ideal.");
 
-  IOHandler* handler = IOHandler::createIOHandler(format);
+  IOHandler* handler = IOHandler::getIOHandler(format);
   ASSERT(handler != 0);
 
   handler->readIdeal(in, ideal);
-  delete handler;
 
   endAction();
 }
@@ -39,11 +37,10 @@ void IOFacade::readIdeal(FILE* in, BigIdeal& ideal, const char* format) {
 void IOFacade::writeIdeal(FILE* out, BigIdeal& ideal, const char* format) {
   beginAction("Writing monomial ideal.");
 
-  IOHandler* handler = IOHandler::createIOHandler(format);
+  IOHandler* handler = IOHandler::getIOHandler(format);
   ASSERT(handler != 0);
 
   handler->writeIdeal(out, ideal);
-  delete handler;
 
   endAction();
 }

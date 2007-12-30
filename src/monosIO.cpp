@@ -9,6 +9,56 @@
 MonosIOHandler::MonosIOHandler() {
 }
 
+class MonosIdealWriter : public IdealWriter {
+public:
+  MonosIdealWriter(FILE* file, const VarNames& names):
+    _justStartedWritingIdeal(true),
+    _file(file),
+    _names(names) {
+    fputs("vars ", _file);
+    const char* pre = "";
+    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+      fputs(pre, _file);
+      fputs(names.getName(i).c_str(), _file);
+      pre = ", ";
+    }
+    fputs(";\n[", _file);
+  }
+
+  virtual ~MonosIdealWriter() {
+    fputs("\n];\n", _file);
+  }
+
+  virtual void consume(const vector<const char*>& term) {
+    writeSeparator();
+    writeTerm(term, _file);
+  }
+
+  virtual void consume(const vector<mpz_class>& term) {
+    writeSeparator();
+    writeTerm(term, _names, _file);
+  }
+
+private:
+  void writeSeparator() {
+    if (_justStartedWritingIdeal) {
+      _justStartedWritingIdeal = false;
+      fputs("\n", _file);
+    }
+    else
+      fputs(",\n", _file);
+  }
+
+  bool _justStartedWritingIdeal;
+  FILE* _file;
+  VarNames _names;
+};
+
+IdealWriter* MonosIOHandler::createWriter(FILE* file,
+					       const VarNames& names) const {
+  return new MonosIdealWriter(file, names);
+}
+
 void MonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   Lexer lexer(in);
   readVarsAndClearIdeal(ideal, lexer);
@@ -21,24 +71,6 @@ void MonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
     lexer.expect(']');
   }
   lexer.expect(';');
-}
-
-void MonosIOHandler::startWritingIdeal(FILE* out,
-				       const VarNames& names) {
-  fputs("vars ", out);
-  const char* pre = "";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-    fputs(pre, out);
-    fputs(names.getName(i).c_str(), out);
-    pre = ", ";
-  }
-  fputs(";\n[", out);
-  
-  _justStartedWritingIdeal = true;
-}
-
-void MonosIOHandler::doneWritingIdeal(FILE* out) {
-  fputs("\n];\n", out);
 }
 
 void MonosIOHandler::readIrreducibleDecomposition(FILE* in, BigIdeal& decom) {
