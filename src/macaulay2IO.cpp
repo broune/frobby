@@ -4,6 +4,59 @@
 #include "monosIO.h"
 #include <sstream>
 
+class Macaulay2IdealWriter : public IdealWriter {
+public:
+  Macaulay2IdealWriter(FILE* file, const VarNames& names):
+    _justStartedWritingIdeal(true),
+    _file(file),
+    _names(names) {
+    fputs("R = ZZ[{", _file);
+    ASSERT(!names.empty());
+
+    const char* pre = "";
+    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+      fputs(pre, _file);
+      fputs(names.getName(i).c_str(), _file);
+      pre = ", ";
+    }
+    fputs("}];\n", _file);
+    fputs("I = monomialIdeal(", _file);
+  }
+
+  virtual ~Macaulay2IdealWriter() {
+    fputs("\n);\n", _file);
+  }
+
+  virtual void consume(const vector<const char*>& term) {
+    writeSeparator();
+    writeTerm(term, _file);
+  }
+
+  virtual void consume(const vector<mpz_class>& term) {
+    writeSeparator();
+    writeTerm(term, _names, _file);
+  }
+
+private:
+  void writeSeparator() {
+    if (_justStartedWritingIdeal) {
+      _justStartedWritingIdeal = false;
+      fputs("\n", _file);
+    }
+    else
+      fputs(",\n", _file);
+  }
+
+  bool _justStartedWritingIdeal;
+  FILE* _file;
+  VarNames _names;
+};
+
+IdealWriter* Macaulay2IOHandler::
+createWriter(FILE* file, const VarNames& names) const {
+  return new Macaulay2IdealWriter(file, names);
+}
+
 void Macaulay2IOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   Lexer lexer(in);
   readVarsAndClearIdeal(ideal, lexer);
@@ -20,27 +73,6 @@ void Macaulay2IOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   lexer.expect(')');
   lexer.match(';');
   lexer.expectEOF();
-}
-
-void Macaulay2IOHandler::startWritingIdeal(FILE* out,
-					   const VarNames& names) {
-  fputs("R = ZZ[{", out);
-  ASSERT(!names.empty());
-
-  const char* pre = "";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-    fputs(pre, out);
-    fputs(names.getName(i).c_str(), out);
-    pre = ", ";
-  }
-  fputs("}];\n", stdout);
-  fputs("I = monomialIdeal(", stdout);
-
-  _justStartedWritingIdeal = true;
-}
-
-void Macaulay2IOHandler::doneWritingIdeal(FILE* out) {
-  fputs("\n);\n", out);
 }
 
 void Macaulay2IOHandler::readIrreducibleDecomposition(FILE* in,

@@ -72,15 +72,16 @@ $(outdir)IrreducibleDecomAction.o: src/IrreducibleDecomAction.cpp src/stdinc.h \
   src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h src/IOFacade.h
 $(outdir)fplllIO.o: src/fplllIO.cpp src/stdinc.h src/fplllIO.h src/BigIdeal.h \
   src/VarNames.h src/Lexer.h
-$(outdir)io.o: src/io.cpp src/stdinc.h src/io.h src/Lexer.h src/BigIdeal.h \
-  src/VarNames.h src/newMonosIO.h src/monosIO.h src/macaulay2IO.h
+$(outdir)io.o: src/io.cpp src/stdinc.h src/io.h src/TermConsumer.h src/VarNames.h \
+  src/Lexer.h src/BigIdeal.h src/newMonosIO.h src/monosIO.h \
+  src/macaulay2IO.h
 $(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
-  src/VarNames.h src/Lexer.h src/io.h
+  src/VarNames.h src/Lexer.h src/io.h src/TermConsumer.h
 $(outdir)randomDataGenerators.o: src/randomDataGenerators.cpp src/stdinc.h \
   src/randomDataGenerators.h src/BigIdeal.h src/VarNames.h src/Ideal.h \
   src/Term.h
 $(outdir)monosIO.o: src/monosIO.cpp src/stdinc.h src/monosIO.h src/io.h \
-  src/BigIdeal.h src/VarNames.h src/Lexer.h
+  src/TermConsumer.h src/VarNames.h src/BigIdeal.h src/Lexer.h
 $(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
   src/TermTranslator.h src/Ideal.h src/Term.h
 $(outdir)FormatAction.o: src/FormatAction.cpp src/stdinc.h src/FormatAction.h \
@@ -88,9 +89,11 @@ $(outdir)FormatAction.o: src/FormatAction.cpp src/stdinc.h src/FormatAction.h \
   src/BigIdeal.h src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
   src/IdealFacade.h
 $(outdir)macaulay2IO.o: src/macaulay2IO.cpp src/stdinc.h src/macaulay2IO.h \
-  src/Lexer.h src/BigIdeal.h src/VarNames.h src/io.h src/monosIO.h
+  src/Lexer.h src/BigIdeal.h src/VarNames.h src/io.h src/TermConsumer.h \
+  src/monosIO.h
 $(outdir)newMonosIO.o: src/newMonosIO.cpp src/stdinc.h src/newMonosIO.h \
-  src/monosIO.h src/io.h src/BigIdeal.h src/VarNames.h src/Lexer.h
+  src/monosIO.h src/io.h src/TermConsumer.h src/VarNames.h src/BigIdeal.h \
+  src/Lexer.h
 $(outdir)HelpAction.o: src/HelpAction.cpp src/stdinc.h src/HelpAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h
 $(outdir)stdinc.o: src/stdinc.cpp src/stdinc.h
@@ -117,7 +120,7 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
   src/BoolParameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
   src/IOFacade.h src/TermTranslator.h src/Ideal.h src/Term.h \
-  src/SliceAlgorithm.h src/DecomWriter.h src/TermConsumer.h \
+  src/SliceAlgorithm.h src/DecomWriter.h src/TermConsumer.h src/io.h \
   src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h \
   src/TermGrader.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
@@ -127,8 +130,8 @@ $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/Facade.h src/Timer.h src/IrreducibleDecomFacade.h
 $(outdir)Facade.o: src/Facade.cpp src/stdinc.h src/Facade.h src/Timer.h
 $(outdir)IOFacade.o: src/IOFacade.cpp src/stdinc.h src/IOFacade.h src/Facade.h \
-  src/Timer.h src/io.h src/fourti2.h src/BigIdeal.h src/VarNames.h \
-  src/fplllIO.h
+  src/Timer.h src/io.h src/TermConsumer.h src/VarNames.h src/fourti2.h \
+  src/BigIdeal.h src/fplllIO.h
 $(outdir)DynamicFrobeniusFacade.o: src/DynamicFrobeniusFacade.cpp src/stdinc.h \
   src/DynamicFrobeniusFacade.h src/Facade.h src/Timer.h \
   src/dynamicFrobeniusAlgorithm.h
@@ -173,8 +176,8 @@ $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
   src/LatticeFacade.h
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceAlgorithm.h src/Term.h src/VarNames.h src/io.h \
-  src/TermTranslator.h src/Ideal.h src/Partition.h src/Slice.h \
-  src/DecomWriter.h src/TermConsumer.h src/SliceStrategy.h \
+  src/TermConsumer.h src/TermTranslator.h src/Ideal.h src/Partition.h \
+  src/Slice.h src/DecomWriter.h src/SliceStrategy.h \
   src/IndependenceSplitter.h src/Projection.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \

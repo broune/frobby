@@ -3,6 +3,39 @@
 
 #include <sstream>
 
+class NewMonosIdealWriter : public IdealWriter {
+public:
+  NewMonosIdealWriter(FILE* file, const VarNames& names):
+    _file(file),
+    _names(names) {
+    ASSERT(!names.empty());
+    fputs("(monomial-ideal-with-order\n (lex-order", _file);
+    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+      putc(' ', _file);
+      fputs(names.getName(i).c_str(), _file);
+    }
+    fputs(")\n", _file);
+  }
+
+  virtual ~NewMonosIdealWriter() {
+    fputs(")\n", _file);
+  }
+
+  virtual void consume(const vector<const char*>& term) {
+    writeTerm(term, _file);
+    putc('\n', _file);
+  }
+
+  virtual void consume(const vector<mpz_class>& term) {
+    writeTerm(term, _names, _file);
+    putc('\n', _file);
+  }
+
+private:
+  FILE* _file;
+  VarNames _names;
+};
+
 void NewMonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   Lexer lexer(in);
   lexer.expect('(');
@@ -14,32 +47,9 @@ void NewMonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
   } while (!lexer.match(')'));
 }
 
-void NewMonosIOHandler::startWritingIdeal(FILE* out,
-				   const VarNames& names) {
-  fputs("(monomial-ideal-with-order\n (lex-order", out);
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-    putc(' ', out);
-    fputs(names.getName(i).c_str(), out);
-  }
-  fputs(")\n", out);
-}
-
-void NewMonosIOHandler::writeGeneratorOfIdeal(FILE* out,
-				       const vector<mpz_class>& generator,
-				       const VarNames& names) {
-  writeTerm(out, generator, names);
-  putc('\n', out);
-}
-
-void NewMonosIOHandler::writeGeneratorOfIdeal(FILE* out,
-				       const vector<const char*>& generator,
-				       const VarNames& names) {
-  writeTerm(out, generator, names);
-  putc('\n', out);
-}
-
-void NewMonosIOHandler::doneWritingIdeal(FILE* out) {
-  fputs(")\n", out);
+IdealWriter* NewMonosIOHandler::
+createWriter(FILE* file, const VarNames& names) const {
+  return new NewMonosIdealWriter(file, names);
 }
 
 void NewMonosIOHandler::readIrreducibleDecomposition(FILE* in,

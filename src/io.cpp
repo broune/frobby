@@ -15,94 +15,23 @@
 
 IOHandler::IOHandlerContainer IOHandler::_ioHandlers;
 
-IOHandler::IOHandler():
-  _justStartedWritingIdeal(false) {
+IOHandler::IOHandler() {
 }
 
 IOHandler::~IOHandler() {
 }
 
 void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
-  startWritingIdeal(out, ideal.getNames());
+  IdealWriter* writer = createWriter(out, ideal.getNames());
   for (size_t i = 0; i < ideal.getGeneratorCount(); ++i)
-    writeGeneratorOfIdeal(out, ideal[i], ideal.getNames());
-  doneWritingIdeal(out);
+    writer->consume(ideal[i]);
+  delete writer;
 }
 
 void IOHandler::notImplemented(const char* operation) {
   fprintf(stderr, "ERROR: Format %s does not implement %s.", 
 	  getFormatName(), operation);
   exit(1);
-}
-
-void IOHandler::writeGeneratorOfIdeal(FILE* out,
-				      const vector<mpz_class>& generator,
-				      const VarNames& names) {
-  if (_justStartedWritingIdeal) {
-    _justStartedWritingIdeal = false;
-    fputs("\n", out);
-  } else
-    fputs(",\n", out);
-
-  writeTerm(out, generator, names);
-}
-
-void IOHandler::writeGeneratorOfIdeal
-(FILE* out,
- const vector<const char*>& generator,
- const VarNames& names) {
-  if (_justStartedWritingIdeal) {
-    _justStartedWritingIdeal = false;
-    fputs("\n", out);
-  }
-  else
-    fputs(",\n", out);
-
-  writeTerm(out, generator, names);
-}
-
-void IOHandler::writeTerm(FILE* out,
-			  const vector<mpz_class>& generator,
-			  const VarNames& names) {
-  char separator = ' ';
-  size_t varCount = generator.size();
-  for (size_t j = 0; j < varCount; ++j) {
-    if ((generator[j]) == 0)
-      continue;
-
-    putc(separator, out);
-    separator = '*';
-
-    fputs(names.getName(j).c_str(), out);
-    if ((generator[j]) != 1) {
-      putchar('^');
-      stringstream o;
-      o << generator[j];
-      fputs(o.str().c_str(), out);
-    }
-  }
-
-  if (separator == ' ')
-    fputs(" 1", out);
-}
-
-void IOHandler::writeTerm(FILE* out,
-			  const vector<const char*>& generator,
-			  const VarNames& names) {
-  char separator = ' ';
-  size_t varCount = generator.size();
-  for (size_t j = 0; j < varCount; ++j) {
-    const char* exp = generator[j];
-    if (exp == 0)
-      continue;
-
-    putc(separator, out);
-    fputs(exp, out);
-    separator = '*';
-  }
-
-  if (separator == ' ')
-    fputs(" 1", out);
 }
 
 void IOHandler::readTerm(BigIdeal& ideal, Lexer& lexer) {
@@ -162,26 +91,16 @@ const IOHandler::IOHandlerContainer& IOHandler::getIOHandlers() {
   return _ioHandlers;
 }
 
-IOHandler* IOHandler::createIOHandler(const string& name) {
+IOHandler* IOHandler::getIOHandler(const string& name) {
   getIOHandlers();
-  for (IOHandlerContainer::const_iterator it = _ioHandlers.begin();
+  for (IOHandlerContainer::iterator it = _ioHandlers.begin();
        it != _ioHandlers.end(); ++it) {
     if (name == (*it)->getFormatName())
-      return (*it)->createNew();
+      return *it;
   }
 
   return 0;
 }
-
-bool fileExists(const string& filename) {
-  ifstream in(filename.c_str());
-  in.close();
-  return !in.fail();
-}
-
-void deleteFile(const string& filename) {
-  system(("rm -f " + filename).c_str());
-}    
 
 bool getst(FILE* in, string& str) {
   str.clear();
