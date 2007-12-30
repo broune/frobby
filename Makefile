@@ -24,7 +24,7 @@ rawSources = $(patsubst %, label/%, $(labelSources))			\
   Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\
   AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp			\
   PrimaryDecomAction.cpp Slice.cpp					\
-  IndependenceSplitter.cpp Projection.cpp DecomWriter.cpp		\
+  IndependenceSplitter.cpp Projection.cpp				\
   SliceStrategy.cpp lattice.cpp						\
   LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp		\
   TermGrader.cpp

@@ -7,20 +7,15 @@
 class Macaulay2IdealWriter : public IdealWriter {
 public:
   Macaulay2IdealWriter(FILE* file, const VarNames& names):
-    _justStartedWritingIdeal(true),
-    _file(file),
-    _names(names) {
-    fputs("R = ZZ[{", _file);
-    ASSERT(!names.empty());
+    IdealWriter(file, names),
+    _justStartedWritingIdeal(true) {
+    writeHeader();
+  }
 
-    const char* pre = "";
-    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-      fputs(pre, _file);
-      fputs(names.getName(i).c_str(), _file);
-      pre = ", ";
-    }
-    fputs("}];\n", _file);
-    fputs("I = monomialIdeal(", _file);
+  Macaulay2IdealWriter(FILE* file, const TermTranslator* translator):
+    IdealWriter(file, translator),
+    _justStartedWritingIdeal(true) {
+    writeHeader();
   }
 
   virtual ~Macaulay2IdealWriter() {
@@ -37,7 +32,26 @@ public:
     writeTerm(term, _names, _file);
   }
 
+  virtual void consume(const Term& term) {
+    writeSeparator();
+    writeTerm(term, _translator, _file);
+  }
+
 private:
+  void writeHeader() {
+    fputs("R = ZZ[{", _file);
+    ASSERT(!_names.empty());
+
+    const char* pre = "";
+    for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
+      fputs(pre, _file);
+      fputs(_names.getName(i).c_str(), _file);
+      pre = ", ";
+    }
+    fputs("}];\n", _file);
+    fputs("I = monomialIdeal(", _file);
+  }
+
   void writeSeparator() {
     if (_justStartedWritingIdeal) {
       _justStartedWritingIdeal = false;
@@ -48,13 +62,16 @@ private:
   }
 
   bool _justStartedWritingIdeal;
-  FILE* _file;
-  VarNames _names;
 };
 
 IdealWriter* Macaulay2IOHandler::
 createWriter(FILE* file, const VarNames& names) const {
   return new Macaulay2IdealWriter(file, names);
+}
+
+IdealWriter* Macaulay2IOHandler::
+createWriter(FILE* file, const TermTranslator* translator) const {
+  return new Macaulay2IdealWriter(file, translator);
 }
 
 void Macaulay2IOHandler::readIdeal(FILE* in, BigIdeal& ideal) {

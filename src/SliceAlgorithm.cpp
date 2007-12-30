@@ -8,7 +8,6 @@
 #include "Ideal.h"
 #include "Partition.h"
 #include "Slice.h"
-#include "DecomWriter.h"
 #include "SliceStrategy.h"
 
 #include "IndependenceSplitter.h"

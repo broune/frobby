@@ -13,8 +13,10 @@ public:
   
   virtual void readIdeal(FILE* in, BigIdeal& ideal);
 
-  virtual IdealWriter* createWriter(FILE* file,
-				    const VarNames& names) const;
+  virtual IdealWriter* createWriter
+    (FILE* file, const VarNames& names) const;
+  virtual IdealWriter* createWriter
+    (FILE* file, const TermTranslator* translator) const;
 
   virtual void readIrreducibleDecomposition(FILE* in,
 					    BigIdeal& decom);

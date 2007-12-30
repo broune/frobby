@@ -12,17 +12,15 @@ MonosIOHandler::MonosIOHandler() {
 class MonosIdealWriter : public IdealWriter {
 public:
   MonosIdealWriter(FILE* file, const VarNames& names):
-    _justStartedWritingIdeal(true),
-    _file(file),
-    _names(names) {
-    fputs("vars ", _file);
-    const char* pre = "";
-    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-      fputs(pre, _file);
-      fputs(names.getName(i).c_str(), _file);
-      pre = ", ";
-    }
-    fputs(";\n[", _file);
+    IdealWriter(file, names),
+    _justStartedWritingIdeal(true) {
+    writeHeader();
+  }
+
+  MonosIdealWriter(FILE* file, const TermTranslator* translator):
+    IdealWriter(file, translator),
+    _justStartedWritingIdeal(true) {
+    writeHeader();
   }
 
   virtual ~MonosIdealWriter() {
@@ -39,7 +37,23 @@ public:
     writeTerm(term, _names, _file);
   }
 
+  virtual void consume(const Term& term) {
+    writeSeparator();
+    writeTerm(term, _translator, _file);
+  }
+
 private:
+  void writeHeader() {
+    fputs("vars ", _file);
+    const char* pre = "";
+    for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
+      fputs(pre, _file);
+      fputs(_names.getName(i).c_str(), _file);
+      pre = ", ";
+    }
+    fputs(";\n[", _file);
+  }
+
   void writeSeparator() {
     if (_justStartedWritingIdeal) {
       _justStartedWritingIdeal = false;
@@ -50,13 +64,16 @@ private:
   }
 
   bool _justStartedWritingIdeal;
-  FILE* _file;
-  VarNames _names;
 };
 
-IdealWriter* MonosIOHandler::createWriter(FILE* file,
-					       const VarNames& names) const {
+IdealWriter* MonosIOHandler::
+createWriter(FILE* file, const VarNames& names) const {
   return new MonosIdealWriter(file, names);
+}
+
+IdealWriter* MonosIOHandler::
+createWriter(FILE* file, const TermTranslator* translator) const {
+  return new MonosIdealWriter(file, translator);
 }
 
 void MonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
