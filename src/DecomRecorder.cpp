@@ -14,9 +14,5 @@ DecomRecorder::~DecomRecorder() {
 
 void DecomRecorder::consume(const Term& term) {
   ASSERT(term.getVarCount() == _tmp.getVarCount());
-
-  for (size_t var = 0; var < _tmp.getVarCount(); ++var)
-    _tmp[var] = term[var] + 1;
-
-  _recordInto->insert(_tmp);
+  _recordInto->insert(term);
 }

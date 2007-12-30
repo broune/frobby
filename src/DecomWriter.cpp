@@ -21,6 +21,6 @@ DecomWriter::~DecomWriter() {
 
 void DecomWriter::consume(const Term& term) {
   for (size_t var = 0; var < _varCount; ++var)
-    _tmp[var] = _translator->getExponentString(var, term[var] + 1);
+    _tmp[var] = _translator->getExponentString(var, term[var]);
   _writer->consume(_tmp);
 }

@@ -46,6 +46,14 @@ bool Ideal::contains(const Term& term) const {
   return contains(term.begin());
 }
 
+bool Ideal::strictlyContains(const Term& term) const {
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
+    if (::strictlyDivides(*it, term, _varCount))
+      return true;
+  return false;
+}
+
 bool Ideal::isIrreducible() const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)

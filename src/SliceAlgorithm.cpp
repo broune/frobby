@@ -31,7 +31,11 @@ void SliceAlgorithm::runAndClear(Ideal& ideal) {
   ASSERT(_strategy != 0);
 
   if (ideal.getGeneratorCount() > 0) {
-    Slice slice(ideal, Ideal(ideal.getVarCount()), Term(ideal.getVarCount()));
+    Term initialMultiply(ideal.getVarCount());
+    for (size_t var = 0; var < initialMultiply.getVarCount(); ++var)
+      initialMultiply[var] = 1;
+
+    Slice slice(ideal, Ideal(ideal.getVarCount()), initialMultiply);
     _strategy->initialize(slice);
     content(slice);
   }
@@ -229,7 +233,7 @@ bool computeSingleMSM2(const Slice& slice, Term& msm) {
     msm[var] -= 1;
   }
 #endif
-\
+
   if (slice.getSubtract().contains(msm))
     return false;
 

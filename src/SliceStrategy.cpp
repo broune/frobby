@@ -486,7 +486,7 @@ private:
     
     getUpperBound(slice, bound);
     getDegree(bound, _outerPartProjection, degree);
-    
+
     if (degree <= _partValue) {
       slice.clear();
       return false;
@@ -499,8 +499,8 @@ private:
 	continue;
 
       difference =
-	_grader.getGrade(outerVar, bound[var] + 1) -
-	_grader.getGrade(outerVar, slice.getMultiply()[var] + 1);
+	_grader.getGrade(outerVar, bound[var]) -
+	_grader.getGrade(outerVar, slice.getMultiply()[var]);
 
       degreeLess = degree - difference;
 
@@ -545,7 +545,7 @@ private:
     }
 
     for (size_t var = 0; var < bound.getVarCount(); ++var)
-      if (bound[var] == _grader.getMaxExponent(var) - 1 &&
+      if (bound[var] == _grader.getMaxExponent(var) &&
 	  slice.getMultiply()[var] < bound[var])
 	--bound[var];
   }
@@ -553,7 +553,7 @@ private:
   void getDegree(const Term& term,
 		 const Projection& projection,
 		 mpz_class& degree) {
-    _grader.getIncrementedDegree(term, projection, degree);
+    _grader.getDegree(term, projection, degree);
   }
 
   const TermGrader& _grader;
@@ -772,7 +772,8 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
   }
 
   virtual void doingIndependentPart(const Projection& projection, bool last) {
-    fprintf(stderr, "DEBUG %lu: doing independent part", (unsigned long)_level);
+    fprintf(stderr, "DEBUG %lu: doing independent part\n",
+	    (unsigned long)_level);
     if (last)
       fputs(" (last)", stderr);
     fputs(".\n", stderr);
@@ -781,7 +782,7 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
   }
 
   virtual bool doneWithIndependentPart() {
-    fprintf(stderr, "DEBUG %lu: done with that independent part.",
+    fprintf(stderr, "DEBUG %lu: done with that independent part.\n",
 	    (unsigned long)_level);
     fflush(stderr);
     
