@@ -6,6 +6,7 @@
 #include "label/DecompositionStrategy.h"
 #include "label/LabelAlgorithm.h"
 
+#include "io.h"
 #include "IrreducibleDecomParameters.h"
 #include "BigIdeal.h"
 #include "IOFacade.h"
@@ -13,7 +14,6 @@
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "SliceAlgorithm.h"
-#include "DecomWriter.h"
 #include "SliceStrategy.h"
 #include "TermIgnorer.h"
 #include "DecomRecorder.h"
@@ -85,7 +85,8 @@ computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out) {
   if (_parameters.getDoBenchmark())
     consumer = new TermIgnorer();
   else
-    consumer = new DecomWriter(translator.getNames(), &translator, out);
+    consumer = IOHandler::getIOHandler("monos")->
+      createWriter(out, &translator);
   
   endAction();
 

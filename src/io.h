@@ -3,33 +3,68 @@
 
 #include "TermConsumer.h"
 #include "VarNames.h"
+#include "TermTranslator.h"
+#include "Term.h"
 
 #include <vector>
-#include <sstream>
 
 class Lexer;
 class BigIdeal;
 class VarNames;
 
-class IdealWriter {
+class IdealWriter : public TermConsumer {
  public:
+  IdealWriter() {}
+  IdealWriter(FILE* file, const VarNames& names):
+    _file(file),
+    _names(names),
+    _translator(0) {
+  }
+  IdealWriter(FILE* file, const TermTranslator* translator):
+    _file(file),
+    _names(translator->getNames()),
+    _translator(translator) {
+    _translator->makeStrings();
+  }
   virtual ~IdealWriter() {};
 
   virtual void consume(const vector<const char*>& term) = 0;
-  virtual void consume(const vector<mpz_class>& term) {};
+  virtual void consume(const vector<mpz_class>& term) = 0;
+  virtual void consume(const Term& term) = 0;
 
  protected:
-  static void writeTerm(const vector<const char*>& generator, FILE* file) {
+  static void writeTerm(const vector<const char*>& term, FILE* file) {
     char separator = ' ';
-    size_t varCount = generator.size();
+    size_t varCount = term.size();
     for (size_t j = 0; j < varCount; ++j) {
-      const char* exp = generator[j];
+      const char* exp = term[j];
       if (exp == 0)
 	continue;
 
       putc(separator, file);
-      fputs(exp, file);
       separator = '*';
+
+      fputs(exp, file);
+    }
+
+    if (separator == ' ')
+      fputs(" 1", file);
+  }
+
+  static void writeTerm(const Term& term,
+			const TermTranslator* translator,
+			FILE* file) {
+    char separator = ' ';
+    size_t varCount = term.getVarCount();
+    for (size_t j = 0; j < varCount; ++j) {
+      const char* exp = translator->getExponentString(j, term[j]);
+      if (exp == 0)
+	continue;
+
+      putc(separator, file);
+      separator = '*';
+
+      fputs(exp, file);
     }
 
     if (separator == ' ')
@@ -49,17 +84,17 @@ class IdealWriter {
       separator = '*';
 
       fputs(names.getName(j).c_str(), file);
-      if ((term[j]) != 1) {
-	putchar('^');
-	stringstream o;
-	o << term[j];
-	fputs(o.str().c_str(), file);
-      }
+      if ((term[j]) != 1)
+	gmp_printf("^%Zd", term[j].get_mpz_t());
     }
 
     if (separator == ' ')
       fputs(" 1", file);
   }
+
+  FILE* _file;
+  VarNames _names;
+  const TermTranslator* _translator;
 };
 
 class IOHandler {
@@ -72,9 +107,11 @@ class IOHandler {
 
   void writeIdeal(FILE* out, const BigIdeal& ideal);
 
-  virtual IdealWriter* createWriter(FILE* file,
-				    const VarNames& names) const = 0;
-
+  virtual IdealWriter* createWriter
+    (FILE* file, const VarNames& names) const = 0;
+  virtual IdealWriter* createWriter
+    (FILE* file, const TermTranslator* translator) const = 0;
+  
 
   virtual const char* getFormatName() const = 0;
 

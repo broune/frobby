@@ -6,15 +6,13 @@
 class NewMonosIdealWriter : public IdealWriter {
 public:
   NewMonosIdealWriter(FILE* file, const VarNames& names):
-    _file(file),
-    _names(names) {
-    ASSERT(!names.empty());
-    fputs("(monomial-ideal-with-order\n (lex-order", _file);
-    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-      putc(' ', _file);
-      fputs(names.getName(i).c_str(), _file);
-    }
-    fputs(")\n", _file);
+    IdealWriter(file, names) {
+    writeHeader();
+  }
+
+  NewMonosIdealWriter(FILE* file, const TermTranslator* translator):
+    IdealWriter(file, translator) {
+    writeHeader();
   }
 
   virtual ~NewMonosIdealWriter() {
@@ -31,9 +29,20 @@ public:
     putc('\n', _file);
   }
 
+  virtual void consume(const Term& term) {
+    writeTerm(term, _translator, _file);
+    putc('\n', _file);
+  }
+
 private:
-  FILE* _file;
-  VarNames _names;
+  void writeHeader() {
+    fputs("(monomial-ideal-with-order\n (lex-order", _file);
+    for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
+      putc(' ', _file);
+      fputs(_names.getName(i).c_str(), _file);
+    }
+    fputs(")\n", _file);
+  }
 };
 
 void NewMonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
@@ -50,6 +59,11 @@ void NewMonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
 IdealWriter* NewMonosIOHandler::
 createWriter(FILE* file, const VarNames& names) const {
   return new NewMonosIdealWriter(file, names);
+}
+
+IdealWriter* NewMonosIOHandler::
+createWriter(FILE* file, const TermTranslator* translator) const {
+  return new NewMonosIdealWriter(file, translator);
 }
 
 void NewMonosIOHandler::readIrreducibleDecomposition(FILE* in,
