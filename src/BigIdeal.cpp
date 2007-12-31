@@ -40,8 +40,6 @@ void BigIdeal::setNames(const VarNames& names) {
 }
 
 void BigIdeal::newLastTerm() {
-  ASSERT(!_names.empty());
-  
   _terms.resize(_terms.size() + 1);
   _terms.back().resize(_names.getVarCount());
 }

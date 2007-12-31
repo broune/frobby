@@ -24,9 +24,11 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   Ideal ideal(bigIdeal.getVarCount());
   TermTranslator translator(bigIdeal, ideal);
   bigIdeal.clear();
-  translator.addArtinianPowers(ideal);
 
   Ideal decom(ideal.getVarCount());
+
+  if (ideal.getGeneratorCount() > 0)
+	translator.addArtinianPowers(ideal);
 
   facade.computeIrreducibleDecom(ideal, new DecomRecorder(&decom));
 

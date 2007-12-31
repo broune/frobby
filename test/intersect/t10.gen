@@ -1,0 +1,26 @@
+vars a;[a^2];
+vars b;[b^2];
+vars c;[c^2];
+
+vars ; [1];
+
+vars a;[a^3];
+vars b;[b^4];
+vars c;[c^5];
+
+vars ; [1];
+
+vars ; [];
+
+vars a;  [a];
+vars a,b;[a];
+vars b,a;[a];
+vars b,d;  [b];
+vars c;  [c];
+
+vars ;    [1];
+vars a;   [1];
+vars b;   [1];
+vars a,b; [1];
+vars b,c; [1];
+

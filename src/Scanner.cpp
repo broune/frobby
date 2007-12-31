@@ -1,12 +1,12 @@
 #include "stdinc.h"
-#include "Lexer.h"
+#include "Scanner.h"
 
-Lexer::Lexer(FILE* in):
+Scanner::Scanner(FILE* in):
   _in(in),
   _lineNumber(1) {
 }
 
-bool Lexer::match(char c) {
+bool Scanner::match(char c) {
   eatWhite();
   if (c == peek()) {
     getChar();
@@ -15,7 +15,12 @@ bool Lexer::match(char c) {
     return false;
 }
 
-void Lexer::expect(char expected) {
+bool Scanner::matchEOF() {
+  eatWhite();
+  return peek() == EOF;
+}
+
+void Scanner::expect(char expected) {
   eatWhite();
   if (getChar() != expected) {
     string str;
@@ -24,11 +29,15 @@ void Lexer::expect(char expected) {
   }
 }
 
-unsigned int Lexer::getLineNumber() const {
+unsigned int Scanner::getLineNumber() const {
   return _lineNumber;
 }
 
-void Lexer::expect(const char* str) {
+void Scanner::printError() {
+  fprintf(stderr, "ERROR (line %lu): ", _lineNumber);
+}
+
+void Scanner::expect(const char* str) {
   eatWhite();
 
   const char* it = str;
@@ -39,22 +48,23 @@ void Lexer::expect(const char* str) {
   }
 }
 
-void Lexer::expect(const string& str) {
+void Scanner::expect(const string& str) {
   expect(str.c_str());
 }
 
-void Lexer::expectEOF() {
+void Scanner::expectEOF() {
   eatWhite();
   if (getChar() != EOF)
     error("end of input");
 }
 
-void Lexer::readInteger(mpz_class& integer) {
+void Scanner::readInteger(mpz_class& integer) {
+  eatWhite();
   if (mpz_inp_str(integer.get_mpz_t(), _in, 10) == 0)
     error("an integer");
 }
 
-void Lexer::readInteger(unsigned int& i) {
+void Scanner::readInteger(unsigned int& i) {
   readInteger(_integer);
 
   if (!_integer.fits_uint_p()) {
@@ -66,7 +76,7 @@ void Lexer::readInteger(unsigned int& i) {
   i = _integer.get_ui();
 }
 
-void Lexer::readIdentifier(string& identifier) {
+void Scanner::readIdentifier(string& identifier) {
   eatWhite();
 
   if (!isalpha(peek()))
@@ -79,26 +89,31 @@ void Lexer::readIdentifier(string& identifier) {
     identifier += getChar();
 }
 
-int Lexer::getChar() {
+bool Scanner::peekIdentifier() {
+  eatWhite();
+  return isalpha(peek());
+}
+
+int Scanner::getChar() {
   int c = getc(_in);
   if (c == '\n')
     ++_lineNumber;
   return c;
 }
 
-int Lexer::peek() {
+int Scanner::peek() {
   int c = getc(_in);
   ungetc(c, _in);
   return c;
 }
 
-void Lexer::error(const string& expected) {
-  fprintf(stderr, "ERROR: expected %s at line %u.\n",
+void Scanner::error(const string& expected) {
+  fprintf(stderr, "ERROR: expected %s at line %lu.\n",
 	  expected.c_str(), _lineNumber);
   exit(1);
 }
 
-void Lexer::eatWhite() {
+void Scanner::eatWhite() {
   while (isspace(peek()))
     getChar();
 }

@@ -12,6 +12,8 @@ class IOFacade : private Facade {
 
   bool isValidMonomialIdealFormat(const char* format);
   void readIdeal(FILE* in, BigIdeal& ideal, const char* format = "monos");
+  void readIdeals(FILE* in, vector<BigIdeal*>& ideal,
+				  const char* format = "monos"); // inserts the read ideals
   void writeIdeal(FILE* out, BigIdeal& ideal, const char* format = "monos");
 
   void readFrobeniusInstance(FILE* in, vector<mpz_class>& instance);

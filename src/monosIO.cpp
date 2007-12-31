@@ -2,12 +2,9 @@
 #include "monosIO.h"
 
 #include "BigIdeal.h"
-#include "Lexer.h"
+#include "Scanner.h"
 #include <cstdio>
 #include <sstream>
-
-MonosIOHandler::MonosIOHandler() {
-}
 
 class MonosIdealWriter : public IdealWriter {
 public:
@@ -76,88 +73,86 @@ createWriter(FILE* file, const TermTranslator* translator) const {
   return new MonosIdealWriter(file, translator);
 }
 
-void MonosIOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
-  Lexer lexer(in);
-  readVarsAndClearIdeal(ideal, lexer);
+void MonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
+  readVarsAndClearIdeal(ideal, scanner);
   
-  lexer.expect('[');
-  if (!lexer.match(']')) {
+  scanner.expect('[');
+  if (!scanner.match(']')) {
     do {
-      readTerm(ideal, lexer);
-    } while (lexer.match(','));
-    lexer.expect(']');
+      readTerm(ideal, scanner);
+    } while (scanner.match(','));
+    scanner.expect(']');
   }
-  lexer.expect(';');
+  scanner.expect(';');
 }
 
-void MonosIOHandler::readIrreducibleDecomposition(FILE* in, BigIdeal& decom) {
-  Lexer lexer(in);
-  readVarsAndClearIdeal(decom, lexer);
-  readIrreducibleIdealList(decom, lexer);
+void MonosIOHandler::readIrreducibleDecomposition(Scanner& scanner,
+												  BigIdeal& decom) {
+  readVarsAndClearIdeal(decom, scanner);
+  readIrreducibleIdealList(decom, scanner);
 }
 
 const char* MonosIOHandler::getFormatName() const {
   return "monos";
 }
 
-IOHandler* MonosIOHandler::createNew() const {
-  return new MonosIOHandler();
-}
-
-void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer) {
+void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
   ideal.newLastTerm();
 
-  lexer.expect('[');
-  if (lexer.match(']'))
+  scanner.expect('[');
+  if (scanner.match(']'))
     return;
 
   int var;
   mpz_class power;
 
   do {
-    readVarPower(var, power, ideal.getNames(), lexer);
+    readVarPower(var, power, ideal.getNames(), scanner);
     ASSERT(power > 0);
     if (ideal.getLastTermExponentRef(var) != 0) {
-      fputs("ERROR: a variable appears twice in irreducible ideal.\n", stderr);
+	  scanner.printError();
+      fputs("A variable appears twice in irreducible ideal.\n", stderr);
       exit(1);
     }
     ideal.getLastTermExponentRef(var) = power;
-  } while (lexer.match(','));
+  } while (scanner.match(','));
 
-  lexer.expect(']');
+  scanner.expect(']');
 }
 
-void MonosIOHandler::readIrreducibleIdealList(BigIdeal& ideals, Lexer& lexer) {
-  lexer.expect('[');
-  if (lexer.match(']'))
+void MonosIOHandler::readIrreducibleIdealList(BigIdeal& ideals, Scanner& scanner) {
+  scanner.expect('[');
+  if (scanner.match(']'))
     return;
   
   do {
-    readIrreducibleIdeal(ideals, lexer);
-  } while (lexer.match(',')); 
+    readIrreducibleIdeal(ideals, scanner);
+  } while (scanner.match(',')); 
 
-  lexer.expect(']');
-  lexer.expect(';');
+  scanner.expect(']');
+  scanner.expect(';');
 }
 
-void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer) {
-  lexer.expect("vars");
+void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
+  scanner.expect("vars");
 
   VarNames names;
   string varName;
-  do {
-    lexer.readIdentifier(varName);
-    if (names.contains(varName)) {
-      fprintf(stdout,
-	      "ERROR (on line %u): Variable \"%s\" is declared twice.\n",
-	      lexer.getLineNumber(), varName.c_str());
-      exit(1);
-    }
+  if (!scanner.match(';')) {
+	do {
+	  scanner.readIdentifier(varName);
+	  if (names.contains(varName)) {
+		scanner.printError();
+		fprintf(stderr, "The variable %s is declared twice.\n",
+				varName.c_str());
+		exit(1);
+	  }
+	  
+	  names.addVar(varName);
+	} while (scanner.match(','));
 
-    names.addVar(varName);
-  } while (lexer.match(','));
-
-  lexer.expect(';');
+	scanner.expect(';');
+  }
 
   ideal.clearAndSetNames(names);
 }

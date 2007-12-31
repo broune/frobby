@@ -2,7 +2,7 @@
 #include "macaulay2IO.h"
 
 #include "monosIO.h"
-#include <sstream>
+#include "Scanner.h"
 
 class Macaulay2IdealWriter : public IdealWriter {
 public:
@@ -40,7 +40,6 @@ public:
 private:
   void writeHeader() {
     fputs("R = ZZ[{", _file);
-    ASSERT(!_names.empty());
 
     const char* pre = "";
     for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
@@ -74,104 +73,102 @@ createWriter(FILE* file, const TermTranslator* translator) const {
   return new Macaulay2IdealWriter(file, translator);
 }
 
-void Macaulay2IOHandler::readIdeal(FILE* in, BigIdeal& ideal) {
-  Lexer lexer(in);
-  readVarsAndClearIdeal(ideal, lexer);
+void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
+  readVarsAndClearIdeal(ideal, scanner);
 
-  lexer.expect('I');
-  lexer.expect('=');
-  lexer.expect("monomialIdeal");
-  lexer.expect('(');
+  scanner.expect('I');
+  scanner.expect('=');
+  scanner.expect("monomialIdeal");
+  scanner.expect('(');
 
-  do
-    readTerm(ideal, lexer);
-  while (lexer.match(','));
-
-  lexer.expect(')');
-  lexer.match(';');
-  lexer.expectEOF();
+  if (!scanner.match(')')) {
+	do
+	  readTerm(ideal, scanner);
+	while (scanner.match(','));
+	scanner.expect(')');
+  }
+  scanner.match(';');
+  scanner.expectEOF();
 }
 
-void Macaulay2IOHandler::readIrreducibleDecomposition(FILE* in,
-						      BigIdeal& decom) {
-  Lexer lexer(in);
-  readVarsAndClearIdeal(decom, lexer);
-  readIrreducibleIdealList(decom, lexer);
-  lexer.expectEOF();
+void Macaulay2IOHandler::readIrreducibleDecomposition(Scanner& scanner,
+													  BigIdeal& decom) {
+  readVarsAndClearIdeal(decom, scanner);
+  readIrreducibleIdealList(decom, scanner);
+  scanner.expectEOF();
 }
 
 const char* Macaulay2IOHandler::getFormatName() const {
   return "m2";
 }
 
-IOHandler* Macaulay2IOHandler::createNew() const {
-  return new Macaulay2IOHandler();
-}
-
-void Macaulay2IOHandler::readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer) {
+void Macaulay2IOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
   ideal.newLastTerm();
 
-  lexer.expect("monomialIdeal");
-  lexer.expect('(');
+  scanner.expect("monomialIdeal");
+  scanner.expect('(');
 
   int var;
   mpz_class power;
 
   do {
-    readVarPower(var, power, ideal.getNames(), lexer);
+    readVarPower(var, power, ideal.getNames(), scanner);
     ASSERT(power > 0);
     if (ideal.getLastTermExponentRef(var) != 0) {
-      fputs("ERROR: a variable appears twice in irreducible ideal.\n", stderr);
+	  scanner.printError();
+      fputs("A variable appears twice in irreducible ideal.\n", stderr);
       exit(1);
     }
     ideal.getLastTermExponentRef(var) = power;
-  } while (lexer.match(','));
+  } while (scanner.match(','));
 
-  lexer.expect(')');
+  scanner.expect(')');
 }
 
 void Macaulay2IOHandler::readIrreducibleIdealList(BigIdeal& ideals,
-						  Lexer& lexer) {
-  lexer.expect('{');
-  if (lexer.match('}'))
+						  Scanner& scanner) {
+  scanner.expect('{');
+  if (scanner.match('}'))
     return;
 
   do {
-    readIrreducibleIdeal(ideals, lexer);
-  } while (lexer.match(','));
+    readIrreducibleIdeal(ideals, scanner);
+  } while (scanner.match(','));
 
-  lexer.expect('}');
-  lexer.match(';');
+  scanner.expect('}');
+  scanner.match(';');
 }
 
-void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer) {
-  lexer.expect('R');
-  lexer.expect('=');
-  lexer.expect("ZZ");
-  lexer.expect('[');
+void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
+  scanner.expect('R');
+  scanner.expect('=');
+  scanner.expect("ZZ");
+  scanner.expect('[');
 
   // The enclosing braces are optional, but if the start brace is
   // there, then the end brace should be there too.
-  bool readBrace = lexer.match('{'); 
+  bool readBrace = scanner.match('{'); 
 
   VarNames names;
   string varName;
-  do {
-    lexer.readIdentifier(varName);
-    if (names.contains(varName)) {
-      fprintf(stderr,
-	      "ERROR (on line %u): Variable \"%s\" is declared twice.\n",
-	      lexer.getLineNumber(), varName.c_str());
-      exit(1);
-    }
 
-    names.addVar(varName);
-  } while (lexer.match(','));
+  if (scanner.peekIdentifier()) {
+	do {
+	  scanner.readIdentifier(varName);
+	  if (names.contains(varName)) {
+		scanner.printError();
+		fprintf(stderr, "The variable %s is declared twice.\n",
+				varName.c_str());
+		exit(1);
+	  }
+	  names.addVar(varName);
+	} while (scanner.match(','));
+  }
 
   if (readBrace)
-    lexer.expect('}');
-  lexer.expect(']');
-  lexer.match(';');
+	scanner.expect('}');
+  scanner.expect(']');
+  scanner.match(';');
 
   ideal.clearAndSetNames(names);
 }

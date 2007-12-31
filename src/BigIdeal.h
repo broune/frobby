@@ -9,8 +9,6 @@ class Ideal;
 
 class BigIdeal {
 public:
-
-
   BigIdeal();
   BigIdeal(const VarNames& names);
 

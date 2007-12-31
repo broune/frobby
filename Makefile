@@ -6,28 +6,28 @@ labelSources = TermTree.cpp Strategy.cpp PrintDebugStrategy.cpp	\
   CompositeStrategy.cpp PrintProgressStrategy.cpp		\
   SkipRedundantStrategy.cpp LabelAlgorithm.cpp OldPartition.cpp
 
-rawSources = $(patsubst %, label/%, $(labelSources))			\
-  main.cpp Action.cpp							\
-  IrreducibleDecomAction.cpp fplllIO.cpp io.cpp fourti2.cpp		\
+rawSources = $(patsubst %, label/%, $(labelSources))					\
+  main.cpp Action.cpp													\
+  IrreducibleDecomAction.cpp fplllIO.cpp io.cpp fourti2.cpp				\
   randomDataGenerators.cpp monosIO.cpp BigIdeal.cpp FormatAction.cpp	\
-  macaulay2IO.cpp newMonosIO.cpp HelpAction.cpp				\
+  macaulay2IO.cpp newMonosIO.cpp HelpAction.cpp							\
   stdinc.cpp DynamicFrobeniusAction.cpp dynamicFrobeniusAlgorithm.cpp	\
-  GenerateIdealAction.cpp GenerateFrobeniusAction.cpp			\
-  IrreducibleDecomFacade.cpp FrobeniusAction.cpp Facade.cpp		\
-  IOFacade.cpp DynamicFrobeniusFacade.cpp RandomDataFacade.cpp		\
-  AnalyzeAction.cpp IdealFacade.cpp Parameter.cpp			\
+  GenerateIdealAction.cpp GenerateFrobeniusAction.cpp					\
+  IrreducibleDecomFacade.cpp FrobeniusAction.cpp Facade.cpp				\
+  IOFacade.cpp DynamicFrobeniusFacade.cpp RandomDataFacade.cpp			\
+  AnalyzeAction.cpp IdealFacade.cpp Parameter.cpp						\
   ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
-  IrreducibleDecomParameters.cpp BoolParameter.cpp			\
-  Lexer.cpp Partition.cpp StringParameter.cpp Term.cpp			\
-  TermTranslator.cpp Timer.cpp VarNames.cpp LatticeFormatAction.cpp	\
-  SliceAlgorithm.cpp							\
-  Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp	\
-  AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp			\
-  PrimaryDecomAction.cpp Slice.cpp					\
-  IndependenceSplitter.cpp Projection.cpp				\
-  SliceStrategy.cpp lattice.cpp						\
-  LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp		\
-  TermGrader.cpp
+  IrreducibleDecomParameters.cpp BoolParameter.cpp						\
+  Scanner.cpp Partition.cpp StringParameter.cpp Term.cpp				\
+  TermTranslator.cpp Timer.cpp VarNames.cpp LatticeFormatAction.cpp		\
+  SliceAlgorithm.cpp													\
+  Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp		\
+  AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp					\
+  PrimaryDecomAction.cpp Slice.cpp										\
+  IndependenceSplitter.cpp Projection.cpp								\
+  SliceStrategy.cpp lattice.cpp											\
+  LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp			\
+  TermGrader.cpp fourti2IO.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\

@@ -14,7 +14,13 @@ IntersectFacade::IntersectFacade(bool printActions):
 BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
   beginAction("Intersecting ideals.");
 
-  ASSERT(!ideals.empty());
+  //  ASSERT(!ideals.empty());
+
+  if (ideals.empty()) {
+	BigIdeal* entireRing = new BigIdeal();
+	entireRing->newLastTerm();
+	return entireRing;
+  }
 
   if (ideals.size() == 1)
     return new BigIdeal(*ideals[0]);

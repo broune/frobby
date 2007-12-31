@@ -2,15 +2,13 @@
 #define FOURTI2_GUARD
 
 class BigIdeal;
-class Lexer;
+class Scanner;
 
 namespace fourti2 {
-  void readTerm(BigIdeal& ideal, Lexer& lexer);
+  void readGrobnerBasis(Scanner& scanner, BigIdeal& basis);
+  void readLatticeBasis(Scanner& scanner, BigIdeal& basis);
 
-  void readLatticeBasis(FILE* in, BigIdeal& basis);
   void writeLatticeBasis(FILE* out, const BigIdeal& basis);
-
-  void readGrobnerBasis(FILE* in, BigIdeal& basis);
 }
 
 #endif

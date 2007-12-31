@@ -35,26 +35,12 @@ void IntersectAction::perform() {
   vector<BigIdeal*> ideals;
 
   IOFacade ioFacade(_printActions);
-  while (true) {
-    // Check if there is more input.
-    int c;
-    do
-      c = getc(stdin);
-    while (isspace(c));
-    if (c == EOF)
-      break;
-    ungetc(c, stdin);
-
-    // Read ideal
-    BigIdeal* ideal = new BigIdeal();
-    ioFacade.readIdeal(stdin, *ideal);
-    ideals.push_back(ideal);
-  }
-
+  ioFacade.readIdeals(stdin, ideals);
+  /*
   if (ideals.empty()) {
     fputs("ERROR: intersection requires at least one ideal.\n", stderr);
     exit(1);
-  }
+	}*/
 
   IntersectFacade facade(_printActions);
   BigIdeal* intersection = facade.intersect(ideals);
