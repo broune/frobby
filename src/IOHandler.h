@@ -1,5 +1,5 @@
-#ifndef IO_GUARD
-#define IO_GUARD
+#ifndef IO_HANDLER_GUARD
+#define IO_HANDLER_GUARD
 
 #include "TermConsumer.h"
 #include "VarNames.h"
@@ -25,10 +25,8 @@ class IOHandler {
     (FILE* file, const VarNames& names) const = 0;
   virtual IdealWriter* createWriter
     (FILE* file, const TermTranslator* translator) const = 0;
-  
 
   virtual const char* getFormatName() const = 0;
-
 
   // Returns null if name is unknown.
   static IOHandler* getIOHandler(const string& name);

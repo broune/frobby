@@ -1,19 +1,17 @@
 #include "stdinc.h"
-#include "io.h"
+#include "IOHandler.h"
 
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "TermTranslator.h"
 #include "Term.h"
 
-#include "newMonosIO.h"
-#include "monosIO.h"
-#include "macaulay2IO.h"
-#include "fourti2IO.h"
+#include "NewMonosIOHandler.h"
+#include "MonosIOHandler.h"
+#include "Macaulay2IOHandler.h"
+#include "Fourti2IOHandler.h"
 
-#include <fstream>
 #include <cctype>
-#include <sstream>
 
 IdealWriter::IdealWriter() {
 }

@@ -1,27 +1,26 @@
 #include "stdinc.h"
-#include "monosIO.h"
+#include "Macaulay2IOHandler.h"
 
-#include "BigIdeal.h"
 #include "Scanner.h"
-#include <cstdio>
-#include <sstream>
+#include "BigIdeal.h"
+#include "VarNames.h"
 
-class MonosIdealWriter : public IdealWriter {
+class Macaulay2IdealWriter : public IdealWriter {
 public:
-  MonosIdealWriter(FILE* file, const VarNames& names):
+  Macaulay2IdealWriter(FILE* file, const VarNames& names):
     IdealWriter(file, names),
     _justStartedWritingIdeal(true) {
     writeHeader();
   }
 
-  MonosIdealWriter(FILE* file, const TermTranslator* translator):
+  Macaulay2IdealWriter(FILE* file, const TermTranslator* translator):
     IdealWriter(file, translator),
     _justStartedWritingIdeal(true) {
     writeHeader();
   }
 
-  virtual ~MonosIdealWriter() {
-    fputs("\n];\n", _file);
+  virtual ~Macaulay2IdealWriter() {
+    fputs("\n);\n", _file);
   }
 
   virtual void consume(const vector<const char*>& term) {
@@ -41,14 +40,16 @@ public:
 
 private:
   void writeHeader() {
-    fputs("vars ", _file);
+    fputs("R = ZZ[{", _file);
+
     const char* pre = "";
     for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
       fputs(pre, _file);
       fputs(_names.getName(i).c_str(), _file);
       pre = ", ";
     }
-    fputs(";\n[", _file);
+    fputs("}];\n", _file);
+    fputs("I = monomialIdeal(", _file);
   }
 
   void writeSeparator() {
@@ -63,45 +64,50 @@ private:
   bool _justStartedWritingIdeal;
 };
 
-IdealWriter* MonosIOHandler::
+IdealWriter* Macaulay2IOHandler::
 createWriter(FILE* file, const VarNames& names) const {
-  return new MonosIdealWriter(file, names);
+  return new Macaulay2IdealWriter(file, names);
 }
 
-IdealWriter* MonosIOHandler::
+IdealWriter* Macaulay2IOHandler::
 createWriter(FILE* file, const TermTranslator* translator) const {
-  return new MonosIdealWriter(file, translator);
+  return new Macaulay2IdealWriter(file, translator);
 }
 
-void MonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
+void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   readVarsAndClearIdeal(ideal, scanner);
-  
-  scanner.expect('[');
-  if (!scanner.match(']')) {
-    do {
-      readTerm(ideal, scanner);
-    } while (scanner.match(','));
-    scanner.expect(']');
+
+  scanner.expect('I');
+  scanner.expect('=');
+  scanner.expect("monomialIdeal");
+  scanner.expect('(');
+
+  if (!scanner.match(')')) {
+	do
+	  readTerm(ideal, scanner);
+	while (scanner.match(','));
+	scanner.expect(')');
   }
-  scanner.expect(';');
+  scanner.match(';');
+  scanner.expectEOF();
 }
 
-void MonosIOHandler::readIrreducibleDecomposition(Scanner& scanner,
-												  BigIdeal& decom) {
+void Macaulay2IOHandler::readIrreducibleDecomposition(Scanner& scanner,
+													  BigIdeal& decom) {
   readVarsAndClearIdeal(decom, scanner);
   readIrreducibleIdealList(decom, scanner);
+  scanner.expectEOF();
 }
 
-const char* MonosIOHandler::getFormatName() const {
-  return "monos";
+const char* Macaulay2IOHandler::getFormatName() const {
+  return "m2";
 }
 
-void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
+void Macaulay2IOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
   ideal.newLastTerm();
 
-  scanner.expect('[');
-  if (scanner.match(']'))
-    return;
+  scanner.expect("monomialIdeal");
+  scanner.expect('(');
 
   int var;
   mpz_class power;
@@ -117,28 +123,37 @@ void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
     ideal.getLastTermExponentRef(var) = power;
   } while (scanner.match(','));
 
-  scanner.expect(']');
+  scanner.expect(')');
 }
 
-void MonosIOHandler::readIrreducibleIdealList(BigIdeal& ideals, Scanner& scanner) {
-  scanner.expect('[');
-  if (scanner.match(']'))
+void Macaulay2IOHandler::readIrreducibleIdealList(BigIdeal& ideals,
+						  Scanner& scanner) {
+  scanner.expect('{');
+  if (scanner.match('}'))
     return;
-  
+
   do {
     readIrreducibleIdeal(ideals, scanner);
-  } while (scanner.match(',')); 
+  } while (scanner.match(','));
 
-  scanner.expect(']');
-  scanner.expect(';');
+  scanner.expect('}');
+  scanner.match(';');
 }
 
-void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
-  scanner.expect("vars");
+void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
+  scanner.expect('R');
+  scanner.expect('=');
+  scanner.expect("ZZ");
+  scanner.expect('[');
+
+  // The enclosing braces are optional, but if the start brace is
+  // there, then the end brace should be there too.
+  bool readBrace = scanner.match('{'); 
 
   VarNames names;
   string varName;
-  if (!scanner.match(';')) {
+
+  if (scanner.peekIdentifier()) {
 	do {
 	  scanner.readIdentifier(varName);
 	  if (names.contains(varName)) {
@@ -147,12 +162,14 @@ void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
 				varName.c_str());
 		exit(1);
 	  }
-	  
 	  names.addVar(varName);
 	} while (scanner.match(','));
-
-	scanner.expect(';');
   }
+
+  if (readBrace)
+	scanner.expect('}');
+  scanner.expect(']');
+  scanner.match(';');
 
   ideal.clearAndSetNames(names);
 }

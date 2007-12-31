@@ -8,9 +8,10 @@ labelSources = TermTree.cpp Strategy.cpp PrintDebugStrategy.cpp	\
 
 rawSources = $(patsubst %, label/%, $(labelSources))					\
   main.cpp Action.cpp													\
-  IrreducibleDecomAction.cpp fplllIO.cpp io.cpp fourti2.cpp				\
-  randomDataGenerators.cpp monosIO.cpp BigIdeal.cpp FormatAction.cpp	\
-  macaulay2IO.cpp newMonosIO.cpp HelpAction.cpp							\
+  IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
+  randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
+  FormatAction.cpp														\
+  Macaulay2IOHandler.cpp NewMonosIOHandler.cpp HelpAction.cpp			\
   stdinc.cpp DynamicFrobeniusAction.cpp dynamicFrobeniusAlgorithm.cpp	\
   GenerateIdealAction.cpp GenerateFrobeniusAction.cpp					\
   IrreducibleDecomFacade.cpp FrobeniusAction.cpp Facade.cpp				\
@@ -27,7 +28,7 @@ rawSources = $(patsubst %, label/%, $(labelSources))					\
   IndependenceSplitter.cpp Projection.cpp								\
   SliceStrategy.cpp lattice.cpp											\
   LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp			\
-  TermGrader.cpp fourti2IO.cpp
+  TermGrader.cpp Fourti2IOHandler.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\

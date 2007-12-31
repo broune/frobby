@@ -6,7 +6,7 @@
 #include "label/DecompositionStrategy.h"
 #include "label/LabelAlgorithm.h"
 
-#include "io.h"
+#include "IOHandler.h"
 #include "IrreducibleDecomParameters.h"
 #include "BigIdeal.h"
 #include "IOFacade.h"

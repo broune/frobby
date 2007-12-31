@@ -3,7 +3,7 @@
 
 #include "BigIdeal.h"
 #include "Scanner.h"
-#include "io.h"
+#include "IOHandler.h"
 
 namespace fourti2 {
   void readTerm(BigIdeal& ideal, Scanner& scanner) {
