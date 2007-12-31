@@ -2,11 +2,12 @@
 #define FPLLL_IO_GUARD
 
 class BigIdeal;
+class Scanner;
 
 namespace fplll {
-  void writeLatticeBasis(FILE* out, const BigIdeal& basis);
+  void readLatticeBasis(Scanner& scanner, BigIdeal& basis);
 
-  void readLatticeBasis(FILE* in, BigIdeal& basis);
+  void writeLatticeBasis(FILE* out, const BigIdeal& basis);
 }
 
 #endif

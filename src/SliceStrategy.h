@@ -17,7 +17,7 @@ class SliceStrategy : public TermConsumer {
 
   virtual void initialize(const Slice& slice);
 
-  // Methods for handling independence splits
+  // *** Methods for handling independence splits
   virtual void doingIndependenceSplit(const Slice& slice,
 				      Ideal* mixedProjectionSubtract) = 0;
   virtual void doingIndependentPart(const Projection& projection,
@@ -25,12 +25,12 @@ class SliceStrategy : public TermConsumer {
   virtual bool doneWithIndependentPart() = 0;
   virtual void doneWithIndependenceSplit() = 0;
 
-  // Methods to inform debug strategies when the algorothm starts
+  // *** Methods to inform debug strategies when the algorothm starts
   // processing the content of a slice and when it stops.
   virtual void startingContent(const Slice& slice);
   virtual void endingContent();
 
-  // Methods for handling pivot and label splits
+  // *** Methods for handling pivot and label splits
 
   enum SplitType {
     LabelSplit = 1,
@@ -48,14 +48,14 @@ class SliceStrategy : public TermConsumer {
   virtual void simplify(Slice& slice);
 
 
-  // Static methods to create strategies.
+  // *** Static methods to create strategies.
 
+  // These report an error and exit the program if the name is unknown.
   static SliceStrategy* newDecomStrategy(const string& name,
-					 TermConsumer* consumer);
-
+										 TermConsumer* consumer);
   static SliceStrategy* newFrobeniusStrategy(const string& name,
-					     TermConsumer* consumer,
-					     TermGrader& grader);
+											 TermConsumer* consumer,
+											 TermGrader& grader);
 
   static SliceStrategy* addStatistics(SliceStrategy* strategy);
   static SliceStrategy* addDebugOutput(SliceStrategy* strategy);

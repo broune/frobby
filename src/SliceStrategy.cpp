@@ -270,7 +270,7 @@ private:
 };
 
 SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
-					       TermConsumer* consumer) {
+											   TermConsumer* consumer) {
   if (name == "label")
     return new LabelSliceStrategy(consumer);
   else if (name == "minart")
@@ -280,7 +280,8 @@ SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
   else if (name == "maxart")
     return new PivotSliceStrategy(PivotSliceStrategy::Max, consumer);
 
-  return 0;
+  fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n", name.c_str());
+  exit(1);
 }
 
 // A decorator (pattern) for a SliceStrategy that does nothing. The
@@ -657,9 +658,6 @@ newFrobeniusStrategy(const string& name,
 		     TermConsumer* consumer,
 		     TermGrader& grader) {
   SliceStrategy* strategy = newDecomStrategy(name, 0);
-  if (strategy == 0)
-    return 0;
-
   return new FrobeniusSliceStrategy(strategy, consumer, grader);
 }
 

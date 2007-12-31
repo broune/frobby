@@ -4,26 +4,24 @@
 #include "monosIO.h"
 #include "BigIdeal.h"
 #include "VarNames.h"
-#include "Lexer.h"
+
+class Scanner;
 
 class NewMonosIOHandler : public IOHandler {
 public:
-  virtual void readIdeal(FILE* in, BigIdeal& ideal);
+  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
+  virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom);
 
   virtual IdealWriter* createWriter
     (FILE* file, const VarNames& names) const;
   virtual IdealWriter* createWriter
     (FILE* file, const TermTranslator* translator) const;
 
-  virtual void readIrreducibleDecomposition(FILE* in,
-					    BigIdeal& decom);
   virtual const char* getFormatName() const;
 
-  virtual IOHandler* createNew() const;
-
 private:
-  void readIrreducibleIdeal(BigIdeal& ideal, Lexer& lexer);
-  void readVarsAndClearIdeal(BigIdeal& ideal, Lexer& lexer);
+  void readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner);
+  void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
 };
 
 #endif

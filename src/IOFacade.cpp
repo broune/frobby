@@ -5,6 +5,7 @@
 #include "fourti2.h"
 #include "BigIdeal.h"
 #include "fplllIO.h"
+#include "Scanner.h"
 
 #include <iterator>
 
@@ -29,10 +30,29 @@ void IOFacade::readIdeal(FILE* in, BigIdeal& ideal, const char* format) {
   IOHandler* handler = IOHandler::getIOHandler(format);
   ASSERT(handler != 0);
 
-  handler->readIdeal(in, ideal);
+  Scanner scanner(in);
+  handler->readIdeal(scanner, ideal);
 
   endAction();
 }
+
+void IOFacade::readIdeals(FILE* in, vector<BigIdeal*>& ideals,
+						  const char* format) {
+  beginAction("Reading monomial ideals.");
+
+  IOHandler* handler = IOHandler::getIOHandler(format);
+  ASSERT(handler != 0);
+
+  Scanner scanner(in);
+  while (!scanner.matchEOF()) {
+    BigIdeal* ideal = new BigIdeal();
+	handler->readIdeal(scanner, *ideal);
+    ideals.push_back(ideal);
+  }
+
+  endAction();
+}
+
 
 void IOFacade::writeIdeal(FILE* out, BigIdeal& ideal, const char* format) {
   beginAction("Writing monomial ideal.");
@@ -49,7 +69,8 @@ void IOFacade::
 readFrobeniusInstance(FILE* in, vector<mpz_class>& instance) {
   beginAction("Reading Frobenius instance.");
 
-  ::readFrobeniusInstance(in, instance);
+  Scanner scanner(in);
+  ::readFrobeniusInstance(scanner, instance);
 
   endAction();
 }
@@ -58,8 +79,9 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
 (FILE* in, BigIdeal& ideal, vector<mpz_class>& instance) {
   beginAction("Reading frobenius instance with Grobner basis.");
 
-  fourti2::readGrobnerBasis(in, ideal);
-  ::readFrobeniusInstance(in, instance);
+  Scanner scanner(in);
+  fourti2::readGrobnerBasis(scanner, ideal);
+  ::readFrobeniusInstance(scanner, instance);
 
   if (instance.size() != ideal.getVarCount() + 1) {
     if (instance.empty())
@@ -105,10 +127,11 @@ void IOFacade::
 readLattice(FILE* in, BigIdeal& ideal, const char* format) {
   beginAction("Reading lattice basis.");
 
+  Scanner scanner(in);
   if (strcmp(format, "4ti2") == 0)
-    fourti2::readLatticeBasis(in, ideal);
+    fourti2::readLatticeBasis(scanner, ideal);
   else if (strcmp(format, "fplll") == 0)
-    fplll::readLatticeBasis(in, ideal);
+    fplll::readLatticeBasis(scanner, ideal);
   else
     ASSERT(false);
 

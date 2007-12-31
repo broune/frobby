@@ -301,6 +301,8 @@ Ideal::ExponentAllocator::ExponentAllocator(size_t varCount):
   _chunk(0),
   _chunkIterator(0),
   _chunkEnd(0) {
+  if (_varCount == 0)
+	_varCount = 1; // Otherwise strange things happen
 }
 
 Ideal::ExponentAllocator::~ExponentAllocator() {
@@ -308,8 +310,6 @@ Ideal::ExponentAllocator::~ExponentAllocator() {
 }
 
 Exponent* Ideal::ExponentAllocator::allocate() {
-  ASSERT(_varCount >= 1);
-
   if (_chunkIterator + _varCount > _chunkEnd) {
     if (useSingleChunking()) {
       Exponent* term = new Exponent[_varCount];
@@ -323,7 +323,7 @@ Exponent* Ideal::ExponentAllocator::allocate() {
 
     _chunks.push_back(_chunk);
   }
-  
+
   Exponent* term = _chunkIterator;
   _chunkIterator += _varCount;
   ASSERT(_chunkIterator <= _chunkEnd);

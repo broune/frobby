@@ -7,9 +7,37 @@
 #include <vector>
 
 class Term;
-class Lexer;
+class Scanner;
 class BigIdeal;
 class TermTranslator;
+class IdealWriter;
+
+class IOHandler {
+ public:
+  virtual ~IOHandler();
+
+  virtual void readIdeal(Scanner& in, BigIdeal& ideal) = 0;
+  virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom) = 0;
+
+  virtual void writeIdeal(FILE* out, const BigIdeal& ideal);
+
+  virtual IdealWriter* createWriter
+    (FILE* file, const VarNames& names) const = 0;
+  virtual IdealWriter* createWriter
+    (FILE* file, const TermTranslator* translator) const = 0;
+  
+
+  virtual const char* getFormatName() const = 0;
+
+
+  // Returns null if name is unknown.
+  static IOHandler* getIOHandler(const string& name);
+
+ protected:
+  void readTerm(BigIdeal& ideal, Scanner& scanner);
+  void readVarPower(int& var, mpz_class& power,
+					const VarNames& names, Scanner& scanner);
+};
 
 class IdealWriter : public TermConsumer {
  public:
@@ -37,42 +65,6 @@ class IdealWriter : public TermConsumer {
   const TermTranslator* _translator;
 };
 
-class IOHandler {
- public:
-  IOHandler();
-  virtual ~IOHandler();
-
-  virtual void readIdeal(FILE* in, BigIdeal& ideal) = 0;
-  virtual void readIrreducibleDecomposition(FILE* in, BigIdeal& decom) = 0;
-
-  void writeIdeal(FILE* out, const BigIdeal& ideal);
-
-  virtual IdealWriter* createWriter
-    (FILE* file, const VarNames& names) const = 0;
-  virtual IdealWriter* createWriter
-    (FILE* file, const TermTranslator* translator) const = 0;
-  
-
-  virtual const char* getFormatName() const = 0;
-
-  typedef vector<IOHandler*> IOHandlerContainer;
-
-  virtual IOHandler* createNew() const = 0;
-
-  // TODO make these not create a new handler.
-  static const IOHandlerContainer& getIOHandlers();
-  static IOHandler* getIOHandler(const string& name);
-
- private:
-  static IOHandlerContainer _ioHandlers;
-
- protected:
-  void notImplemented(const char* operation);
-  void readTerm(BigIdeal& ideal, Lexer& lexer);
-  void readVarPower(int& var, mpz_class& power,
-		    const VarNames& names, Lexer& lexer);
-};
-
-void readFrobeniusInstance(FILE* in, vector<mpz_class>& numbers);
+void readFrobeniusInstance(Scanner& scanner, vector<mpz_class>& numbers);
 
 #endif
