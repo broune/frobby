@@ -1,5 +1,5 @@
 #include "stdinc.h"
-#include "fourti2IO.h"
+#include "Fourti2IOHandler.h"
 
 #include "Scanner.h"
 #include "BigIdeal.h"
@@ -15,13 +15,13 @@ void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   ideal.clearAndSetNames(names);
 
   mpz_class tmp;
-  for (size_t i = 0; i < termCount; ++i) {
+  for (size_t term = 0; term < termCount; ++term) {
 	// Read a term
 	ideal.newLastTerm();
-	for (size_t i = 0; i < varCount; ++i) {
+	for (size_t var = 0; var < varCount; ++var) {
 	  scanner.readInteger(tmp);
 	  if (tmp > 0)
-		ideal.getLastTermExponentRef(i) = tmp;
+		ideal.getLastTermExponentRef(var) = tmp;
 	}
   }
 }

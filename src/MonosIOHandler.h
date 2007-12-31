@@ -1,16 +1,16 @@
-#ifndef NEW_MONOS_IO
-#define NEW_MONOS_IO
+#ifndef MONOS_IO_HANDLER_GUARD
+#define MONOS_IO_HANDLER_GUARD
 
-#include "monosIO.h"
-#include "BigIdeal.h"
-#include "VarNames.h"
+#include "IOHandler.h"
 
 class Scanner;
+class VarNames;
+class BigIdeal;
 
-class NewMonosIOHandler : public IOHandler {
+class MonosIOHandler : public IOHandler {
 public:
-  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
-  virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom);
+  virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
+  virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
 
   virtual IdealWriter* createWriter
     (FILE* file, const VarNames& names) const;
@@ -21,6 +21,7 @@ public:
 
 private:
   void readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner);
+  void readIrreducibleIdealList(BigIdeal& ideals, Scanner& scanner);
   void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
 };
 

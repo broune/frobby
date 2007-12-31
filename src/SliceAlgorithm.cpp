@@ -3,7 +3,7 @@
 
 #include "Term.h"
 #include "VarNames.h"
-#include "io.h"
+#include "IOHandler.h"
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "Partition.h"

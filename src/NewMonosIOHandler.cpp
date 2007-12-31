@@ -1,7 +1,9 @@
 #include "stdinc.h"
-#include "newMonosIO.h"
+#include "NewMonosIOHandler.h"
 
 #include "Scanner.h"
+#include "BigIdeal.h"
+#include "VarNames.h"
 
 class NewMonosIdealWriter : public IdealWriter {
 public:
