@@ -71,6 +71,13 @@ class Slice {
   // removeDoubleLcm and applyLowerBound all return false.
   void simplify();
 
+  // Like simplify(), except that only one simplification step is
+  // performed. If the return value is true, then the Slice may not be
+  // fully simplified yet. Iterating simplifyStep() has the same
+  // result as calling simplify(), though the performance
+  // characteristics can be different.
+  bool simplifyStep();
+
  private:
   // Removes those generators of getIdeal() that are strict multiples
   // of some generator of getSubtract(). Returns true if any
