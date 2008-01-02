@@ -366,9 +366,9 @@ public:
   }
 
   FrobeniusIndependenceSplit(const Projection& projection,
-			     const Slice& slice,
-			     const mpz_class& toBeat,
-			     const TermGrader& grader):
+							 const Slice& slice,
+							 const mpz_class& toBeat,
+							 const TermGrader& grader):
     _grader(grader),
     _bound(slice.getVarCount()),
     _toBeat(toBeat),
@@ -440,9 +440,9 @@ public:
       return;
     }
 
-    do
-      slice.simplify();
-    while (basicBoundSimplify(slice));
+	do
+	  slice.simplify();
+	while (basicBoundSimplify(slice));
   }
 
 private:
@@ -460,13 +460,13 @@ private:
 
       const Ideal& ideal = slice.getIdeal();
       for (Ideal::const_iterator it = ideal.begin(); it != ideal.end(); ++it)
-	if ((*it)[var] <= 1)
-	  lcm.lcm(lcm, *it);
+		if ((*it)[var] <= 1)
+		  lcm.lcm(lcm, *it);
 
       adjustToBound(slice, lcm);
       getDegree(lcm, _outerPartProjection, degree);
       if (degree <= _partValue)
-	colon[var] = 1;
+		colon[var] = 1;
     }
 
     if (colon.isIdentity())
@@ -474,6 +474,53 @@ private:
 
     slice.innerSlice(colon);
     return true;
+  }
+
+  bool canExclude(size_t var,
+				  const mpz_class& upperBoundDegree,
+				  Exponent oldUpper,
+				  Exponent newUpper) {
+	size_t outerVar = _outerPartProjection.inverseProjectVar(var);
+	static mpz_class difference;
+	static mpz_class degreeLess;
+	difference =
+	  _grader.getGrade(outerVar, oldUpper) -
+	  _grader.getGrade(outerVar, newUpper);
+
+	degreeLess = upperBoundDegree - difference;
+	return degreeLess <= _partValue;
+  }
+
+  Exponent improveLowerBound(size_t var,
+							 const mpz_class& upperBoundDegree,
+							 const Term& upperBound,
+							 const Term& lowerBound) {
+	if (upperBound[var] == lowerBound[var])
+	  return 0;
+
+	// Binary search, with an initial test at the lowest end.
+	Exponent low = 0;
+	Exponent high = upperBound[var] - lowerBound[var];
+
+	while (low < high) {
+	  Exponent mid;
+	  if (low < high - low)
+		mid = 2 * low;
+	  else {
+		// This way of expressing (low + high) / 2 avoids the
+		// possibility of low + high causing an overflow.
+		mid = low + (high - low) / 2;
+	  }
+	  
+	  if (canExclude(var, upperBoundDegree,
+					 upperBound[var], lowerBound[var] + mid))
+		low = mid + 1;
+	  else
+		high = mid;
+	}
+	ASSERT(low == high);
+
+	return low;
   }
 
   bool basicBoundSimplify(Slice& slice) {
@@ -495,19 +542,9 @@ private:
 
     Term colon(slice.getVarCount());
     for (size_t var = 0; var < slice.getVarCount(); ++var) {
-      size_t outerVar = _outerPartProjection.inverseProjectVar(var);
-      if (bound[var] == slice.getMultiply()[var])
-	continue;
-
-      difference =
-	_grader.getGrade(outerVar, bound[var]) -
-	_grader.getGrade(outerVar, slice.getMultiply()[var]);
-
-      degreeLess = degree - difference;
-
-      if (degreeLess <= _partValue)
-	colon[var] = 1;
-    }
+	  colon[var] =
+		improveLowerBound(var, degree, bound, slice.getMultiply());
+	}
 
     if (colon.isIdentity())
       return false;
@@ -529,7 +566,7 @@ private:
   }
 
   void getUpperBound(const Slice& slice,
-		     Term& bound) {
+					 Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
     bound = slice.getLcm();
     adjustToBound(slice, bound);
@@ -547,13 +584,13 @@ private:
 
     for (size_t var = 0; var < bound.getVarCount(); ++var)
       if (bound[var] == _grader.getMaxExponent(var) &&
-	  slice.getMultiply()[var] < bound[var])
-	--bound[var];
+		  slice.getMultiply()[var] < bound[var])
+		--bound[var];
   }
 
   void getDegree(const Term& term,
-		 const Projection& projection,
-		 mpz_class& degree) {
+				 const Projection& projection,
+				 mpz_class& degree) {
     _grader.getDegree(term, projection, degree);
   }
 

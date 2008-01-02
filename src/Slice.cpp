@@ -163,6 +163,16 @@ void Slice::simplify() {
   ASSERT(!applyLowerBound());
 }
 
+bool Slice::simplifyStep() {
+  if (removeDoubleLcm())
+	return true;
+  if (applyLowerBound())
+	return true;
+
+  pruneSubtract();
+  return false;
+}
+
 // Helper class for normalize().
 class StrictMultiplePredicate {
 public:
