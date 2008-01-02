@@ -58,11 +58,11 @@ public:
   }
 
   virtual void doingIndependenceSplit(const Slice& slice,
-				      Ideal* mixedProjectionSubtract) {
+									  Ideal* mixedProjectionSubtract) {
     _independenceSplits.push_back
       (new IndependenceSplit(slice,
-			     mixedProjectionSubtract,
-			     getCurrentConsumer()));
+							 mixedProjectionSubtract,
+							 getCurrentConsumer()));
   }
  
   virtual void doingIndependentPart(const Projection& projection, bool last) {
@@ -82,8 +82,8 @@ private:
   class IndependenceSplit : public TermConsumer {
   public:
     IndependenceSplit(const Slice& slice,
-		      Ideal* mixedProjectionSubtract,
-		      TermConsumer* consumer):
+					  Ideal* mixedProjectionSubtract,
+					  TermConsumer* consumer):
       _partialTerm(slice.getMultiply()),
       _mixedProjectionSubtract(mixedProjectionSubtract),
       _consumer(consumer),
@@ -96,10 +96,10 @@ private:
 
     virtual void consume(const Term& term) {
       if (_lastPartProjection != 0) {
-	_lastPartProjection->inverseProject(_partialTerm, term);
-	generateDecom();
+		_lastPartProjection->inverseProject(_partialTerm, term);
+		generateDecom();
       } else
-	_parts.back().decom.insert(term);
+		_parts.back().decom.insert(term);
     }
 
     // Must set each part exactly once, and must call doneWithPart
@@ -108,17 +108,17 @@ private:
       ASSERT(_lastPartProjection == 0);
 
       if (last)
-	_lastPartProjection = &projection;
+		_lastPartProjection = &projection;
       else {
-	if (_parts.empty()) {
-	  // We reserve space to ensure that no reallocation will
-	  // happen. Each part has at least two variables, and the
-	  // last part is not stored.
-	  _parts.reserve(_partialTerm.getVarCount() / 2 - 1);
-	}
-	_parts.resize(_parts.size() + 1);
-	_parts.back().projection = &projection;
-	_parts.back().decom.clearAndSetVarCount(projection.getRangeVarCount());
+		if (_parts.empty()) {
+		  // We reserve space to ensure that no reallocation will
+		  // happen. Each part has at least two variables, and the
+		  // last part is not stored.
+		  _parts.reserve(_partialTerm.getVarCount() / 2 - 1);
+		}
+		_parts.resize(_parts.size() + 1);
+		_parts.back().projection = &projection;
+		_parts.back().decom.clearAndSetVarCount(projection.getRangeVarCount());
       }
 
       return true;
@@ -126,7 +126,7 @@ private:
 
     bool doneWithPart() {
       if (_lastPartProjection != 0)
-	return true;
+		return true;
 
       bool hasDecom = (_parts.back().decom.getGeneratorCount() != 0);
       return hasDecom;
@@ -135,9 +135,9 @@ private:
   private:
     void generateDecom() {
       if (_parts.empty())
-	outputDecom();
+		outputDecom();
       else
-	generateDecom(_parts.size() - 1);
+		generateDecom(_parts.size() - 1);
     }
 
     void generateDecom(size_t part) {
@@ -146,19 +146,19 @@ private:
 
       Ideal::const_iterator stop = p.decom.end();
       for (Ideal::const_iterator it = p.decom.begin(); it != stop; ++it) {
-	p.projection->inverseProject(_partialTerm, *it);
-	if (part == 0)
-	  outputDecom();
-	else
-	  generateDecom(part - 1);
+		p.projection->inverseProject(_partialTerm, *it);
+		if (part == 0)
+		  outputDecom();
+		else
+		  generateDecom(part - 1);
       }
     }
 
     void outputDecom() {
       ASSERT(_consumer != 0);
       if (_mixedProjectionSubtract == 0 ||
-	  !_mixedProjectionSubtract->contains(_partialTerm))
-	_consumer->consume(_partialTerm);
+		  !_mixedProjectionSubtract->contains(_partialTerm))
+		_consumer->consume(_partialTerm);
     }
 
     struct Part {
@@ -435,18 +435,56 @@ public:
   }
 
   void simplify(Slice& slice) {
+    if (slice.getIdeal().getGeneratorCount() == 0)
+      return;
+
     if (_partValue == -1) {
       slice.simplify();
       return;
     }
 
+	Term bound(slice.getVarCount());
+	Term oldBound(slice.getVarCount());
+	Term colon(slice.getVarCount());
+	getUpperBound(slice, bound);
+
 	while (true) {
-	  slice.simplify();
-	  if (!basicBoundSimplify(slice))
+	  // Obtain bound for degree
+	  static mpz_class degree;
+	  getDegree(bound, _outerPartProjection, degree);
+
+	  // Check if improvement is possible
+	  if (degree <= _partValue) {
+		slice.clear();
 		break;
-	  
-	  while (basicBoundSimplify(slice))
-		;
+	  }
+
+	  // Use above bound to obtain improved lower bound. The idea is
+	  // to consider artinian pivots and to rule out the outer slice
+	  // using the above condition. If this can be done, then we can
+	  // perform the split and ignore the outer slice.
+	  for (size_t var = 0; var < slice.getVarCount(); ++var)
+		colon[var] =
+		  improveLowerBound(var, degree, bound, slice.getMultiply());
+
+	  // Check if any improvement were made.
+	  oldBound = bound;
+	  if (!colon.isIdentity()) {
+		slice.innerSlice(colon);
+		getUpperBound(slice, bound);
+		if (bound != oldBound)
+		  continue; // Iterate process using new bound.
+	  }
+
+	  slice.simplify();
+	  if (slice.getIdeal().getGeneratorCount() == 0)
+		break;
+
+	  getUpperBound(slice, bound);
+	  if (bound == oldBound)
+		break;
+
+	  // Iterate process using new bound.
 	}
   }
 
@@ -521,34 +559,6 @@ private:
 	return low;
   }
 
-  bool basicBoundSimplify(Slice& slice) {
-    if (slice.getIdeal().getGeneratorCount() == 0)
-      return false;
-
-    Term bound(slice.getVarCount());
-    getUpperBound(slice, bound);
-
-    static mpz_class degree;
-    getDegree(bound, _outerPartProjection, degree);
-
-    if (degree <= _partValue) {
-      slice.clear();
-      return false;
-    }
-
-    Term colon(slice.getVarCount());
-    for (size_t var = 0; var < slice.getVarCount(); ++var) {
-	  colon[var] =
-		improveLowerBound(var, degree, bound, slice.getMultiply());
-	}
-
-    if (colon.isIdentity())
-      return false;
-
-    slice.innerSlice(colon);
-    return true;
-  }
-
   void updateOuterPartProjection() {
     vector<size_t> inverses;
     for (size_t var = 0; var < _partProjection->getRangeVarCount(); ++var) {
@@ -561,8 +571,11 @@ private:
     _outerPartProjection.reset(inverses);
   }
 
-  void getUpperBound(const Slice& slice,
-					 Term& bound) {
+  void getBasicUpperBound(const Slice& slice, Term& bound) {
+    ASSERT(bound.getVarCount() == slice.getVarCount());
+  }
+
+  void getUpperBound(const Slice& slice, Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
     bound = slice.getLcm();
     adjustToBound(slice, bound);
