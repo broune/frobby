@@ -440,9 +440,14 @@ public:
       return;
     }
 
-	do
+	while (true) {
 	  slice.simplify();
-	while (basicBoundSimplify(slice));
+	  if (!basicBoundSimplify(slice))
+		break;
+	  
+	  while (basicBoundSimplify(slice))
+		;
+	}
   }
 
 private:
