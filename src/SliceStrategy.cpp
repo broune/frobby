@@ -521,11 +521,9 @@ private:
       return false;
 
     Term bound(slice.getVarCount());
-    mpz_class degree;
-    mpz_class degreeLess;
-    mpz_class difference;
-    
     getUpperBound(slice, bound);
+
+    static mpz_class degree;
     getDegree(bound, _outerPartProjection, degree);
 
     if (degree <= _partValue) {
