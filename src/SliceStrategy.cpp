@@ -476,27 +476,17 @@ private:
     return true;
   }
 
-  bool canExclude(size_t var,
-				  const mpz_class& upperBoundDegree,
-				  Exponent oldUpper,
-				  Exponent newUpper) {
-	size_t outerVar = _outerPartProjection.inverseProjectVar(var);
-	static mpz_class difference;
-	static mpz_class degreeLess;
-	difference =
-	  _grader.getGrade(outerVar, oldUpper) -
-	  _grader.getGrade(outerVar, newUpper);
-
-	degreeLess = upperBoundDegree - difference;
-	return degreeLess <= _partValue;
-  }
-
   Exponent improveLowerBound(size_t var,
 							 const mpz_class& upperBoundDegree,
 							 const Term& upperBound,
 							 const Term& lowerBound) {
 	if (upperBound[var] == lowerBound[var])
 	  return 0;
+
+	size_t outerVar = _outerPartProjection.inverseProjectVar(var);
+	static mpz_class baseUpperBoundDegree;
+	baseUpperBoundDegree = upperBoundDegree -
+	  _grader.getGrade(outerVar, upperBound[var]);
 
 	// Binary search, with an initial test at the lowest end.
 	Exponent low = 0;
@@ -511,9 +501,12 @@ private:
 		// possibility of low + high causing an overflow.
 		mid = low + (high - low) / 2;
 	  }
-	  
-	  if (canExclude(var, upperBoundDegree,
-					 upperBound[var], lowerBound[var] + mid))
+
+	  static mpz_class degreeLess;
+	  degreeLess = baseUpperBoundDegree +
+		_grader.getGrade(outerVar, lowerBound[var] + mid);
+
+	  if (degreeLess <= _partValue)
 		low = mid + 1;
 	  else
 		high = mid;
