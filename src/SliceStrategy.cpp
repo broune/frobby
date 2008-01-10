@@ -489,7 +489,43 @@ public:
   }
 
 private:
-  // This has not turned out to work well.
+  // The idea here is to see if any of outer slices can be discarded,
+  // allowing us to move to the inner slice. This has not turned out
+  // to work well.
+  bool colonSimplify(Slice& slice) {
+	bool simplified = true;
+
+	for (size_t var = 0; var < slice.getVarCount(); ++var) {
+	  if (slice.getLcm()[var] == 1)
+		continue;
+
+	  Slice inner(slice);
+	  Term pivot(slice.getVarCount());
+	  pivot[var] = slice.getLcm()[var] - 1;
+	  inner.innerSlice(pivot);
+
+	  Term bound(inner.getVarCount());
+	  Term oldBound(inner.getVarCount());
+	  Term colon(inner.getVarCount());
+	  getUpperBound(inner, bound);
+	  
+	  // Obtain bound for degree
+	  static mpz_class degree;
+	  getDegree(bound, _outerPartProjection, degree);
+	  
+	  // Check if improvement is possible
+	  if (degree <= _partValue) {
+		slice.outerSlice(pivot);
+		simplified = true;
+	  }
+	}
+	return simplified;
+  }
+
+  // For each variable var, the idea is to compute a bound that would
+  // apply to the outer slice on the pivot var. If that can be
+  // discarded, then we can move to the inner slice. This has not
+  // turned out to work well.
   bool involvedBoundSimplify(Slice& slice) {
     if (slice.getIdeal().getGeneratorCount() == 0)
       return false;
