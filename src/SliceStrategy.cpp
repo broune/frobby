@@ -531,7 +531,7 @@ private:
 	baseUpperBoundDegree = upperBoundDegree -
 	  _grader.getGrade(outerVar, upperBound[var]);
 
-	// Binary search, with an initial test at the lowest end.
+	// Exponential search followed by binary search.
 	Exponent low = 0;
 	Exponent high = upperBound[var] - lowerBound[var];
 
