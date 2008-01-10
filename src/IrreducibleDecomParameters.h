@@ -10,6 +10,7 @@ class IrreducibleDecomParameters : public ParameterGroup {
   IrreducibleDecomParameters();
 
   void setUseIndependence(bool value);
+  void setSplit(const string& split);
 
   bool getDoBenchmark() const;
   bool getPrintDebug() const;

@@ -7,9 +7,9 @@ cd test/decom
 time ./runtests -slice on -split label
 cd ../..
 
-echo -n "decom (slice, split=minart): "
+echo -n "decom (slice, split=midart): "
 cd test/decom
-time ./runtests -slice on -split minart
+time ./runtests -slice on -split midart
 cd ../..
 
 echo -n "decom (label): "
@@ -17,9 +17,14 @@ cd test/decom
 time ./runtests -slice off -independence off
 cd ../..
 
-echo -n "frob (slice): "
+echo -n "frob (slice, split=midart): "
 cd test/frob
-time ./runtests -slice on
+time ./runtests -slice on -split midart
+cd ../..
+
+echo -n "frob (slice, split=frob): "
+cd test/frob
+time ./runtests -slice on -split frob
 cd ../..
 
 echo -n "frob (label): "
