@@ -26,5 +26,5 @@ void Timer::print(FILE* out) const {
     fprintf(out, "%luh", hours);
   if (minutes != 0 || hours != 0)
     fprintf(out, "%lum", minutes);
-  fprintf(out, "%lus", seconds);
+  fprintf(out, "%lus)", seconds);
 }

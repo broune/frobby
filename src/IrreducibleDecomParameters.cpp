@@ -46,8 +46,8 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
 
   _split
   ("split",
-   "The split selection strategy to use. Options are label and minart. (slice only)",
- "label") {
+   "The split selection strategy to use. Options are label, minart, midart and maxart. (slice only)",
+ "midart") {
   addParameter(&_doBenchmark);
   addParameter(&_printDebug);
   addParameter(&_printProgress);
