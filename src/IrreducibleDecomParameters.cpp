@@ -46,7 +46,9 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
 
   _split
   ("split",
-   "The split selection strategy to use. Options are label, minart, midart and maxart. (slice only)",
+   "The split selection strategy to use. Options are label, minart, midart "
+   "and maxart. Frobenius computations support the specialized strategy frob "
+   "as well. (slice only)",
  "midart") {
   addParameter(&_doBenchmark);
   addParameter(&_printDebug);
@@ -61,6 +63,10 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
 
 void IrreducibleDecomParameters::setUseIndependence(bool value) {
   _useIndependence = value;
+}
+
+void IrreducibleDecomParameters::setSplit(const string& split) {
+  _split = split;
 }
 
 bool IrreducibleDecomParameters::getDoBenchmark() const {

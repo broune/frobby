@@ -7,6 +7,7 @@
 
 FrobeniusAction::FrobeniusAction() {
   _decomParameters.setUseIndependence(false);
+  _decomParameters.setSplit("frob");
 }
 
 const char* FrobeniusAction::getName() const {

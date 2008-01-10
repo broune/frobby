@@ -284,9 +284,9 @@ SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
   exit(1);
 }
 
-// A decorator (pattern) for a SliceStrategy that does nothing. The
-// purpose of this class is to act as a convenient base class for
-// other decorators.
+// A decorator (a design pattern) for a SliceStrategy that simply
+// delegates all calls. The purpose of this class is to act as a
+// convenient base class for other decorators.
 class DecoratorSliceStrategy : public SliceStrategy {
 public:
   DecoratorSliceStrategy(SliceStrategy* strategy):
@@ -337,7 +337,7 @@ public:
   }
 
   virtual void getPivot(Term& pivot, const Slice& slice) {
-    _strategy->getPivot(pivot, slice);
+	_strategy->getPivot(pivot, slice);
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) {
@@ -424,6 +424,36 @@ public:
       getDegree(_bound, _projection, tmp);
       _partValue = _toBeat - (tmp - _partValue);
     }
+  }
+
+  void getPivot(Term& pivot, const Slice& slice) {
+    const Term& lcm = slice.getLcm();
+
+	static mpz_class maxDiff;
+	static mpz_class diff;
+
+	maxDiff = -1;
+    size_t maxOffset = (size_t)-1;
+	for (size_t var = 0; var < slice.getVarCount(); ++var) {
+	  if (lcm[var] <= 1)
+		continue;
+
+	  size_t outerVar = _outerPartProjection.inverseProjectVar(var);
+	  Exponent e = lcm[var] / 2;
+	  diff =
+		_grader.getGrade(outerVar, slice.getMultiply()[var] + e) -
+		_grader.getGrade(outerVar, slice.getMultiply()[var]);
+	  ASSERT(diff >= 0);
+
+	  if (diff > maxDiff) {
+		maxOffset = var;
+		maxDiff = diff;
+	  }
+	}
+	ASSERT(maxOffset != (size_t)-1);
+
+    pivot.setToIdentity();
+	pivot[maxOffset] = lcm[maxOffset] / 2;
   }
 
   bool doneWithPart() {
@@ -657,12 +687,19 @@ private:
 // if SliceAlgorithm at a later point gets the (externally exposed)
 // capability to compute slices in general, rather than a complete
 // decomposition.
-class FrobeniusSliceStrategy : public DecoratorSliceStrategy {
+//
+// Also ignores the possibility of "fake" artinians (e.g. in getPivot).
+//
+// The passed-in strategy is only used as a split strategy, and it
+// does NOT get informed about anything other than pivot and label
+// split requests. If it is null, then a specialized grade-base pivot
+// selection algorithm is used.
+class FrobeniusSliceStrategy : public SliceStrategy {
 public:
   FrobeniusSliceStrategy(SliceStrategy* strategy,
-			 TermConsumer* consumer,
-			 TermGrader& grader):
-    DecoratorSliceStrategy(strategy),
+						 TermConsumer* consumer,
+						 TermGrader& grader):
+	_strategy(strategy),
     _consumer(consumer),
     _grader(grader) {
     ASSERT(_consumer != 0);
@@ -695,6 +732,25 @@ public:
 
   virtual void consume(const Term& term) {
     getCurrentSplit()->consume(term);
+  }
+
+  virtual SplitType getSplitType(const Slice& slice) {
+	if (_strategy == 0)
+	  return PivotSplit;
+	else
+	  return _strategy->getSplitType(slice);
+  }
+
+  virtual void getPivot(Term& pivot, const Slice& slice) {
+	if (_strategy != 0)
+	  _strategy->getPivot(pivot, slice);
+	else
+	  getCurrentSplit()->getPivot(pivot, slice);
+  }
+
+  virtual size_t getLabelSplitVariable(const Slice& slice) {
+	ASSERT(_strategy != 0);
+	return _strategy->getLabelSplitVariable(slice);
   }
 
   virtual void doingIndependenceSplit(const Slice& slice,
@@ -730,6 +786,7 @@ private:
     return _independenceSplits.back();
   }
 
+  SliceStrategy* _strategy;
   TermConsumer* _consumer;
   vector<FrobeniusIndependenceSplit*> _independenceSplits;
   const TermGrader& _grader;
@@ -739,7 +796,12 @@ SliceStrategy* SliceStrategy::
 newFrobeniusStrategy(const string& name,
 		     TermConsumer* consumer,
 		     TermGrader& grader) {
-  SliceStrategy* strategy = newDecomStrategy(name, 0);
+  SliceStrategy* strategy;
+  if (name == "frob")
+	strategy = 0;
+  else
+	strategy = newDecomStrategy(name, 0);
+
   return new FrobeniusSliceStrategy(strategy, consumer, grader);
 }
 
