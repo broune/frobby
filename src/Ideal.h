@@ -47,6 +47,12 @@ public:
   // Remove non-redundant generators.
   void minimize();
 
+  // Sorts the generators in reverse lexicographic order.
+  void sortReverseLex();
+
+  // Sort the generators in ascending order according to the exponent of var.
+  void singleDegreeSort(size_t var);
+
   // Replace each generator g by g : by.
   void colon(const Term& by);
 
@@ -61,9 +67,6 @@ public:
 
   // Remove duplicate generators.
   void removeDuplicates();
-
-  // Sort the generators in ascending order according to the exponent of var.
-  void singleDegreeSort(size_t var);
 
   // Removes all generators, and optionally sets the number of variables.
   void clear();

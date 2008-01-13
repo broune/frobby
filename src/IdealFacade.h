@@ -10,7 +10,10 @@ class IdealFacade : private Facade {
   IdealFacade(bool printActions);
 
   // Removes redundant generators from ideal.
-  void minimize(BigIdeal& ideal);
+  void sortAllAndMinimize(BigIdeal& bigIdeal);
+
+  // Clears the input ideal and writes to file.
+  void sortAllAndMinimize(BigIdeal& bigIdeal, FILE* out, const char* format);
 
   // Sorts the generators of ideal and removes duplicates.
   void sortGeneratorsUnique(BigIdeal& ideal);

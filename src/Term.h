@@ -155,6 +155,21 @@ inline int lexCompare(const Exponent* a, const Exponent* b,
   return 0;
 }
 
+// Defines reverse lexicographic order on exponents.
+inline int reverseLexCompare(const Exponent* a, const Exponent* b,
+		   size_t varCount) {
+  for (size_t var = 0; var < varCount; ++var) {
+    if (a[var] == b[var])
+      continue;
+
+    if (a[var] > b[var])
+      return -1;
+    else
+      return 1;
+  }
+  return 0;
+}
+
 // Writes e to file.
 inline void print(FILE* file, const Exponent* e, size_t varCount) {
   fputc('(', file);
@@ -391,6 +406,19 @@ class Term {
 
     bool operator()(const Exponent* a, const Exponent* b) const {
       return ::lexCompare(a, b, _varCount) < 0;
+    }
+
+  private:
+    size_t _varCount;
+  };
+
+  // A predicate that sorts according to reverse lexicographic order.
+  class ReverseLexComparator {
+  public:
+    ReverseLexComparator(size_t varCount): _varCount(varCount) {}
+
+    bool operator()(const Exponent* a, const Exponent* b) const {
+      return ::reverseLexCompare(a, b, _varCount) < 0;
     }
 
   private:
