@@ -33,7 +33,7 @@ class IOHandler {
 
  protected:
   void readTerm(BigIdeal& ideal, Scanner& scanner);
-  void readVarPower(int& var, mpz_class& power,
+  void readVarPower(vector<mpz_class>& term,
 					const VarNames& names, Scanner& scanner);
 };
 

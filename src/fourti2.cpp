@@ -10,7 +10,7 @@ namespace fourti2 {
     ideal.newLastTerm();
 
     mpz_class tmp;
-    scanner.readInteger(tmp);
+    scanner.readIntegerAndNegativeAsZero(tmp);
 
     if (tmp > 0) {
       fputs("ERROR: Encountered positive entry as first entry in term.\n"
@@ -20,9 +20,9 @@ namespace fourti2 {
     }
 
     for (size_t i = 0; i < ideal.getVarCount(); ++i) {
-      scanner.readInteger(tmp);
+      scanner.readIntegerAndNegativeAsZero(tmp);
       if (tmp > 0)
-	ideal.getLastTermExponentRef(i) = tmp;
+		ideal.getLastTermExponentRef(i) = tmp;
     }
   }
 

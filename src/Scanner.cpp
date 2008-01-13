@@ -1,9 +1,18 @@
 #include "stdinc.h"
 #include "Scanner.h"
 
+#include "VarNames.h"
+
 Scanner::Scanner(FILE* in):
   _in(in),
-  _lineNumber(1) {
+  _lineNumber(1),
+  _char(' '),
+  _tmpString(new char[16]),
+  _tmpStringCapacity(16) {
+}
+
+Scanner::~Scanner() {
+  delete[] _tmpString;
 }
 
 bool Scanner::match(char c) {
@@ -58,10 +67,73 @@ void Scanner::expectEOF() {
     error("end of input");
 }
 
-void Scanner::readInteger(mpz_class& integer) {
+size_t Scanner::readIntegerString() {
   eatWhite();
-  if (mpz_inp_str(integer.get_mpz_t(), _in, 10) == 0)
-    error("an integer");
+
+  ASSERT(_tmpStringCapacity > 1);
+
+  if (peek() == '-' || peek() == '+')
+	_tmpString[0] = getChar();
+  else
+	_tmpString[0] = '+';
+
+  size_t size = 1;
+
+  while (isdigit(peek())) {
+	_tmpString[size] = getChar();
+	++size;
+	if (size == _tmpStringCapacity)
+	  growTmpString();
+  }
+  _tmpString[size] = '\0';
+
+  if (size == 0)
+	error("an integer");
+
+  return size;
+}
+
+void Scanner::parseInteger(mpz_class& integer, size_t size) {
+  // This code has a fast path for small integers and a slower path
+  // for longer integers. The largest number representable in 32 bits
+  // has 10 digits in base 10 and 1 char for the sign. If the number
+  // we are reading has less than 10 digits, then we calculate it
+  // directly without consulting GMP, which is faster.
+
+  if (size < 10) {
+	signed long l = 0;
+	for (size_t i = 1; i < size; ++i)
+	  l = 10 * l + (_tmpString[i] - '0');
+	if (_tmpString[0] == '-')
+	  l = -l;
+	integer = l;
+  } else {
+	// For whatever reason mp_set_str does not support a + as the
+	// first character.
+	mpz_set_str(integer.get_mpz_t(), _tmpString + (_tmpString[0] != '-'), 10);
+  }
+}
+
+void Scanner::readInteger(mpz_class& integer) {
+  size_t size = readIntegerString();
+  parseInteger(integer, size);
+}
+
+void Scanner::readIntegerAndNegativeAsZero(mpz_class& integer) {
+  // Fast path for common case of reading a zero.
+  if (peek() == '0') {
+	getChar();
+	if (!isdigit(peek())) {
+	  integer = 0;
+	  return;
+	}
+  }
+
+  size_t size = readIntegerString();
+  if (_tmpString[0] == '-')
+	integer = 0;
+  else
+	parseInteger(integer, size);
 }
 
 void Scanner::readInteger(unsigned int& i) {
@@ -76,17 +148,46 @@ void Scanner::readInteger(unsigned int& i) {
   i = _integer.get_ui();
 }
 
-void Scanner::readIdentifier(string& identifier) {
+void Scanner::growTmpString() {
+  ASSERT(_tmpStringCapacity > 0);
+  size_t newCapacity = _tmpStringCapacity * 2;
+  char* str = new char[newCapacity];
+  for (size_t i = 0; i < _tmpStringCapacity; ++i)
+	str[i] = _tmpString[i];
+  delete[] _tmpString;
+
+  _tmpString = str;
+  _tmpStringCapacity = newCapacity;
+}
+
+const char* Scanner::readIdentifier() {
   eatWhite();
-
   if (!isalpha(peek()))
-    error("an identifier");
+	error("an identifier");
 
-  identifier.clear();
-  identifier += getChar();
+  ASSERT(_tmpStringCapacity > 0);
 
-  while (isalnum(peek()))
-    identifier += getChar();
+  size_t size = 0;
+  while (isalnum(peek())) {
+	_tmpString[size] = getChar();
+	++size;
+	if (size == _tmpStringCapacity)
+	  growTmpString();
+  }
+  _tmpString[size] = '\0';
+
+  return _tmpString;
+}
+
+size_t Scanner::readVariable(const VarNames& names) {
+  const char* name = readIdentifier();
+  size_t var = names.getIndex(name);
+  if (var == VarNames::UNKNOWN) {
+	printError();
+    fprintf(stderr, "Unknown variable \"%s\". Maybe you forgot a *.\n", name);
+    exit(1);
+  }
+  return var;
 }
 
 bool Scanner::peekIdentifier() {
@@ -95,16 +196,15 @@ bool Scanner::peekIdentifier() {
 }
 
 int Scanner::getChar() {
-  int c = getc(_in);
-  if (c == '\n')
+  if (_char == '\n')
     ++_lineNumber;
-  return c;
+  int oldChar = _char;
+  _char = getc(_in);
+  return oldChar;
 }
 
 int Scanner::peek() {
-  int c = getc(_in);
-  ungetc(c, _in);
-  return c;
+  return _char;
 }
 
 void Scanner::error(const string& expected) {

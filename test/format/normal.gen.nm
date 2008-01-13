@@ -1,6 +1,6 @@
 (monomial-ideal-with-order
  (lex-order a A b abe)
- a
+ a^12345678901234567890
  b
  A
  abe

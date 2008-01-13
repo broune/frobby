@@ -1,6 +1,6 @@
 R = ZZ[{a, A, b, abe}];
 I = monomialIdeal(
- a,
+ a^12345678901234567890,
  b,
  A,
  abe,

@@ -14,15 +14,13 @@ void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   VarNames names(varCount);
   ideal.clearAndSetNames(names);
 
-  mpz_class tmp;
+  ideal.reserve(termCount);
   for (size_t term = 0; term < termCount; ++term) {
 	// Read a term
 	ideal.newLastTerm();
-	for (size_t var = 0; var < varCount; ++var) {
-	  scanner.readInteger(tmp);
-	  if (tmp > 0)
-		ideal.getLastTermExponentRef(var) = tmp;
-	}
+	vector<mpz_class>& term = ideal.getLastTermRef();
+	for (size_t var = 0; var < varCount; ++var)
+	  scanner.readIntegerAndNegativeAsZero(term[var]);
   }
 }
 

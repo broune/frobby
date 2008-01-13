@@ -40,8 +40,42 @@ void BigIdeal::setNames(const VarNames& names) {
 }
 
 void BigIdeal::newLastTerm() {
+  if (_terms.size() == _terms.capacity())
+	reserve(getVarCount() * _terms.size());
+
   _terms.resize(_terms.size() + 1);
   _terms.back().resize(_names.getVarCount());
+}
+
+void BigIdeal::reserve(size_t capacity) {
+  // std::vector can do reallocations by itself, but the version here
+  // is much faster.
+  if (capacity <= _terms.capacity())
+	return;
+
+  // We grow the capacity at a rate of getVarCount() instead of a
+  // doubling because each *used* entry allocates at least
+  // getVarCount() memory anyway, so we will still only use at most
+  // double the memory than we need.
+  //
+  // We make tmp have the capacity we need, then we move the data
+  // entry by entry to tmp, and then we swap tmp and _terms. This
+  // will also swap the excess capacity into _terms. If allowed to
+  // reallocate by itself, the implementation of STL (GCC 3.4.4) I'm
+  // using will *copy* the data instead of swapping it, which is
+  // very bad.
+  vector<vector<mpz_class> > tmp;
+  size_t newCapacity = getVarCount() * _terms.size();
+  if (capacity > newCapacity)
+	newCapacity = capacity;
+
+  tmp.reserve(newCapacity);
+  tmp.resize(_terms.size());
+
+  size_t size = _terms.size();
+  for (size_t i = 0; i < size; ++i)
+	tmp[i].swap(_terms[i]);
+  tmp.swap(_terms);
 }
 
 mpz_class& BigIdeal::getLastTermExponentRef(size_t var) {
@@ -49,6 +83,12 @@ mpz_class& BigIdeal::getLastTermExponentRef(size_t var) {
   ASSERT(var < _names.getVarCount());
   
   return _terms.back()[var];
+}
+
+vector<mpz_class>& BigIdeal::getLastTermRef() {
+  ASSERT(!empty());
+
+  return _terms.back();
 }
 
 bool BigIdeal::operator==(const BigIdeal& b) const {

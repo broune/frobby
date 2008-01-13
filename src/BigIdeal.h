@@ -18,8 +18,10 @@ public:
   void setNames(const VarNames& names);
 
   void newLastTerm();
+  void reserve(size_t capacity);
 
   mpz_class& getLastTermExponentRef(size_t var);
+  vector<mpz_class>& getLastTermRef();
 
   const mpz_class& getExponent(size_t term, size_t var) const;
   mpz_class& getExponent(size_t term, size_t var);

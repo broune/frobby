@@ -10,6 +10,7 @@
 #include "MonosIOHandler.h"
 #include "Macaulay2IOHandler.h"
 #include "Fourti2IOHandler.h"
+#include "NullIOHandler.h"
 
 #include <cctype>
 
@@ -106,38 +107,42 @@ void IOHandler::readTerm(BigIdeal& ideal, Scanner& scanner) {
 
   if (scanner.match('1'))
     return;
-  
-  int var;
-  mpz_class power;
+
   do {
-    readVarPower(var, power, ideal.getNames(), scanner);
-    ideal.getLastTermExponentRef(var) += power;
+    readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
   } while (scanner.match('*'));
 }
 
-void IOHandler::readVarPower(int& var, mpz_class& power,
-			     const VarNames& names, Scanner& scanner) {
-  string varName;
+void IOHandler::readVarPower(vector<mpz_class>& term,
+							 const VarNames& names, Scanner& scanner) {
+  /*  static string varName;
   scanner.readIdentifier(varName);
-  var = names.getIndex(varName);
-  if ((size_t)var == VarNames::UNKNOWN) {
+  size_t var = names.getIndex(varName);
+  if (var == VarNames::UNKNOWN) {
 	scanner.printError();
     fprintf(stderr, "Unknown variable \"%s\". Maybe you forgot a *.\n",
 			varName.c_str());
     exit(1);
+	}*/
+  size_t var = scanner.readVariable(names);
+
+  if (term[var] != 0) {
+	scanner.printError();
+	fputs("A variable appears twice.\n", stderr);
+	exit(1);
   }
-  
+
   if (scanner.match('^')) {
-    scanner.readInteger(power);
-    if (power <= 0) {
+    scanner.readInteger(term[var]);
+    if (term[var] <= 0) {
 	  scanner.printError();
       gmp_fprintf
 		(stderr, "Expected positive integer as exponent but got %Zd.\n",
-		 power.get_mpz_t());
+		 term[var].get_mpz_t());
       exit(1);
     }
   } else
-    power = 1;
+    term[var] = 1;
 }
 
 IOHandler* IOHandler::getIOHandler(const string& name) {
@@ -156,6 +161,10 @@ IOHandler* IOHandler::getIOHandler(const string& name) {
   static Macaulay2IOHandler m2;
   if (name == m2.getFormatName())
 	return &m2;
+
+  static NullIOHandler nullHandler;
+  if (name == nullHandler.getFormatName())
+	return &nullHandler;
 
   return 0;
 }
