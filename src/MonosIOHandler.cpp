@@ -103,19 +103,9 @@ void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
   if (scanner.match(']'))
     return;
 
-  int var;
-  mpz_class power;
-
-  do {
-    readVarPower(var, power, ideal.getNames(), scanner);
-    ASSERT(power > 0);
-    if (ideal.getLastTermExponentRef(var) != 0) {
-	  scanner.printError();
-      fputs("A variable appears twice in irreducible ideal.\n", stderr);
-      exit(1);
-    }
-    ideal.getLastTermExponentRef(var) = power;
-  } while (scanner.match(','));
+  do
+    readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
+  while (scanner.match(','));
 
   scanner.expect(']');
 }
@@ -137,14 +127,12 @@ void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
   scanner.expect("vars");
 
   VarNames names;
-  string varName;
   if (!scanner.match(';')) {
 	do {
-	  scanner.readIdentifier(varName);
+	  const char* varName = scanner.readIdentifier();
 	  if (names.contains(varName)) {
 		scanner.printError();
-		fprintf(stderr, "The variable %s is declared twice.\n",
-				varName.c_str());
+		fprintf(stderr, "The variable %s is declared twice.\n", varName);
 		exit(1);
 	  }
 	  

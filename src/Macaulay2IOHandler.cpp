@@ -109,19 +109,9 @@ void Macaulay2IOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner)
   scanner.expect("monomialIdeal");
   scanner.expect('(');
 
-  int var;
-  mpz_class power;
-
-  do {
-    readVarPower(var, power, ideal.getNames(), scanner);
-    ASSERT(power > 0);
-    if (ideal.getLastTermExponentRef(var) != 0) {
-	  scanner.printError();
-      fputs("A variable appears twice in irreducible ideal.\n", stderr);
-      exit(1);
-    }
-    ideal.getLastTermExponentRef(var) = power;
-  } while (scanner.match(','));
+  do
+    readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
+  while (scanner.match(','));
 
   scanner.expect(')');
 }
@@ -151,15 +141,12 @@ void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner
   bool readBrace = scanner.match('{'); 
 
   VarNames names;
-  string varName;
-
   if (scanner.peekIdentifier()) {
 	do {
-	  scanner.readIdentifier(varName);
+	  const char* varName = scanner.readIdentifier();
 	  if (names.contains(varName)) {
 		scanner.printError();
-		fprintf(stderr, "The variable %s is declared twice.\n",
-				varName.c_str());
+		fprintf(stderr, "The variable %s is declared twice.\n", varName);
 		exit(1);
 	  }
 	  names.addVar(varName);

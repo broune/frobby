@@ -8,7 +8,7 @@
 FormatAction::FormatAction():
   _inputFormat
 ("iformat",
- "The input format. The available formats are monos, m2, 4ti2 and newmonos.",
+ "The input format. The available formats are monos, m2, 4ti2, null and newmonos.",
  "monos"),
   
   _outputFormat

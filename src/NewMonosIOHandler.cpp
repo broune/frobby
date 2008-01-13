@@ -86,21 +86,11 @@ void NewMonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) 
   scanner.expect('(');
   scanner.expect("monomial-ideal");
 
-  int var;
-  mpz_class power;
+  if (scanner.match('1'))
+	return;
 
-  if (!scanner.match('1')) {
-    while (!scanner.match(')')) {
-      readVarPower(var, power, ideal.getNames(), scanner);
-      ASSERT(power > 0);
-      if (ideal.getLastTermExponentRef(var) != 0) {
-		scanner.printError();
-		fputs("A variable appears twice in irreducible ideal.\n", stderr);
-		exit(1);
-      }
-      ideal.getLastTermExponentRef(var) = power;
-    }
-  }
+  while (!scanner.match(')'))
+	readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
 }
 
 void NewMonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
@@ -110,13 +100,12 @@ void NewMonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner)
   VarNames names;
   string varName;
   while (!scanner.match(')')) {
-    scanner.readIdentifier(varName);
+	const char* varName = scanner.readIdentifier();
     if (names.contains(varName)) {
 	  scanner.printError();
-      fprintf(stderr, "The variable %s is declared twice.\n", varName.c_str());
+      fprintf(stderr, "The variable %s is declared twice.\n", varName);
       exit(1);
     }
-
     names.addVar(varName);
   }
 
