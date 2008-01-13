@@ -22,6 +22,7 @@ public:
 
   mpz_class& getLastTermExponentRef(size_t var);
   vector<mpz_class>& getLastTermRef();
+  const vector<mpz_class>& getTerm(size_t term) const;
 
   const mpz_class& getExponent(size_t term, size_t var) const;
   mpz_class& getExponent(size_t term, size_t var);
