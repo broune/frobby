@@ -89,16 +89,18 @@ void FormatAction::perform() {
   facade.readIdeal(stdin, ideal, iformat.c_str());
 
   IdealFacade idealFacade(_printActions);
+
   if (_minimize)
-    idealFacade.minimize(ideal);
+    idealFacade.sortAllAndMinimize(ideal, stdout, oformat.c_str());
+  else {
+	if (_canonicalize)
+	  idealFacade.sortVariables(ideal);
 
-  if (_canonicalize)
-    idealFacade.sortVariables(ideal);
+	if (_unique)
+	  idealFacade.sortGeneratorsUnique(ideal);
+	else if (_sort || _canonicalize)
+	  idealFacade.sortGenerators(ideal);
 
-  if (_unique)
-    idealFacade.sortGeneratorsUnique(ideal);
-  else if (_sort || _canonicalize)
-    idealFacade.sortGenerators(ideal);
-
-  facade.writeIdeal(stdout, ideal, oformat.c_str());
+	facade.writeIdeal(stdout, ideal, oformat.c_str());
+  }
 }

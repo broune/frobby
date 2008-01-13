@@ -4,23 +4,42 @@
 #include "BigIdeal.h"
 #include "Ideal.h"
 #include "TermTranslator.h"
-
-#include <cstdio>
+#include "IOHandler.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
 }
 
-void IdealFacade::minimize(BigIdeal& bigIdeal) {
+void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal) {
   beginAction("Minimizing ideal.");
 
   Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal);
+  TermTranslator translator(bigIdeal, ideal, true);
   bigIdeal.clear();
 
   ideal.minimize();
+  ideal.sortReverseLex();
 
   bigIdeal.insert(ideal, translator);
+
+  endAction();
+}
+
+void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal, FILE* out,
+									 const char* format) {
+  beginAction("Minimizing and writing ideal.");
+
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal, true);
+  bigIdeal.clear();
+
+  ideal.minimize();
+  ideal.sortReverseLex();
+
+  IOHandler* handler = IOHandler::getIOHandler(format);
+  ASSERT(handler != 0);
+  
+  handler->writeIdeal(out, ideal, &translator);
 
   endAction();
 }

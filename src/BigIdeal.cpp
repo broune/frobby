@@ -36,6 +36,8 @@ BigIdeal::BigIdeal(const VarNames& names):
 }
 
 void BigIdeal::insert(const Ideal& ideal) {
+  _terms.reserve(_terms.size() + ideal.getGeneratorCount());
+
   Ideal::const_iterator it = ideal.begin();
   for (; it != ideal.end(); ++it) {
     newLastTerm();
@@ -46,7 +48,9 @@ void BigIdeal::insert(const Ideal& ideal) {
 }
 
 void BigIdeal::insert(const Ideal& ideal,
-		      const TermTranslator& translator) {
+					  const TermTranslator& translator) {
+  _terms.reserve(_terms.size() + ideal.getGeneratorCount());
+
   Ideal::const_iterator it = ideal.begin();
   for (; it != ideal.end(); ++it) {
     newLastTerm();

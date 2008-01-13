@@ -11,6 +11,7 @@ class Scanner;
 class BigIdeal;
 class TermTranslator;
 class IdealWriter;
+class Ideal;
 
 class IOHandler {
  public:
@@ -20,6 +21,8 @@ class IOHandler {
   virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom) = 0;
 
   virtual void writeIdeal(FILE* out, const BigIdeal& ideal);
+  virtual void writeIdeal(FILE* out, const Ideal& ideal,
+						  const TermTranslator* translator);
 
   virtual IdealWriter* createWriter
     (FILE* file, const VarNames& names) const = 0;

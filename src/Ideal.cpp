@@ -139,6 +139,17 @@ void Ideal::minimize() {
   _terms.erase(_terms.begin() + newEnd, _terms.end());
 }
 
+void Ideal::sortReverseLex() {
+  std::sort(_terms.begin(), _terms.end(),
+			Term::ReverseLexComparator(_varCount));
+}
+
+void Ideal::singleDegreeSort(size_t var) {
+  ASSERT(var < _varCount);
+  std::sort(_terms.begin(), _terms.end(),
+	    Term::AscendingSingleDegreeComparator(var, _varCount));
+}
+
 void Ideal::colon(const Term& by) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it)
@@ -222,12 +233,6 @@ void Ideal::removeDuplicates() {
   iterator newEnd =
     unique(_terms.begin(), _terms.end(), Term::EqualsPredicate(_varCount));
   _terms.erase(newEnd, _terms.end());
-}
-
-void Ideal::singleDegreeSort(size_t var) {
-  ASSERT(var < _varCount);
-  std::sort(_terms.begin(), _terms.end(),
-	    Term::AscendingSingleDegreeComparator(var, _varCount));
 }
 
 void Ideal::clear() {

@@ -5,6 +5,7 @@
 #include "BigIdeal.h"
 #include "TermTranslator.h"
 #include "Term.h"
+#include "Ideal.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -99,6 +100,15 @@ void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
   IdealWriter* writer = createWriter(out, ideal.getNames());
   for (size_t i = 0; i < ideal.getGeneratorCount(); ++i)
     writer->consume(ideal[i]);
+  delete writer;
+}
+
+void IOHandler::writeIdeal(FILE* out, const Ideal& ideal,
+						   const TermTranslator* translator) {
+  IdealWriter* writer = createWriter(out, translator);
+  Ideal::const_iterator stop = ideal.end();
+  for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it)
+    writer->consume(Term(*it, ideal.getVarCount()));
   delete writer;
 }
 

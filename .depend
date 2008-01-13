@@ -74,10 +74,11 @@ $(outdir)fplllIO.o: src/fplllIO.cpp src/stdinc.h src/fplllIO.h src/BigIdeal.h \
   src/VarNames.h src/Scanner.h
 $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h \
   src/TermConsumer.h src/VarNames.h src/Scanner.h src/BigIdeal.h \
-  src/TermTranslator.h src/Term.h src/NewMonosIOHandler.h \
-  src/MonosIOHandler.h src/Macaulay2IOHandler.h src/Fourti2IOHandler.h
+  src/TermTranslator.h src/Term.h src/Ideal.h src/NewMonosIOHandler.h \
+  src/MonosIOHandler.h src/Macaulay2IOHandler.h src/Fourti2IOHandler.h \
+  src/NullIOHandler.h
 $(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
-  src/VarNames.h src/Scanner.h
+  src/VarNames.h src/Scanner.h src/IOHandler.h src/TermConsumer.h
 $(outdir)randomDataGenerators.o: src/randomDataGenerators.cpp src/stdinc.h \
   src/randomDataGenerators.h src/BigIdeal.h src/VarNames.h src/Ideal.h \
   src/Term.h
@@ -118,12 +119,13 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
   src/label/FrobeniusStrategy.h src/label/Strategy.h \
   src/label/BenchmarkStrategy.h src/label/DecompositionStrategy.h \
-  src/label/../VarNames.h src/label/LabelAlgorithm.h \
-  src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
-  src/BoolParameter.h src/StringParameter.h src/BigIdeal.h src/VarNames.h \
-  src/IOFacade.h src/TermTranslator.h src/Ideal.h src/Term.h \
-  src/SliceAlgorithm.h src/SliceStrategy.h src/TermConsumer.h \
-  src/TermIgnorer.h src/DecomRecorder.h src/TermGrader.h
+  src/label/../VarNames.h src/label/LabelAlgorithm.h src/IOHandler.h \
+  src/TermConsumer.h src/VarNames.h src/IrreducibleDecomParameters.h \
+  src/ParameterGroup.h src/Parameter.h src/BoolParameter.h \
+  src/StringParameter.h src/BigIdeal.h src/IOFacade.h \
+  src/TermTranslator.h src/Ideal.h src/Term.h src/SliceAlgorithm.h \
+  src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h \
+  src/TermGrader.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
@@ -131,8 +133,8 @@ $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/Facade.h src/Timer.h src/IrreducibleDecomFacade.h
 $(outdir)Facade.o: src/Facade.cpp src/stdinc.h src/Facade.h src/Timer.h
 $(outdir)IOFacade.o: src/IOFacade.cpp src/stdinc.h src/IOFacade.h src/Facade.h \
-  src/Timer.h src/fourti2.h src/BigIdeal.h src/VarNames.h src/fplllIO.h \
-  src/Scanner.h
+  src/Timer.h src/IOHandler.h src/TermConsumer.h src/VarNames.h \
+  src/fourti2.h src/BigIdeal.h src/fplllIO.h src/Scanner.h
 $(outdir)DynamicFrobeniusFacade.o: src/DynamicFrobeniusFacade.cpp src/stdinc.h \
   src/DynamicFrobeniusFacade.h src/Facade.h src/Timer.h \
   src/dynamicFrobeniusAlgorithm.h
@@ -146,7 +148,7 @@ $(outdir)AnalyzeAction.o: src/AnalyzeAction.cpp src/stdinc.h src/AnalyzeAction.h
   src/IdealFacade.h
 $(outdir)IdealFacade.o: src/IdealFacade.cpp src/stdinc.h src/IdealFacade.h \
   src/Facade.h src/Timer.h src/BigIdeal.h src/VarNames.h src/Ideal.h \
-  src/Term.h src/TermTranslator.h
+  src/Term.h src/TermTranslator.h src/IOHandler.h src/TermConsumer.h
 $(outdir)Parameter.o: src/Parameter.cpp src/stdinc.h src/Parameter.h
 $(outdir)ParameterGroup.o: src/ParameterGroup.cpp src/stdinc.h \
   src/ParameterGroup.h src/Parameter.h
@@ -160,7 +162,7 @@ $(outdir)IrreducibleDecomParameters.o: src/IrreducibleDecomParameters.cpp \
   src/Parameter.h src/BoolParameter.h src/StringParameter.h
 $(outdir)BoolParameter.o: src/BoolParameter.cpp src/stdinc.h src/BoolParameter.h \
   src/Parameter.h
-$(outdir)Scanner.o: src/Scanner.cpp src/stdinc.h src/Scanner.h
+$(outdir)Scanner.o: src/Scanner.cpp src/stdinc.h src/Scanner.h src/VarNames.h
 $(outdir)Partition.o: src/Partition.cpp src/stdinc.h src/Partition.h src/Term.h
 $(outdir)StringParameter.o: src/StringParameter.cpp src/stdinc.h \
   src/StringParameter.h src/Parameter.h
@@ -176,9 +178,10 @@ $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
   src/IOFacade.h src/Facade.h src/Timer.h src/fplllIO.h \
   src/LatticeFacade.h
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
-  src/SliceAlgorithm.h src/Term.h src/VarNames.h src/TermTranslator.h \
-  src/Ideal.h src/Partition.h src/Slice.h src/SliceStrategy.h \
-  src/TermConsumer.h src/IndependenceSplitter.h src/Projection.h
+  src/SliceAlgorithm.h src/Term.h src/VarNames.h src/IOHandler.h \
+  src/TermConsumer.h src/TermTranslator.h src/Ideal.h src/Partition.h \
+  src/Slice.h src/SliceStrategy.h src/IndependenceSplitter.h \
+  src/Projection.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
   src/Term.h
@@ -231,3 +234,5 @@ $(outdir)TermGrader.o: src/TermGrader.cpp src/stdinc.h src/TermGrader.h \
 $(outdir)Fourti2IOHandler.o: src/Fourti2IOHandler.cpp src/stdinc.h \
   src/Fourti2IOHandler.h src/IOHandler.h src/TermConsumer.h \
   src/VarNames.h src/Scanner.h src/BigIdeal.h
+$(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h \
+  src/IOHandler.h src/TermConsumer.h src/VarNames.h src/BigIdeal.h
