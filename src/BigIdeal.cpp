@@ -5,7 +5,28 @@
 #include "TermTranslator.h"
 #include "Ideal.h"
 
-#include <map>
+class OffsetTermCompare {
+public:
+  OffsetTermCompare(const BigIdeal& ideal): _ideal(ideal) {
+  }
+
+  bool operator()(size_t aa, size_t bb) const {
+	const vector<mpz_class>& a = _ideal.getTerm(aa);
+	const vector<mpz_class>& b = _ideal.getTerm(bb);
+
+	ASSERT(a.size() == b.size());
+	for (size_t i = 0; i < a.size(); ++i) {
+	  if (a[i] > b[i])
+		return true;
+	  if (a[i] < b[i])
+		return false;
+	}
+	return false;
+  }
+
+private:
+  const BigIdeal& _ideal;
+};
 
 BigIdeal::BigIdeal() {
 }
@@ -91,6 +112,11 @@ vector<mpz_class>& BigIdeal::getLastTermRef() {
   return _terms.back();
 }
 
+const vector<mpz_class>& BigIdeal::getTerm(size_t term) const {
+  ASSERT(term < getGeneratorCount());
+  return _terms[term];
+}
+
 bool BigIdeal::operator==(const BigIdeal& b) const {
   return _terms == b._terms;
 }
@@ -138,18 +164,34 @@ void BigIdeal::sortGeneratorsUnique() {
 }
 
 void BigIdeal::sortGenerators() {
-  std::sort(_terms.begin(), _terms.end(), bigTermCompare);
+  size_t size = _terms.size();
+  vector<size_t> sortedOffsets(size);
+  for (size_t term = 0; term < size; ++term)
+	sortedOffsets[term] = term;
+
+  std::sort(sortedOffsets.begin(), sortedOffsets.end(),
+			OffsetTermCompare(*this));
+
+  vector<vector<mpz_class> > sorted;
+  sorted.reserve(_terms.capacity());
+  sorted.resize(size);
+  for (size_t term = 0; term < size; ++term)
+	sorted[term].swap(_terms[sortedOffsets[term]]);
+
+  _terms.swap(sorted);
 }
 
 struct VarSorter {
   VarSorter(VarNames& names):
-    _names(names) {
+    _names(names),
+	_tmp(names.getVarCount()) {
+	_permutation.reserve(names.getVarCount());
     for (size_t i = 0; i < names.getVarCount(); ++i)
       _permutation.push_back(i);
     sort(_permutation.begin(), _permutation.end(), *this);
   }
 
-  bool operator()(size_t a, size_t b) {
+  bool operator()(size_t a, size_t b) const {
     return
       _names.getName(_permutation[a]) <
       _names.getName(_permutation[b]);
@@ -162,9 +204,10 @@ struct VarSorter {
   }
 
   void permute(vector<mpz_class>& term) {
-    _tmp = term;
+	ASSERT(term.size() == _tmp.size());
+    _tmp.swap(term);
     for (size_t i = 0; i < _permutation.size(); ++i)
-      term[i] = _tmp[_permutation[i]];
+	  mpz_swap(term[i].get_mpz_t(), _tmp[_permutation[i]].get_mpz_t());
   }
 
 private:

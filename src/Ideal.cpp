@@ -122,13 +122,11 @@ void Ideal::minimize() {
   for (size_t i = 0; i < _terms.size(); ++i) {
     bool remove = false;
 
+	ASSERT(newEnd <= i);
     for (size_t j = 0; j < newEnd; ++j) {
-      if (i == j)
-	continue;
-
       if (::divides(_terms[j], _terms[i], _varCount)) {
-	remove = true;
-	break;
+		remove = true;
+		break;
       }
     }
 
