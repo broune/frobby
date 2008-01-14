@@ -13,8 +13,6 @@ class Minimizer {
 
   iterator minimize(iterator begin, iterator end) const;
 
-  iterator minimize2(iterator begin, iterator end) const;
-
  private:
   size_t _varCount;
 };
