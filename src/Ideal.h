@@ -36,6 +36,9 @@ public:
   void getLcm(Term& lcm) const;
   void getGcd(Term& gcd) const;
 
+  // counts[var] will be the number of generators divisible by var.
+  void getSupportCounts(Term& counts) const;
+
   bool operator==(const Ideal& ideal) const;
 
   void print(FILE* file) const;

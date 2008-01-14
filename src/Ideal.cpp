@@ -86,6 +86,17 @@ void Ideal::getGcd(Term& gcd) const {
     gcd.gcd(gcd, *it);
 }
 
+void Ideal::getSupportCounts(Term& counts) const {
+  ASSERT(counts.getVarCount() == getVarCount());
+
+  counts.setToIdentity();
+  const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
+	for (size_t var = 0; var < _varCount; ++var)
+	  if ((*it)[var] > 0)
+		counts[var] += 1;
+}
+
 bool Ideal::operator==(const Ideal& ideal) const {
   if (getVarCount() != ideal.getVarCount())
 	return false;
@@ -132,100 +143,9 @@ void Ideal::insert(const Ideal& ideal) {
 void Ideal::minimize() {
   if (_terms.empty())
     return;
-  /*  
-  Ideal id(*this);
 
-  std::sort(_terms.begin(), _terms.end(), Term::LexComparator(_varCount));
-
-  size_t newEnd = 0;
-  for (size_t i = 0; i < _terms.size(); ++i) {
-    bool remove = false;
-
-	ASSERT(newEnd <= i);
-    for (size_t j = 0; j < newEnd; ++j) {
-      if (::divides(_terms[j], _terms[i], _varCount)) {
-		remove = true;
-		break;
-      }
-    }
-
-    if (!remove) {
-      _terms[newEnd] = _terms[i];
-      ++newEnd;
-    }
-  }
-
-  _terms.erase(_terms.begin() + newEnd, _terms.end());
-
-
-  // --------------------------------------------
   Minimizer minimizer(_varCount);
-  id._terms.erase(minimizer.minimize(id._terms.begin(), id._terms.end()),
-				  id._terms.end());
-  
-  Ideal id2(*this);
-  id2.sortReverseLex();
-  id.sortReverseLex();
-
-  ASSERT(id == id2);
-
-  return;
-  
-  
-  //Ideal id(*this);
-  //Ideal id2(*this);
-*/
-  {
-	Minimizer minimizer2(_varCount);
-	_terms.erase(minimizer2.minimize(_terms.begin(), _terms.end()), _terms.end());
-  }
-
-  //random_shuffle(_terms.begin(), _terms.end());
-  
-  //std::sort(_terms.begin(), _terms.end(), Term::LexComparator(_varCount));
-
-  //Ideal id3(*this);
-
-  /*id._terms.erase(minimizer.minimize2(id._terms.begin(), id._terms.end()),
-	id._terms.end());
-
-	id3.sortReverseLex();
-	id2.sortReverseLex();
-	id.sortReverseLex();
-
-	if (!(id == id3)) {
-	fputs("\n********************************", stderr);
-	id3.print(stderr);
-	id2.print(stderr);
-	id.print(stderr);
-	print(stderr);
-	}
-
-	ASSERT(id == id3);
-  */
-  /*  } else {
-	  std::sort(_terms.begin(), _terms.end(), Term::LexComparator(_varCount));
-
-	  size_t newEnd = 0;
-	  for (size_t i = 0; i < _terms.size(); ++i) {
-	  bool remove = false;
-
-	  ASSERT(newEnd <= i);
-	  for (size_t j = 0; j < newEnd; ++j) {
-	  if (::divides(_terms[j], _terms[i], _varCount)) {
-	  remove = true;
-	  break;
-	  }
-	  }
-
-	  if (!remove) {
-	  _terms[newEnd] = _terms[i];
-	  ++newEnd;
-	  }
-	  }
-
-	  _terms.erase(_terms.begin() + newEnd, _terms.end());
-	  }*/
+  _terms.erase(minimizer.minimize(_terms.begin(), _terms.end()), _terms.end());
 }
 
 void Ideal::sortReverseLex() {

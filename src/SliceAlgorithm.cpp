@@ -140,8 +140,6 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
     pivot = *it;
     pivot[var] -= 1;
 
-	pivot.print(stderr);
-
     {
       Slice child(slice.getIdeal(), *cumulativeSubtract, slice.getMultiply());
       child.innerSlice(pivot);
