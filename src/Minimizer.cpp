@@ -31,14 +31,15 @@ class TreeNode {
   typedef vector<Exponent*>::iterator iterator;
 
 public:
-  TreeNode(iterator begin, iterator end, size_t varCount):
+  TreeNode(iterator begin, iterator end, size_t var, size_t varCount):
 	_lessOrEqual(0),
 	_greater(0),
-	_var(0),
+	_var(var),
 	_pivot(0),
 	_varCount(varCount),
 	_begin(begin), 
 	_end(end) {
+	ASSERT(var <= _varCount);
   }
 
   ~TreeNode() {
@@ -50,7 +51,7 @@ public:
 	ASSERT(_greater == 0);
 	ASSERT(_lessOrEqual == 0);
 
-	if (distance(_begin, _end) <= 1) {
+	if (distance(_begin, _end) <= 20) {
 	  _end = simpleMinimize(_begin, _end, _varCount);
 	  return;
 	}
@@ -87,8 +88,8 @@ public:
 	  if (middle == _begin)
 		continue;
 
-	  _lessOrEqual = new TreeNode(_begin, middle, _varCount);
-	  _greater = new TreeNode(middle, _end, _varCount);
+	  _lessOrEqual = new TreeNode(_begin, middle, 0, _varCount);
+	  _greater = new TreeNode(middle, _end, 0, _varCount);
 	  _end = _begin;
 
 	  break;
@@ -106,6 +107,8 @@ public:
 		return true;
 	  return term[_var] > _pivot && _greater->isRedundant(term);
 	} else {
+	  ASSERT(_lessOrEqual == 0);
+	  ASSERT(_greater == 0);
 	  for (iterator it = _begin; it != _end; ++it)
 		if (dominates(term, *it, _varCount))
 		  return true;
@@ -194,7 +197,7 @@ Minimizer::iterator Minimizer::minimize(iterator begin, iterator end) const {
 
   vector<Exponent*> terms;
 
-  TreeNode node(begin, end, _varCount);
+  TreeNode node(begin, end, 0, _varCount);
   node.makeTree();
   node.collect(terms);
 
