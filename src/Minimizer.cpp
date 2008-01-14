@@ -31,15 +31,14 @@ class TreeNode {
   typedef vector<Exponent*>::iterator iterator;
 
 public:
-  TreeNode(iterator begin, iterator end, size_t var, size_t varCount):
+  TreeNode(iterator begin, iterator end, size_t varCount):
 	_lessOrEqual(0),
 	_greater(0),
-	_var(var),
+	_var(0),
 	_pivot(0),
 	_varCount(varCount),
 	_begin(begin), 
 	_end(end) {
-	ASSERT(var <= _varCount);
   }
 
   ~TreeNode() {
@@ -51,67 +50,78 @@ public:
 	ASSERT(_greater == 0);
 	ASSERT(_lessOrEqual == 0);
 
-	if (distance(_begin, _end) <= 20) {
-	  _end = simpleMinimize(_begin, _end, _varCount);
-	  return;
-	}
+	if (distance(_begin, _end) > 20) {
 
-	Term lcm(_varCount);
-	for (iterator it = _begin; it != _end; ++it)
-	  lcm.lcm(lcm, *it);
+	  Term lcm(_varCount);
+	  for (iterator it = _begin; it != _end; ++it)
+		lcm.lcm(lcm, *it);
 
-	while (true) {
-	  size_t maxVar = 0;
-	  for (size_t var = 0; var < _varCount; ++var)
-		if (lcm[var] > lcm[maxVar])
-		  maxVar = var;
-	  if (lcm[maxVar] == 0) {
-		_end = simpleMinimize(_begin, _end, _varCount);
-		return; // we are not making any progress anyway
-	  }
-	  
-	  
-	  ASSERT(lcm[maxVar] >= 1);
-	  _var = maxVar;
-	  _pivot = lcm[maxVar] / 2;
-	  lcm[maxVar] = 0; // So we do not process this same var again.
-	  
-	  std::sort(_begin, _end,
-				Term::AscendingSingleDegreeComparator(maxVar, _varCount));
+	  while (true) {
+		size_t maxVar = 0;
+		
+		for (size_t var = 0; var < _varCount; ++var)
+		  if (lcm[var] > lcm[maxVar])
+			maxVar = var;
+		if (lcm[maxVar] == 0) {
+		  break; // we are not making any progress anyway
+		}
 
-	  iterator middle = _begin;
-	  while ((*middle)[maxVar] <= _pivot) {
-		ASSERT(middle != _end);
+		ASSERT(lcm[maxVar] >= 1);
+		_var = maxVar;
+		_pivot = lcm[maxVar] / 4;
+		lcm[maxVar] = 0; // So we do not process this same var again.
+	  
+		iterator left = _begin;
+		iterator right = _end - 1;
+		while (left != right) {
+		  while ((*left)[_var] <= _pivot && left != right)
+			++left;
+		  while ((*right)[_var] > _pivot && left != right)
+			--right;
+		  swap(*left, *right);
+		}
+		ASSERT((*right)[_var] > _pivot);
+		if ((*_begin)[_var] > _pivot)
+		  continue;
+
+		iterator middle = right;
+		while ((*middle)[maxVar] > _pivot)
+		  --middle;
 		++middle;
+		
+		ASSERT(middle != _begin);
+
+		_lessOrEqual = new TreeNode(_begin, middle, _varCount);
+		_greater = new TreeNode(middle, _end, _varCount);
+		_end = _begin;
+
+		_lessOrEqual->makeTree();
+		_greater->makeTree();
+		return;
 	  }
-
-	  if (middle == _begin)
-		continue;
-
-	  _lessOrEqual = new TreeNode(_begin, middle, 0, _varCount);
-	  _greater = new TreeNode(middle, _end, 0, _varCount);
-	  _end = _begin;
-
-	  break;
 	}
 
-	_lessOrEqual->makeTree();
-	_greater->makeTree();
+	_end = simpleMinimize(_begin, _end, _varCount);
+
   }
 
   bool isRedundant(const Exponent* term) {
-	if (_begin == _end) {
-	  ASSERT(_lessOrEqual != 0);
-	  ASSERT(_greater != 0);
-	  if (_lessOrEqual->isRedundant(term))
-		return true;
-	  return term[_var] > _pivot && _greater->isRedundant(term);
-	} else {
+	if (_begin != _end) {
 	  ASSERT(_lessOrEqual == 0);
 	  ASSERT(_greater == 0);
+
 	  for (iterator it = _begin; it != _end; ++it)
 		if (dominates(term, *it, _varCount))
 		  return true;
+	  return false;
+	} else {
+	  ASSERT(_lessOrEqual != 0);
+	  ASSERT(_greater != 0);
+	  
+	  if (term[_var] > _pivot && _greater->isRedundant(term))
+		return true;
+	  if (_lessOrEqual->isRedundant(term))
+		return true;
 	  return false;
 	}
   }
@@ -178,44 +188,17 @@ private:
   iterator _end;
 };
 
-Minimizer::iterator Minimizer::minimize2(iterator begin, iterator end) const {
-  return simpleMinimize(begin, end, _varCount);
-}
-
 Minimizer::iterator Minimizer::minimize(iterator begin, iterator end) const {
-  if (_varCount == 0) {
-	if (begin != end)
-	  ++begin;
-	return begin;
-  }
+  if (distance(begin, end) < 1000 || _varCount == 0)
+	return simpleMinimize(begin, end, _varCount);
 
-  //return simpleMinimize(begin, end, _varCount);
-  
+  static vector<Exponent*> terms;
+  terms.clear();
+  terms.reserve(distance(begin, end));
 
-  //if (distance(begin, end) < 10)
-  //return simpleMinimize(begin, end, _varCount);
-
-  vector<Exponent*> terms;
-
-  TreeNode node(begin, end, 0, _varCount);
+  TreeNode node(begin, end, _varCount);
   node.makeTree();
   node.collect(terms);
 
-  iterator newEnd = copy(terms.begin(),
-						 terms.end(),
-						 begin);
-  return newEnd;
-
-  /*
-  Minimizer::iterator it = begin;
-  while (it != end) {
-	if (!node.isRedundant(*it)) {
-	  *begin = *it;
-	  ++begin;
-	}
-	++it;
-	}
-
-  return begin;
-  */
+  return copy(terms.begin(), terms.end(), begin);
 }
