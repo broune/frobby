@@ -2,6 +2,7 @@
 #include "VarNames.h"
 
 #include <sstream>
+#include <cstring>
 
 const size_t VarNames::UNKNOWN = numeric_limits<size_t>::max();
 
@@ -21,12 +22,18 @@ VarNames::VarNames(const VarNames& names) {
 	addVar(names.getName(var));
 }
 
+VarNames::~VarNames() {
+  clear();
+}
+
 void VarNames::addVar(const string& name) {
   ASSERT(name != "");
   ASSERT(!contains(name));
- 
-  _indexToName.push_back(new string(name));
-  _nameToIndex[_indexToName.back()->c_str()] = _indexToName.size() - 1;
+
+  _indexToName.push_back(new string(name)); // TODO: fix leak
+  char* str = new char[name.size() + 1];
+  strcpy(str, name.c_str());
+  _nameToIndex[str] = _indexToName.size() - 1;
 
   if (getVarCount() == UNKNOWN) {
     fputs("ERROR: Too many variables names.\n", stderr);
@@ -61,7 +68,15 @@ size_t VarNames::getVarCount() const {
 }
 
 void VarNames::clear() {
+  vector<const char*> ptrs;
+  for (VarNameMap::const_iterator it = _nameToIndex.begin();
+	   it != _nameToIndex.end(); ++it)
+	ptrs.push_back(it->first);
   _nameToIndex.clear();
+  
+  for (size_t i = 0; i < ptrs.size(); ++i)
+	delete[] ptrs[i];
+  
   for (size_t i = 0; i < _indexToName.size(); ++i)
 	delete _indexToName[i];
   _indexToName.clear();
@@ -69,6 +84,14 @@ void VarNames::clear() {
 
 bool VarNames::empty() const {
   return _indexToName.empty();
+}
+
+
+VarNames& VarNames::operator=(const VarNames& names) {
+  clear();
+  for (size_t var = 0; var < names.getVarCount(); ++var)
+	addVar(names.getName(var));
+  return *this;
 }
 
 bool VarNames::operator==(const VarNames& names) const {

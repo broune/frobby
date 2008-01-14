@@ -36,6 +36,8 @@ public:
   void getLcm(Term& lcm) const;
   void getGcd(Term& gcd) const;
 
+  bool operator==(const Ideal& ideal) const;
+
   void print(FILE* file) const;
 
   // *** Mutators
@@ -47,8 +49,9 @@ public:
   // Remove non-redundant generators.
   void minimize();
 
-  // Sorts the generators in reverse lexicographic order.
-  void sortReverseLex();
+  // Sorts the generators in the specified order
+  void sortReverseLex(); // reverse lexicographic order
+  void sortLex(); // lexicographic order
 
   // Sort the generators in ascending order according to the exponent of var.
   void singleDegreeSort(size_t var);
@@ -71,7 +74,6 @@ public:
   // Removes all generators, and optionally sets the number of variables.
   void clear();
   void clearAndSetVarCount(size_t varCount);
-
 
   Ideal& operator=(const Ideal& ideal);
 

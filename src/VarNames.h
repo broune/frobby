@@ -34,6 +34,7 @@ public:
   VarNames();
   VarNames(size_t varCount);
   VarNames(const VarNames& names);
+  ~VarNames();
 
   void addVar(const string& name);
 
@@ -55,6 +56,7 @@ public:
 
   static const size_t UNKNOWN;
 
+  VarNames& operator=(const VarNames& names);
   bool operator==(const VarNames& names) const;
 
   void print(FILE* file) const;

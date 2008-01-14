@@ -130,7 +130,6 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
   slice.singleDegreeSortIdeal(var);
 
   Ideal* cumulativeSubtract = &(slice.getSubtract());
-  Term labelMultiply(slice.getVarCount());
   Term pivot(slice.getVarCount());
 
   for (Ideal::const_iterator it = slice.getIdeal().begin();
@@ -140,6 +139,8 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
 
     pivot = *it;
     pivot[var] -= 1;
+
+	pivot.print(stderr);
 
     {
       Slice child(slice.getIdeal(), *cumulativeSubtract, slice.getMultiply());
@@ -151,7 +152,7 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
     ++next;
     if (next != slice.getIdeal().end() && (*it)[var] == (*next)[var]) {
       if (cumulativeSubtract == &(slice.getSubtract()))
-	cumulativeSubtract = new Ideal(slice.getSubtract());
+		cumulativeSubtract = new Ideal(slice.getSubtract());
       cumulativeSubtract->insert(pivot);
     } else if (cumulativeSubtract != &(slice.getSubtract())) {
       delete cumulativeSubtract;

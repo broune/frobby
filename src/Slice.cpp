@@ -42,9 +42,8 @@ void Slice::print(FILE* file) const {
   _multiply.print(file);
   fputs("\n ideal: ", file);
   getIdeal().print(file);
-  fputs("\n subtract: ", file);
+  fputs(" subtract: ", file);
   _subtract.print(file);
-  fputc('\n', file);
 }
 
 void Slice::resetAndSetVarCount(size_t varCount) {
@@ -413,22 +412,23 @@ void Slice::oneMoreGeneratorBaseCase(TermConsumer* consumer) {
     ASSERT(it != getIdeal().end());
   }
 
+  Term msm(_varCount);
   for (size_t var = 0; var < _varCount; ++var) {
     ASSERT((*it)[var] <= 1);
     ASSERT((*it)[var] < getLcm()[var]);
-    if ((*it)[var] == 1)
-      _multiply[var] += getLcm()[var] - 1;
+	msm[var] = getLcm()[var] - 1;
+	_multiply[var] += msm[var];
   }
 
   for (size_t var = 0; var < _varCount; ++var) {
     if ((*it)[var] == 1) {
-      (*it)[var] = 0;
-      if (!getSubtract().contains(*it)) {
-	_multiply[var] -= getLcm()[var] - 1;
-	consumer->consume(_multiply);
-	_multiply[var] += getLcm()[var] - 1;
+	  msm[var] = 0; // try *it as var-label
+      if (!getSubtract().contains(msm)) {
+		_multiply[var] -= getLcm()[var] - 1;
+		consumer->consume(_multiply);
+		_multiply[var] += getLcm()[var] - 1;
       }
-      (*it)[var] = 1;
+	  msm[var] = getLcm()[var] - 1;
     }
   }
 }

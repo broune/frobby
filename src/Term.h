@@ -155,6 +155,13 @@ inline int lexCompare(const Exponent* a, const Exponent* b,
   return 0;
 }
 
+inline bool equals(const Exponent* a, const Exponent* b, size_t varCount) {
+  for (size_t var = 0; var < varCount; ++var)
+	if (a[var] != b[var])
+	  return false;
+  return true;
+}
+
 // Defines reverse lexicographic order on exponents.
 inline int reverseLexCompare(const Exponent* a, const Exponent* b,
 		   size_t varCount) {
@@ -238,10 +245,7 @@ class Term {
   }
 
   bool operator==(const Exponent* term) const {
-    for (size_t var = 0; var < _varCount; ++var)
-      if (_exponents[var] != term[var])
-	return false;
-    return true;
+	return equals(_exponents, term, _varCount);
   }
 
   Term& operator=(const Term& term) {
@@ -288,9 +292,9 @@ class Term {
     ASSERT(_varCount == a._varCount);
     ASSERT(_varCount == b._varCount);
     ::lcm(_exponents + position,
-	  a._exponents + position,
-	  b._exponents + position,
-	  _varCount - position);
+		  a._exponents + position,
+		  b._exponents + position,
+		  _varCount - position);
   }
 
   void lcm(const Term& a, const Term& b) {
@@ -487,8 +491,8 @@ class Term {
 
     bool operator()(const Exponent* a, const Exponent* b) const {
       for (size_t var = 0; var < _varCount; ++var)
-	if (a[var] != b[var])
-	  return false;
+		if (a[var] != b[var])
+		  return false;
       return true;
     }
 

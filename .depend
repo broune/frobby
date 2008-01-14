@@ -182,7 +182,8 @@ $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/TermConsumer.h src/TermTranslator.h src/Ideal.h src/Partition.h \
   src/Slice.h src/SliceStrategy.h src/IndependenceSplitter.h \
   src/Projection.h
-$(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h
+$(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h \
+  src/Minimizer.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
   src/Term.h
 $(outdir)IntersectFacade.o: src/IntersectFacade.cpp src/stdinc.h \
@@ -236,3 +237,4 @@ $(outdir)Fourti2IOHandler.o: src/Fourti2IOHandler.cpp src/stdinc.h \
   src/VarNames.h src/Scanner.h src/BigIdeal.h
 $(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h \
   src/IOHandler.h src/TermConsumer.h src/VarNames.h src/BigIdeal.h
+$(outdir)Minimizer.o: src/Minimizer.cpp src/stdinc.h src/Minimizer.h src/Term.h
