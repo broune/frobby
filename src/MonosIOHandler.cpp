@@ -81,7 +81,12 @@ void MonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
     do {
       readTerm(ideal, scanner);
     } while (scanner.match(','));
-    scanner.expect(']');
+	if (!scanner.match(']')) {
+	  if (scanner.peekIdentifier())
+		scanner.expect('*');
+	  else
+		scanner.expect(']');
+	}
   }
   scanner.expect(';');
 }

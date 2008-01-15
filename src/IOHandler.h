@@ -19,6 +19,8 @@ class IOHandler {
 
   virtual void readIdeal(Scanner& in, BigIdeal& ideal) = 0;
   virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom) = 0;
+  virtual void readTerm(Scanner& in, const VarNames& names,
+						vector<mpz_class>& term);
 
   virtual void writeIdeal(FILE* out, const BigIdeal& ideal);
   virtual void writeIdeal(FILE* out, const Ideal& ideal,

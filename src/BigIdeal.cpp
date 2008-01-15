@@ -121,6 +121,17 @@ const vector<mpz_class>& BigIdeal::getTerm(size_t term) const {
   return _terms[term];
 }
 
+void BigIdeal::getLcm(vector<mpz_class>& lcm) const {
+  lcm.clear();
+  lcm.resize(getVarCount());
+
+  for (vector<vector<mpz_class> >::const_iterator it = _terms.begin();
+	   it != _terms.end(); ++it)
+	for (size_t var = 0; var < getVarCount(); ++var)
+	  if (lcm[var] < (*it)[var])
+		lcm[var] = (*it)[var];
+}
+
 bool BigIdeal::operator==(const BigIdeal& b) const {
   return _terms == b._terms;
 }

@@ -1,0 +1,12 @@
+../../$frobby alexdual < random > random.dual 2> /dev/null
+../../$frobby analyze -printLcm < random >> random.dual 2> /dev/null
+../../$frobby alexdual < random.dual 2> /dev/null|../../$frobby format -canon 2> /dev/null |diff - random
+
+if [ $? != 0 ]
+then
+  echo
+  echo Random test failed.
+  exit 1
+fi
+
+echo -n .

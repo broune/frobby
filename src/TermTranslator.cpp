@@ -21,7 +21,7 @@ TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal,
 }
 
 TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
-			       vector<Ideal*>& ideals) {
+							   vector<Ideal*>& ideals) {
   ASSERT(!bigIdeals.empty());
 
   initialize(bigIdeals, true);
@@ -90,6 +90,13 @@ void extractExponents(const vector<BigIdeal*>& ideals,
   size_t size = exponentRefs.size();
   for (size_t e = 0; e < size; ++e)
     exponents[e] = *(exponentRefs[e]);
+}
+
+void TermTranslator::clearStrings() {
+  for (size_t i = 0; i < _stringExponents.size(); ++i)
+    for (size_t j = 0; j < _stringExponents[i].size(); ++j)
+      delete[] _stringExponents[i][j];
+  _stringExponents.clear();
 }
 
 void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
@@ -171,13 +178,31 @@ void TermTranslator::addArtinianPowers(Ideal& ideal) const {
   }
 }
 
+void TermTranslator::dualize(const vector<mpz_class>& a) {
+  bool hasStrings = !_stringExponents.empty();
+  if (hasStrings)
+	clearStrings();
+
+  for (size_t var = 0; var < _exponents.size(); ++var) {
+    for (size_t exp = 0; exp < _exponents[var].size(); ++exp) {
+	  ASSERT(_exponents[var][exp] <= a[var]);
+
+	  if (_exponents[var][exp] != 0)
+		_exponents[var][exp] = a[var] - _exponents[var][exp] + 1;
+	}
+  }
+
+  if (hasStrings)
+	makeStrings();
+}
+
 void TermTranslator::print(FILE* file) const {
   fputs("TermTranslator(\n", file);
   for (size_t variable = 0; variable < _exponents.size(); ++variable) {
     fprintf(file, " variable %lu: ", (unsigned long)(variable + 1));
     for (size_t e = 0; e < _exponents.size(); ++e) {
       if (e != 0)
-	fputc(' ', file);
+		fputc(' ', file);
       gmp_fprintf(file, "%Zd", _exponents[variable][e].get_mpz_t());
     }
     fputc('\n', file);
@@ -196,13 +221,13 @@ void TermTranslator::makeStrings() const {
       char* str = 0;
 
       if (_exponents[i][j] != 0) {
-	stringstream out;
-	out << _names.getName(i);
-	if (_exponents[i][j] != 1) 
-	  out << '^' << _exponents[i][j];
+		stringstream out;
+		out << _names.getName(i);
+		if (_exponents[i][j] != 1) 
+		  out << '^' << _exponents[i][j];
       
-	str = new char[out.str().size() + 1];
-	strcpy(str, out.str().c_str());
+		str = new char[out.str().size() + 1];
+		strcpy(str, out.str().c_str());
       }
       _stringExponents[i][j] = str;
     }
@@ -210,9 +235,7 @@ void TermTranslator::makeStrings() const {
 }
 
 TermTranslator::~TermTranslator() {
-  for (size_t i = 0; i < _stringExponents.size(); ++i)
-    for (size_t j = 0; j < _stringExponents[i].size(); ++j)
-      delete[] _stringExponents[i][j];
+  clearStrings();
 }
 
 const mpz_class& TermTranslator::

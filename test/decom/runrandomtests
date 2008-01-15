@@ -1,0 +1,13 @@
+while true
+do
+  ./makerandom
+  ./runrandomtest
+
+  if [ $? != 0 ]
+  then
+    exit 1
+  fi
+
+  rm random random.label random.mid random.old
+  echo -n .
+done

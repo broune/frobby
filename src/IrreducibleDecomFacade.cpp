@@ -19,6 +19,7 @@
 #include "DecomRecorder.h"
 #include "TermGrader.h"
 #include "TermConsumer.h"
+#include "IdealFacade.h"
 
 IrreducibleDecomFacade::
 IrreducibleDecomFacade(bool printActions,
@@ -29,6 +30,19 @@ IrreducibleDecomFacade(bool printActions,
 
 void IrreducibleDecomFacade::
 computeIrreducibleDecom(Ideal& ideal, TermConsumer* consumer) {
+  computeIrreducibleDecom(ideal, consumer, false);
+}
+
+void IrreducibleDecomFacade::
+computeIrreducibleDecom(Ideal& ideal,
+						TermConsumer* consumer,
+						bool preMinimized) {
+  if (!_parameters.getMinimal() && !preMinimized) {
+	beginAction("Minimizing input ideal.");
+	ideal.minimize();
+	endAction();
+  }
+
   beginAction("Computing irreducible decomposition.");
 
   if (ideal.contains(Term(ideal.getVarCount()))) {
@@ -80,25 +94,108 @@ computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out) {
   
   endAction();
 
-  computeIrreducibleDecom(ideal, consumer);
+  computeIrreducibleDecom(ideal, consumer, false);
+}
+
+void IrreducibleDecomFacade::
+computeAlexanderDual(BigIdeal& bigIdeal,
+					 const vector<mpz_class>& point,
+					 FILE* out) {
+  ASSERT(point.size() == bigIdeal.getVarCount());
+  computeAlexanderDual(bigIdeal, point, false, out);
+}
+
+void IrreducibleDecomFacade::
+computeAlexanderDual(BigIdeal& bigIdeal, FILE* out) {
+  vector<mpz_class> dummy;
+  computeAlexanderDual(bigIdeal, dummy, true, out);
+}
+
+void IrreducibleDecomFacade::
+computeAlexanderDual(BigIdeal& bigIdeal,
+					 const vector<mpz_class>& pointParameter,
+					 bool useLcm,
+					 FILE* out) {
+  if (!_parameters.getUseSlice()) {
+	// This is to avoid having to deal with the special cases the
+	// implementation of the label algorithm do not deal with itself.
+	fputs("ERROR: Only the slice algorithm can be used to compute "
+		  "the Alexander dual", stderr);
+	exit(1);
+  }
+
+  // We have to remove the non-minimal generators before we take the
+  // lcm, since the Alexander dual works on the lcm of only the
+  // minimal generators.
+  if (!_parameters.getMinimal()) {
+	IdealFacade facade(isPrintingActions());
+	facade.sortAllAndMinimize(bigIdeal);
+  }
+
+  beginAction("Preparing to compute Alexander dual.");
+
+  vector<mpz_class> lcm(bigIdeal.getVarCount());
+  bigIdeal.getLcm(lcm);
+
+  vector<mpz_class> point;
+
+  if (useLcm)
+	point = lcm;
+  else {
+	ASSERT(pointParameter.size() == bigIdeal.getVarCount());
+	point = pointParameter;
+	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+	  if (point[var] < lcm[var]) {
+		fputs("ERROR: The specified point to dualize on is not divisible by the\n"
+			  "least common multiple of the minimal generators of the ideal.\n", stderr);
+		exit(1);
+	  }
+	}
+  }
+
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal);
+  translator.dualize(point);
+  bigIdeal.clear();
+
+  if (ideal.getGeneratorCount() > 0)
+    translator.addArtinianPowers(ideal);
+
+  TermConsumer* consumer;
+  if (_parameters.getDoBenchmark())
+    consumer = new TermIgnorer();
+  else
+    consumer = IOHandler::getIOHandler("monos")->
+      createWriter(out, &translator);
+
+  endAction();
+
+  computeIrreducibleDecom(ideal, consumer, true);
 }
 
 void IrreducibleDecomFacade::
 computeFrobeniusNumber(const vector<mpz_class>& instance,
 		       BigIdeal& bigIdeal, 
 		       mpz_class& frobeniusNumber) {
-  beginAction("Optimizing over irreducible decomposition.");
-
   if (instance.size() == 2) {
     frobeniusNumber = instance[0] * instance[1] - instance[0] - instance[1];
     return;
   }
 
+  beginAction("Preparing to compute Frobenius number.");
   Ideal ideal(bigIdeal.getVarCount());
   TermTranslator translator(bigIdeal, ideal, false);
   bigIdeal.clear();
   translator.addArtinianPowers(ideal);
+  endAction();
 
+  if (!_parameters.getMinimal()) {
+	beginAction("Minimizing input ideal.");
+	ideal.minimize();
+	endAction();
+  }
+
+  beginAction("Optimizing over irreducible decomposition.");
   if (_parameters.getUseSlice()) {
     Ideal maxSolution(ideal.getVarCount());
     DecomRecorder recorder(&maxSolution);
@@ -122,7 +219,6 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
     ASSERT(!_parameters.getUseIndependence());
     runLabelAlgorithm(ideal, strategy);
   }
-
   endAction();
 }
 

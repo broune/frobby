@@ -34,6 +34,14 @@ IdealWriter::IdealWriter(FILE* file, const TermTranslator* translator):
 IdealWriter::~IdealWriter() {
 }
 
+void IOHandler::readTerm(Scanner& in,
+						 const VarNames& names,
+						 vector<mpz_class>& term) {
+  BigIdeal tmp(names);
+  readTerm(tmp, in);
+  term = tmp.getTerm(0);
+}
+
 void IdealWriter::writeTerm(const vector<const char*>& term, FILE* file) {
   char separator = ' ';
   size_t varCount = term.size();

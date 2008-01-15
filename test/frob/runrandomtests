@@ -3,13 +3,13 @@
 while true
 do
   ./makerandom
-  ./runtest random.frob
+  ./runtest random
 
   if [ $? != 0 ]
   then
-    mv random.frob $1
-    mv random.frob.out.gro $1.out.gro
-    mv random.frob.ref $1.ref
+    mv random $1
+    mv random.out.gro $1.out.gro
+    mv random.ref $1.ref
     exit 1
   fi
 done

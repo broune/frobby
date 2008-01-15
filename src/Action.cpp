@@ -13,6 +13,7 @@
 #include "IntersectAction.h"
 #include "AssociatedPrimesAction.h"
 #include "PrimaryDecomAction.h"
+#include "AlexanderDualAction.h"
 
 Action::ActionContainer Action::_actions;
 
@@ -63,6 +64,9 @@ const Action::ActionContainer& Action::getActions() {
 
     //static PrimaryDecomAction primaryDecom;
     //_actions.push_back(&primaryDecom);
+
+	static AlexanderDualAction alexanderDual;
+	_actions.push_back(&alexanderDual);
   }
 
   return _actions;

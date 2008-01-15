@@ -11,6 +11,8 @@ class Fourti2IOHandler : public IOHandler {
 public:
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
+  virtual void readTerm(Scanner& in, const VarNames& names,
+						vector<mpz_class>& term);
 
   virtual void writeIdeal(FILE* out, const BigIdeal& ideal);
 

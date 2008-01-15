@@ -1,0 +1,1 @@
+../../$frobby genideal -varCount 8 -genCount 100 -expRange 10  |../../$frobby format -canon > random 2> /dev/null

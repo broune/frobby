@@ -28,7 +28,8 @@ rawSources = $(patsubst %, label/%, $(labelSources))					\
   IndependenceSplitter.cpp Projection.cpp								\
   SliceStrategy.cpp lattice.cpp											\
   LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp			\
-  TermGrader.cpp Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp
+  TermGrader.cpp Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp	\
+  AlexanderDualAction.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\

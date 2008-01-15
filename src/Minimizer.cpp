@@ -27,6 +27,26 @@ typedef vector<Exponent*>::iterator iterator;
   return newEnd;
 }
 
+::iterator twoVarMinimize(::iterator begin, ::iterator end) {
+  if (begin == end)
+	return end;
+
+  std::sort(begin, end, Term::LexComparator(2));
+
+  ::iterator last = begin;
+  ::iterator it = begin;
+  ++it;
+  for (; it != end; ++it) {
+	if ((*it)[1] < (*last)[1]) {
+	  ++last;
+	  *last = *it;
+	}
+  }
+
+  ++last;
+  return last;
+}
+
 class TreeNode {
   typedef vector<Exponent*>::iterator iterator;
 
@@ -189,6 +209,8 @@ private:
 };
 
 Minimizer::iterator Minimizer::minimize(iterator begin, iterator end) const {
+  if (_varCount == 2)
+	return twoVarMinimize(begin, end);
   if (distance(begin, end) < 1000 || _varCount == 0)
 	return simpleMinimize(begin, end, _varCount);
 

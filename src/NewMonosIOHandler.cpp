@@ -98,7 +98,6 @@ void NewMonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner)
   scanner.expect("lex-order");
 
   VarNames names;
-  string varName;
   while (!scanner.match(')')) {
 	const char* varName = scanner.readIdentifier();
     if (names.contains(varName)) {

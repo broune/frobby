@@ -5,6 +5,13 @@
 #include "IOFacade.h"
 #include "IdealFacade.h"
 
+AnalyzeAction::AnalyzeAction():
+  _printLcm
+("printLcm",
+ "Print the least common multiple of the generators.",
+ false) {
+}
+
 const char* AnalyzeAction::getName() const {
   return "analyze";
 }
@@ -23,6 +30,7 @@ Action* AnalyzeAction::createNew() const {
 
 void AnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
+  parameters.push_back(&_printLcm);
 }
 
 void AnalyzeAction::perform() {
@@ -32,5 +40,7 @@ void AnalyzeAction::perform() {
   ioFacade.readIdeal(stdin, ideal);
 
   IdealFacade idealFacade(_printActions);
-  idealFacade.printAnalysis(stdout, ideal);
+  if (_printLcm)
+	idealFacade.printLcm(stdout, ideal);
+  idealFacade.printAnalysis(stderr, ideal);
 }
