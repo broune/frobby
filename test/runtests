@@ -56,3 +56,8 @@ echo -n "latformat: "
 cd test/latformat
 time ./runtests
 cd ../..
+
+echo -n "alexdual: "
+cd test/alexdual
+time ./runtests
+cd ../..

@@ -24,6 +24,8 @@ public:
   vector<mpz_class>& getLastTermRef();
   const vector<mpz_class>& getTerm(size_t term) const;
 
+  void getLcm(vector<mpz_class>& lcm) const;
+
   const mpz_class& getExponent(size_t term, size_t var) const;
   mpz_class& getExponent(size_t term, size_t var);
   void setExponent(size_t term, size_t var, const mpz_class& exp);

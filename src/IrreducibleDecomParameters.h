@@ -11,6 +11,7 @@ class IrreducibleDecomParameters : public ParameterGroup {
 
   void setUseIndependence(bool value);
   void setSplit(const string& split);
+  void setMinimal(bool value);
 
   bool getDoBenchmark() const;
   bool getPrintDebug() const;
@@ -20,6 +21,7 @@ class IrreducibleDecomParameters : public ParameterGroup {
   bool getUseBound() const;
   bool getUseIndependence() const;
   bool getUseSlice() const;
+  bool getMinimal() const;
   
   const string& getSplit() const;
 
@@ -32,6 +34,7 @@ class IrreducibleDecomParameters : public ParameterGroup {
   BoolParameter _useBound;
   BoolParameter _useIndependence;
   BoolParameter _useSlice;
+  BoolParameter _minimal;
 
   StringParameter _split;
 };

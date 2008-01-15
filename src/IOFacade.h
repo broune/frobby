@@ -21,6 +21,10 @@ class IOFacade : private Facade {
     (FILE* in, BigIdeal& ideal, vector<mpz_class>& instance);
   void writeFrobeniusInstance(FILE* out, vector<mpz_class>& instance);
 
+  bool readAlexanderDualInstance
+	(FILE* in, BigIdeal& ideal, vector<mpz_class>& term,
+	 const char* format = "monos");
+
   bool isValidLatticeFormat(const char* format);
   void readLattice(FILE* in, BigIdeal& ideal, const char* format);
   void writeLattice(FILE* out, const BigIdeal& ideal, const char* format);

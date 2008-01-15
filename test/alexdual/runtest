@@ -1,0 +1,13 @@
+#!/bin/bash
+
+../../$frobby alexdual $2 $3 $4 $5 $6 $7 < $1 2> /dev/null | \
+../../$frobby format -canon 2> /dev/null| diff - $1.ref
+
+if [ $? != 0 ]
+then
+  echo
+  echo Test $1 failed
+  exit 1
+fi
+
+echo -n .

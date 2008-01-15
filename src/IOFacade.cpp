@@ -65,6 +65,27 @@ void IOFacade::writeIdeal(FILE* out, BigIdeal& ideal, const char* format) {
   endAction();
 }
 
+bool IOFacade::readAlexanderDualInstance
+(FILE* in, BigIdeal& ideal, vector<mpz_class>& term, const char* format) {
+  beginAction("Reading Alexander dual input.");
+
+  IOHandler* handler = IOHandler::getIOHandler(format);
+  ASSERT(handler != 0);
+
+  Scanner scanner(in);
+  handler->readIdeal(scanner, ideal);
+
+  bool pointSpecified = false;
+  if (!scanner.matchEOF()) {
+	handler->readTerm(scanner, ideal.getNames(), term);
+	pointSpecified = true;
+  }
+
+  endAction();  
+
+  return pointSpecified;
+}
+
 void IOFacade::
 readFrobeniusInstance(FILE* in, vector<mpz_class>& instance) {
   beginAction("Reading Frobenius instance.");

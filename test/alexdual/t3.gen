@@ -1,0 +1,13 @@
+vars a, b, c, d;
+[
+ a^2*b,
+ a*b*c,
+ a*c*d,
+ a*b^2,
+ a*b*d,
+ b^2*c,
+ b*c*d,
+ b*c^2,
+ c^2*d,
+ c*d^2
+];

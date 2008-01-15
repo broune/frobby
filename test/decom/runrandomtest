@@ -1,0 +1,16 @@
+
+../../$frobby irrdecom -split label < random 2> /dev/null|../../$frobby format -canon > random.label 2> /dev/null
+
+../../$frobby irrdecom -split midart < random 2>/dev/null|../../$frobby format -canon > random.mid 2> /dev/null
+
+../../$frobby irrdecom -slice off < random 2>/dev/null|../../$frobby format -canon -unique > random.old 2> /dev/null
+
+
+diff random.label random.mid
+
+if [ $? != 0 ]
+then
+  exit 1
+fi
+
+diff random.label random.old

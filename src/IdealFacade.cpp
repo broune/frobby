@@ -69,11 +69,10 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
 }
 
 void IdealFacade::printAnalysis(FILE* out, BigIdeal& ideal) {
-  beginAction("Computing and printing analyze.");
+  beginAction("Computing and printing analysis.");
 
   fprintf(out, "%u generators\n", (unsigned int)ideal.getGeneratorCount());
   fprintf(out, "%u variables\n", (unsigned int)ideal.getVarCount());
-  fprintf(out, "TODO: implement more analyses.\n");
   fflush(out);
 
 /*
@@ -102,5 +101,30 @@ degree
 
 */
 
+  endAction();
+}
+
+void IdealFacade::printLcm(FILE* out, BigIdeal& ideal) {
+  beginAction("Computing lcm");
+
+  // TODO: integrate this with the regular IO system
+  vector<mpz_class> lcm;
+  ideal.getLcm(lcm);
+  if (lcm == vector<mpz_class>(lcm.size()))
+	fputs("1\n", out);
+  else {
+	const char* pre = "";
+	for (size_t var = 0; var < ideal.getVarCount(); ++var) {
+	  if (lcm[var] == 0)
+		continue;
+	  gmp_fprintf(out, lcm[var] == 1 ? "%s%s" : "%s%s^%Zd",
+				  pre,
+				  ideal.getNames().getName(var).c_str(),
+				  lcm[var].get_mpz_t());
+	  pre = "*";
+	}
+	fputc('\n', out);
+  }
+  
   endAction();
 }

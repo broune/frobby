@@ -53,9 +53,16 @@ public:
 
   const VarNames& getNames() const;
 
+  // Replaces var^v by var^(a[i] - v) except that var^0 is left
+  // alone. It is a precondition that a[i] be larger than or equal to
+  // the mapped values.
+  void dualize(const vector<mpz_class>& a);
+
   void print(FILE* file) const;
 
 private:
+  void clearStrings();
+
   TermTranslator(const TermTranslator&); // not suported
   TermTranslator& operator=(const TermTranslator&); // not supported
 

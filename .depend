@@ -64,7 +64,8 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
   src/GenerateIdealParameters.h src/IntegerParameter.h \
   src/GenerateFrobeniusAction.h src/FrobeniusAction.h src/AnalyzeAction.h \
   src/LatticeFormatAction.h src/IntersectAction.h \
-  src/AssociatedPrimesAction.h src/PrimaryDecomAction.h
+  src/AssociatedPrimesAction.h src/PrimaryDecomAction.h \
+  src/AlexanderDualAction.h
 $(outdir)IrreducibleDecomAction.o: src/IrreducibleDecomAction.cpp src/stdinc.h \
   src/IrreducibleDecomAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
@@ -238,3 +239,8 @@ $(outdir)Fourti2IOHandler.o: src/Fourti2IOHandler.cpp src/stdinc.h \
 $(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h \
   src/IOHandler.h src/TermConsumer.h src/VarNames.h src/BigIdeal.h
 $(outdir)Minimizer.o: src/Minimizer.cpp src/stdinc.h src/Minimizer.h src/Term.h
+$(outdir)AlexanderDualAction.o: src/AlexanderDualAction.cpp src/stdinc.h \
+  src/AlexanderDualAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
+  src/StringParameter.h src/BigIdeal.h src/VarNames.h \
+  src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h src/IOFacade.h
