@@ -15,12 +15,10 @@ const char* IrreducibleDecomAction::getShortDescription() const {
 
 const char* IrreducibleDecomAction::getDescription() const {
   return
-"Compute the irredundant irreducible decomposition of the input monomial ideal.\n"
-"Note that the input generating set MUST be minimal to ensure correct answers.\n"
-"\n"
-"The decomposition is computed using the Label Algorithm. This algorithm is\n"
-"described in the paper `The Label Algorithm For Irreducible Decomposition of\n"
-"Monomial Ideals', which is available at http://www.broune.com/ .";
+"Compute the irredundant irreducible decomposition of the input monomial ideal.\n\n"
+"The decomposition is computed using the Slice Algorithm. This algorithm is\n"
+"described in the paper `The Slice Algorithm For Irreducible Decomposition of\n"
+"Monomial Ideals', which is available at www.broune.com . It is also possible\n""to use the older Label algorithm, though this is not as efficient.";
 }
 
 Action* IrreducibleDecomAction::createNew() const {

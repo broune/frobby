@@ -48,7 +48,7 @@ bool HelpAction::processNonParameter(const char* str) {
 }
 
 void HelpAction::displayTopic() {
-  fprintf(stdout, "Action: %s\n\n%s\n",
+  fprintf(stdout, "Displaying information on action: %s\n\n%s\n",
 	  _topic->getName(), _topic->getDescription());
 
   vector<Parameter*> parameters;
@@ -81,7 +81,7 @@ void HelpAction::perform() {
 "conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General\n"
 "Public License version 2.0 in the file COPYING for details.\n"
 "\n"
-"Frobby does a number of computations related to monomial ideals. You\n"
+"Frobby performs a number of computations related to monomial ideals. You\n"
 "run it by typing `frobby ACTION', where ACTION is one of the following.\n\n",
 	  constants::version);
 
@@ -112,6 +112,8 @@ void HelpAction::perform() {
   fputs(
 "\n"
 "Type 'frobby help ACTION' to get more details on a specific action.\n"
-"Note that all input and output is done via the standard streams.\n", stdout);
+"Note that all input and output is done via the standard streams.\n"
+"See www.broune.com for further information and new versions of Frobby.\n",
+stdout);
   fflush(stdout);
 }

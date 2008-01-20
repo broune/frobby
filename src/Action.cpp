@@ -32,20 +32,20 @@ const Action::ActionContainer& Action::getActions() {
     static IrreducibleDecomAction irreducibleDecom;
     _actions.push_back(&irreducibleDecom);
 
-    static FormatAction format;
-    _actions.push_back(&format);
+	static AlexanderDualAction alexanderDual;
+	_actions.push_back(&alexanderDual);
 
-    static HelpAction help;
-    _actions.push_back(&help);
+    static AssociatedPrimesAction associatedPrimes;
+    _actions.push_back(&associatedPrimes);
 
-    static AnalyzeAction analyze;
-    _actions.push_back(&analyze);
+    static IntersectAction intersect;
+    _actions.push_back(&intersect);
 
     static GenerateIdealAction generateIdeal; 
     _actions.push_back(&generateIdeal);
 
-    static GenerateFrobeniusAction generateFrobenius;
-    _actions.push_back(&generateFrobenius);
+    static FormatAction format;
+    _actions.push_back(&format);
 
     static FrobeniusAction frobenius;
     _actions.push_back(&frobenius);
@@ -53,20 +53,20 @@ const Action::ActionContainer& Action::getActions() {
     static DynamicFrobeniusAction dynamicFrobenius;
     _actions.push_back(&dynamicFrobenius);
 
+    static GenerateFrobeniusAction generateFrobenius;
+    _actions.push_back(&generateFrobenius);
+
+    static AnalyzeAction analyze;
+    _actions.push_back(&analyze);
+
     static LatticeFormatAction latticeFormat;
     _actions.push_back(&latticeFormat);
 
-    static IntersectAction intersect;
-    _actions.push_back(&intersect);
-
-    static AssociatedPrimesAction associatedPrimes;
-    _actions.push_back(&associatedPrimes);
+    static HelpAction help;
+    _actions.push_back(&help);
 
     //static PrimaryDecomAction primaryDecom;
     //_actions.push_back(&primaryDecom);
-
-	static AlexanderDualAction alexanderDual;
-	_actions.push_back(&alexanderDual);
   }
 
   return _actions;

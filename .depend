@@ -126,7 +126,7 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/StringParameter.h src/BigIdeal.h src/IOFacade.h \
   src/TermTranslator.h src/Ideal.h src/Term.h src/SliceAlgorithm.h \
   src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h \
-  src/TermGrader.h
+  src/TermGrader.h src/IdealFacade.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \

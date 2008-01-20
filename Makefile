@@ -66,7 +66,7 @@ endif
 
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
-program = frobby.exe
+program = frobby
 
 # ***** Compilation
 
@@ -105,6 +105,8 @@ endif
 $(outdir)$(program): $(objs) | $(outdir)
 ifneq ($(MODE), analysis)
 	g++ $(objs) $(ldflags) -o $(outdir)$(program)
+	mv -f $(outdir)$(program).exe $(outdir)$(program); echo
+
 endif
 ifeq ($(MODE), release)
 	strip $(outdir)$(program)
@@ -145,10 +147,10 @@ commit: test
 
 distribution:
 	make depend
-	make fastdistribution VER="$(VER)"
+	make realdistribution VER="$(VER)"
 
 fastdistribution: tidy
-	cd ..;tar --create --file=frobby_v$(ver).tar.gz frobby/ --gzip \
+	cd ..;tar --create --file=frobby_v$(VER).tar.gz frobby/ --gzip \
 	  --exclude=*/data/* --exclude=*/data \
 	  --exclude=*/.hg/* --exclude=*/.hg --exclude=.hgignore\
 	  --exclude=*/bin/* --exclude=*/bin \
@@ -165,4 +167,14 @@ fastdistribution: tidy
       --exclude=gmon.out \
       --exclude=*.stackdump
 	mv ../frobby_v$(VER).tar.gz .
+	ls -l frobby_v$(VER).tar.gz
+
+realdistribution: tidy
+	rm -fr frobby_v$(VER).tar.gz frobby_v$(VER)
+	mkdir frobby_v$(VER)
+	cp -r COPYING Makefile src test frobby_v$(VER)
+	mkdir frobby_v$(VER)/4ti2
+	./addheaders `find frobby_v$(VER)/src|grep "\(.*\.h\)\|\(.*.cpp\)"`
+	tar --create --gzip --file=frobby_v$(VER).tar.gz frobby_v$(VER)/
+	rm -fr frobby_v$(VER)	
 	ls -l frobby_v$(VER).tar.gz

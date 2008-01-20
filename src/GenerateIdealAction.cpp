@@ -15,8 +15,9 @@ const char* GenerateIdealAction::getShortDescription() const {
 
 const char* GenerateIdealAction::getDescription() const {
   return
-    "Generate a random monomial ideal. The generated ideal may have less\n"
-    "than the requested number of minimial generators.";
+    "Generate a random monomial ideal. In certain rare cases the generated ideal\n"
+"may have less than the requested number of minimial generators. This can be\n"
+"alleviated by increasing the exponent range or the number of variables.";
 }
 
 Action* GenerateIdealAction::createNew() const {
