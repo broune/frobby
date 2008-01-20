@@ -9,7 +9,7 @@
 AssociatedPrimesAction::AssociatedPrimesAction():
   _algorithm
 ("alg",
- "The algorithm used. Only current options is irrdecom.",
+ "The algorithm used. The only current option is irrdecom.",
  "irrdecom") {
 }
 
@@ -18,15 +18,15 @@ const char* AssociatedPrimesAction::getName() const {
 }
 
 const char* AssociatedPrimesAction::getShortDescription() const {
-  return "Compute the primes associated to a monomial ideal.";
+  return "Compute the associated primes of the input ideal.";
 }
 
 const char* AssociatedPrimesAction::getDescription() const {
   return
-    "Computes the associated prime ideals of the input monomial ideal. The\n"
-    "output is represented as a squarefree monomial ideal. Each minimal\n"
-    "generator of this square free ideal represents the associated prime\n"
-    "that it generates.";
+"Computes the associated prime ideals of the input monomial ideal. The\n"
+"computation is accomplished using irreducible decomposition. The quality of the\n"
+"algorithm for computing associated primes is expected to be much improved in a\n"
+"future version of Frobby.";
 }
 
 Action* AssociatedPrimesAction::createNew() const {
@@ -34,7 +34,7 @@ Action* AssociatedPrimesAction::createNew() const {
 }
 
 void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
-  parameters.push_back(&_algorithm);
+  //parameters.push_back(&_algorithm); TODO: remove this paramter entirely
   Action::obtainParameters(parameters);
 }
 

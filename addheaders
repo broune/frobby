@@ -1,0 +1,4 @@
+for f in $*
+do
+	./addheader $f;
+done;

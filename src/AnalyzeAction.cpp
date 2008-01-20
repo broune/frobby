@@ -17,7 +17,7 @@ const char* AnalyzeAction::getName() const {
 }
 
 const char* AnalyzeAction::getShortDescription() const {
-  return "Compute and display information about input ideal.";
+  return "Display information about the input ideal.";
 }
 
 const char* AnalyzeAction::getDescription() const {

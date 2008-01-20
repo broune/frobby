@@ -10,17 +10,15 @@ const char* IntersectAction::getName() const {
 }
 
 const char* IntersectAction::getShortDescription() const {
-  return "Intersect monomial ideals.";
+  return "Intersect the input ideals.";
 }
 
 const char* IntersectAction::getDescription() const {
   return
-    "Computes the intersection of the ideals in the input. These ideals\n"
-    "must be represented as the concatenation of ideals, where the\n"
-    "representation of each ideal must list the same variables in the\n"
-    "same order.\n"
+"Computes the intersection of the input ideals. Simply concatenate the textual\n"
+"representations of the ideals in order to intersect them.\n"
     "\n"
-    "Do note that this operation is currently implemented in a slow way.\n";
+    "Note that this operation is currently implemented in a rather slow way.";
 }
 
 Action* IntersectAction::createNew() const {

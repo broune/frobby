@@ -242,9 +242,6 @@ void IrreducibleDecomFacade::
 runLabelAlgorithm(Ideal& ideal, Strategy* strategy) {
   ASSERT(strategy != 0);
 
-  if (_parameters.getPrintProgress())
-    strategy = Strategy::addDebugOutput(strategy);
-
   if (_parameters.getPrintStatistics())
     strategy = Strategy::addStatistics(strategy, ideal.getVarCount());
 

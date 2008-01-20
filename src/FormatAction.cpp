@@ -23,7 +23,7 @@ FormatAction::FormatAction():
 
   _sort
   ("sort",
-   "Sort generators according to the lexicographic order.",
+   "Sort generators according to the reverse lexicographic order.",
    false),
 
   _unique

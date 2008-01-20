@@ -10,16 +10,15 @@ const char* AlexanderDualAction::getName() const {
 }
 
 const char* AlexanderDualAction::getShortDescription() const {
-  return "Compute the alexander dual of the input ideal.";
+  return "Compute the Alexander dual of the input ideal.";
 }
 
 const char* AlexanderDualAction::getDescription() const {
   return
 "Compute the alexander dual of the input monomial ideal.\n"
-"Note that the input generating set MUST be minimal to ensure correct answers.\n"
 "\n"
-"The computation is done using irreducible decomposition, which is why there\n"
-"are a number of options related to that.";
+"The computation is done using irreducible decomposition, which is why there are\n"
+"a number of options related to that. See the help topic on irrdecom for details.";
 }
 
 Action* AlexanderDualAction::createNew() const {

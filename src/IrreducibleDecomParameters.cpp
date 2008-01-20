@@ -14,11 +14,6 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
    "Report what the algorithm does. Useful for debugging.",
    false),
   
-  _printProgress
-  ("progress",
-   "Periodically print how far the computation is along.",
-   false),
-  
   _printStatistics
   ("stats",
    "Print statistics on what the algorithm did.",
@@ -26,7 +21,7 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
   
   _skipRedundant
   ("skipRedundant",
-   "Eliminate some redundant computations. This is not always a win.",
+   "Eliminate redundant computations and output. (label only)",
    true),
   
     _useBound
@@ -55,16 +50,15 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
    "and maxart. Frobenius computations support the specialized strategy frob "
    "as well. (slice only)",
    "midart") {
-  addParameter(&_doBenchmark);
-  addParameter(&_printDebug);
-  addParameter(&_printProgress);
-  addParameter(&_printStatistics);
-  addParameter(&_skipRedundant);
-  addParameter(&_useBound);
-  addParameter(&_useIndependence);
-  addParameter(&_useSlice);
   addParameter(&_minimal);
   addParameter(&_split);
+  addParameter(&_doBenchmark);
+  addParameter(&_printStatistics);
+  addParameter(&_useSlice);
+  addParameter(&_useIndependence);
+  addParameter(&_printDebug);
+  addParameter(&_skipRedundant);
+  addParameter(&_useBound);
 }
 
 void IrreducibleDecomParameters::setUseIndependence(bool value) {
@@ -75,20 +69,12 @@ void IrreducibleDecomParameters::setSplit(const string& split) {
   _split = split;
 }
 
-void IrreducibleDecomParameters::setMinimal(bool value) {
-  _minimal = value;
-}
-
 bool IrreducibleDecomParameters::getDoBenchmark() const {
   return _doBenchmark;
 }
 
 bool IrreducibleDecomParameters::getPrintDebug() const {
   return _printDebug;
-}
-
-bool IrreducibleDecomParameters::getPrintProgress() const {
-  return _printProgress;
 }
 
 bool IrreducibleDecomParameters::getPrintStatistics() const {
