@@ -1,11 +1,11 @@
 #include "stdinc.h"
-#include "FormatAction.h"
+#include "TransformAction.h"
 
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "IdealFacade.h"
 
-FormatAction::FormatAction():
+TransformAction::TransformAction():
   _inputFormat
 ("iformat",
  "The input format. The available formats are monos, m2, 4ti2, null and newmonos.",
@@ -37,26 +37,25 @@ FormatAction::FormatAction():
    false) {
 }
 
-const char* FormatAction::getName() const {
-  return "format";
+const char* TransformAction::getName() const {
+  return "transform";
 }
 
-const char* FormatAction::getShortDescription() const {
+const char* TransformAction::getShortDescription() const {
   return "Change the representation of the input ideal.";
 }
 
-const char* FormatAction::getDescription() const {
+const char* TransformAction::getDescription() const {
   return
-    "By default, format simply writes the input ideal to output. A number\n"
-    "of parameters allows to change the representation of the ideal\n"
-    "in various ways before writing it out.";
+    "By default, transform simply writes the input ideal to output. A number\n"
+    "of parameters allows to transform the input ideal in varous ways.";
 }
 
-Action* FormatAction::createNew() const {
-  return new FormatAction();
+Action* TransformAction::createNew() const {
+  return new TransformAction();
 }
 
-void FormatAction::obtainParameters(vector<Parameter*>& parameters) {
+void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_inputFormat);
   parameters.push_back(&_outputFormat);
   parameters.push_back(&_canonicalize);
@@ -66,7 +65,7 @@ void FormatAction::obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
 }
 
-void FormatAction::perform() {
+void TransformAction::perform() {
   string iformat = _inputFormat.getValue();
   string oformat = _outputFormat.getValue();
 

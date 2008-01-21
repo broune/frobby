@@ -2,7 +2,7 @@
 #include "Action.h"
 
 #include "IrreducibleDecomAction.h"
-#include "FormatAction.h"
+#include "TransformAction.h"
 #include "HelpAction.h"
 #include "DynamicFrobeniusAction.h"
 #include "GenerateIdealAction.h"
@@ -44,8 +44,8 @@ const Action::ActionContainer& Action::getActions() {
     static GenerateIdealAction generateIdeal; 
     _actions.push_back(&generateIdeal);
 
-    static FormatAction format;
-    _actions.push_back(&format);
+    static TransformAction transform;
+    _actions.push_back(&transform);
 
     static FrobeniusAction frobenius;
     _actions.push_back(&frobenius);
@@ -128,8 +128,8 @@ void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
 
     if (tokens[i][0] != '-') {
       fprintf(stderr, "ERROR: Expected an option when reading "
-	      "\"%c\", but options start with a dash (-).\n",
-	      tokens[i][0]);
+	      "\"%s\", but options start with a dash (-).\n",
+	      tokens[i]);
       exit(1);
     }
 
