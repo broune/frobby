@@ -1,6 +1,6 @@
 #!/bin/bash
 
-../../$frobby format -minimize -canon < $1 2> /dev/null | diff - $1.ref
+../../$frobby transform -minimize -canon < $1 2> /dev/null | diff - $1.ref
 
 if [ $? != 0 ]
 then

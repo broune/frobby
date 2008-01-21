@@ -59,7 +59,7 @@ $(outdir)main.o: src/main.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
 $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomAction.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
-  src/StringParameter.h src/FormatAction.h src/HelpAction.h \
+  src/StringParameter.h src/TransformAction.h src/HelpAction.h \
   src/DynamicFrobeniusAction.h src/GenerateIdealAction.h \
   src/GenerateIdealParameters.h src/IntegerParameter.h \
   src/GenerateFrobeniusAction.h src/FrobeniusAction.h src/AnalyzeAction.h \
@@ -88,10 +88,10 @@ $(outdir)MonosIOHandler.o: src/MonosIOHandler.cpp src/stdinc.h \
   src/BigIdeal.h src/Scanner.h
 $(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
   src/TermTranslator.h src/Ideal.h src/Term.h
-$(outdir)FormatAction.o: src/FormatAction.cpp src/stdinc.h src/FormatAction.h \
-  src/Action.h src/BoolParameter.h src/Parameter.h src/StringParameter.h \
-  src/BigIdeal.h src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
-  src/IdealFacade.h
+$(outdir)TransformAction.o: src/TransformAction.cpp src/stdinc.h \
+  src/TransformAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
+  src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
+  src/Facade.h src/Timer.h src/IdealFacade.h
 $(outdir)Macaulay2IOHandler.o: src/Macaulay2IOHandler.cpp src/stdinc.h \
   src/Macaulay2IOHandler.h src/IOHandler.h src/TermConsumer.h \
   src/VarNames.h src/Scanner.h src/BigIdeal.h

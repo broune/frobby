@@ -1,13 +1,13 @@
-#ifndef FORMAT_ACTION_GUARD
-#define FORMAT_ACTION_GUARD
+#ifndef TRANSFORM_ACTION_GUARD
+#define TRANSFORM_ACTION_GUARD
 
 #include "Action.h"
 #include "StringParameter.h"
 #include "BoolParameter.h"
 
-class FormatAction : public Action {
+class TransformAction : public Action {
  public:
-  FormatAction();
+  TransformAction();
 
   virtual const char* getName() const;
   virtual const char* getShortDescription() const;

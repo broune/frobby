@@ -47,8 +47,8 @@ cd test/minimize
 time ./runtests
 cd ../..
 
-echo -n "format: "
-cd test/format
+echo -n "transform: "
+cd test/transform
 time ./runtests
 cd ../..
 
