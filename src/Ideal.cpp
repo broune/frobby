@@ -196,13 +196,13 @@ void Ideal::colonReminimize(const Term& by) {
 
 void Ideal::colonReminimize(size_t var, Exponent exp) {
   std::sort(_terms.begin(), _terms.end(),
-	    Term::DescendingSingleDegreeComparator(var, _varCount));
+			Term::DescendingSingleDegreeComparator(var, _varCount));
   size_t idealSize = _terms.size();
 
   // These can be kept without any further processing at all.
   size_t initialBlockEnd = 0;
   while (initialBlockEnd < idealSize &&
-	 _terms[initialBlockEnd][var] > exp) {
+		 _terms[initialBlockEnd][var] > exp) {
     _terms[initialBlockEnd][var] -= exp; // perform colon
     ++initialBlockEnd;
   }
@@ -230,8 +230,8 @@ void Ideal::colonReminimize(size_t var, Exponent exp) {
 
     for (size_t j = initialBlockEnd; j < previousBlockEnd; ++j) {
       if (::divides(_terms[j], _terms[i], _varCount)) {
-	remove = true;
-	break;
+		remove = true;
+		break;
       }
     }
     
