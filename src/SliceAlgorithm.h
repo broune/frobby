@@ -23,7 +23,6 @@ class SliceAlgorithm {
   void content(Slice& slice, bool simplifiedAndDependent = false);
 
   void labelSplit(Slice& slice);
-  void labelSplit2(Slice& slice);
   void pivotSplit(Slice& slice);
   bool independenceSplit(Slice& slice);
 
@@ -31,8 +30,9 @@ class SliceAlgorithm {
   SliceStrategy* _strategy;
 };
 
-// For getting a single MSM. This may fail if slice.getIdeal() is
-// not artinian, in which case the return value is false.
+// For getting a single Maximal Standard Monomial. This may fail if
+// slice.getIdeal() is not artinian, in which case the return value is
+// false.
 bool computeSingleMSM(const Slice& slice, Term& msm);
 
 #endif

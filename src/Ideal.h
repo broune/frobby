@@ -32,6 +32,7 @@ public:
   bool strictlyContains(const Term& term) const;
 
   bool isIrreducible() const;
+  bool isStronglyGeneric(); // Can change order of generators.
 
   void getLcm(Term& lcm) const;
   void getGcd(Term& gcd) const;

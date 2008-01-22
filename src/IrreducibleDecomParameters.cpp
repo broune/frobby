@@ -49,7 +49,7 @@ IrreducibleDecomParameters::IrreducibleDecomParameters():
    "The split selection strategy to use. Options are label, minart, midart "
    "and maxart. Frobenius computations support the specialized strategy frob "
    "as well. (slice only)",
-   "midart") {
+   "median") {
   addParameter(&_minimal);
   addParameter(&_split);
   addParameter(&_doBenchmark);

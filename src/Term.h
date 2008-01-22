@@ -17,8 +17,8 @@ inline void product(Exponent* res,
 //
 // a : b is read as "a colon b", and it is defined as lcm(a, b) / b.
 inline void colon(Exponent* res,
-		  const Exponent* a, const Exponent* b,
-		  size_t varCount) {
+				  const Exponent* a, const Exponent* b,
+				  size_t varCount) {
   for (size_t var = 0; var < varCount; ++var) {
     if (a[var] > b[var])
       res[var] = a[var] - b[var];
@@ -27,10 +27,16 @@ inline void colon(Exponent* res,
   }
 }
 
+inline void decrement(Exponent* a, size_t varCount) {
+  for (size_t var = 0; var < varCount; ++var)
+	if (a[var] > 0)
+	  a[var] -= 1;
+}
+
 // Sets res equal to the greatest common divisor of a and b.
 inline void gcd(Exponent* res,
-		const Exponent* a, const Exponent* b,
-		size_t varCount) {
+				const Exponent* a, const Exponent* b,
+				size_t varCount) {
   for (size_t var = 0; var < varCount; ++var) {
     if (a[var] < b[var])
       res[var] = a[var];
@@ -41,8 +47,8 @@ inline void gcd(Exponent* res,
 
 // Sets res equal to the least commom multiple of a and b.
 inline void lcm(Exponent* res,
-		const Exponent* a, const Exponent* b,
-		size_t varCount) {
+				const Exponent* a, const Exponent* b,
+				size_t varCount) {
   for (size_t var = 0; var < varCount; ++var) {
     if (a[var] > b[var])
       res[var] = a[var];
@@ -368,6 +374,10 @@ class Term {
 
   void colon(const Exponent* a, const Exponent* b) {
     ::colon(_exponents, a, b, _varCount);
+  }
+
+  void decrement() {
+	::decrement(_exponents, _varCount);
   }
 
   void swap(Term& term) {

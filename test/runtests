@@ -2,67 +2,56 @@
 
 TIMEFORMAT=$' (%2lR real)'
 
-echo -n "decom (slice, split=label): "
+echo -n "decom     "
 cd test/decom
-time ./runtests -slice on -split label
+./runtests
+echo
 cd ../..
 
-echo -n "decom (slice, split=midart): "
-cd test/decom
-time ./runtests -slice on -split midart
-cd ../..
-
-echo -n "decom (label): "
-cd test/decom
-time ./runtests -slice off -independence off
-cd ../..
-
-echo -n "frob (slice, split=midart): "
+echo -n "frob      "
 cd test/frob
-time ./runtests -slice on -split midart
+./runtests -slice on -split median
+echo
 cd ../..
 
-echo -n "frob (slice, split=frob): "
-cd test/frob
-time ./runtests -slice on -split frob
-cd ../..
-
-echo -n "frob (label): "
-cd test/frob
-time ./runtests -slice off
-cd ../..
-
-echo -n "intersect: "
+echo -n "intersect "
 cd test/intersect
-time ./runtests
+./runtests
+echo
 cd ../..
 
-echo -n "assprimes: "
+echo -n "assprimes "
 cd test/assprimes
-time ./runtests
+./runtests
+echo
 cd ../..
 
-echo -n "minimize: "
+echo -n "minimize  "
 cd test/minimize
-time ./runtests
+./runtests
+echo
 cd ../..
 
-echo -n "transform: "
+echo -n "transform "
 cd test/transform
-time ./runtests
+./runtests
+echo
 cd ../..
 
-echo -n "latformat: "
+echo -n "latformat "
 cd test/latformat
-time ./runtests
+./runtests
+echo
 cd ../..
 
-echo -n "alexdual: "
+echo -n "alexdual  "
 cd test/alexdual
-time ./runtests
+./runtests
+echo
 cd ../..
 
-echo -n "radical: "
+echo -n "radical   "
 cd test/radical
-time ./runtests
+./runtests
+echo
 cd ../..
