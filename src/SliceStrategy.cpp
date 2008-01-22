@@ -221,41 +221,82 @@ public:
 class PivotSliceStrategy : public DecomSliceStrategy {
 public:
   enum Type {
-    Min,
-    Mid,
-    Max
+    MinPure,
+    MidPure,
+    MaxPure,
+	MedianPure,
+	MinGen,
+	Indep
   };
 
   PivotSliceStrategy(Type type, TermConsumer* consumer):
     DecomSliceStrategy(consumer),
     _type(type) {
+	srand(0); // to make things repeatable
   }
  
   SplitType getSplitType(const Slice& slice) {
     return PivotSplit;
   }
 
-  void getPivot(Term& pivot, const Slice& slice) {
-    const Term& lcm = slice.getLcm();
+  size_t getRandomSupportVar(const Term& term) {
+	ASSERT(!term.isIdentity());
 
+	size_t selected = rand() % term.getSizeOfSupport();
+	for (size_t var = 0; ; ++var) {
+	  ASSERT(var < term.getVarCount());
+	  if (term[var] == 0)
+		continue;
+
+	  if (selected == 0)
+		return var;
+	  --selected;
+	}
+  }
+
+  void getPivot(Term& pivot, const Slice& slice) {
     Term co(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(co);
 
-    size_t maxOffset;
-    do {
-      maxOffset = co.getFirstMaxExponent();
-      co[maxOffset] = 0;
-    } while (lcm[maxOffset] <= 1);
+    const Term& lcm = slice.getLcm();
+	for (size_t var = 0; var < slice.getVarCount(); ++var)
+	  if (lcm[var] <= 1)
+		co[var] = 0;
+
+	ASSERT(!co.isIdentity());
+	
+	Exponent maxCount = co[co.getFirstMaxExponent()];
+	for (size_t var = 0; var < slice.getVarCount(); ++var)
+	  if (co[var] < maxCount)
+		co[var] = 0;
+
+	// Choose a deterministically random variable among those that are
+	// best. This helps to avoid getting into a bad pattern.
+	size_t maxVar = getRandomSupportVar(co);
 
     pivot.setToIdentity();
-    Exponent& e = pivot[maxOffset];
-    if (_type == Min)
+    Exponent& e = pivot[maxVar];
+	switch (_type) {
+	case MinPure:
       e = 1;
-    else if (_type == Mid)
-      e = lcm[maxOffset] / 2;
-    else {
-      ASSERT(_type == Max);
-      e = lcm[maxOffset] - 1;
+	  break;
+
+	case MidPure:
+      e = lcm[maxVar] / 2;
+	  break;
+
+	case MaxPure:
+      e = lcm[maxVar] - 1;
+	  break;
+
+	case MedianPure:
+	  e = 1; // TODO
+	  break;
+
+	default:
+	  fputs("INTERNAL ERROR: Invalid split type.", stderr);
+	  ASSERT(false);
+	  exit(1);
     }
   }
 
@@ -268,11 +309,11 @@ SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
   if (name == "label")
     return new LabelSliceStrategy(consumer);
   else if (name == "minart")
-    return new PivotSliceStrategy(PivotSliceStrategy::Min, consumer);
+    return new PivotSliceStrategy(PivotSliceStrategy::MinPure, consumer);
   else if (name == "midart")
-    return new PivotSliceStrategy(PivotSliceStrategy::Mid, consumer);
+    return new PivotSliceStrategy(PivotSliceStrategy::MidPure, consumer);
   else if (name == "maxart")
-    return new PivotSliceStrategy(PivotSliceStrategy::Max, consumer);
+    return new PivotSliceStrategy(PivotSliceStrategy::MaxPure, consumer);
 
   fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n", name.c_str());
   exit(1);
