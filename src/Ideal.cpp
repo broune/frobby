@@ -63,6 +63,21 @@ bool Ideal::isIrreducible() const {
   return true;
 }
 
+bool Ideal::isStronglyGeneric() {
+  for (size_t var = 0; var < _varCount; ++var) {
+	singleDegreeSort(var);
+
+	Exponent lastExponent = 0;
+	const_iterator stop = _terms.end();
+	for (const_iterator it = _terms.begin(); it != stop; ++it) {
+	  if (lastExponent != 0 && lastExponent == (*it)[var])
+		return false;
+	  lastExponent = (*it)[var];
+	}
+  }
+  return true;
+}
+
 void Ideal::getLcm(Term& lcm) const {
   ASSERT(lcm.getVarCount() == getVarCount());
 

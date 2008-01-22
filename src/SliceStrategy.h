@@ -38,7 +38,7 @@ class SliceStrategy : public TermConsumer {
   };
   virtual SplitType getSplitType(const Slice& slice) = 0;
 
-  virtual void getPivot(Term& pivot, const Slice& slice);
+  virtual void getPivot(Term& pivot, Slice& slice);
   virtual size_t getLabelSplitVariable(const Slice& slice);
 
   // report a msm to the strategy.

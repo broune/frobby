@@ -9,7 +9,7 @@ Slice::Slice():
 }
 
 Slice::Slice(const Ideal& ideal, const Ideal& subtract,
-	     const Term& multiply):
+			 const Term& multiply):
   _varCount(multiply.getVarCount()),
   _multiply(multiply),
   _lcm(multiply.getVarCount()),

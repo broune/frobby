@@ -26,17 +26,17 @@ void SliceStrategy::simplify(Slice& slice) {
   slice.simplify();
 }
 
-void SliceStrategy::getPivot(Term& pivot, const Slice& slice) {
+void SliceStrategy::getPivot(Term& pivot, Slice& slice) {
+  fputs("INTERNAL ERROR: Undefined SliceStrategy::getPivot called.\n", stderr);
   ASSERT(false);
-  fputs("ERROR: SliceStrategy::getPivot called but not defined.\n", stderr);
   exit(1);
 }
 
 size_t SliceStrategy::getLabelSplitVariable(const Slice& slice) {
-  ASSERT(false);
   fputs
-    ("ERROR: SliceStrategy::getLabelSplitVariable called but not defined.\n",
+    ("INTERNAL ERROR: Undefined SliceStrategy::getLabelSplitVariable called.\n",
      stderr);
+  ASSERT(false);
   exit(1);
 }
 
@@ -186,16 +186,22 @@ private:
     else
       return getCurrentSplit();
   }
-  
+
   vector<IndependenceSplit*> _independenceSplits;
   TermConsumer* _consumer;
 };
 
-
 class LabelSliceStrategy : public DecomSliceStrategy {
 public:
-  LabelSliceStrategy(TermConsumer* consumer):
-    DecomSliceStrategy(consumer) {
+  enum Type {
+	MaxLabel,
+	MinLabel,
+    VarLabel
+  };
+
+  LabelSliceStrategy(Type type, TermConsumer* consumer):
+    DecomSliceStrategy(consumer),
+	_type(type) {
   }
 
   SplitType getSplitType(const Slice& slice) {
@@ -203,30 +209,75 @@ public:
   }
 
   size_t getLabelSplitVariable(const Slice& slice) {
-    Term co(slice.getVarCount());
+	Term co(slice.getVarCount());
+	slice.getIdeal().getSupportCounts(co);
 
-    // TODO: This is duplicate code from PivotSliceStrategy. Factor
-    // out into Slice.
-    for (Ideal::const_iterator it = slice.getIdeal().begin();
-	 it != slice.getIdeal().end(); ++it) {
-      for (size_t var = 0; var < slice.getVarCount(); ++var)
-	if ((*it)[var] > 0)
-	  ++co[var];
-    }
+	if (_type == MaxLabel) {
+	  // Return the variable that divides the most minimal generators.
+	  // This cannot be an invalid split because if every count was 1,
+	  // then this would be a base case.
+	  return co.getFirstMaxExponent();
+	}
 
-    return co.getFirstMaxExponent();
+	// For each variable, count number of terms with exponent of 1
+	Term co1(slice.getVarCount());
+	Ideal::const_iterator end = slice.getIdeal().end();
+	for (Ideal::const_iterator it = slice.getIdeal().begin();
+		 it != end; ++it) {
+	  // This way we avoid bad splits.
+	  if (getSizeOfSupport(*it, slice.getVarCount()) == 1)
+		continue;
+	  for (size_t var = 0; var < slice.getVarCount(); ++var)
+		if ((*it)[var] == 1)
+		  co1[var] += 1;
+	}
+
+	// The slice is simplified and not a base case slice.
+	ASSERT(!co1.isIdentity());
+
+	if (_type == VarLabel) {
+	  // Return the least variable that is valid.
+	  for (size_t var = 0; ; ++var) {
+		ASSERT(var < slice.getVarCount());
+		if (co1[var] > 0)
+		  return var;
+	  }
+	}
+
+	if (_type != MinLabel) {
+	  fputs("INTERNAL ERROR: Undefined label split type.\n", stderr);
+	  ASSERT(false);
+	  exit(1);
+	}
+
+	// Zero those variables of co that have more than the least number
+	// of exponent 1 minimal generators.
+	size_t mostGeneric = 0;
+	for (size_t var = 1; var < slice.getVarCount(); ++var)
+	  if (mostGeneric == 0 || (mostGeneric > co1[var] && co1[var] > 0))
+		mostGeneric = co1[var];
+	for (size_t var = 0; var < slice.getVarCount(); ++var)
+	  if (co1[var] != mostGeneric)
+		co[var] = 0;
+
+	// Among those with least exponent 1 minimal generators, return
+	// the variable that divides the most minimal generators.
+	return co.getFirstMaxExponent();
   }
+
+  private:
+	Type _type;
 }; 
 
 class PivotSliceStrategy : public DecomSliceStrategy {
 public:
   enum Type {
-    MinPure,
-    MidPure,
-    MaxPure,
-	MedianPure,
+    Minimum,
+    Median,
+    Maximum,
 	MinGen,
-	Indep
+	Indep,
+	GCD
   };
 
   PivotSliceStrategy(Type type, TermConsumer* consumer):
@@ -239,6 +290,51 @@ public:
     return PivotSplit;
   }
 
+  void getPivot(Term& pivot, Slice& slice) {
+	ASSERT(pivot.getVarCount() == slice.getVarCount());
+
+	if (_type == MinGen) {
+	  getMinGenPivot(pivot, slice);
+	  return;
+	}
+
+	if (_type == Indep) {
+	  if (getIndependencePivot(slice, pivot))
+		return;
+	}
+
+	size_t var = getBestVar(slice);
+	switch (_type) {
+	case Minimum:
+	  pivot.setToIdentity();
+	  pivot[var] = 1;
+	  break;
+
+	case Maximum:
+	  pivot.setToIdentity();
+	  pivot[var] = slice.getLcm()[var] - 1;
+	  break;
+
+	case Indep: // Indep uses MidPure as a fall-back.
+	case Median:
+	  pivot.setToIdentity();
+	  pivot[var] = getMedianPositiveExponentOf(slice, var);
+	  if (pivot[var] == slice.getLcm()[var])
+		pivot[var] -= 1;
+	  break;
+
+	case GCD:
+	  getGCDPivot(slice, pivot, var);
+	  break;
+
+	default:
+	  fputs("INTERNAL ERROR: Undefined pivot split type.\n", stderr);
+	  ASSERT(false);
+	  exit(1);
+    }
+  }
+
+private:
   size_t getRandomSupportVar(const Term& term) {
 	ASSERT(!term.isIdentity());
 
@@ -254,7 +350,74 @@ public:
 	}
   }
 
-  void getPivot(Term& pivot, const Slice& slice) {
+  void getGCDPivot(Slice& slice, Term& pivot, size_t var) {
+	size_t nonDivisibleCount = 0;
+	Ideal::const_iterator end = slice.getIdeal().end();
+	for (Ideal::const_iterator it = slice.getIdeal().begin();
+		 it != end; ++it)
+	  if ((*it)[var] >= 2)
+		++nonDivisibleCount;
+	
+	for (int i = 0; i < 3; ++i) {
+	  size_t selected = rand() % nonDivisibleCount;
+	  for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
+		ASSERT(it != end);
+		if ((*it)[var] < 2)
+		  continue;
+
+		if (selected == 0) {
+		  if (i == 0)
+			pivot = *it;
+		  else
+			pivot.gcd(pivot, *it);
+		  break;
+		}
+		--selected;
+	  }
+	}
+
+	pivot.decrement();
+  }
+
+  void getMinGenPivot(Term& pivot, Slice& slice) {
+	size_t nonSquareFreeCount = 0;
+	Ideal::const_iterator end = slice.getIdeal().end();
+	for (Ideal::const_iterator it = slice.getIdeal().begin();
+		 it != end; ++it)
+	  if (!::isSquareFree(*it, slice.getVarCount()))
+		++nonSquareFreeCount;
+
+	size_t selected = rand() % nonSquareFreeCount;
+	for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
+	  ASSERT(it != end);
+	  if (::isSquareFree(*it, slice.getVarCount()))
+		continue;
+
+	  if (selected == 0) {
+		pivot = *it;
+		break;
+	  }
+	  --selected;
+	}
+
+	pivot.decrement();
+  }
+
+  Exponent getMedianPositiveExponentOf(Slice& slice, size_t var) {
+	slice.singleDegreeSortIdeal(var);
+	Ideal::const_iterator end = slice.getIdeal().end();
+	Ideal::const_iterator begin = slice.getIdeal().begin();
+	while ((*begin)[var] == 0) {
+	  ++begin;
+	  ASSERT(begin != end);
+	}
+	return (*(begin + (distance(begin, end) ) / 2))[var];
+  }
+
+  // Returns the variable that divides the most minimal generators of
+  // those where some minimal generator is divisible by the square of
+  // that variable.
+  size_t getBestVar(Slice& slice) {
     Term co(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(co);
 
@@ -272,48 +435,68 @@ public:
 
 	// Choose a deterministically random variable among those that are
 	// best. This helps to avoid getting into a bad pattern.
-	size_t maxVar = getRandomSupportVar(co);
-
-    pivot.setToIdentity();
-    Exponent& e = pivot[maxVar];
-	switch (_type) {
-	case MinPure:
-      e = 1;
-	  break;
-
-	case MidPure:
-      e = lcm[maxVar] / 2;
-	  break;
-
-	case MaxPure:
-      e = lcm[maxVar] - 1;
-	  break;
-
-	case MedianPure:
-	  e = 1; // TODO
-	  break;
-
-	default:
-	  fputs("INTERNAL ERROR: Invalid split type.", stderr);
-	  ASSERT(false);
-	  exit(1);
-    }
+	return getRandomSupportVar(co);
   }
 
-private:
+  bool getIndependencePivot(Slice& slice, Term& pivot) {
+	if (slice.getVarCount() == 1)
+	  return false;
+
+	for (int attempts = 0; attempts < 10; ++attempts) {
+	  // Pick two distinct variables.
+	  size_t var1 = rand() % slice.getVarCount();
+	  size_t var2 = rand() % (slice.getVarCount() - 1);
+	  if (var2 >= var1)
+		++var2;
+
+	  // Make pivot as big as it can be while making var1 and var2
+	  // independent of each other.
+	  bool first = true;
+	  Ideal::const_iterator end = slice.getIdeal().end();
+	  for (Ideal::const_iterator it = slice.getIdeal().begin();
+		   it != end; ++it) {
+		if ((*it)[var1] == 0 || (*it)[var2] == 0)
+		  continue;
+
+		if (first)
+		  pivot = *it;
+		else {
+		  for (size_t var = 0; var < slice.getVarCount(); ++var)
+			if (pivot[var] >= (*it)[var])
+			  pivot[var] = (*it)[var] - 1;
+		}
+	  }
+
+	  if (!first && !pivot.isIdentity())
+		return true;
+	}
+
+	return false;
+  }
+
   Type _type;
 };
 
 SliceStrategy* SliceStrategy::newDecomStrategy(const string& name,
 											   TermConsumer* consumer) {
-  if (name == "label")
-    return new LabelSliceStrategy(consumer);
-  else if (name == "minart")
-    return new PivotSliceStrategy(PivotSliceStrategy::MinPure, consumer);
-  else if (name == "midart")
-    return new PivotSliceStrategy(PivotSliceStrategy::MidPure, consumer);
-  else if (name == "maxart")
-    return new PivotSliceStrategy(PivotSliceStrategy::MaxPure, consumer);
+  if (name == "maxlabel")
+    return new LabelSliceStrategy(LabelSliceStrategy::MaxLabel, consumer);
+  else if (name == "minlabel")
+    return new LabelSliceStrategy(LabelSliceStrategy::MinLabel, consumer);
+  else if (name == "varlabel")
+    return new LabelSliceStrategy(LabelSliceStrategy::VarLabel, consumer);
+  else if (name == "minimum")
+    return new PivotSliceStrategy(PivotSliceStrategy::Minimum, consumer);
+  else if (name == "median")
+    return new PivotSliceStrategy(PivotSliceStrategy::Median, consumer);
+  else if (name == "maximum")
+    return new PivotSliceStrategy(PivotSliceStrategy::Maximum, consumer);
+  else if (name == "mingen")
+    return new PivotSliceStrategy(PivotSliceStrategy::MinGen, consumer);
+  else if (name == "indep")
+    return new PivotSliceStrategy(PivotSliceStrategy::Indep, consumer);
+  else if (name == "gcd")
+    return new PivotSliceStrategy(PivotSliceStrategy::GCD, consumer);
 
   fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n", name.c_str());
   exit(1);
@@ -371,7 +554,7 @@ public:
     return _strategy->getSplitType(slice);
   }
 
-  virtual void getPivot(Term& pivot, const Slice& slice) {
+  virtual void getPivot(Term& pivot, Slice& slice) {
 	_strategy->getPivot(pivot, slice);
   }
 
@@ -461,7 +644,7 @@ public:
     }
   }
 
-  void getPivot(Term& pivot, const Slice& slice) {
+  void getPivot(Term& pivot, Slice& slice) {
     const Term& lcm = slice.getLcm();
 
 	static mpz_class maxDiff;
@@ -776,7 +959,7 @@ public:
 	  return _strategy->getSplitType(slice);
   }
 
-  virtual void getPivot(Term& pivot, const Slice& slice) {
+  virtual void getPivot(Term& pivot, Slice& slice) {
 	if (_strategy != 0)
 	  _strategy->getPivot(pivot, slice);
 	else
@@ -992,7 +1175,7 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
     DecoratorSliceStrategy::endingContent();
   }
 
-  void getPivot(Term& pivot, const Slice& slice) {
+  void getPivot(Term& pivot, Slice& slice) {
     DecoratorSliceStrategy::getPivot(pivot, slice);
     fprintf(stderr, "DEBUG %lu: performing pivot split on ",
 	    (unsigned long)_level);
