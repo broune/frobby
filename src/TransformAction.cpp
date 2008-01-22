@@ -34,6 +34,16 @@ TransformAction::TransformAction():
   _minimize 
   ("minimize",
   "Remove non-minimial generators.",
+   false),
+
+  _deform
+  ("deform",
+   "Apply a generic deformation to the input ideal.",
+   false),
+  
+  _radical
+  ("radical",
+   "Take the radical of the input ideal.",
    false) {
 }
 
@@ -62,6 +72,8 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_minimize);
   parameters.push_back(&_sort);
   parameters.push_back(&_unique);
+  parameters.push_back(&_deform);
+  parameters.push_back(&_radical);
   Action::obtainParameters(parameters);
 }
 
@@ -89,17 +101,29 @@ void TransformAction::perform() {
 
   IdealFacade idealFacade(_printActions);
 
-  if (_minimize)
-    idealFacade.sortAllAndMinimize(ideal, stdout, oformat.c_str());
-  else {
-	if (_canonicalize)
-	  idealFacade.sortVariables(ideal);
+  if (_radical)
+	idealFacade.takeRadical(ideal);
 
-	if (_unique)
-	  idealFacade.sortGeneratorsUnique(ideal);
-	else if (_sort || _canonicalize)
-	  idealFacade.sortGenerators(ideal);
-
-	facade.writeIdeal(stdout, ideal, oformat.c_str());
+  if (_minimize || _radical) {
+	if (_deform)
+	  idealFacade.sortAllAndMinimize(ideal);
+	else {
+	  idealFacade.sortAllAndMinimize(ideal, stdout, oformat.c_str());
+	  return;
+	}
   }
+
+  if (_canonicalize)
+	idealFacade.sortVariables(ideal);
+
+  if (_unique)
+	idealFacade.sortGeneratorsUnique(ideal);
+
+  if (_deform)
+	idealFacade.deform(ideal);
+
+  if (_sort || _canonicalize)
+	idealFacade.sortGenerators(ideal);
+
+  facade.writeIdeal(stdout, ideal, oformat.c_str());
 }

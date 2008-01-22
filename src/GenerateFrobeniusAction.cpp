@@ -2,7 +2,7 @@
 #include "GenerateFrobeniusAction.h"
 
 #include "BigIdeal.h"
-#include "RandomDataFacade.h"
+#include "GenerateDataFacade.h"
 #include "IOFacade.h"
 
 const char* GenerateFrobeniusAction::getName() const {
@@ -29,8 +29,8 @@ obtainParameters(vector<Parameter*>& parameters) {
 void GenerateFrobeniusAction::perform() {
   vector<mpz_class> instance;
 
-  RandomDataFacade randomDataFacade(_printActions);
-  randomDataFacade.generateFrobeniusInstance(instance);
+  GenerateDataFacade generator(_printActions);
+  generator.generateFrobeniusInstance(instance);
 
   IOFacade ioFacade(_printActions);
   ioFacade.writeFrobeniusInstance(stdout, instance);

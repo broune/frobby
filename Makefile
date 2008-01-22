@@ -15,9 +15,9 @@ rawSources = $(patsubst %, label/%, $(labelSources))					\
   stdinc.cpp DynamicFrobeniusAction.cpp dynamicFrobeniusAlgorithm.cpp	\
   GenerateIdealAction.cpp GenerateFrobeniusAction.cpp					\
   IrreducibleDecomFacade.cpp FrobeniusAction.cpp Facade.cpp				\
-  IOFacade.cpp DynamicFrobeniusFacade.cpp RandomDataFacade.cpp			\
+  IOFacade.cpp DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp		\
   AnalyzeAction.cpp IdealFacade.cpp Parameter.cpp						\
-  ParameterGroup.cpp GenerateIdealParameters.cpp IntegerParameter.cpp	\
+  ParameterGroup.cpp IntegerParameter.cpp								\
   IrreducibleDecomParameters.cpp BoolParameter.cpp						\
   Scanner.cpp Partition.cpp StringParameter.cpp Term.cpp				\
   TermTranslator.cpp Timer.cpp VarNames.cpp LatticeFormatAction.cpp		\

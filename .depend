@@ -61,11 +61,10 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
   src/StringParameter.h src/TransformAction.h src/HelpAction.h \
   src/DynamicFrobeniusAction.h src/GenerateIdealAction.h \
-  src/GenerateIdealParameters.h src/IntegerParameter.h \
-  src/GenerateFrobeniusAction.h src/FrobeniusAction.h src/AnalyzeAction.h \
-  src/LatticeFormatAction.h src/IntersectAction.h \
-  src/AssociatedPrimesAction.h src/PrimaryDecomAction.h \
-  src/AlexanderDualAction.h
+  src/IntegerParameter.h src/GenerateFrobeniusAction.h \
+  src/FrobeniusAction.h src/AnalyzeAction.h src/LatticeFormatAction.h \
+  src/IntersectAction.h src/AssociatedPrimesAction.h \
+  src/PrimaryDecomAction.h src/AlexanderDualAction.h
 $(outdir)IrreducibleDecomAction.o: src/IrreducibleDecomAction.cpp src/stdinc.h \
   src/IrreducibleDecomAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
@@ -109,12 +108,12 @@ $(outdir)dynamicFrobeniusAlgorithm.o: src/dynamicFrobeniusAlgorithm.cpp \
   src/stdinc.h src/dynamicFrobeniusAlgorithm.h
 $(outdir)GenerateIdealAction.o: src/GenerateIdealAction.cpp src/stdinc.h \
   src/GenerateIdealAction.h src/Action.h src/BoolParameter.h \
-  src/Parameter.h src/GenerateIdealParameters.h src/ParameterGroup.h \
-  src/IntegerParameter.h src/BigIdeal.h src/VarNames.h \
-  src/RandomDataFacade.h src/Facade.h src/Timer.h src/IOFacade.h
+  src/Parameter.h src/StringParameter.h src/IntegerParameter.h \
+  src/BigIdeal.h src/VarNames.h src/GenerateDataFacade.h src/Facade.h \
+  src/Timer.h src/IOFacade.h
 $(outdir)GenerateFrobeniusAction.o: src/GenerateFrobeniusAction.cpp src/stdinc.h \
   src/GenerateFrobeniusAction.h src/Action.h src/BoolParameter.h \
-  src/Parameter.h src/BigIdeal.h src/VarNames.h src/RandomDataFacade.h \
+  src/Parameter.h src/BigIdeal.h src/VarNames.h src/GenerateDataFacade.h \
   src/Facade.h src/Timer.h src/IOFacade.h
 $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
@@ -139,10 +138,9 @@ $(outdir)IOFacade.o: src/IOFacade.cpp src/stdinc.h src/IOFacade.h src/Facade.h \
 $(outdir)DynamicFrobeniusFacade.o: src/DynamicFrobeniusFacade.cpp src/stdinc.h \
   src/DynamicFrobeniusFacade.h src/Facade.h src/Timer.h \
   src/dynamicFrobeniusAlgorithm.h
-$(outdir)RandomDataFacade.o: src/RandomDataFacade.cpp src/stdinc.h \
-  src/RandomDataFacade.h src/Facade.h src/Timer.h \
-  src/randomDataGenerators.h src/GenerateIdealParameters.h \
-  src/ParameterGroup.h src/Parameter.h src/IntegerParameter.h
+$(outdir)GenerateDataFacade.o: src/GenerateDataFacade.cpp src/stdinc.h \
+  src/GenerateDataFacade.h src/Facade.h src/Timer.h \
+  src/randomDataGenerators.h
 $(outdir)AnalyzeAction.o: src/AnalyzeAction.cpp src/stdinc.h src/AnalyzeAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h src/BigIdeal.h \
   src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
@@ -153,9 +151,6 @@ $(outdir)IdealFacade.o: src/IdealFacade.cpp src/stdinc.h src/IdealFacade.h \
 $(outdir)Parameter.o: src/Parameter.cpp src/stdinc.h src/Parameter.h
 $(outdir)ParameterGroup.o: src/ParameterGroup.cpp src/stdinc.h \
   src/ParameterGroup.h src/Parameter.h
-$(outdir)GenerateIdealParameters.o: src/GenerateIdealParameters.cpp src/stdinc.h \
-  src/GenerateIdealParameters.h src/ParameterGroup.h src/Parameter.h \
-  src/IntegerParameter.h
 $(outdir)IntegerParameter.o: src/IntegerParameter.cpp src/stdinc.h \
   src/IntegerParameter.h src/Parameter.h
 $(outdir)IrreducibleDecomParameters.o: src/IrreducibleDecomParameters.cpp \

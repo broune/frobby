@@ -239,13 +239,7 @@ public:
     const Term& lcm = slice.getLcm();
 
     Term co(slice.getVarCount());
-
-    for (Ideal::const_iterator it = slice.getIdeal().begin();
-	 it != slice.getIdeal().end(); ++it) {
-      for (size_t var = 0; var < slice.getVarCount(); ++var)
-	if ((*it)[var] > 0)
-	  ++co[var];
-    }
+	slice.getIdeal().getSupportCounts(co);
 
     size_t maxOffset;
     do {
