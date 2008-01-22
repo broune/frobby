@@ -5,6 +5,17 @@
 #include "Ideal.h"
 #include "Term.h"
 
+void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount) {
+  VarNames names(variableCount);
+  ideal.clearAndSetNames(variableCount);
+  ideal.reserve(variableCount);
+  for (size_t var = 1; var < variableCount; ++var) {
+	ideal.newLastTerm();
+	ideal.getLastTermExponentRef(var) = 1;
+	ideal.getLastTermExponentRef(var - 1) = 1;
+  }
+}
+
 bool generateRandomIdeal(BigIdeal& bigIdeal,
 			 unsigned int exponentRange,
 			 unsigned int variableCount,

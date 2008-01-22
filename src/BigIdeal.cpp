@@ -171,6 +171,22 @@ const VarNames& BigIdeal::getNames() const {
   return _names;
 }
 
+void BigIdeal::deform() {
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	for (size_t var = 0; var < getVarCount(); ++var)
+	  if (_terms[gen][var] > 0)
+		_terms[gen][var] = _terms[gen][var] * getGeneratorCount() + gen;
+}
+
+void BigIdeal::takeRadical() {
+  vector<vector<mpz_class> >::iterator end = _terms.end();
+  for (vector<vector<mpz_class> >::iterator it = _terms.begin();
+	   it != end; ++it)
+	for (size_t var = 0; var < getVarCount(); ++var)
+	  if ((*it)[var] > 1)
+		(*it)[var] = 1;
+}
+
 void BigIdeal::sortGeneratorsUnique() {
   sortGenerators();
   vector<vector<mpz_class> >::iterator newEnd =

@@ -47,6 +47,12 @@ public:
 
   const VarNames& getNames() const;
 
+  // Applies a generic deformation.
+  void deform();
+
+  // Takes the radical of every generator.
+  void takeRadical();
+
   // Sorts the generators and removes duplicates.
   void sortGeneratorsUnique();
 

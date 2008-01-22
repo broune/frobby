@@ -9,6 +9,12 @@ class IdealFacade : private Facade {
  public:
   IdealFacade(bool printActions);
 
+  // Applies some generic deformation to the ideal.
+  void deform(BigIdeal& ideal);
+
+  // Takes the radical of the ideal and minimizes it.
+  void takeRadical(BigIdeal& ideal);
+
   // Removes redundant generators from ideal.
   void sortAllAndMinimize(BigIdeal& bigIdeal);
 

@@ -5,6 +5,8 @@
 
 class BigIdeal;
 
+void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount);
+
 bool generateRandomIdeal(BigIdeal& bigIdeal,
 			 unsigned int exponentRange,
 			 unsigned int variableCount,

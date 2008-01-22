@@ -10,6 +10,37 @@ IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
 }
 
+void IdealFacade::deform(BigIdeal& bigIdeal) {
+  beginAction("Applying generic deformation to ideal.");
+
+  bigIdeal.deform();
+
+  // Reduce range of exponents
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal, true);
+  bigIdeal.clear();
+  bigIdeal.insert(ideal);
+
+  endAction();
+}
+
+void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
+  beginAction("Taking radical of ideal.");
+
+  bigIdeal.takeRadical();
+
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal, true);
+  bigIdeal.clear();
+
+  ideal.minimize();
+  ideal.sortReverseLex();
+
+  bigIdeal.insert(ideal, translator);
+
+  endAction();
+}
+
 void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal) {
   beginAction("Minimizing ideal.");
 

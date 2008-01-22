@@ -26,6 +26,8 @@ class TransformAction : public Action {
   BoolParameter _sort;
   BoolParameter _unique;
   BoolParameter _minimize;
+  BoolParameter _deform;
+  BoolParameter _radical;
 };
 
 #endif

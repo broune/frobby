@@ -61,3 +61,8 @@ echo -n "alexdual: "
 cd test/alexdual
 time ./runtests
 cd ../..
+
+echo -n "radical: "
+cd test/radical
+time ./runtests
+cd ../..
