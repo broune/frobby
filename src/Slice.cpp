@@ -539,17 +539,32 @@ bool Slice::twoNonMaxBaseCase(TermConsumer* consumer) {
 }
 
 bool Slice::isTrivialColon(const Term& term) {
-  Ideal::const_iterator stop = _ideal.end();
-  for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
-	for (size_t var = 0; var < _varCount; ++var)
-	  if (0 < (*it)[var] && (*it)[var] <= term[var])
+  if (term.getSizeOfSupport() == 1) {
+	size_t var = term.getFirstNonZeroExponent();
+	Exponent exponent = term[var];
+
+	Ideal::const_iterator stop = _ideal.end();
+	for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
+	  if (0 < (*it)[var] && (*it)[var] <= exponent)
 		return false;
 
-  stop = _subtract.end();
-  for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
-	for (size_t var = 0; var < _varCount; ++var)
-	  if (0 < (*it)[var] && (*it)[var] <= term[var])
+	stop = _subtract.end();
+	for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
+	  if (0 < (*it)[var] && (*it)[var] <= exponent)
 		return false;
+  } else {
+	Ideal::const_iterator stop = _ideal.end();
+	for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
+	  for (size_t var = 0; var < _varCount; ++var)
+		if (0 < (*it)[var] && (*it)[var] <= term[var])
+		  return false;
+
+	stop = _subtract.end();
+	for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
+	  for (size_t var = 0; var < _varCount; ++var)
+		if (0 < (*it)[var] && (*it)[var] <= term[var])
+		  return false;
+  }
 
   return true;
 }

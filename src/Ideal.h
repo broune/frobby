@@ -64,7 +64,7 @@ public:
   void colon(const Term& by);
 
   // Equivalent to calling colon(by) and then minimize.
-  bool colonReminimize(const Term& by);
+  bool colonReminimize(const Term& colon);
 
   // Perform colon by var raised to exp and then minimize.
   bool colonReminimize(size_t var, Exponent exp);

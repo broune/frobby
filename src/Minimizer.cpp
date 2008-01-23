@@ -6,7 +6,12 @@
 typedef vector<Exponent*>::iterator iterator;
 
 ::iterator simpleMinimize(::iterator begin, ::iterator end, size_t varCount) {
+  if (distance(begin, end) <= 1)
+	return end;
+
   std::sort(begin, end, Term::LexComparator(varCount));
+
+  // TODO: use that least element does not need a check
 
   ::iterator newEnd = begin;
   for (::iterator dominator = begin; dominator != end; ++dominator) {
@@ -223,4 +228,126 @@ Minimizer::iterator Minimizer::minimize(iterator begin, iterator end) const {
   node.collect(terms);
 
   return copy(terms.begin(), terms.end(), begin);
+}
+
+Minimizer::iterator Minimizer::colonReminimize
+(iterator begin, iterator end, const Term& colon) {
+  ASSERT(simpleIsMinimal(begin, end));
+
+  if (colon.getSizeOfSupport() == 1) {
+    size_t var = colon.getFirstNonZeroExponent();
+    return colonReminimize(begin, end, var, colon[var]);
+  }
+
+  if (distance(begin, end) >= 100) {
+	for (iterator it = begin; it != end; ++it) {
+	  if (colon.strictlyDivides(*it)) {
+		::colon(*it, *it, colon.begin(), _varCount);
+		swap(*begin, *it);
+		++begin;
+		continue;
+	  }
+	}
+  }
+  
+  if (colon.getSizeOfSupport() <= 2) {
+	for (size_t var = 0; var < _varCount; ++var) {
+	  if (colon[var] > 0)
+		end = colonReminimize(begin, end, var, colon[var]);
+	}
+	return end;
+  }
+
+  for (iterator it = begin; it != end; ++it)
+	::colon(*it, *it, colon.begin(), _varCount);
+
+  return minimize(begin, end);
+}
+
+bool Minimizer::simpleIsMinimal(iterator begin, iterator end) {
+  for (iterator a = begin; a != end; ++a)
+	for (iterator b = begin; b != end; ++b)
+	  if (::divides(*a, *b, _varCount) && a != b)
+		return false;
+  return true;
+}
+
+bool Minimizer::dominatesAny
+(iterator begin, iterator end, const Exponent* term) {
+  for (; begin != end; ++begin)
+	if (::dominates(term, *begin, _varCount))
+	  return true;
+  return false;
+}
+
+bool Minimizer::dividesAny
+(iterator begin, iterator end, const Exponent* term) {
+  for (; begin != end; ++begin)
+	if (::divides(term, *begin, _varCount))
+	  return true;
+  return false;
+}
+
+
+Minimizer::iterator Minimizer::colonReminimizePreprocess
+(iterator begin, iterator end, const Term& colon) {
+  for (iterator it = begin; it != end; ++it) {
+	if (colon.strictlyDivides(*it)) {
+	  ::colon(*it, *it, colon.begin(), _varCount);
+	  swap(*begin, *it);
+	  ++begin;
+	}
+  }
+  return begin;
+}
+
+Minimizer::iterator Minimizer::colonReminimize
+(iterator begin, iterator end, size_t var, Exponent exponent) {
+  std::sort(begin, end,
+			Term::DescendingSingleDegreeComparator(var, _varCount));
+
+  // These can be kept without any further processing at all.
+  while (begin != end && (*begin)[var] > exponent) {
+    (*begin)[var] -= exponent; // perform colon
+    ++begin;
+  }
+
+  if (begin == end)
+	return end;
+
+  // We group terms into blocks according to term[var].
+  iterator previousBlockEnd = begin;
+  iterator newEnd = begin;
+
+  Exponent block = (*begin)[var];
+  if (block == 0)
+	return end;
+
+  for (iterator it = begin; it != end; ++it) {
+    // Detect if we are moving on to next block.
+    if ((*it)[var] != block) {
+      block = (*it)[var];
+      previousBlockEnd = newEnd;
+    }
+
+	ASSERT((*it)[var] <= exponent);
+	(*it)[var] = 0;
+
+    bool remove = false;
+
+	// TODO: find a better names for it and it2
+    for (iterator it2 = begin; it2 != previousBlockEnd; ++it2) {
+      if (::divides(*it2, *it, _varCount)) {
+		remove = true;
+		break;
+      }
+    }
+
+    if (!remove) {
+      *newEnd = *it;
+      ++newEnd;
+    }
+  }
+
+  return newEnd;
 }
