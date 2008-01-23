@@ -132,9 +132,9 @@ class Slice {
   // to the lcm of getIdeal().
   bool twoNonMaxBaseCase(TermConsumer* consumer);
 
-  // Returns true if colon by var^exponent does not change the support
-  // of any minimal generator of getIdeal() or getSubtract().
-  bool isTrivialColon(size_t var, size_t exponent);
+  // Returns true if colon by term does not change the support of any
+  // minimal generator of getIdeal() or getSubtract().
+  bool isTrivialColon(const Term& term);
 
   size_t _varCount;
   Term _multiply;
