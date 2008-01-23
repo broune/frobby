@@ -184,16 +184,71 @@ void Ideal::colon(const Term& by) {
     ::colon(*it, *it, by.begin(), _varCount);
 }
 
-void Ideal::colonReminimize(const Term& by) {
+bool Ideal::colonReminimize(const Term& by) {
   if (by.getSizeOfSupport() == 1) {
     size_t var = by.getFirstNonZeroExponent();
-    colonReminimize(var, by[var]);
+    return colonReminimize(var, by[var]);
   } else {
     colon(by);
     minimize();
+	return true;
   }
 }
 
+bool Ideal::colonReminimize(size_t var, Exponent exp) {
+  std::sort(_terms.begin(), _terms.end(),
+			Term::DescendingSingleDegreeComparator(var, _varCount));
+  size_t idealSize = _terms.size();
+
+  // These can be kept without any further processing at all.
+  size_t initialBlockEnd = 0;
+  while (initialBlockEnd < idealSize &&
+		 _terms[initialBlockEnd][var] > exp) {
+    _terms[initialBlockEnd][var] -= exp; // perform colon
+    ++initialBlockEnd;
+  }
+
+  // We group terms into blocks according to term[var].
+  size_t previousBlockEnd = initialBlockEnd;
+  size_t newEnd = initialBlockEnd;
+
+  if (initialBlockEnd == idealSize)
+	return false;
+  Exponent block = _terms[initialBlockEnd][var];
+  if (block == 0)
+	return false;
+
+  // We can start with i = 1 because the first element is always kept.
+  for (size_t i = initialBlockEnd; i < idealSize; ++i) {
+    // Detect if we are moving on to next block.
+    if (_terms[i][var] != block) {
+      block = _terms[i][var];
+      previousBlockEnd = newEnd;
+    }
+
+	ASSERT(_terms[i][var] <= exp);
+	_terms[i][var] = 0;
+
+    bool remove = false;
+
+    for (size_t j = initialBlockEnd; j < previousBlockEnd; ++j) {
+      if (::divides(_terms[j], _terms[i], _varCount)) {
+		remove = true;
+		break;
+      }
+    }
+    
+    if (!remove) {
+      _terms[newEnd] = _terms[i];
+      ++newEnd;
+    }
+  }
+
+  _terms.erase(_terms.begin() + newEnd, _terms.end());
+  return true;
+}
+
+/*
 void Ideal::colonReminimize(size_t var, Exponent exp) {
   std::sort(_terms.begin(), _terms.end(),
 			Term::DescendingSingleDegreeComparator(var, _varCount));
@@ -243,6 +298,7 @@ void Ideal::colonReminimize(size_t var, Exponent exp) {
 
   _terms.erase(_terms.begin() + newEnd, _terms.end());
 }
+*/
 
 void Ideal::removeStrictMultiples(const Exponent* termParam) {
   for (size_t i = 0; i < _terms.size();) {
