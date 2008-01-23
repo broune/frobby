@@ -64,10 +64,10 @@ public:
   void colon(const Term& by);
 
   // Equivalent to calling colon(by) and then minimize.
-  void colonReminimize(const Term& by);
+  bool colonReminimize(const Term& by);
 
   // Perform colon by var raised to exp and then minimize.
-  void colonReminimize(size_t var, Exponent exp);
+  bool colonReminimize(size_t var, Exponent exp);
 
   // Removes those generators that are strict multiples of exponent.
   void removeStrictMultiples(const Exponent* exponent);
