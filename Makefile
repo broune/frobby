@@ -7,7 +7,7 @@ labelSources = TermTree.cpp Strategy.cpp PrintDebugStrategy.cpp	\
   SkipRedundantStrategy.cpp LabelAlgorithm.cpp OldPartition.cpp
 
 rawSources = $(patsubst %, label/%, $(labelSources))					\
-  main.cpp Action.cpp													\
+  main.cpp Action.cpp IOParameters.cpp									\
   IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
   randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
   TransformAction.cpp													\
