@@ -2,7 +2,7 @@
 #define TRANSFORM_ACTION_GUARD
 
 #include "Action.h"
-#include "StringParameter.h"
+#include "IOParameters.h"
 #include "BoolParameter.h"
 
 class TransformAction : public Action {
@@ -20,8 +20,7 @@ class TransformAction : public Action {
   virtual void perform();
 
  private:
-  StringParameter _inputFormat;
-  StringParameter _outputFormat;
+  IOParameters _io;
   BoolParameter _canonicalize;
   BoolParameter _sort;
   BoolParameter _unique;

@@ -6,16 +6,6 @@
 #include "IdealFacade.h"
 
 TransformAction::TransformAction():
-  _inputFormat
-("iformat",
- "The input format. The available formats are monos, m2, 4ti2, null and newmonos.",
- "monos"),
-  
-  _outputFormat
-  ("oformat",
-   "The output format. The additional format \"auto\" means use input format.",
-   "auto"),
-  
   _canonicalize
   ("canon",
    "Sort generators and variables to get canonical representation.",
@@ -66,8 +56,7 @@ Action* TransformAction::createNew() const {
 }
 
 void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
-  parameters.push_back(&_inputFormat);
-  parameters.push_back(&_outputFormat);
+  _io.obtainParameters(parameters);
   parameters.push_back(&_canonicalize);
   parameters.push_back(&_minimize);
   parameters.push_back(&_sort);
@@ -78,26 +67,14 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void TransformAction::perform() {
-  string iformat = _inputFormat.getValue();
-  string oformat = _outputFormat.getValue();
-
-  if (oformat == "auto")
-    oformat = iformat;
+  _io.validateFormats();
+  string iformat = _io.getInputFormat();
+  string oformat = _io.getOutputFormat();
 
   IOFacade facade(_printActions);
 
-  if (!facade.isValidMonomialIdealFormat(iformat.c_str())) {
-    fprintf(stderr, "ERROR: Unknown input format \"%s\".\n", iformat.c_str());
-    exit(1);
-  }
-
-  if (!facade.isValidMonomialIdealFormat(oformat.c_str())) {
-    fprintf(stderr, "ERROR: Unknown output format \"%s\".\n", oformat.c_str());
-    exit(1);
-  }
-
   BigIdeal ideal;
-  facade.readIdeal(stdin, ideal, iformat.c_str());
+  facade.readIdeal(stdin, ideal, _io.getInputFormat().c_str());
 
   IdealFacade idealFacade(_printActions);
 
@@ -108,7 +85,8 @@ void TransformAction::perform() {
 	if (_deform)
 	  idealFacade.sortAllAndMinimize(ideal);
 	else {
-	  idealFacade.sortAllAndMinimize(ideal, stdout, oformat.c_str());
+	  idealFacade.sortAllAndMinimize(ideal, stdout,
+									 _io.getOutputFormat().c_str());
 	  return;
 	}
   }
@@ -125,5 +103,5 @@ void TransformAction::perform() {
   if (_sort || _canonicalize)
 	idealFacade.sortGenerators(ideal);
 
-  facade.writeIdeal(stdout, ideal, oformat.c_str());
+  facade.writeIdeal(stdout, ideal, _io.getOutputFormat().c_str());
 }
