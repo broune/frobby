@@ -52,7 +52,11 @@ class Slice {
   // pivot is applied to getMultiply() and getSubtract(), while
   // getMultiply() is multiplied by pivot. The slice is then
   // normalized.
-  void innerSlice(const Term& pivot);
+  //
+  // Returns true if the colon operation was non-trivial in the sense
+  // that it changed the support of any minimal generator of
+  // getIdeal() or getSubtract().
+  bool innerSlice(const Term& pivot);
 
   // Computes an outer slice with the specified pivot, i.e. strict
   // multiples of pivot are removed from getIdeal(), and pivot is
@@ -68,7 +72,8 @@ class Slice {
   bool baseCase(TermConsumer* consumer);
 
   // Simplies the slice such that normalize, pruneSubtract,
-  // removeDoubleLcm and applyLowerBound all return false.
+  // removeDoubleLcm and applyLowerBound all return false. It is a
+  // precondition that the slice is already normalized.
   void simplify();
 
   // Like simplify(), except that only one simplification step is
@@ -78,12 +83,12 @@ class Slice {
   // characteristics can be different.
   bool simplifyStep();
 
- private:
   // Removes those generators of getIdeal() that are strict multiples
   // of some generator of getSubtract(). Returns true if any
   // generators were removed.
   bool normalize();
 
+ private:
   // Removes those generators of subtract that do not strictly divide
   // the lcm of getIdeal(), or that lies within the ideal
   // getIdeal(). Returns true if any generators were removed.
@@ -131,10 +136,6 @@ class Slice {
   // true if there are exactly two generators that are nowhere equal
   // to the lcm of getIdeal().
   bool twoNonMaxBaseCase(TermConsumer* consumer);
-
-  // Returns true if colon by term does not change the support of any
-  // minimal generator of getIdeal() or getSubtract().
-  bool isTrivialColon(const Term& term);
 
   size_t _varCount;
   Term _multiply;

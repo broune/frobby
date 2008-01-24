@@ -80,22 +80,26 @@ void Slice::swap(Slice& slice) {
   _subtract.swap(slice._subtract);
 }
 
-void Slice::innerSlice(const Term& pivot) {
+bool Slice::innerSlice(const Term& pivot) {
   ASSERT(getVarCount() == pivot.getVarCount());
 
   size_t size = _ideal.getGeneratorCount();
 
-  _ideal.colonReminimize(pivot);
-  _subtract.colonReminimize(pivot);
   _multiply.product(_multiply, pivot);
-  normalize();
+  bool idealChanged = _ideal.colonReminimize(pivot);
+  bool subtractChanged = _subtract.colonReminimize(pivot);
+  bool changed = idealChanged || subtractChanged;
+  if (changed) {
+	normalize();
+	_lowerBoundHint = pivot.getFirstNonZeroExponent();
+  }
 
   if (_ideal.getGeneratorCount() == size)
     _lcm.colon(_lcm, pivot);
   else
     _lcmUpdated = false;
 
-  _lowerBoundHint = pivot.getFirstNonZeroExponent();
+  return changed;
 }
 
 void Slice::outerSlice(const Term& pivot) {
@@ -149,6 +153,8 @@ bool Slice::baseCase(TermConsumer* consumer) {
 }
 
 void Slice::simplify() {
+  ASSERT(!normalize());
+
   removeDoubleLcm();
   while (applyLowerBound() &&
 		 removeDoubleLcm())
@@ -239,9 +245,9 @@ public:
     bool seenMatch = false;
     for (size_t var = 0; var < _lcm.getVarCount(); ++var) {
       if (term[var] == _lcm[var]) {
-	if (seenMatch)
-	  return true;
-	seenMatch = true;
+		if (seenMatch)
+		  return true;
+		seenMatch = true;
       }
     }
     return false;
@@ -273,6 +279,15 @@ bool Slice::applyLowerBound() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
 
+  if (_ideal.getGeneratorCount() < 100) {
+	Term bound(_varCount);
+	_ideal.getLeastExponents(bound);
+	bound.decrement();
+	if (!bound.isIdentity())
+	  innerSlice(gcd);
+	return false;
+  }
+
   bool changed = false;
   size_t stepsWithNoChange = 0;
 
@@ -284,23 +299,11 @@ bool Slice::applyLowerBound() {
       return true;
     }
 
-	if (bound.isIdentity())
+	if (!bound.isIdentity() && innerSlice(bound)) {
+	  changed = true;
+	  stepsWithNoChange = 0;
+	} else
       ++stepsWithNoChange;
-	else {
-	  if (isTrivialColon(bound)) {
-		// In this case, there is no need for reminimization or
-		// re-lower-bounding of this variable.
-		_ideal.colon(bound);
-		_subtract.colon(bound);
-		_multiply.product(_multiply, bound);
-		_lcm.colon(_lcm, bound);
-		++stepsWithNoChange;
-      } else {
-		innerSlice(bound);
-		stepsWithNoChange = 0;
-		changed = true;
-      }
-    }
 
     var = (var + 1) % _varCount;
   }
@@ -323,8 +326,8 @@ bool Slice::getLowerBound(Term& bound, size_t var) const {
     bool relevant = true;
     for (size_t var2 = 0; var2 < _varCount; ++var2) {
       if (var2 != var && (*it)[var2] == lcm[var2]) {
-	relevant = false;
-	break;
+		relevant = false;
+		break;
       }
     }
     
@@ -533,37 +536,6 @@ bool Slice::twoNonMaxBaseCase(TermConsumer* consumer) {
       consumer->consume(tmp);
     }
     msm[var] = lcm[var] - 1;
-  }
-
-  return true;
-}
-
-bool Slice::isTrivialColon(const Term& term) {
-  if (term.getSizeOfSupport() == 1) {
-	size_t var = term.getFirstNonZeroExponent();
-	Exponent exponent = term[var];
-
-	Ideal::const_iterator stop = _ideal.end();
-	for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
-	  if (0 < (*it)[var] && (*it)[var] <= exponent)
-		return false;
-
-	stop = _subtract.end();
-	for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
-	  if (0 < (*it)[var] && (*it)[var] <= exponent)
-		return false;
-  } else {
-	Ideal::const_iterator stop = _ideal.end();
-	for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it)
-	  for (size_t var = 0; var < _varCount; ++var)
-		if (0 < (*it)[var] && (*it)[var] <= term[var])
-		  return false;
-
-	stop = _subtract.end();
-	for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it)
-	  for (size_t var = 0; var < _varCount; ++var)
-		if (0 < (*it)[var] && (*it)[var] <= term[var])
-		  return false;
   }
 
   return true;

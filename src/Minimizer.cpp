@@ -6,16 +6,15 @@
 typedef vector<Exponent*>::iterator iterator;
 
 ::iterator simpleMinimize(::iterator begin, ::iterator end, size_t varCount) {
-  if (distance(begin, end) <= 1)
+  if (begin == end)
 	return end;
 
   std::sort(begin, end, Term::LexComparator(varCount));
 
-  // TODO: use that least element does not need a check
-
   ::iterator newEnd = begin;
-  for (::iterator dominator = begin; dominator != end; ++dominator) {
-
+  ++newEnd; // The first one is always kept
+  ::iterator dominator = newEnd;
+  for (; dominator != end; ++dominator) {
 	bool remove = false;
 	for (::iterator divisor = begin; divisor != newEnd; ++divisor) {
 	  if (::divides(*divisor, *dominator, varCount)) {
@@ -230,46 +229,75 @@ Minimizer::iterator Minimizer::minimize(iterator begin, iterator end) const {
   return copy(terms.begin(), terms.end(), begin);
 }
 
-Minimizer::iterator Minimizer::colonReminimize
-(iterator begin, iterator end, const Term& colon) {
-  ASSERT(simpleIsMinimal(begin, end));
+pair<Minimizer::iterator, bool> Minimizer::colonReminimize
+(iterator begin, iterator end, const Exponent* colon) {
+  ASSERT(isMinimallyGenerated(begin, end));
 
-  if (colon.getSizeOfSupport() == 1) {
-    size_t var = colon.getFirstNonZeroExponent();
-    return colonReminimize(begin, end, var, colon[var]);
+  if (::getSizeOfSupport(colon, _varCount) == 1) {
+	size_t var = ::getFirstNonZeroExponent(colon, _varCount);
+	return colonReminimize(begin, end, var, colon[var]);
   }
 
-  if (distance(begin, end) >= 100) {
-	for (iterator it = begin; it != end; ++it) {
-	  if (colon.strictlyDivides(*it)) {
-		::colon(*it, *it, colon.begin(), _varCount);
-		swap(*begin, *it);
-		++begin;
-		continue;
-	  }
-	}
-  }
-  
-  if (colon.getSizeOfSupport() <= 2) {
+  iterator blockBegin = end;
+  for (iterator it = begin; it != blockBegin;) {
+	bool block = true;
+	bool strictDivision = true;
 	for (size_t var = 0; var < _varCount; ++var) {
-	  if (colon[var] > 0)
-		end = colonReminimize(begin, end, var, colon[var]);
+	  if (colon[var] >= (*it)[var]) {
+		if ((*it)[var] > 0)
+		  block = false;
+		if (colon[var] > 0)
+		  strictDivision = false;
+		(*it)[var] = 0;
+	  } else
+		(*it)[var] -= colon[var];
 	}
-	return end;
+
+	if (strictDivision) {
+	  swap(*begin, *it);
+	  ++begin;
+	  ++it;
+	} else if (block) {
+	  --blockBegin;
+	  swap(*it, *blockBegin);
+	} else
+	  ++it;
   }
 
-  for (iterator it = begin; it != end; ++it)
-	::colon(*it, *it, colon.begin(), _varCount);
+  if (begin == blockBegin)
+	return make_pair(end, false);
 
-  return minimize(begin, end);
+  iterator newEnd = minimize(begin, blockBegin);
+
+  for (iterator it = blockBegin; it != end; ++it) {
+	if (!dominatesAny(begin, blockBegin, *it)) {
+	  *newEnd = *it;
+	  ++newEnd;
+	}
+  }
+
+  ASSERT(isMinimallyGenerated(begin, newEnd));
+  return make_pair(newEnd, true);
 }
 
-bool Minimizer::simpleIsMinimal(iterator begin, iterator end) {
-  for (iterator a = begin; a != end; ++a)
-	for (iterator b = begin; b != end; ++b)
-	  if (::divides(*a, *b, _varCount) && a != b)
-		return false;
-  return true;
+bool Minimizer::isMinimallyGenerated
+(const_iterator begin, const_iterator end) {
+  if (distance(begin, end) < 1000 || _varCount == 0) {
+	for (const_iterator divisor = begin; divisor != end; ++divisor)
+	  for (const_iterator dominator = begin; dominator != end; ++dominator)
+		if (::divides(*divisor, *dominator, _varCount) && divisor != dominator)
+		  return false;
+	return true;
+  }
+  
+  vector<Exponent*> terms(begin, end);
+  TreeNode node(terms.begin(), terms.end(), _varCount);
+  node.makeTree();
+
+  vector<Exponent*> terms2;
+  node.collect(terms2);
+
+  return terms.size() == terms2.size();
 }
 
 bool Minimizer::dominatesAny
@@ -288,40 +316,44 @@ bool Minimizer::dividesAny
   return false;
 }
 
-
-Minimizer::iterator Minimizer::colonReminimizePreprocess
-(iterator begin, iterator end, const Term& colon) {
-  for (iterator it = begin; it != end; ++it) {
-	if (colon.strictlyDivides(*it)) {
-	  ::colon(*it, *it, colon.begin(), _varCount);
-	  swap(*begin, *it);
-	  ++begin;
-	}
-  }
-  return begin;
-}
-
-Minimizer::iterator Minimizer::colonReminimize
+pair<Minimizer::iterator, bool> Minimizer::colonReminimize
 (iterator begin, iterator end, size_t var, Exponent exponent) {
-  std::sort(begin, end,
-			Term::DescendingSingleDegreeComparator(var, _varCount));
 
-  // These can be kept without any further processing at all.
-  while (begin != end && (*begin)[var] > exponent) {
-    (*begin)[var] -= exponent; // perform colon
-    ++begin;
+  // Sort in descending order according to exponent of var while
+  // ignoring everything that is strictly divisible by
+  // var^exponent. We put the zero entries at the right end
+  // immediately, before calling sort, because there are likely to be
+  // many of them, and we can do so while we are anyway looking for
+  // the strictly divisible monomials. The combination of these
+  // significantly reduce the number of monomials that need to be
+  // sorted.
+  iterator zeroBegin = end;
+  for (iterator it = begin; it != zeroBegin;) {
+	if ((*it)[var] > exponent) {
+	  (*it)[var] -= exponent; // apply colon
+	  swap(*it, *begin);
+	  ++begin;
+	  ++it;
+	} else if ((*it)[var] == 0) {
+	  // no need to apply colon in this case
+	  --zeroBegin;
+	  swap(*it, *zeroBegin);
+	} else
+	  ++it;
   }
 
-  if (begin == end)
-	return end;
+  if (begin == zeroBegin)
+	return make_pair(end, false);
+
+  // Sort the part of the array that we have not handled yet.
+  std::sort(begin, zeroBegin,
+			Term::DescendingSingleDegreeComparator(var, _varCount));
 
   // We group terms into blocks according to term[var].
   iterator previousBlockEnd = begin;
   iterator newEnd = begin;
 
   Exponent block = (*begin)[var];
-  if (block == 0)
-	return end;
 
   for (iterator it = begin; it != end; ++it) {
     // Detect if we are moving on to next block.
@@ -335,9 +367,8 @@ Minimizer::iterator Minimizer::colonReminimize
 
     bool remove = false;
 
-	// TODO: find a better names for it and it2
-    for (iterator it2 = begin; it2 != previousBlockEnd; ++it2) {
-      if (::divides(*it2, *it, _varCount)) {
+    for (iterator divisor = begin; divisor != previousBlockEnd; ++divisor) {
+      if (::divides(*divisor, *it, _varCount)) {
 		remove = true;
 		break;
       }
@@ -349,5 +380,5 @@ Minimizer::iterator Minimizer::colonReminimize
     }
   }
 
-  return newEnd;
+  return make_pair(newEnd, true);
 }

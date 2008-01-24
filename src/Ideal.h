@@ -1,7 +1,6 @@
 #ifndef IDEAL_GUARD
 #define IDEAL_GUARD
 
-#include "Term.h"
 #include <vector>
 
 class Ideal {
@@ -22,23 +21,33 @@ public:
   size_t getVarCount() const {return _varCount;}
   size_t getGeneratorCount() const {return _terms.size();}
 
-  bool isIncomparable(const Term& term) const;
   bool isIncomparable(const Exponent* term) const;
 
-  bool contains(const Term& term) const;
   bool contains(const Exponent* term) const;
 
   // Returns true if some minimal generator strictly divides term.
-  bool strictlyContains(const Term& term) const;
+  bool strictlyContains(const Exponent* term) const;
 
+  // Returns true if no generator divides another.
+  bool isMinimallyGenerated() const;
+
+  // Returns true if all generators are pure powers. This only
+  // corresponds to the mathematical definition of an irreducible
+  // polynomial ideal if the ideal is minimally generated.
   bool isIrreducible() const;
-  bool isStronglyGeneric(); // Can change order of generators.
 
-  void getLcm(Term& lcm) const;
-  void getGcd(Term& gcd) const;
+  // Returns true if no exponent of the same variable appears in two
+  // distinct generators. This only corresponds to the mathematical
+  // definition of strongly generic if the ideal is minimally
+  // generated. This method is not const because it permutes the
+  // generators.
+  bool isStronglyGeneric();
+
+  void getLcm(Exponent* lcm) const;
+  void getGcd(Exponent* gcd) const;
 
   // counts[var] will be the number of generators divisible by var.
-  void getSupportCounts(Term& counts) const;
+  void getSupportCounts(Exponent* counts) const;
 
   bool operator==(const Ideal& ideal) const;
 
@@ -46,9 +55,12 @@ public:
 
   // *** Mutators
 
-  void insert(const Term& term);
+  // Insert generators into the ideal.
   void insert(const Exponent* term);
   void insert(const Ideal& term);
+
+  // This is equivalent to calling insert and then minimize.
+  void insertReminimize(const Exponent* term);
 
   // Remove non-redundant generators.
   void minimize();
@@ -60,17 +72,17 @@ public:
   // Sort the generators in ascending order according to the exponent of var.
   void singleDegreeSort(size_t var);
 
-  // Replace each generator g by g : by.
-  void colon(const Term& by);
+  // Replace each generator g by g : colon.
+  void colon(const Exponent* colon);
 
   // Equivalent to calling colon(by) and then minimize.
-  bool colonReminimize(const Term& colon);
+  bool colonReminimize(const Exponent* colon);
 
-  // Perform colon by var raised to exp and then minimize.
-  bool colonReminimize(size_t var, Exponent exp);
+  // Removes those generators that are multiples of term.
+  void removeMultiples(const Exponent* term);
 
-  // Removes those generators that are strict multiples of exponent.
-  void removeStrictMultiples(const Exponent* exponent);
+  // Removes those generators that are strict multiples of term.
+  void removeStrictMultiples(const Exponent* term);
 
   // Remove duplicate generators.
   void removeDuplicates();
