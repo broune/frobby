@@ -62,7 +62,7 @@ computeIrreducibleDecom(Ideal& ideal,
 }
 
 void IrreducibleDecomFacade::
-computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out) {
+computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out, const char* format) {
   beginAction("Preparing to compute irreducible decomposition.");
 
   if (!_parameters.getUseSlice()) {
@@ -89,7 +89,7 @@ computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out) {
   if (_parameters.getDoBenchmark())
     consumer = new TermIgnorer();
   else
-    consumer = IOHandler::getIOHandler("monos")->
+    consumer = IOHandler::getIOHandler(format)->
       createWriter(out, &translator);
   
   endAction();

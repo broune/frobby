@@ -28,14 +28,16 @@ Action* IrreducibleDecomAction::createNew() const {
 void IrreducibleDecomAction::obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
   _decomParameters.obtainParameters(parameters);
+  _io.obtainParameters(parameters);
 }
 
 void IrreducibleDecomAction::perform() {
   BigIdeal ideal;
 
+  _io.validateFormats();
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(stdin, ideal);
+  ioFacade.readIdeal(stdin, ideal, _io.getInputFormat().c_str());
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
-  facade.computeIrreducibleDecom(ideal, stdout);
+  facade.computeIrreducibleDecom(ideal, stdout, _io.getOutputFormat().c_str());
 }
