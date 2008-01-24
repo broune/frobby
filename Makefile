@@ -75,7 +75,7 @@ all: bin/$(program) $(outdir)$(program)
 ifeq ($(MODE), profile)
 	rm -f gmon.out
 	./bench
-	gprof ./frobby > prof
+	gprof bin/frobby > prof
 endif
 
 test: all

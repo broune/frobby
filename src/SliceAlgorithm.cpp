@@ -83,6 +83,7 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
 }
 
 void SliceAlgorithm::labelSplit(Slice& slice) {
+  ASSERT(!slice.normalize());
   size_t var = _strategy->getLabelSplitVariable(slice);
 
   Ideal ideal(slice.getVarCount());
@@ -92,12 +93,12 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
     if ((*it)[var] == 0)
       ideal.insert(*it);
 
-  Term pivot(slice.getVarCount());
-  pivot[var] = 1;
-  ideal.insert(pivot);
+  Term varLabel(slice.getVarCount());
+  varLabel[var] = 1;
+  ideal.insert(varLabel);
  
   Ideal* oldSubtract = 0;
- 
+
   size_t childCount = 0;
   for (Ideal::const_iterator it = slice.getIdeal().begin(); it != stop; ++it) {
     if ((*it)[var] != 1)
@@ -105,15 +106,22 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
     if (childCount > 0) {
 	  if (oldSubtract == 0)
 		oldSubtract = new Ideal(slice.getSubtract());
-      slice.getSubtract().insert(pivot); // This is the previous pivot
+
+	  // This is the previous varLabel.
+      slice.getSubtract().insertReminimize(varLabel);
+
+	  // To normalize the child slice.
+	  ideal.removeStrictMultiples(varLabel);
 	}
 
-    pivot = *it;
-    pivot[var] -= 1;
+    varLabel = *it;
+    varLabel[var] -= 1;
 
     {
       Slice child(ideal, slice.getSubtract(), slice.getMultiply());
-      child.innerSlice(pivot);
+	  ASSERT(!child.normalize());
+
+      child.innerSlice(varLabel);
       content(child);
     }
     ++childCount;
@@ -124,10 +132,10 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
 	delete oldSubtract;
   }
 
-  pivot.setToIdentity();
-  pivot[var] = 1;
-
-  slice.innerSlice(pivot);
+  // Reuse varLabel to compute the inner slice.
+  varLabel.setToIdentity();
+  varLabel[var] = 1;
+  slice.innerSlice(varLabel);
   content(slice);
 }
 

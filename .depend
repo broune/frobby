@@ -1,57 +1,53 @@
 $(outdir)TermTree.o: src/label/TermTree.cpp src/label/../stdinc.h \
   src/label/TermTree.h src/label/../Term.h src/label/../Ideal.h \
-  src/label/../Term.h src/label/Allocator.h
+  src/label/Allocator.h
 $(outdir)Strategy.o: src/label/Strategy.cpp src/label/../stdinc.h \
   src/label/Strategy.h src/label/PrintDebugStrategy.h \
   src/label/StatisticsStrategy.h src/label/CompositeStrategy.h \
   src/label/TermTree.h src/label/../Term.h src/label/../Ideal.h \
-  src/label/../Term.h src/label/Allocator.h src/label/OldPartition.h \
+  src/label/Allocator.h src/label/OldPartition.h \
   src/label/../TermTranslator.h src/label/../VarNames.h \
   src/label/../VarNames.h src/label/PrintProgressStrategy.h \
   src/label/../Timer.h src/label/SkipRedundantStrategy.h
 $(outdir)PrintDebugStrategy.o: src/label/PrintDebugStrategy.cpp \
   src/label/../stdinc.h src/label/PrintDebugStrategy.h \
   src/label/Strategy.h src/label/TermTree.h src/label/../Term.h \
-  src/label/../Ideal.h src/label/../Term.h src/label/Allocator.h
+  src/label/../Ideal.h src/label/Allocator.h
 $(outdir)FrobeniusStrategy.o: src/label/FrobeniusStrategy.cpp \
   src/label/../stdinc.h src/label/FrobeniusStrategy.h \
   src/label/Strategy.h src/label/TermTree.h src/label/../Term.h \
-  src/label/../Ideal.h src/label/../Term.h src/label/Allocator.h \
-  src/label/OldPartition.h src/label/../TermTranslator.h \
-  src/label/../VarNames.h
+  src/label/../Ideal.h src/label/Allocator.h src/label/OldPartition.h \
+  src/label/../TermTranslator.h src/label/../VarNames.h
 $(outdir)BenchmarkStrategy.o: src/label/BenchmarkStrategy.cpp \
   src/label/../stdinc.h src/label/BenchmarkStrategy.h \
   src/label/Strategy.h
 $(outdir)DecompositionStrategy.o: src/label/DecompositionStrategy.cpp \
   src/label/../stdinc.h src/label/DecompositionStrategy.h \
   src/label/Strategy.h src/label/../VarNames.h src/label/TermTree.h \
-  src/label/../Term.h src/label/../Ideal.h src/label/../Term.h \
-  src/label/Allocator.h src/label/OldPartition.h \
-  src/label/../TermConsumer.h
+  src/label/../Term.h src/label/../Ideal.h src/label/Allocator.h \
+  src/label/OldPartition.h src/label/../TermConsumer.h
 $(outdir)StatisticsStrategy.o: src/label/StatisticsStrategy.cpp \
   src/label/../stdinc.h src/label/StatisticsStrategy.h \
   src/label/Strategy.h src/label/TermTree.h src/label/../Term.h \
-  src/label/../Ideal.h src/label/../Term.h src/label/Allocator.h
+  src/label/../Ideal.h src/label/Allocator.h
 $(outdir)CompositeStrategy.o: src/label/CompositeStrategy.cpp \
   src/label/../stdinc.h src/label/CompositeStrategy.h \
   src/label/Strategy.h src/label/TermTree.h src/label/../Term.h \
-  src/label/../Ideal.h src/label/../Term.h src/label/Allocator.h \
-  src/label/OldPartition.h src/label/../TermTranslator.h \
-  src/label/../VarNames.h src/label/../VarNames.h
+  src/label/../Ideal.h src/label/Allocator.h src/label/OldPartition.h \
+  src/label/../TermTranslator.h src/label/../VarNames.h \
+  src/label/../VarNames.h
 $(outdir)PrintProgressStrategy.o: src/label/PrintProgressStrategy.cpp \
   src/label/../stdinc.h src/label/PrintProgressStrategy.h \
   src/label/Strategy.h src/label/../Timer.h src/label/TermTree.h \
-  src/label/../Term.h src/label/../Ideal.h src/label/../Term.h \
-  src/label/Allocator.h
+  src/label/../Term.h src/label/../Ideal.h src/label/Allocator.h
 $(outdir)SkipRedundantStrategy.o: src/label/SkipRedundantStrategy.cpp \
   src/label/../stdinc.h src/label/SkipRedundantStrategy.h \
   src/label/Strategy.h src/label/TermTree.h src/label/../Term.h \
-  src/label/../Ideal.h src/label/../Term.h src/label/Allocator.h \
-  src/label/OldPartition.h
+  src/label/../Ideal.h src/label/Allocator.h src/label/OldPartition.h
 $(outdir)LabelAlgorithm.o: src/label/LabelAlgorithm.cpp src/label/../stdinc.h \
   src/label/LabelAlgorithm.h src/label/Strategy.h src/label/TermTree.h \
-  src/label/../Term.h src/label/../Ideal.h src/label/../Term.h \
-  src/label/Allocator.h src/label/OldPartition.h
+  src/label/../Term.h src/label/../Ideal.h src/label/Allocator.h \
+  src/label/OldPartition.h
 $(outdir)OldPartition.o: src/label/OldPartition.cpp src/label/../stdinc.h \
   src/label/OldPartition.h src/label/../Term.h
 $(outdir)main.o: src/main.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
@@ -86,7 +82,7 @@ $(outdir)MonosIOHandler.o: src/MonosIOHandler.cpp src/stdinc.h \
   src/MonosIOHandler.h src/IOHandler.h src/TermConsumer.h src/VarNames.h \
   src/BigIdeal.h src/Scanner.h
 $(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
-  src/TermTranslator.h src/Ideal.h src/Term.h
+  src/TermTranslator.h src/Ideal.h
 $(outdir)TransformAction.o: src/TransformAction.cpp src/stdinc.h \
   src/TransformAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
@@ -123,8 +119,8 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/TermConsumer.h src/VarNames.h src/IrreducibleDecomParameters.h \
   src/ParameterGroup.h src/Parameter.h src/BoolParameter.h \
   src/StringParameter.h src/BigIdeal.h src/IOFacade.h \
-  src/TermTranslator.h src/Ideal.h src/Term.h src/SliceAlgorithm.h \
-  src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h \
+  src/TermTranslator.h src/Ideal.h src/SliceAlgorithm.h \
+  src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h src/Term.h \
   src/TermGrader.h src/IdealFacade.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
@@ -147,7 +143,7 @@ $(outdir)AnalyzeAction.o: src/AnalyzeAction.cpp src/stdinc.h src/AnalyzeAction.h
   src/IdealFacade.h
 $(outdir)IdealFacade.o: src/IdealFacade.cpp src/stdinc.h src/IdealFacade.h \
   src/Facade.h src/Timer.h src/BigIdeal.h src/VarNames.h src/Ideal.h \
-  src/Term.h src/TermTranslator.h src/IOHandler.h src/TermConsumer.h
+  src/TermTranslator.h src/IOHandler.h src/TermConsumer.h
 $(outdir)Parameter.o: src/Parameter.cpp src/stdinc.h src/Parameter.h
 $(outdir)ParameterGroup.o: src/ParameterGroup.cpp src/stdinc.h \
   src/ParameterGroup.h src/Parameter.h
@@ -183,8 +179,8 @@ $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h \
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
   src/Term.h
 $(outdir)IntersectFacade.o: src/IntersectFacade.cpp src/stdinc.h \
-  src/IntersectFacade.h src/Facade.h src/Timer.h src/BigIdeal.h \
-  src/VarNames.h src/Ideal.h src/Term.h src/intersect.h \
+  src/IntersectFacade.h src/Facade.h src/Timer.h src/Term.h \
+  src/BigIdeal.h src/VarNames.h src/Ideal.h src/intersect.h \
   src/TermTranslator.h
 $(outdir)IntersectAction.o: src/IntersectAction.cpp src/stdinc.h \
   src/IntersectAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
@@ -195,7 +191,7 @@ $(outdir)AssociatedPrimesFacade.o: src/AssociatedPrimesFacade.cpp src/stdinc.h \
   src/IrreducibleDecomFacade.h src/IrreducibleDecomParameters.h \
   src/ParameterGroup.h src/Parameter.h src/BoolParameter.h \
   src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
-  src/Ideal.h src/Term.h src/DecomRecorder.h src/TermConsumer.h \
+  src/Ideal.h src/DecomRecorder.h src/TermConsumer.h src/Term.h \
   src/TermTranslator.h
 $(outdir)AssociatedPrimesAction.o: src/AssociatedPrimesAction.cpp src/stdinc.h \
   src/AssociatedPrimesAction.h src/Action.h src/BoolParameter.h \
@@ -210,7 +206,7 @@ $(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h src/Term.h src/Ideal.h 
   src/TermConsumer.h
 $(outdir)IndependenceSplitter.o: src/IndependenceSplitter.cpp src/stdinc.h \
   src/IndependenceSplitter.h src/Partition.h src/Projection.h src/Ideal.h \
-  src/Term.h src/Slice.h
+  src/Slice.h src/Term.h
 $(outdir)Projection.o: src/Projection.cpp src/stdinc.h src/Projection.h src/Term.h \
   src/Partition.h
 $(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
