@@ -18,7 +18,7 @@ class IrreducibleDecomFacade : private Facade {
 			 const IrreducibleDecomParameters& parameters);
 
   // These all clear ideal.
-  void computeIrreducibleDecom(BigIdeal& ideal, FILE* out);
+  void computeIrreducibleDecom(BigIdeal& ideal, FILE* out, const char* format);
   void computeAlexanderDual(BigIdeal& ideal, FILE* out);
   void computeAlexanderDual(BigIdeal& ideal,
 							const vector<mpz_class>& point, FILE* out);
