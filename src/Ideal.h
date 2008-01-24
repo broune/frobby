@@ -46,6 +46,10 @@ public:
   void getLcm(Exponent* lcm) const;
   void getGcd(Exponent* gcd) const;
 
+  // least[var] will be the smallest non-zero exponent of var that
+  // appears among the generators.
+  void getLeastExponents(Exponent* least) const;
+
   // counts[var] will be the number of generators divisible by var.
   void getSupportCounts(Exponent* counts) const;
 

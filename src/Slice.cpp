@@ -275,18 +275,17 @@ bool Slice::removeDoubleLcm() {
   return removedAny;
 }
 
+void Slice::applyTrivialLowerBound() {
+  Term bound(_varCount);
+  _ideal.getLeastExponents(bound);
+  bound.decrement();
+  if (!bound.isIdentity())
+	innerSlice(bound);
+}
+
 bool Slice::applyLowerBound() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
-
-  if (_ideal.getGeneratorCount() < 100) {
-	Term bound(_varCount);
-	_ideal.getLeastExponents(bound);
-	bound.decrement();
-	if (!bound.isIdentity())
-	  innerSlice(gcd);
-	return false;
-  }
 
   bool changed = false;
   size_t stepsWithNoChange = 0;
