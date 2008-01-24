@@ -107,10 +107,15 @@ class Slice {
   // support changed or if an empty base case is detected.
   bool applyLowerBound();
 
+  // Does an inner slice on the decremented least positive exponents
+  // that appear in ideal.
+  void applyTrivialLowerBound();
+
   // Calculates the gcd of those generators of getIdeal() that are
   // divisible by var. This gcd is then divided by var to yield a
   // lower bound on the content of the slice. Returns false if a base
-  // case is detected.
+  // case is detected. The real functionality is slight more
+  // sophisticated.
   bool getLowerBound(Term& bound, size_t var) const;
 
   // Calculates the lcm of the lower bounds from the getLowerBound

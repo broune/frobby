@@ -175,13 +175,17 @@ computeAlexanderDual(BigIdeal& bigIdeal,
 
 void IrreducibleDecomFacade::
 computeFrobeniusNumber(const vector<mpz_class>& instance,
-		       BigIdeal& bigIdeal, 
-		       mpz_class& frobeniusNumber) {
+					   BigIdeal& bigIdeal, 
+					   mpz_class& frobeniusNumber,
+					   vector<mpz_class>& bigVector) {
   if (instance.size() == 2) {
     frobeniusNumber = instance[0] * instance[1] - instance[0] - instance[1];
+	bigVector.resize(2);
+	bigVector[0] = -1;
+	bigVector[1] = instance[0] - 1;
     return;
   }
-
+  
   beginAction("Preparing to compute Frobenius number.");
   Ideal ideal(bigIdeal.getVarCount());
   TermTranslator translator(bigIdeal, ideal, false);
@@ -197,7 +201,7 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 
   beginAction("Optimizing over irreducible decomposition.");
   if (_parameters.getUseSlice()) {
-    Ideal maxSolution(ideal.getVarCount());
+	Ideal maxSolution(ideal.getVarCount());
     DecomRecorder recorder(&maxSolution);
     vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
     TermGrader grader(shiftedDegrees, &translator);
@@ -205,13 +209,18 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
     SliceStrategy* strategy = SliceStrategy::newFrobeniusStrategy
       (_parameters.getSplit(), &recorder, grader);
     
-     runSliceAlgorithm(ideal, strategy);
+	runSliceAlgorithm(ideal, strategy);
 
-     ASSERT(maxSolution.getGeneratorCount() == 1);
-     grader.getDegree(Term(*maxSolution.begin(), maxSolution.getVarCount()),
-		      frobeniusNumber);
-     for (size_t i = 0; i < instance.size(); ++i)
-       frobeniusNumber -= instance[i];
+	ASSERT(maxSolution.getGeneratorCount() == 1);
+	Term solution(*maxSolution.begin(), maxSolution.getVarCount());
+	grader.getDegree(solution, frobeniusNumber);
+	bigVector.resize(instance.size());
+	bigVector[0] = -1;
+	for (size_t i = 0; i < instance.size(); ++i) {
+	  frobeniusNumber -= instance[i];
+	  if (i > 0)
+		bigVector[i] = translator.getExponent(i - 1, solution) - 1;
+	}
   } else {
     Strategy* strategy = new FrobeniusStrategy
       (instance, &frobeniusNumber, ideal.getVarCount(),

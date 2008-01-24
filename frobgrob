@@ -6,4 +6,4 @@ cat $1 >> $1.out.mat
 
 4ti2/4ti2gmp groebner $1.out > /dev/null
 
-cat $1.out.gro $1 | bin/frobby frobgrob
+cat $1.out.gro $1 | bin/frobby frobgrob $2 $3 $4 $5 $6 $7 $8 $9

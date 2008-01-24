@@ -93,6 +93,16 @@ void Ideal::getGcd(Exponent* gcd) const {
     ::gcd(gcd, gcd, *it, _varCount);
 }
 
+void Ideal::getLeastExponents(Exponent* least) const {
+  ::setToIdentity(least, _varCount);
+  
+  const_iterator end = _terms.end();
+  for (const_iterator it = _terms.begin(); it != end; ++it)
+	for (size_t var = 0; var < _varCount; ++var)
+	  if (least[var] == 0 || ((*it)[var] < least[var] && (*it)[var] > 0))
+		least[var] = (*it)[var];
+}
+
 void Ideal::getSupportCounts(Exponent* counts) const {
   ::setToIdentity(counts, _varCount);
   const_iterator end = _terms.end();

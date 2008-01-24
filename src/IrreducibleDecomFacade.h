@@ -23,8 +23,9 @@ class IrreducibleDecomFacade : private Facade {
   void computeAlexanderDual(BigIdeal& ideal,
 							const vector<mpz_class>& point, FILE* out);
   void computeFrobeniusNumber(const vector<mpz_class>& instance,
-			      BigIdeal& ideal, 
-			      mpz_class& frobeniusNumber);
+							  BigIdeal& ideal, 
+							  mpz_class& frobeniusNumber,
+							  vector<mpz_class>& vector);
 
   void computeIrreducibleDecom(Ideal& ideal, TermConsumer* consumer);
 

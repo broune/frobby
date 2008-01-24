@@ -5,8 +5,12 @@
 #include "IOFacade.h"
 #include "IrreducibleDecomFacade.h"
 
-FrobeniusAction::FrobeniusAction() {
-  _decomParameters.setUseIndependence(false);
+FrobeniusAction::FrobeniusAction():
+  _displaySolution
+("vector",
+ "Display the vector that achieves the optimal value.",
+ false) {
+  _decomParameters.setUseIndependence(false); // TODO: is this still necessary?
   _decomParameters.setSplit("frob");
 }
 
@@ -35,6 +39,7 @@ Action* FrobeniusAction::createNew() const {
 }
 
 void FrobeniusAction::obtainParameters(vector<Parameter*>& parameters) {
+  parameters.push_back(&_displaySolution);
   Action::obtainParameters(parameters);
   _decomParameters.obtainParameters(parameters);
 }
@@ -57,7 +62,15 @@ void FrobeniusAction::perform() {
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
 
   mpz_class frobeniusNumber;
-  facade.computeFrobeniusNumber(instance, ideal, frobeniusNumber);
+  vector<mpz_class> vector;
+  facade.computeFrobeniusNumber(instance, ideal, frobeniusNumber, vector);
+
+  if (_displaySolution) {
+	fputc('(', stdout);
+	for (size_t i = 0; i < vector.size(); ++i)
+	  gmp_fprintf(stdout, "%s%Zd", i == 0 ? "" : ", ", vector[i].get_mpz_t());
+	fputs(")\n", stdout);
+  }
 
   gmp_fprintf(stdout, "%Zd\n", frobeniusNumber.get_mpz_t());
 }
