@@ -11,7 +11,26 @@ void GenerateDataFacade::generateListIdeal(BigIdeal& ideal,
 										   size_t variableCount) {
   beginAction("Generating list ideal.");
 
-  generateLinkedListIdeal(ideal, variableCount);
+  ::generateLinkedListIdeal(ideal, variableCount);
+
+  endAction();
+}
+
+void GenerateDataFacade::generateKingChessIdeal(BigIdeal& ideal,
+												unsigned int rowsAndColumns) {
+  beginAction("Generating king ideal.");
+
+  ::generateKingChessIdeal(ideal, rowsAndColumns);
+
+  endAction();
+}
+
+void GenerateDataFacade::generateKnightChessIdeal
+(BigIdeal& ideal,
+ unsigned int rowsAndColumns) {
+  beginAction("Generating knight ideal.");
+
+  ::generateKnightChessIdeal(ideal, rowsAndColumns);
 
   endAction();
 }

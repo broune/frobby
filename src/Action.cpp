@@ -108,7 +108,7 @@ void Action::processOption(const string& optionName,
   }
 
   fprintf(stderr, "ERROR: Unknown option \"-%s\".\n",
-	  optionName.c_str());
+		  optionName.c_str());
   exit(1);
 }
 

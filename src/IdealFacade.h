@@ -19,7 +19,7 @@ class IdealFacade : private Facade {
   void sortAllAndMinimize(BigIdeal& bigIdeal);
 
   // Clears the input ideal and writes to file.
-  void sortAllAndMinimize(BigIdeal& bigIdeal, FILE* out, const char* format);
+  void sortAllAndMinimize(BigIdeal& bigIdeal, FILE* out, const string& format);
 
   // Sorts the generators of ideal and removes duplicates.
   void sortGeneratorsUnique(BigIdeal& ideal);

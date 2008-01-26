@@ -4,6 +4,7 @@
 #include "Action.h"
 #include "StringParameter.h"
 #include "IntegerParameter.h"
+#include "IOParameters.h"
 
 class GenerateIdealAction : public Action {
  public:
@@ -25,6 +26,8 @@ class GenerateIdealAction : public Action {
   IntegerParameter _variableCount;
   IntegerParameter _generatorCount;
   IntegerParameter _exponentRange;
+
+  IOParameters _io;
 };
 
 #endif

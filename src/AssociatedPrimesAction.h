@@ -2,7 +2,8 @@
 #define ASSOCIATED_PRIMES_ACTION_GUARD
 
 #include "Action.h"
-#include "StringParameter.h"
+#include "IOParameters.h"
+#include "IrreducibleDecomParameters.h"
 
 class AssociatedPrimesAction : public Action {
  public:
@@ -18,8 +19,9 @@ class AssociatedPrimesAction : public Action {
 
   virtual void perform();
 
- private:
-  StringParameter _algorithm;
+ protected:
+  IrreducibleDecomParameters _decomParameters;
+  IOParameters _io;
 };
 
 #endif

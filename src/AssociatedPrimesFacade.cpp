@@ -17,8 +17,9 @@ AssociatedPrimesFacade::AssociatedPrimesFacade(bool printActions):
 
 void AssociatedPrimesFacade::
 computeAPUsingIrrDecom(BigIdeal& bigIdeal,
-			const IrreducibleDecomParameters& params,
-			FILE* out) {
+					   const IrreducibleDecomParameters& params,
+					   FILE* out,
+					   const string& format) {
   IrreducibleDecomFacade facade(isPrintingActions(), params);
   
   Ideal ideal(bigIdeal.getVarCount());
@@ -42,9 +43,9 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   for (Ideal::const_iterator it = decom.begin(); it != stop; ++it) {
     for (size_t var = 0; var < decom.getVarCount(); ++var) {
       if (translator.getExponent(var, (*it)[var]) == 0)
-	tmp[var] = 0;
+		tmp[var] = 0;
       else
-	tmp[var] = 1;
+		tmp[var] = 1;
     }
     radical.insert(tmp);
   }
@@ -57,7 +58,7 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   radical.clear();
 
   IOFacade ioFacade(isPrintingActions());
-  ioFacade.writeIdeal(out, bigIdeal);
+  ioFacade.writeIdeal(out, bigIdeal, format);
 
   endAction();
 }

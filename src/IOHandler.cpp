@@ -120,6 +120,10 @@ void IOHandler::writeIdeal(FILE* out, const Ideal& ideal,
   delete writer;
 }
 
+bool IOHandler::hasMoreInput(Scanner& scanner) const {
+  return !scanner.matchEOF();
+}
+
 void IOHandler::readTerm(BigIdeal& ideal, Scanner& scanner) {
   ideal.newLastTerm();
 

@@ -6,7 +6,13 @@
 
 class IOParameters : public ParameterGroup {
  public:
-  IOParameters();
+  enum Type {
+	InputOnly,
+	OutputOnly,
+	InputAndOutput
+  };
+
+  IOParameters(Type type = InputAndOutput);
 
   const string& getInputFormat() const;
   const string& getOutputFormat() const;
@@ -14,6 +20,8 @@ class IOParameters : public ParameterGroup {
   void validateFormats() const;
 
  private:
+  Type _type;
+
   StringParameter _inputFormat;
   StringParameter _outputFormat;
 };

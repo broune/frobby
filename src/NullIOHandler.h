@@ -19,6 +19,8 @@ public:
   virtual IdealWriter* createWriter
     (FILE* file, const TermTranslator* translator) const;
 
+  virtual bool hasMoreInput(Scanner& scanner) const;
+
   virtual const char* getFormatName() const;
 };
 

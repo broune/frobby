@@ -74,7 +74,7 @@ void TransformAction::perform() {
   IOFacade facade(_printActions);
 
   BigIdeal ideal;
-  facade.readIdeal(stdin, ideal, _io.getInputFormat().c_str());
+  facade.readIdeal(stdin, ideal, _io.getInputFormat());
 
   IdealFacade idealFacade(_printActions);
 
@@ -86,7 +86,7 @@ void TransformAction::perform() {
 	  idealFacade.sortAllAndMinimize(ideal);
 	else {
 	  idealFacade.sortAllAndMinimize(ideal, stdout,
-									 _io.getOutputFormat().c_str());
+									 _io.getOutputFormat());
 	  return;
 	}
   }
@@ -103,5 +103,5 @@ void TransformAction::perform() {
   if (_sort || _canonicalize)
 	idealFacade.sortGenerators(ideal);
 
-  facade.writeIdeal(stdout, ideal, _io.getOutputFormat().c_str());
+  facade.writeIdeal(stdout, ideal, _io.getOutputFormat());
 }

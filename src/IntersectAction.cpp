@@ -27,23 +27,21 @@ Action* IntersectAction::createNew() const {
 
 void IntersectAction::obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
+  _io.obtainParameters(parameters);
 }
 
 void IntersectAction::perform() {
   vector<BigIdeal*> ideals;
 
+  _io.validateFormats();
+
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeals(stdin, ideals);
-  /*
-  if (ideals.empty()) {
-    fputs("ERROR: intersection requires at least one ideal.\n", stderr);
-    exit(1);
-	}*/
+  ioFacade.readIdeals(stdin, ideals, _io.getInputFormat());
 
   IntersectFacade facade(_printActions);
   BigIdeal* intersection = facade.intersect(ideals);
-  
-  ioFacade.writeIdeal(stdout, *intersection);
+
+  ioFacade.writeIdeal(stdout, *intersection, _io.getOutputFormat());
 
   delete intersection;
   for (size_t i = 0; i < ideals.size(); ++i)

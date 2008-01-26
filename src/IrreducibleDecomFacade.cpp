@@ -62,7 +62,7 @@ computeIrreducibleDecom(Ideal& ideal,
 }
 
 void IrreducibleDecomFacade::
-computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out, const char* format) {
+computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out, const string& format) {
   beginAction("Preparing to compute irreducible decomposition.");
 
   if (!_parameters.getUseSlice()) {
@@ -73,7 +73,7 @@ computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out, const char* format) {
 		(bigIdeal.getGeneratorCount() == 1 &&
 		 bigIdeal[0] == vector<mpz_class>(bigIdeal.getVarCount()))) {
       IOFacade ioFacade(false);
-      ioFacade.writeIdeal(out, bigIdeal);
+      ioFacade.writeIdeal(out, bigIdeal, format);
       return;
     }
   }
@@ -100,22 +100,23 @@ computeIrreducibleDecom(BigIdeal& bigIdeal, FILE* out, const char* format) {
 void IrreducibleDecomFacade::
 computeAlexanderDual(BigIdeal& bigIdeal,
 					 const vector<mpz_class>& point,
-					 FILE* out) {
+					 FILE* out, const string& format) {
   ASSERT(point.size() == bigIdeal.getVarCount());
-  computeAlexanderDual(bigIdeal, point, false, out);
+  computeAlexanderDual(bigIdeal, point, false, out, format);
 }
 
 void IrreducibleDecomFacade::
-computeAlexanderDual(BigIdeal& bigIdeal, FILE* out) {
+computeAlexanderDual(BigIdeal& bigIdeal, FILE* out, const string& format) {
   vector<mpz_class> dummy;
-  computeAlexanderDual(bigIdeal, dummy, true, out);
+  computeAlexanderDual(bigIdeal, dummy, true, out, format);
 }
 
 void IrreducibleDecomFacade::
 computeAlexanderDual(BigIdeal& bigIdeal,
 					 const vector<mpz_class>& pointParameter,
 					 bool useLcm,
-					 FILE* out) {
+					 FILE* out,
+					 const string& format) {
   if (!_parameters.getUseSlice()) {
 	// This is to avoid having to deal with the special cases the
 	// implementation of the label algorithm do not deal with itself.
@@ -165,7 +166,7 @@ computeAlexanderDual(BigIdeal& bigIdeal,
   if (_parameters.getDoBenchmark())
     consumer = new TermIgnorer();
   else
-    consumer = IOHandler::getIOHandler("monos")->
+    consumer = IOHandler::getIOHandler(format)->
       createWriter(out, &translator);
 
   endAction();

@@ -7,10 +7,13 @@ class BigIdeal;
 
 void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount);
 
+void generateKingChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
+void generateKnightChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
+
 bool generateRandomIdeal(BigIdeal& bigIdeal,
-			 unsigned int exponentRange,
-			 unsigned int variableCount,
-			 unsigned int generatorCount);
+						 unsigned int exponentRange,
+						 unsigned int variableCount,
+						 unsigned int generatorCount);
 
 void generateRandomFrobeniusInstance(vector<Degree>& degrees);
 

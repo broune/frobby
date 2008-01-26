@@ -49,22 +49,22 @@ bool HelpAction::processNonParameter(const char* str) {
 
 void HelpAction::displayTopic() {
   fprintf(stdout, "Displaying information on action: %s\n\n%s\n",
-	  _topic->getName(), _topic->getDescription());
+		  _topic->getName(), _topic->getDescription());
 
   vector<Parameter*> parameters;
   _topic->obtainParameters(parameters);
 
   if (!parameters.empty()) {
     fprintf(stdout, "\nThe parameters accepted by %s are as follows.\n",
-	    _topic->getName());
+			_topic->getName());
 
     for (vector<Parameter*>::const_iterator it = parameters.begin();
-	 it != parameters.end(); ++it) {
+		 it != parameters.end(); ++it) {
       string defaultValue;
       (*it)->getValue(defaultValue);
       fprintf(stdout, "\n -%s %s   (default is %s)\n   %s\n",
-	      (*it)->getName(), (*it)->getParameterName(),
-	      defaultValue.c_str(), (*it)->getDescription());
+			  (*it)->getName(), (*it)->getParameterName(),
+			  defaultValue.c_str(), (*it)->getDescription());
     }
   }
 }

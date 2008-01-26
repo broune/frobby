@@ -1012,8 +1012,8 @@ private:
 
 SliceStrategy* SliceStrategy::
 newFrobeniusStrategy(const string& name,
-		     TermConsumer* consumer,
-		     TermGrader& grader) {
+					 TermConsumer* consumer,
+					 TermGrader& grader) {
   SliceStrategy* strategy;
   if (name == "frob")
 	strategy = 0;
@@ -1027,7 +1027,7 @@ class StatisticsSliceStrategy : public DecoratorSliceStrategy {
 public:
   StatisticsSliceStrategy(SliceStrategy* strategy):
     DecoratorSliceStrategy(strategy),
-    _level (0),
+    _level(0),
     _consumeCount(0),
     _independenceSplitCount(0) {
   }
@@ -1036,39 +1036,40 @@ public:
     fputs("**** Statistics\n", stderr);
     size_t sum = 0;
     size_t baseSum = 0;
+	size_t emptySum = 0;
     for (size_t l = 0; l < _calls.size(); ++l) {
       sum += _calls[l];
       baseSum += _baseCases[l];
+	  emptySum += _empty[l];
       if (false) {
-	fprintf(stderr,
-		"Level %lu had %lu calls of which %lu were base cases.\n",
-		(unsigned long)l + 1,
-		(unsigned long)_calls[l],
-		(unsigned long)_baseCases[l]);
+		fprintf(stderr,
+				"Level %lu had %lu calls of which %lu were base cases.\n",
+				(unsigned long)l + 1,
+				(unsigned long)_calls[l],
+				(unsigned long)_baseCases[l]);
       }
     }
 
-    double baseRatio = double(baseSum) / sum;
     fprintf(stderr,
-	    "* recursive levels:    %lu\n"
-	    "* recursive calls:     %lu\n"
-	    "* terms consumed:      %lu\n" 
-	    "* base case calls:     %lu (%f)\n"
-	    "* independence splits: %lu\n"
-	    "****\n",
-	    (unsigned long)_calls.size(),
-	    (unsigned long)sum,
-	    (unsigned long)_consumeCount,
-	    (unsigned long)baseSum,
-	    baseRatio,
-	    (unsigned long)_independenceSplitCount);
+			"* recursive levels:    %lu\n"
+			"* decom size:          %lu\n" 
+			"* empty slices:        %lu\n"
+			"* base case slices:    %lu\n"
+			"* independence splits: %lu\n"
+			"* (numbers not corrected for independence splits)\n"
+			"****\n",
+			(unsigned long)_calls.size(),
+			(unsigned long)_consumeCount,
+			(unsigned long)emptySum,
+			(unsigned long)baseSum,
+			(unsigned long)_independenceSplitCount);
   }
 
   virtual void doingIndependenceSplit(const Slice& slice,
-				      Ideal* mixedProjectionSubtract) {
+									  Ideal* mixedProjectionSubtract) {
     ++_independenceSplitCount;
     DecoratorSliceStrategy::doingIndependenceSplit(slice,
-						   mixedProjectionSubtract);
+												   mixedProjectionSubtract);
   }
 
   void startingContent(const Slice& slice) {
@@ -1079,9 +1080,12 @@ public:
       _calls.push_back(0);
       _baseCases.push_back(0);
       _isBaseCase.push_back(true);
+	  _empty.push_back(0);
+	  _isEmpty.push_back(true);
     }
 
     _isBaseCase[_level] = true;
+	_isEmpty[_level] = true;
     ++_calls[_level];
     ++_level;
 
@@ -1092,11 +1096,18 @@ public:
     --_level;
     if (_isBaseCase[_level])
       ++_baseCases[_level];
+	if (_isEmpty[_level])
+	  ++_empty[_level];
 
     DecoratorSliceStrategy::endingContent();
   }
 
   void consume(const Term& term) {
+	for (size_t level = _level; level > 0; --level) {
+	  if (!_isEmpty[level - 1])
+		break; // The remaining entries are already false
+	  _isEmpty[level - 1] = false;
+	}
     ++_consumeCount;
 
     DecoratorSliceStrategy::consume(term);
@@ -1107,6 +1118,8 @@ private:
   vector<size_t> _calls;
   vector<size_t> _baseCases;
   vector<size_t> _isBaseCase;
+  vector<size_t> _empty;
+  vector<size_t> _isEmpty;
   size_t _consumeCount;
   size_t _independenceSplitCount;
 };

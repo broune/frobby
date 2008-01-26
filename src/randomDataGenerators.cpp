@@ -5,6 +5,8 @@
 #include "Ideal.h"
 #include "Term.h"
 
+#include <sstream>
+
 void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount) {
   VarNames names(variableCount);
   ideal.clearAndSetNames(variableCount);
@@ -16,10 +18,96 @@ void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount) {
   }
 }
 
+void generateChessIdeal(BigIdeal& bigIdeal,
+						unsigned int rowCount,
+						unsigned int columnCount,
+						int deltaRow[],
+						int deltaColumn[],
+						size_t deltaCount) {
+  if (mpz_class(rowCount) * mpz_class(columnCount) >
+	  numeric_limits<size_t>::max()) {
+	fputs("ERROR: Number of positions on requested chess board too large.\n",
+		  stderr);
+	exit(1);
+  }
+
+  // Generate names
+  VarNames names;
+  for (unsigned int row = 0; row < rowCount; ++row) {
+	for (unsigned int column = 0; column < columnCount; ++column) {
+	  stringstream name;
+	  name << 'r' << (row + 1) << 'c' << (column + 1);
+	  names.addVar(name.str());
+	}
+  }
+  bigIdeal.clear();
+  bigIdeal.setNames(names);
+  Ideal ideal(bigIdeal.getVarCount());
+
+  // Generate ideal
+  for (unsigned int row = 0; row < rowCount; ++row) {
+	for (unsigned int column = 0; column < columnCount; ++column) {
+	  for (size_t delta = 0; delta < deltaCount; ++delta) {
+		// Check that the target position is within the board.
+		
+		if (deltaRow[delta] == numeric_limits<int>::min() ||
+			(deltaRow[delta] < 0 &&
+			 row < (unsigned int)-deltaRow[delta]) ||
+			(deltaRow[delta] > 0 &&
+			 rowCount - row <= (unsigned int)deltaRow[delta]))
+		  continue;
+
+		if (deltaColumn[delta] == numeric_limits<int>::min() ||
+			(deltaColumn[delta] < 0 &&
+			 column < (unsigned int)-deltaColumn[delta]) ||
+			(deltaColumn[delta] > 0 &&
+			 columnCount - column <= (unsigned int)deltaColumn[delta]))
+		  continue;
+
+		Term chessMove(ideal.getVarCount());
+		chessMove[row * columnCount + column] = 1;
+
+		unsigned int targetRow = row + deltaRow[delta];
+		unsigned int targetColumn = column + deltaColumn[delta];
+		ASSERT(targetRow < rowCount);
+		ASSERT(targetColumn < columnCount);
+
+		chessMove[targetRow * columnCount + targetColumn] = 1;
+		ideal.insert(chessMove);
+	  }
+	}
+  }
+
+  ideal.sortReverseLex();
+  bigIdeal.insert(ideal);
+}
+
+void generateKingChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns) {
+  int deltaRow[]    = {-1, 0, 1, 1}; // the other moves follow by symmetry
+  int deltaColumn[] = { 1, 1, 1, 0};
+  ASSERT(sizeof(deltaRow) == sizeof(deltaColumn));
+
+  size_t deltaCount = sizeof(deltaRow) / sizeof(int);
+
+  generateChessIdeal(ideal, rowsAndColumns, rowsAndColumns,
+					 deltaRow, deltaColumn, deltaCount);
+}
+
+void generateKnightChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns) {
+  int deltaRow[]    = {-1,  1, 2,  2}; // the other moves follow by symmetry
+  int deltaColumn[] = { 2,  2, 1, -1};
+  ASSERT(sizeof(deltaRow) == sizeof(deltaColumn));
+
+  size_t deltaCount = sizeof(deltaRow) / sizeof(int);
+
+  generateChessIdeal(ideal, rowsAndColumns, rowsAndColumns,
+					 deltaRow, deltaColumn, deltaCount);
+}
+
 bool generateRandomIdeal(BigIdeal& bigIdeal,
-			 unsigned int exponentRange,
-			 unsigned int variableCount,
-			 unsigned int generatorCount) {
+						 unsigned int exponentRange,
+						 unsigned int variableCount,
+						 unsigned int generatorCount) {
   Ideal ideal(variableCount);
   Term term(variableCount);
 
@@ -31,7 +119,7 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
     for (unsigned int var = 0; var < variableCount; ++var) {
       term[var] = rand();
       if (exponentRange != numeric_limits<unsigned int>::max())
-	term[var] %= exponentRange + 1;
+		term[var] %= exponentRange + 1;
     }
 
     if (ideal.isIncomparable(term)) {
@@ -62,8 +150,8 @@ void generateRandomFrobeniusInstance(vector<Degree>& degrees) {
       totalGcd = number;
     else {
       mpz_gcd(totalGcd.get_mpz_t(),
-	      totalGcd.get_mpz_t(),
-	      number.get_mpz_t());
+			  totalGcd.get_mpz_t(),
+			  number.get_mpz_t());
     }
     degrees[i] = number;
   }
