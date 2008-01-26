@@ -2,10 +2,10 @@
 
 ../../$frobby genideal -varCount 3 -genCount 3 > /tmp/as_input
 
-../../$frobby assprimes < /tmp/as_input -alg irrdecom 2> /dev/null | \
+../../$frobby assoprimes < /tmp/as_input -alg irrdecom 2> /dev/null | \
 ../../$frobby format -canon 2> /dev/null > /tmp/as_irrdecom
 
-../../$frobby assprimes < /tmp/as_input -alg uwe 2> /dev/null | \
+../../$frobby assoprimes < /tmp/as_input -alg uwe 2> /dev/null | \
 ../../$frobby format -canon 2> /dev/null > /tmp/as_uwe
 
 diff /tmp/as_uwe /tmp/as_irrdecom
