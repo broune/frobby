@@ -2,7 +2,6 @@
 #include "VarNames.h"
 
 #include <sstream>
-#include <cstring>
 
 const size_t VarNames::UNKNOWN = numeric_limits<size_t>::max();
 

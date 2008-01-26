@@ -11,6 +11,8 @@ class GenerateDataFacade : private Facade {
   GenerateDataFacade(bool printActions);
 
   void generateListIdeal(BigIdeal& ideal, size_t variableCount);
+  void generateKingChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
+  void generateKnightChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
 
   void generateIdeal(BigIdeal& ideal,
 					 size_t exponentRange,

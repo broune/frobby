@@ -6,15 +6,11 @@
 #include "AssociatedPrimesFacade.h"
 #include "IrreducibleDecomParameters.h"
 
-AssociatedPrimesAction::AssociatedPrimesAction():
-  _algorithm
-("alg",
- "The algorithm used. The only current option is irrdecom.",
- "irrdecom") {
+AssociatedPrimesAction::AssociatedPrimesAction() {
 }
 
 const char* AssociatedPrimesAction::getName() const {
-  return "assprimes";
+  return "assoprimes";
 }
 
 const char* AssociatedPrimesAction::getShortDescription() const {
@@ -34,26 +30,20 @@ Action* AssociatedPrimesAction::createNew() const {
 }
 
 void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
-  //parameters.push_back(&_algorithm); TODO: remove this paramter entirely
   Action::obtainParameters(parameters);
+  _io.obtainParameters(parameters);
 }
 
 void AssociatedPrimesAction::perform() {
   BigIdeal ideal;
 
+  _io.validateFormats();
+
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(stdin, ideal);
+  ioFacade.readIdeal(stdin, ideal, _io.getInputFormat());
 
   AssociatedPrimesFacade facade(_printActions);
 
-  string alg;
-  _algorithm.getValue(alg);
-  if (alg == "irrdecom") {
-    IrreducibleDecomParameters params;
-    facade.computeAPUsingIrrDecom(ideal, params, stdout);
-  } else {
-    fprintf(stderr, "ERROR: Unknown algorithm parameter \"%s\".\n",
-	    alg.c_str());
-    exit(1);
-  }
+  facade.computeAPUsingIrrDecom(ideal, _decomParameters, stdout,
+								_io.getOutputFormat());
 }

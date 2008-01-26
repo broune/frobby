@@ -27,7 +27,7 @@ rawSources = $(patsubst %, label/%, $(labelSources))					\
   PrimaryDecomAction.cpp Slice.cpp										\
   IndependenceSplitter.cpp Projection.cpp								\
   SliceStrategy.cpp lattice.cpp											\
-  LatticeFacade.cpp PrimaryDecomFacade.cpp DecomRecorder.cpp			\
+  LatticeFacade.cpp DecomRecorder.cpp									\
   TermGrader.cpp Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp	\
   AlexanderDualAction.cpp
 

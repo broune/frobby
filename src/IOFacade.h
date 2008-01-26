@@ -10,11 +10,11 @@ class IOFacade : private Facade {
  public:
   IOFacade(bool printActions);
 
-  bool isValidMonomialIdealFormat(const char* format);
-  void readIdeal(FILE* in, BigIdeal& ideal, const char* format = "monos");
+  bool isValidMonomialIdealFormat(const string& format);
+  void readIdeal(FILE* in, BigIdeal& ideal, const string& format);
   void readIdeals(FILE* in, vector<BigIdeal*>& ideal,
-				  const char* format = "monos"); // inserts the read ideals
-  void writeIdeal(FILE* out, BigIdeal& ideal, const char* format = "monos");
+				  const string& format); // inserts the read ideals
+  void writeIdeal(FILE* out, BigIdeal& ideal, const string& format);
 
   void readFrobeniusInstance(FILE* in, vector<mpz_class>& instance);
   void readFrobeniusInstanceWithGrobnerBasis
@@ -23,11 +23,11 @@ class IOFacade : private Facade {
 
   bool readAlexanderDualInstance
 	(FILE* in, BigIdeal& ideal, vector<mpz_class>& term,
-	 const char* format = "monos");
+	 const string& format);
 
-  bool isValidLatticeFormat(const char* format);
-  void readLattice(FILE* in, BigIdeal& ideal, const char* format);
-  void writeLattice(FILE* out, const BigIdeal& ideal, const char* format);
+  bool isValidLatticeFormat(const string& format);
+  void readLattice(FILE* in, BigIdeal& ideal, const string& format);
+  void writeLattice(FILE* out, const BigIdeal& ideal, const string& format);
 };
 
 #endif

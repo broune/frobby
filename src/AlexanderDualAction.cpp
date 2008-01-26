@@ -28,19 +28,24 @@ Action* AlexanderDualAction::createNew() const {
 void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
   _decomParameters.obtainParameters(parameters);
+  _io.obtainParameters(parameters);
 }
 
 void AlexanderDualAction::perform() {
   BigIdeal ideal;
   vector<mpz_class> point;
 
+  _io.validateFormats();
+
   IOFacade ioFacade(_printActions);
   bool pointSpecified =
-	ioFacade.readAlexanderDualInstance(stdin, ideal, point);
+	ioFacade.readAlexanderDualInstance(stdin, ideal, point,
+									   _io.getInputFormat());
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
   if (pointSpecified)
-	facade.computeAlexanderDual(ideal, point, stdout);
+	facade.computeAlexanderDual(ideal, point, stdout,
+								_io.getOutputFormat());
   else
-	facade.computeAlexanderDual(ideal, stdout);
+	facade.computeAlexanderDual(ideal, stdout, _io.getOutputFormat());
 }

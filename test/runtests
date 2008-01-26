@@ -2,55 +2,55 @@
 
 TIMEFORMAT=$' (%2lR real)'
 
-echo -n "decom     "
+echo -n "decom      "
 cd test/decom
 ./runtests
 echo
 cd ../..
 
-echo -n "frob      "
+echo -n "frob       "
 cd test/frob
 ./runtests -slice on -split median
 echo
 cd ../..
 
-echo -n "intersect "
+echo -n "intersect  "
 cd test/intersect
 ./runtests
 echo
 cd ../..
 
-echo -n "assprimes "
-cd test/assprimes
+echo -n "assoprimes "
+cd test/assoprimes
 ./runtests
 echo
 cd ../..
 
-echo -n "minimize  "
+echo -n "minimize   "
 cd test/minimize
 ./runtests
 echo
 cd ../..
 
-echo -n "transform "
+echo -n "transform  "
 cd test/transform
 ./runtests
 echo
 cd ../..
 
-echo -n "latformat "
+echo -n "latformat  "
 cd test/latformat
 ./runtests
 echo
 cd ../..
 
-echo -n "alexdual  "
+echo -n "alexdual   "
 cd test/alexdual
 ./runtests
 echo
 cd ../..
 
-echo -n "radical   "
+echo -n "radical    "
 cd test/radical
 ./runtests
 echo

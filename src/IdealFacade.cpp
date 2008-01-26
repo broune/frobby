@@ -57,7 +57,7 @@ void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal) {
 }
 
 void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal, FILE* out,
-									 const char* format) {
+									 const string& format) {
   beginAction("Minimizing and writing ideal.");
 
   Ideal ideal(bigIdeal.getVarCount());

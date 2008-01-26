@@ -39,9 +39,10 @@ Action* FrobeniusAction::createNew() const {
 }
 
 void FrobeniusAction::obtainParameters(vector<Parameter*>& parameters) {
-  parameters.push_back(&_displaySolution);
   Action::obtainParameters(parameters);
   _decomParameters.obtainParameters(parameters);
+
+  parameters.push_back(&_displaySolution);
 }
 
 void FrobeniusAction::perform() {

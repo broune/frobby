@@ -37,6 +37,10 @@ void NullIOHandler::readIrreducibleDecomposition(Scanner& scanner,
 												 BigIdeal& decom) {
 }
 
+bool NullIOHandler::hasMoreInput(Scanner& scanner) const {
+  return false;
+}
+
 const char* NullIOHandler::getFormatName() const {
   return "null";
 }

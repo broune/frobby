@@ -45,8 +45,8 @@ processParameters(const char** params, unsigned int paramCount) {
     _value = true;
   else {
     fprintf(stderr, "ERROR: Option -%s was given the parameter \"%s\".\n"
-	    "The only valid parameters are \"on\" and \"off\".\n",
-	    getName(), param.c_str());
+			"The only valid parameters are \"on\" and \"off\".\n",
+			getName(), param.c_str());
     exit(1);
   }
 }

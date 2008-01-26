@@ -2,21 +2,28 @@
 #include "IOParameters.h"
 
 #include "IOFacade.h"
+#include "MonosIOHandler.h"
 
-IOParameters::IOParameters():
+IOParameters::IOParameters(Type type):
   ParameterGroup("", ""),
+  _type(type),
 
   _inputFormat
   ("iformat",
    "The supported input formats are monos, m2, 4ti2, null and newmonos.",
-   "monos"),
+   MonosIOHandler().getFormatName()),
 
   _outputFormat
   ("oformat",
+   type == OutputOnly ?
+   "The supported output formats are monos, m2, 4ti2, null and newmonos." :
    "The output format. The additional format \"auto\" means use input format.",
-   "auto") {
-  addParameter(&_inputFormat);
-  addParameter(&_outputFormat);
+   type == OutputOnly ? 
+   MonosIOHandler().getFormatName() : "auto") {
+  if (type != OutputOnly)
+	addParameter(&_inputFormat);
+  if (type != InputOnly)
+	addParameter(&_outputFormat);
 }
 
 const string& IOParameters::getInputFormat() const {
@@ -24,7 +31,7 @@ const string& IOParameters::getInputFormat() const {
 }
 
 const string& IOParameters::getOutputFormat() const {
-  if (_outputFormat.getValue() == "auto")
+  if (_type != OutputOnly && _outputFormat.getValue() == "auto")
 	return _inputFormat;
   else
 	return _outputFormat;
@@ -33,13 +40,13 @@ const string& IOParameters::getOutputFormat() const {
 void IOParameters::validateFormats() const {
   IOFacade facade(false);
 
-  if (!facade.isValidMonomialIdealFormat(getInputFormat().c_str())) {
+  if (!facade.isValidMonomialIdealFormat(getInputFormat())) {
     fprintf(stderr, "ERROR: Unknown input format \"%s\".\n",
 			getInputFormat().c_str());
     exit(1);
   }
 
-  if (!facade.isValidMonomialIdealFormat(getOutputFormat().c_str())) {
+  if (!facade.isValidMonomialIdealFormat(getOutputFormat())) {
     fprintf(stderr, "ERROR: Unknown output format \"%s\".\n",
 			getOutputFormat().c_str());
     exit(1);
