@@ -1,0 +1,96 @@
+#!/bin/bash
+
+./test/runtests
+
+TIMEFORMAT=$' (%2lR real)'
+
+echo
+echo "*** decom"
+cd test/decom
+
+echo -n " minimum  "
+./runtests -split minimum
+echo
+
+echo -n " median   "
+./runtests -split median
+echo
+
+echo -n " maximum  "
+./runtests -split maximum
+echo
+
+echo -n " maxlabel "
+./runtests -split maxlabel
+echo
+
+echo -n " varlabel "
+./runtests -split varlabel
+echo
+
+echo -n " minlabel "
+./runtests -split minlabel
+echo
+
+echo -n " gcd      "
+./runtests -split gcd
+echo
+
+echo -n " indep    "
+./runtests -split indep
+echo
+
+echo -n " no slice "
+./runtests -slice off -independence off
+echo
+
+cd ../..
+
+
+
+
+echo
+echo "*** frob"
+cd test/frob
+
+echo -n " frob     "
+./runtests -split frob
+echo
+
+echo -n " minimum  "
+./runtests -split minimum
+echo
+
+echo -n " median   "
+./runtests -split median
+echo
+
+echo -n " maximum  "
+./runtests -split maximum
+echo
+
+echo -n " maxlabel "
+./runtests -split maxlabel
+echo
+
+echo -n " varlabel "
+./runtests -split varlabel
+echo
+
+echo -n " minlabel "
+./runtests -split minlabel
+echo
+
+echo -n " gcd      "
+./runtests -split gcd
+echo
+
+echo -n " indep    "
+./runtests -split indep
+echo
+
+echo -n " no slice "
+./runtests -slice off -independence off
+echo
+
+cd ../..
