@@ -4,6 +4,7 @@
 #include "BigIdeal.h"
 #include "IrreducibleDecomFacade.h"
 #include "IOFacade.h"
+#include "Scanner.h"
 
 const char* AlexanderDualAction::getName() const {
   return "alexdual";
@@ -32,15 +33,16 @@ void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AlexanderDualAction::perform() {
+  Scanner in(_io.getInputFormat(), stdin);
+  _io.autoDetectInputFormat(in);
+  _io.validateFormats();
+
   BigIdeal ideal;
   vector<mpz_class> point;
 
-  _io.validateFormats();
-
   IOFacade ioFacade(_printActions);
   bool pointSpecified =
-	ioFacade.readAlexanderDualInstance(stdin, ideal, point,
-									   _io.getInputFormat());
+	ioFacade.readAlexanderDualInstance(in, ideal, point);
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
   if (pointSpecified)

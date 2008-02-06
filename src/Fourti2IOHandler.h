@@ -23,6 +23,9 @@ public:
     (FILE* file, const TermTranslator* translator) const;
 
   virtual const char* getFormatName() const;
+
+ private:
+  void displayWarning() const;
 };
 
 #endif

@@ -10,7 +10,7 @@ cd ../..
 
 echo -n "frob       "
 cd test/frob
-./runtests -slice on -split median
+./runtests -split median
 echo
 cd ../..
 

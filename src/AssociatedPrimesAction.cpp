@@ -5,6 +5,7 @@
 #include "IOFacade.h"
 #include "AssociatedPrimesFacade.h"
 #include "IrreducibleDecomParameters.h"
+#include "Scanner.h"
 
 AssociatedPrimesAction::AssociatedPrimesAction() {
 }
@@ -35,12 +36,14 @@ void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AssociatedPrimesAction::perform() {
+  Scanner in(_io.getInputFormat(), stdin);
+  _io.autoDetectInputFormat(in);
+  _io.validateFormats();
+ 
   BigIdeal ideal;
 
-  _io.validateFormats();
-
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(stdin, ideal, _io.getInputFormat());
+  ioFacade.readIdeal(in, ideal);
 
   AssociatedPrimesFacade facade(_printActions);
 

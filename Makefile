@@ -1,12 +1,6 @@
 # ***** Variables
 
-labelSources = TermTree.cpp Strategy.cpp PrintDebugStrategy.cpp	\
-  FrobeniusStrategy.cpp BenchmarkStrategy.cpp			\
-  DecompositionStrategy.cpp StatisticsStrategy.cpp		\
-  CompositeStrategy.cpp PrintProgressStrategy.cpp		\
-  SkipRedundantStrategy.cpp LabelAlgorithm.cpp OldPartition.cpp
-
-rawSources = $(patsubst %, label/%, $(labelSources))					\
+rawSources =															\
   main.cpp Action.cpp IOParameters.cpp									\
   IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
   randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\

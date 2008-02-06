@@ -22,6 +22,7 @@ class AnalyzeAction : public Action {
  private:
   IOParameters _io;
   BoolParameter _printLcm;
+  BoolParameter _printLabels;
 };
 
 #endif

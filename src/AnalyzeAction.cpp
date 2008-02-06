@@ -4,13 +4,20 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "IdealFacade.h"
+#include "IrreducibleDecomParameters.h"
+#include "IrreducibleDecomFacade.h"
+#include "Scanner.h"
 
 AnalyzeAction::AnalyzeAction():
-  _io(IOParameters::InputOnly),
   _printLcm
-("printLcm",
- "Print the least common multiple of the generators.",
- false) {
+  ("lcm",
+   "Print the least common multiple of the generators.",
+   false),
+  
+  _printLabels
+  ("label",
+   "Print the irreducible decomposition along with labels.",
+   false) {
 }
 
 const char* AnalyzeAction::getName() const {
@@ -34,18 +41,27 @@ void AnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
 
   parameters.push_back(&_printLcm);
+  parameters.push_back(&_printLabels);
 }
 
 void AnalyzeAction::perform() {
+  Scanner in(_io.getInputFormat(), stdin);
+  _io.autoDetectInputFormat(in);
   _io.validateFormats();
 
   BigIdeal ideal;
 
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(stdin, ideal, _io.getInputFormat());
+  ioFacade.readIdeal(in, ideal);
 
   IdealFacade idealFacade(_printActions);
   if (_printLcm)
 	idealFacade.printLcm(stdout, ideal);
+  if (_printLabels) {
+	IrreducibleDecomParameters params;
+	IrreducibleDecomFacade irrFacade(_printActions, params);
+	irrFacade.printLabels(ideal, stdout, _io.getOutputFormat());
+  }
+
   idealFacade.printAnalysis(stderr, ideal);
 }

@@ -204,9 +204,6 @@ void TermTranslator::dualize(const vector<mpz_class>& a) {
 		_exponents[var][exp] = a[var] - _exponents[var][exp] + 1;
 	}
   }
-
-  if (hasStrings)
-	makeStrings();
 }
 
 void TermTranslator::print(FILE* file) const {
@@ -223,9 +220,8 @@ void TermTranslator::print(FILE* file) const {
   fputs(")\n", file);
 }
 
-void TermTranslator::makeStrings() const {
-  if (!_stringExponents.empty())
-    return;
+void TermTranslator::makeStrings(bool includeVar) const {
+  ASSERT(_stringExponents.empty());
 
   _stringExponents.resize(_exponents.size());
   for (unsigned int i = 0; i < _exponents.size(); ++i) {
@@ -233,12 +229,16 @@ void TermTranslator::makeStrings() const {
     for (unsigned int j = 0; j < _exponents[i].size(); ++j) {
       char* str = 0;
 
-      if (_exponents[i][j] != 0) {
+      if (_exponents[i][j] != 0 || !includeVar) {
 		stringstream out;
-		out << _names.getName(i);
-		if (_exponents[i][j] != 1) 
-		  out << '^' << _exponents[i][j];
-      
+		if (!includeVar)
+		  out << _exponents[i][j];
+		else {
+		  out << _names.getName(i);
+		  if (_exponents[i][j] != 1)
+			out << '^' << _exponents[i][j];
+		}
+
 		str = new char[out.str().size() + 1];
 		strcpy(str, out.str().c_str());
       }

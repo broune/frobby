@@ -4,6 +4,7 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "IdealFacade.h"
+#include "Scanner.h"
 
 TransformAction::TransformAction():
   _canonicalize
@@ -67,14 +68,14 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void TransformAction::perform() {
+  Scanner in(_io.getInputFormat(), stdin);
+  _io.autoDetectInputFormat(in);
   _io.validateFormats();
-  string iformat = _io.getInputFormat();
-  string oformat = _io.getOutputFormat();
 
   IOFacade facade(_printActions);
 
   BigIdeal ideal;
-  facade.readIdeal(stdin, ideal, _io.getInputFormat());
+  facade.readIdeal(in, ideal);
 
   IdealFacade idealFacade(_printActions);
 

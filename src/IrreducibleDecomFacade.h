@@ -17,6 +17,8 @@ class IrreducibleDecomFacade : private Facade {
   IrreducibleDecomFacade(bool printActions,
 			 const IrreducibleDecomParameters& parameters);
 
+  void printLabels(BigIdeal& ideal, FILE* out, const string& format);
+
   // These all clear ideal.
   void computeIrreducibleDecom(BigIdeal& ideal, FILE* out, const string& format);
   void computeAlexanderDual(BigIdeal& ideal, FILE* out, const string& format);
@@ -40,7 +42,6 @@ class IrreducibleDecomFacade : private Facade {
 							FILE* out,
 							const string& format);
 
-  void runLabelAlgorithm(Ideal& ideal, Strategy* strategy);
   void runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy);
 
   const IrreducibleDecomParameters& _parameters;

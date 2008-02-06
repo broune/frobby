@@ -7,30 +7,26 @@
 
 class IrreducibleDecomParameters : public ParameterGroup {
  public:
-  IrreducibleDecomParameters();
+  IrreducibleDecomParameters(bool exposeBoundParam = false);
 
   void setUseIndependence(bool value);
   void setSplit(const string& split);
 
-  bool getDoBenchmark() const;
   bool getPrintDebug() const;
   bool getPrintStatistics() const;
-  bool getSkipRedundant() const;
   bool getUseBound() const;
   bool getUseIndependence() const;
-  bool getUseSlice() const;
   bool getMinimal() const;
   
   const string& getSplit() const;
 
  private:
-  BoolParameter _doBenchmark;
+  bool _exposeBoundParam;
+
   BoolParameter _printDebug;
   BoolParameter _printStatistics;
-  BoolParameter _skipRedundant;
   BoolParameter _useBound;
   BoolParameter _useIndependence;
-  BoolParameter _useSlice;
   BoolParameter _minimal;
 
   StringParameter _split;
