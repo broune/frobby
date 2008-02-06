@@ -2,17 +2,31 @@
 #include "Scanner.h"
 
 #include "VarNames.h"
+#include "IOHandler.h"
 
-Scanner::Scanner(FILE* in):
+Scanner::Scanner(const string& formatName, FILE* in):
   _in(in),
   _lineNumber(1),
   _char(' '),
   _tmpString(new char[16]),
-  _tmpStringCapacity(16) {
+  _tmpStringCapacity(16),
+  _formatName(formatName) {
 }
 
 Scanner::~Scanner() {
   delete[] _tmpString;
+}
+
+const string& Scanner::getFormat() const {
+  return _formatName;
+}
+
+void Scanner::setFormat(const string& format) {
+  _formatName = format;
+}
+
+IOHandler* Scanner::getIOHandler() const {
+  return IOHandler::getIOHandler(getFormat());
 }
 
 bool Scanner::match(char c) {
@@ -43,7 +57,11 @@ unsigned int Scanner::getLineNumber() const {
 }
 
 void Scanner::printError() {
-  fprintf(stderr, "ERROR (line %lu): ", _lineNumber);
+  if (_formatName != "")
+	fprintf(stderr, "ERROR (format %s, line %lu): ",
+			_formatName.c_str(), _lineNumber);
+  else
+	fprintf(stderr, "ERROR (line %lu): ",_lineNumber);
 }
 
 void Scanner::expect(const char* str) {
@@ -140,9 +158,10 @@ void Scanner::readInteger(unsigned int& i) {
   readInteger(_integer);
 
   if (!_integer.fits_uint_p()) {
+	printError();
     gmp_fprintf(stderr,
-		"ERROR: expected 32 bit unsigned integer but got %Zd.\n",
-		_integer.get_mpz_t());
+				"expected non-negative integer less than 2^32-1 but got %Zd.\n",
+				_integer.get_mpz_t());
     exit(1);
   }
   i = _integer.get_ui();
@@ -208,8 +227,8 @@ int Scanner::peek() {
 }
 
 void Scanner::error(const string& expected) {
-  fprintf(stderr, "ERROR: expected %s at line %lu.\n",
-	  expected.c_str(), _lineNumber);
+  printError();
+  fprintf(stderr, "Expected %s.\n", expected.c_str());
   exit(1);
 }
 

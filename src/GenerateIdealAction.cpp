@@ -52,9 +52,9 @@ void GenerateIdealAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void GenerateIdealAction::perform() {
-  BigIdeal ideal;
-
   _io.validateFormats();
+
+  BigIdeal ideal;
 
   GenerateDataFacade generator(_printActions);
   const string& type = _type;

@@ -572,13 +572,14 @@ private:
 
 class FrobeniusIndependenceSplit : public TermConsumer {
 public:
-  FrobeniusIndependenceSplit(const TermGrader& grader):
+  FrobeniusIndependenceSplit(const TermGrader& grader, bool useBound):
     _grader(grader),
     _bound(grader.getVarCount()),
     _toBeat(-1),
     _improved(true),
     _partValue(-1), 
-    _partProjection(&_projection) {
+    _partProjection(&_projection),
+	_useBound(useBound) {
     _projection.setToIdentity(grader.getVarCount());
     _outerPartProjection = _projection;
   }
@@ -586,13 +587,16 @@ public:
   FrobeniusIndependenceSplit(const Projection& projection,
 							 const Slice& slice,
 							 const mpz_class& toBeat,
-							 const TermGrader& grader):
+							 const TermGrader& grader,
+							 bool useBound):
     _grader(grader),
     _bound(slice.getVarCount()),
     _toBeat(toBeat),
     _improved(true),
-    _projection(projection) {
-    getUpperBound(slice, _bound);
+    _projection(projection),
+	_useBound(useBound) {
+	if (useBound)
+	  getUpperBound(slice, _bound);
   }
 
   virtual void consume(const Term& term) {
@@ -631,17 +635,20 @@ public:
 
     updateOuterPartProjection();
 
-    Term zero(_partProjection->getRangeVarCount());
-    _partProjection->inverseProject(_bound, zero);
-    getDegree(zero, _outerPartProjection, _partValue);
-
-    if (_toBeat == -1)
-      _partValue = -1;
-    else {
-      static mpz_class tmp;
-      getDegree(_bound, _projection, tmp);
-      _partValue = _toBeat - (tmp - _partValue);
-    }
+	if (_useBound) {
+	  Term zero(_partProjection->getRangeVarCount());
+	  _partProjection->inverseProject(_bound, zero);
+	  getDegree(zero, _outerPartProjection, _partValue);
+	  
+	  if (_toBeat == -1)
+		_partValue = -1;
+	  else {
+		static mpz_class tmp;
+		getDegree(_bound, _projection, tmp);
+		_partValue = _toBeat - (tmp - _partValue);
+	  }
+	} else
+	  _partValue = -1;
   }
 
   void getPivot(Term& pivot, Slice& slice) {
@@ -686,7 +693,7 @@ public:
     if (slice.getIdeal().getGeneratorCount() == 0)
       return;
 
-    if (_partValue == -1) {
+    if (_partValue == -1 || !_useBound) {
       slice.simplify();
       return;
     }
@@ -737,8 +744,8 @@ public:
   }
 
 private:
-  // The idea here is to see if any of outer slices can be discarded,
-  // allowing us to move to the inner slice. This has not turned out
+  // The idea here is to see if any inner slices can be discarded,
+  // allowing us to move to the outer slice. This has not turned out
   // to work well.
   bool colonSimplify(Slice& slice) {
 	bool simplified = true;
@@ -898,6 +905,8 @@ private:
   Projection _outerPartProjection;
 
   Projection _projection;
+
+  bool _useBound;
 };
 
 // Ignores subtraction of mixed generators when doing independence
@@ -916,14 +925,16 @@ class FrobeniusSliceStrategy : public SliceStrategy {
 public:
   FrobeniusSliceStrategy(SliceStrategy* strategy,
 						 TermConsumer* consumer,
-						 TermGrader& grader):
+						 TermGrader& grader,
+						 bool useBound):
 	_strategy(strategy),
     _consumer(consumer),
-    _grader(grader) {
+    _grader(grader),
+	_useBound(useBound) {
     ASSERT(_consumer != 0);
 
     _independenceSplits.push_back
-      (new FrobeniusIndependenceSplit(_grader));
+      (new FrobeniusIndependenceSplit(_grader, _useBound));
   }
 
   virtual ~FrobeniusSliceStrategy() {
@@ -939,9 +950,11 @@ public:
     // The purpose of this is to initialize the bound so that it can
     // be used right away, instead of waiting for the slice algorithm
     // to produce some output first.
-    Term msm;
-    if (computeSingleMSM(slice, msm))
-      consume(msm);
+	if (_useBound) {
+	  Term msm;
+	  if (computeSingleMSM(slice, msm))
+		consume(msm);
+	}
   }
 
   virtual void simplify(Slice& slice) {
@@ -972,13 +985,14 @@ public:
   }
 
   virtual void doingIndependenceSplit(const Slice& slice,
-				      Ideal* mixedProjectionSubtract) {
+									  Ideal* mixedProjectionSubtract) {
     _independenceSplits.push_back
       (new FrobeniusIndependenceSplit
        (getCurrentSplit()->getCurrentPartProjection(),
-	slice,
-	getCurrentSplit()->getCurrentPartValue(),
-	_grader));
+		slice,
+		getCurrentSplit()->getCurrentPartValue(),
+		_grader,
+		_useBound));
   }
 
   virtual void doingIndependentPart(const Projection& projection, bool last) {
@@ -1008,19 +1022,21 @@ private:
   TermConsumer* _consumer;
   vector<FrobeniusIndependenceSplit*> _independenceSplits;
   const TermGrader& _grader;
+  bool _useBound;
 };
 
 SliceStrategy* SliceStrategy::
 newFrobeniusStrategy(const string& name,
 					 TermConsumer* consumer,
-					 TermGrader& grader) {
+					 TermGrader& grader,
+					 bool useBound) {
   SliceStrategy* strategy;
   if (name == "frob")
 	strategy = 0;
   else
 	strategy = newDecomStrategy(name, 0);
 
-  return new FrobeniusSliceStrategy(strategy, consumer, grader);
+  return new FrobeniusSliceStrategy(strategy, consumer, grader, useBound);
 }
 
 class StatisticsSliceStrategy : public DecoratorSliceStrategy {

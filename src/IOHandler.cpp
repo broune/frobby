@@ -24,11 +24,13 @@ IdealWriter::IdealWriter(FILE* file, const VarNames& names):
   _translator(0) {
 }
 
-IdealWriter::IdealWriter(FILE* file, const TermTranslator* translator):
+IdealWriter::IdealWriter(FILE* file,
+						 const TermTranslator* translator,
+						 bool includeVar):
   _file(file),
   _names(translator->getNames()),
   _translator(translator) {
-  _translator->makeStrings();
+  _translator->makeStrings(includeVar);
 }
 
 IdealWriter::~IdealWriter() {
@@ -40,6 +42,10 @@ void IOHandler::readTerm(Scanner& in,
   BigIdeal tmp(names);
   readTerm(tmp, in);
   term = tmp.getTerm(0);
+}
+
+void IdealWriter::writeJustATerm(const Term& term) {
+  writeTerm(term, _translator, _file);
 }
 
 void IdealWriter::writeTerm(const vector<const char*>& term, FILE* file) {
@@ -61,8 +67,8 @@ void IdealWriter::writeTerm(const vector<const char*>& term, FILE* file) {
 }
 
 void IdealWriter::writeTerm(const Term& term,
-			    const TermTranslator* translator,
-			    FILE* file) {
+							const TermTranslator* translator,
+							FILE* file) {
     char separator = ' ';
     size_t varCount = term.getVarCount();
     for (size_t j = 0; j < varCount; ++j) {
@@ -81,8 +87,8 @@ void IdealWriter::writeTerm(const Term& term,
   }
 
 void IdealWriter::writeTerm(const vector<mpz_class>& term,
-			    const VarNames& names,
-			    FILE* file) {
+							const VarNames& names,
+							FILE* file) {
   char separator = ' ';
   size_t varCount = term.size();
   for (size_t j = 0; j < varCount; ++j) {

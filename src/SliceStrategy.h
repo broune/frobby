@@ -19,9 +19,9 @@ class SliceStrategy : public TermConsumer {
 
   // *** Methods for handling independence splits
   virtual void doingIndependenceSplit(const Slice& slice,
-				      Ideal* mixedProjectionSubtract) = 0;
+									  Ideal* mixedProjectionSubtract) = 0;
   virtual void doingIndependentPart(const Projection& projection,
-				    bool last) = 0;
+									bool last) = 0;
   virtual bool doneWithIndependentPart() = 0;
   virtual void doneWithIndependenceSplit() = 0;
 
@@ -55,7 +55,8 @@ class SliceStrategy : public TermConsumer {
 										 TermConsumer* consumer);
   static SliceStrategy* newFrobeniusStrategy(const string& name,
 											 TermConsumer* consumer,
-											 TermGrader& grader);
+											 TermGrader& grader,
+											 bool useBound);
 
   static SliceStrategy* addStatistics(SliceStrategy* strategy);
   static SliceStrategy* addDebugOutput(SliceStrategy* strategy);

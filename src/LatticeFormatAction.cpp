@@ -5,6 +5,7 @@
 #include "IOFacade.h"
 #include "fplllIO.h"
 #include "LatticeFacade.h"
+#include "Scanner.h"
 
 LatticeFormatAction::LatticeFormatAction():
   _inputFormat
@@ -68,7 +69,8 @@ void LatticeFormatAction::perform() {
   }
 
   BigIdeal basis;
-  facade.readLattice(stdin, basis, iformat);
+  Scanner in(iformat, stdin);
+  facade.readLattice(in, basis);
 
   if (_zero) {
     LatticeFacade latticeFacade(_printActions);

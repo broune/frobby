@@ -48,11 +48,13 @@ class IdealWriter : public TermConsumer {
  public:
   IdealWriter();
   IdealWriter(FILE* file, const VarNames& names);
-  IdealWriter(FILE* file, const TermTranslator* translator);
+  IdealWriter(FILE* file, const TermTranslator* translator, bool includeVar);
   virtual ~IdealWriter();
 
   virtual void consume(const vector<mpz_class>& term) = 0;
   virtual void consume(const Term& term) = 0;
+
+  virtual void writeJustATerm(const Term& term);
 
  protected:
   static void writeTerm(const vector<const char*>& term, FILE* file);

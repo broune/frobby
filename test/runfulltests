@@ -40,10 +40,6 @@ echo -n " indep    "
 ./runtests -split indep
 echo
 
-echo -n " no slice "
-./runtests -slice off -independence off
-echo
-
 cd ../..
 
 
@@ -87,10 +83,6 @@ echo
 
 echo -n " indep    "
 ./runtests -split indep
-echo
-
-echo -n " no slice "
-./runtests -slice off -independence off
 echo
 
 cd ../..

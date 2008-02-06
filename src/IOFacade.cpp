@@ -24,29 +24,26 @@ bool IOFacade::isValidMonomialIdealFormat(const string& format) {
   return valid;
 }
 
-void IOFacade::readIdeal(FILE* in, BigIdeal& ideal, const string& format) {
+void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   beginAction("Reading monomial ideal.");
 
-  IOHandler* handler = IOHandler::getIOHandler(format);
+  IOHandler* handler = in.getIOHandler();
   ASSERT(handler != 0);
 
-  Scanner scanner(in);
-  handler->readIdeal(scanner, ideal);
+  handler->readIdeal(in, ideal);
 
   endAction();
 }
 
-void IOFacade::readIdeals(FILE* in, vector<BigIdeal*>& ideals,
-						  const string& format) {
+void IOFacade::readIdeals(Scanner& in, vector<BigIdeal*>& ideals) {
   beginAction("Reading monomial ideals.");
 
-  IOHandler* handler = IOHandler::getIOHandler(format);
+  IOHandler* handler = in.getIOHandler();
   ASSERT(handler != 0);
 
-  Scanner scanner(in);
-  while (handler->hasMoreInput(scanner)) {
+  while (handler->hasMoreInput(in)) {
     BigIdeal* ideal = new BigIdeal();
-	handler->readIdeal(scanner, *ideal);
+	handler->readIdeal(in, *ideal);
     ideals.push_back(ideal);
   }
 
@@ -66,18 +63,17 @@ void IOFacade::writeIdeal(FILE* out, BigIdeal& ideal, const string& format) {
 }
 
 bool IOFacade::readAlexanderDualInstance
-(FILE* in, BigIdeal& ideal, vector<mpz_class>& term, const string& format) {
+(Scanner& in, BigIdeal& ideal, vector<mpz_class>& term) {
   beginAction("Reading Alexander dual input.");
 
-  IOHandler* handler = IOHandler::getIOHandler(format);
+  IOHandler* handler = in.getIOHandler();
   ASSERT(handler != 0);
 
-  Scanner scanner(in);
-  handler->readIdeal(scanner, ideal);
+  handler->readIdeal(in, ideal);
 
   bool pointSpecified = false;
-  if (handler->hasMoreInput(scanner)) {
-	handler->readTerm(scanner, ideal.getNames(), term);
+  if (handler->hasMoreInput(in)) {
+	handler->readTerm(in, ideal.getNames(), term);
 	pointSpecified = true;
   }
 
@@ -87,22 +83,20 @@ bool IOFacade::readAlexanderDualInstance
 }
 
 void IOFacade::
-readFrobeniusInstance(FILE* in, vector<mpz_class>& instance) {
+readFrobeniusInstance(Scanner& in, vector<mpz_class>& instance) {
   beginAction("Reading Frobenius instance.");
 
-  Scanner scanner(in);
-  ::readFrobeniusInstance(scanner, instance);
+  ::readFrobeniusInstance(in, instance);
 
   endAction();
 }
 
 void IOFacade::readFrobeniusInstanceWithGrobnerBasis
-(FILE* in, BigIdeal& ideal, vector<mpz_class>& instance) {
+(Scanner& in, BigIdeal& ideal, vector<mpz_class>& instance) {
   beginAction("Reading frobenius instance with Grobner basis.");
 
-  Scanner scanner(in);
-  fourti2::readGrobnerBasis(scanner, ideal);
-  ::readFrobeniusInstance(scanner, instance);
+  fourti2::readGrobnerBasis(in, ideal);
+  ::readFrobeniusInstance(in, instance);
 
   if (instance.size() != ideal.getVarCount() + 1) {
     if (instance.empty())
@@ -143,14 +137,13 @@ bool IOFacade::isValidLatticeFormat(const string& format) {
 }
 
 void IOFacade::
-readLattice(FILE* in, BigIdeal& ideal, const string& format) {
+readLattice(Scanner& in, BigIdeal& ideal) {
   beginAction("Reading lattice basis.");
 
-  Scanner scanner(in);
-  if (format == "4ti2")
-    fourti2::readLatticeBasis(scanner, ideal);
-  else if (format == "fplll")
-    fplll::readLatticeBasis(scanner, ideal);
+  if (in.getFormat() == "4ti2")
+    fourti2::readLatticeBasis(in, ideal);
+  else if (in.getFormat() == "fplll")
+    fplll::readLatticeBasis(in, ideal);
   else
     ASSERT(false);
 
