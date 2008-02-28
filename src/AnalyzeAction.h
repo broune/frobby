@@ -23,6 +23,10 @@ class AnalyzeAction : public Action {
   IOParameters _io;
   BoolParameter _printLcm;
   BoolParameter _printLabels;
+  BoolParameter _printVarCount;
+  BoolParameter _printGeneratorCount;
+  BoolParameter _printMaximumExponent;
+  BoolParameter _printMinimal;
 };
 
 #endif
