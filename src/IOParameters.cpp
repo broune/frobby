@@ -20,9 +20,9 @@ IOParameters::IOParameters(Type type):
   ("oformat",
    type == OutputOnly ?
    "The supported output formats are monos, m2, 4ti2, null and newmonos." :
-   "The output format. The additional format \"auto\" means use input format.",
+   "The output format. The additional format \"input\" means use input format.",
    type == OutputOnly ? 
-   MonosIOHandler().getFormatName() : "auto") {
+   MonosIOHandler().getFormatName() : "input") {
   if (type != OutputOnly)
 	addParameter(&_inputFormat);
   if (type != InputOnly)
@@ -37,7 +37,7 @@ const string& IOParameters::getInputFormat() const {
 const string& IOParameters::getOutputFormat() const {
   ASSERT(_type != InputOnly);
 
-  if (_type != OutputOnly && _outputFormat.getValue() == "auto")
+  if (_type != OutputOnly && _outputFormat.getValue() == "input")
 	return _inputFormat;
   else
 	return _outputFormat;

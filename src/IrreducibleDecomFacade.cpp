@@ -195,7 +195,7 @@ computeAlexanderDual(BigIdeal& bigIdeal,
   }
 
   Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal);
+  TermTranslator translator(bigIdeal, ideal, false);
   translator.dualize(point);
   bigIdeal.clear();
 

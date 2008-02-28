@@ -210,7 +210,7 @@ void TermTranslator::print(FILE* file) const {
   fputs("TermTranslator(\n", file);
   for (size_t variable = 0; variable < _exponents.size(); ++variable) {
     fprintf(file, " variable %lu: ", (unsigned long)(variable + 1));
-    for (size_t e = 0; e < _exponents.size(); ++e) {
+    for (size_t e = 0; e < _exponents[variable].size(); ++e) {
       if (e != 0)
 		fputc(' ', file);
       gmp_fprintf(file, "%Zd", _exponents[variable][e].get_mpz_t());
