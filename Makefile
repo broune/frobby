@@ -166,7 +166,7 @@ fastdistribution: tidy
 realdistribution: tidy
 	rm -fr frobby_v$(VER).tar.gz frobby_v$(VER)
 	mkdir frobby_v$(VER)
-	cp -r COPYING Makefile src test frobby_v$(VER)
+	cp -r frobgrob COPYING Makefile src test frobby_v$(VER)
 	mkdir frobby_v$(VER)/4ti2
 	./addheaders `find frobby_v$(VER)/src|grep "\(.*\.h\)\|\(.*.cpp\)"`
 	tar --create --gzip --file=frobby_v$(VER).tar.gz frobby_v$(VER)/

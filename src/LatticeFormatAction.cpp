@@ -15,8 +15,8 @@ LatticeFormatAction::LatticeFormatAction():
   
   _outputFormat
   ("oformat",
-   "The output format. The additional format \"auto\" means use input format.",
-   "auto"),
+   "The output format. The additional format \"input\" means use input format.",
+   "input"),
 
   _zero
   ("zero",
@@ -53,7 +53,7 @@ void LatticeFormatAction::perform() {
   string iformat = _inputFormat.getValue();
   string oformat = _outputFormat.getValue();
 
-  if (oformat == "auto")
+  if (oformat == "input")
     oformat = iformat;
 
   IOFacade facade(_printActions);
