@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for t in `ls *.lat -S -r`
+for t in `ls -S -r *.lat`
 do
   ./runtest $t $*
   if [ $? != 0 ]
