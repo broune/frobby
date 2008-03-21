@@ -233,14 +233,32 @@ class Term {
 
   size_t getVarCount() const {return _varCount;}
 
-  Exponent operator[](int offset) const {return (*this)[(size_t)offset];}
-  Exponent operator[](size_t offset) const {
+  // We need all these versions to make everything work out on
+  // different platforms.
+  Exponent operator[](int offset) const {
+	ASSERT(0 <= offset);
+    ASSERT((unsigned int)offset < _varCount);
+    return _exponents[offset];
+  }
+  Exponent operator[](unsigned int offset) const {
+    ASSERT(offset < _varCount);
+    return _exponents[offset];
+  }
+  Exponent operator[](unsigned long offset) const {
     ASSERT(offset < _varCount);
     return _exponents[offset];
   }
 
-  Exponent& operator[](int offset) {return (*this)[(size_t)offset];}
-  Exponent& operator[](size_t offset) {
+  Exponent& operator[](int offset) {
+	ASSERT(0 <= offset);
+    ASSERT((unsigned int)offset < _varCount);
+    return _exponents[offset];
+  }
+  Exponent& operator[](unsigned int offset) {
+    ASSERT(offset < _varCount);
+    return _exponents[offset];
+  }
+  Exponent& operator[](unsigned long offset) {
     ASSERT(offset < _varCount);
     return _exponents[offset];
   }

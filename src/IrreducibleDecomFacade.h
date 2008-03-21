@@ -41,29 +41,25 @@ class ExternalConsumer : public TermConsumer {
 	_varCount(trans->getNames().getVarCount()),
 	_consumer(consumer),
 	_translator(trans),
-	_exponentVector(new mpz_t[_varCount]) {
-	for (size_t var = 0; var < _varCount; ++var)
-	  mpz_init(_exponentVector[var]);
+	_exponentVector(new mpz_ptr[_varCount]) {
   }
 
   ~ExternalConsumer() {
-	for (size_t var = 0; var < _varCount; ++var)
-	  mpz_clear(_exponentVector[var]);
 	delete[] _exponentVector;
   }
 
   virtual void consume(const Term& term) {
 	for (size_t var = 0; var < _varCount; ++var)
-	  mpz_set(_exponentVector[var],
-			  _translator->getExponent(var, term).get_mpz_t());
-	_consumer->consume((const mpz_t*)_exponentVector);
+	  _exponentVector[var] =
+		(mpz_ptr)_translator->getExponent(var, term).get_mpz_t();
+	_consumer->consume(_exponentVector);
   }
 
  private:
   size_t _varCount;															
   Frobby::TermConsumer* _consumer;
   TermTranslator* _translator;
-  mpz_t* _exponentVector;
+  mpz_ptr* _exponentVector;
 };
 
 class IrreducibleDecomFacade : private Facade {
