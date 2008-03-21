@@ -252,18 +252,16 @@ TermTranslator::~TermTranslator() {
 }
 
 const mpz_class& TermTranslator::
-getExponent(int variable, Exponent exponent) const {
-  ASSERT(0 <= variable);
-  ASSERT(variable < (int)_exponents.size());
+getExponent(size_t variable, Exponent exponent) const {
+  ASSERT(variable < _exponents.size());
   ASSERT(exponent < _exponents[variable].size());
   
   return _exponents[variable][exponent];
 }
 
 const char* TermTranslator::
-getExponentString(int variable, Exponent exponent) const {
-  ASSERT(0 <= variable);
-  ASSERT(variable < (int)_exponents.size());
+getExponentString(size_t variable, Exponent exponent) const {
+  ASSERT(variable < _exponents.size());
   ASSERT(exponent < _exponents[variable].size());
   ASSERT(!_stringExponents.empty());
 
@@ -271,13 +269,12 @@ getExponentString(int variable, Exponent exponent) const {
 }
 
 const mpz_class& TermTranslator::
-getExponent(int variable, const Term& term) const {
+getExponent(size_t variable, const Term& term) const {
   return getExponent(variable, term[variable]);
 }
 
-Exponent TermTranslator::getMaxId(int variable) const {
-  ASSERT(0 <= variable);
-  ASSERT(variable < (int)_exponents.size());
+Exponent TermTranslator::getMaxId(size_t variable) const {
+  ASSERT(variable < _exponents.size());
   
   return _exponents[variable].size() - 1;
 }

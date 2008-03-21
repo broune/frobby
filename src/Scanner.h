@@ -22,10 +22,10 @@ public:
   void expectEOF();
 
   void readInteger(mpz_class& integer);
-  void readInteger(unsigned int& i);
   void readIntegerAndNegativeAsZero(mpz_class& integer);
+  void readSizeT(size_t& size);
 
-  // The returned valid is only valid until the next method on this
+  // The returned object is only valid until the next method on this
   // object gets called.
   const char* readIdentifier();
   size_t readVariable(const VarNames& names);

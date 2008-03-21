@@ -222,7 +222,7 @@ bool computeSingleMSM2(const Slice& slice, Term& msm) {
 
 bool computeSingleMSM(const Slice& slice, Term& msm) {
   for (size_t var = 0; var < msm.getVarCount(); ++var)
-    if (slice.getLcm()[0] == 0)
+    if (slice.getLcm()[var] == 0)
       return false;
 
   // Extract terms into a container we can alter without changing
@@ -237,7 +237,9 @@ bool computeSingleMSM(const Slice& slice, Term& msm) {
   }
 
   msm.reset(slice.getVarCount());
-  msm[0] = slice.getLcm()[0] - 1; // do offset 0 to avoid negative vars below
+
+  // do offset 0 to avoid negative vars below
+  msm[0] = slice.getLcm()[0] - 1;
   {
     // Do things from the right so that the call do dominates below
     // will exit earlier.

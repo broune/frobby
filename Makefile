@@ -23,7 +23,7 @@ rawSources =															\
   SliceStrategy.cpp lattice.cpp											\
   LatticeFacade.cpp DecomRecorder.cpp									\
   TermGrader.cpp Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp	\
-  AlexanderDualAction.cpp
+  AlexanderDualAction.cpp frobby.cpp
 
 ldflags = -lgmpxx -lgmp
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\

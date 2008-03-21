@@ -9,7 +9,7 @@
 Ideal::~Ideal() {
 }
 
-Ideal::Ideal(unsigned int varCount):
+Ideal::Ideal(size_t varCount):
   _varCount(varCount),
   _allocator(varCount) {
 }

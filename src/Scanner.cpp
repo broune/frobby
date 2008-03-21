@@ -154,17 +154,45 @@ void Scanner::readIntegerAndNegativeAsZero(mpz_class& integer) {
 	parseInteger(integer, size);
 }
 
-void Scanner::readInteger(unsigned int& i) {
+void Scanner::readSizeT(size_t& size) {
   readInteger(_integer);
 
-  if (!_integer.fits_uint_p()) {
-	printError();
-    gmp_fprintf(stderr,
-				"expected non-negative integer less than 2^32-1 but got %Zd.\n",
-				_integer.get_mpz_t());
-    exit(1);
+  // Deal with different possibilities for how large size_t is.
+  if (sizeof(size_t) == sizeof(unsigned int)) {
+	if (!_integer.fits_uint_p()) {
+	  printError();
+	  gmp_fprintf
+		(stderr,
+		 "expected non-negative integer of size at most %u but got %Zd.\n",
+		 numeric_limits<unsigned int>::max(), _integer.get_mpz_t());
+	  exit(1);
+	}
+	size = (unsigned int)_integer.get_ui();
+  } else if (sizeof(size_t) == sizeof(unsigned long)) {
+	if (!_integer.fits_ulong_p()) {
+	  printError();
+	  gmp_fprintf
+		(stderr,
+		 "expected non-negative integer less than %lu but got %Zd.\n",
+		 numeric_limits<unsigned long>::max(), _integer.get_mpz_t());
+	  exit(1);
+	}
+	size = _integer.get_ui(); // returns an unsigned long despite the name.
+  } else {
+	fprintf(stderr,
+			"Frobby does not work on this machine due to an unexpected technical issue.\n"
+			"Please contact the developers of Frobby about this.\n"
+			"\n"
+			"Details that will be useful to the developers:\n"
+			" error location: Scanner::readSizeT\n"
+			" sizeof(size_t) = %i\n"
+			" sizeof(unsigned int) = %i\n"
+			" sizeof(unsigned long) = %i\n",
+			(int)sizeof(size_t),
+			(int)sizeof(unsigned int),
+			(int)sizeof(unsigned long));
+	exit(1);
   }
-  i = _integer.get_ui();
 }
 
 void Scanner::growTmpString() {

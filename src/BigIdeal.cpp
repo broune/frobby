@@ -136,12 +136,12 @@ bool BigIdeal::operator==(const BigIdeal& b) const {
   return _terms == b._terms;
 }
 
-vector<mpz_class>& BigIdeal::operator[](unsigned int index) {
+vector<mpz_class>& BigIdeal::operator[](size_t index) {
   ASSERT(index < _terms.size());
   return _terms[index];
 }
 
-const vector<mpz_class>& BigIdeal::operator[](unsigned int index) const {
+const vector<mpz_class>& BigIdeal::operator[](size_t index) const {
   ASSERT(index < _terms.size());
   return _terms[index];
 }

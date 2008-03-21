@@ -32,9 +32,8 @@ public:
 
   bool operator==(const BigIdeal& b) const;
 
-  vector<mpz_class>& operator[](unsigned int index);
-
-  const vector<mpz_class>& operator[](unsigned int index) const;
+  vector<mpz_class>& operator[](size_t index);
+  const vector<mpz_class>& operator[](size_t index) const;
 
   bool empty() const;
 
