@@ -1,5 +1,5 @@
 $(outdir)main.o: src/main.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
-  src/Parameter.h
+  src/Parameter.h src/frobby.h
 $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomAction.h src/IOParameters.h \
   src/ParameterGroup.h src/StringParameter.h \
