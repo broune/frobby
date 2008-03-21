@@ -1,3 +1,20 @@
+/* Frobby, software for computations related to monomial ideals.
+   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/ 
 #include "stdinc.h"
 #include "IrreducibleDecomFacade.h"
 
@@ -157,6 +174,55 @@ void IrreducibleDecomFacade::
 computeAlexanderDual(BigIdeal& bigIdeal, FILE* out, const string& format) {
   vector<mpz_class> dummy;
   computeAlexanderDual(bigIdeal, dummy, true, out, format);
+}
+
+void IrreducibleDecomFacade::
+computeAlexanderDual(BigIdeal& bigIdeal,
+					 const vector<mpz_class>& pointParameter,
+					 Frobby::TermConsumer* consumerParameter) {
+  // TODO: avoid code duplication
+
+  // We have to remove the non-minimal generators before we take the
+  // lcm, since the Alexander dual works on the lcm of only the
+  // minimal generators.
+  if (!_parameters.getMinimal()) {
+	IdealFacade facade(isPrintingActions());
+	facade.sortAllAndMinimize(bigIdeal);
+  }
+
+  beginAction("Preparing to compute Alexander dual.");
+
+  vector<mpz_class> lcm(bigIdeal.getVarCount());
+  bigIdeal.getLcm(lcm);
+
+  vector<mpz_class> point;
+
+  {
+	ASSERT(pointParameter.size() == bigIdeal.getVarCount());
+	point = pointParameter;
+	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+	  if (point[var] < lcm[var]) {
+		fputs("ERROR: The specified point to dualize on is not divisible by the\n"
+			  "least common multiple of the minimal generators of the ideal.\n", stderr);
+		exit(1);
+	  }
+	}
+  }
+
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal, false);
+  translator.dualize(point);
+  bigIdeal.clear();
+
+  if (ideal.getGeneratorCount() > 0)
+    translator.addArtinianPowers(ideal);
+
+  TermConsumer* consumer =
+	new ExternalConsumer(consumerParameter, &translator);
+
+  endAction();
+
+  computeIrreducibleDecom(ideal, consumer, true);
 }
 
 void IrreducibleDecomFacade::

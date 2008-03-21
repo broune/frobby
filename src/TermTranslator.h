@@ -32,18 +32,18 @@ public:
   ~TermTranslator();
 
   // These methods translate from IDs to infinite precision integers.
-  const mpz_class& getExponent(int variable, Exponent exponent) const;
-  const mpz_class& getExponent(int variable, const Term& term) const;
+  const mpz_class& getExponent(size_t variable, Exponent exponent) const;
+  const mpz_class& getExponent(size_t variable, const Term& term) const;
 
   // As getExponent, except the string "[var]^[e]" is returned or null
   // if the exponent is zero.  makeStrings must be called before
   // getExponentString can be used.  If includeVar is false, then only
   // "[e]" is returned. makeStrings must not be called twice.
-  const char* getExponentString(int variable, Exponent exponent) const;
+  const char* getExponentString(size_t variable, Exponent exponent) const;
   void makeStrings(bool includeVar) const;
 
   // The assigned IDs are those in the range [0, getMaxId()].
-  Exponent getMaxId(int variable) const;
+  Exponent getMaxId(size_t variable) const;
 
   // Adds a generator of the form v^e, e > 0, for any variable v where
   // generator of that form is not already present. e is chosen to be

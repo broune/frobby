@@ -18,7 +18,8 @@ $(outdir)IrreducibleDecomAction.o: src/IrreducibleDecomAction.cpp src/stdinc.h \
   src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
   src/StringParameter.h src/IrreducibleDecomParameters.h src/BigIdeal.h \
   src/VarNames.h src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
-  src/IOFacade.h src/Scanner.h
+  src/frobby.h src/TermConsumer.h src/TermTranslator.h src/IOFacade.h \
+  src/Scanner.h
 $(outdir)fplllIO.o: src/fplllIO.cpp src/stdinc.h src/fplllIO.h src/BigIdeal.h \
   src/VarNames.h src/Scanner.h
 $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h \
@@ -66,18 +67,18 @@ $(outdir)GenerateFrobeniusAction.o: src/GenerateFrobeniusAction.cpp src/stdinc.h
   src/Parameter.h src/BigIdeal.h src/VarNames.h src/GenerateDataFacade.h \
   src/Facade.h src/Timer.h src/IOFacade.h
 $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
-  src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h src/IOHandler.h \
-  src/TermConsumer.h src/VarNames.h src/IrreducibleDecomParameters.h \
-  src/ParameterGroup.h src/Parameter.h src/BoolParameter.h \
-  src/StringParameter.h src/BigIdeal.h src/IOFacade.h \
-  src/TermTranslator.h src/Ideal.h src/SliceAlgorithm.h \
-  src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h src/Term.h \
-  src/TermGrader.h src/IdealFacade.h
+  src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h src/frobby.h \
+  src/TermConsumer.h src/TermTranslator.h src/VarNames.h src/IOHandler.h \
+  src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
+  src/BoolParameter.h src/StringParameter.h src/BigIdeal.h src/IOFacade.h \
+  src/Ideal.h src/SliceAlgorithm.h src/SliceStrategy.h src/TermIgnorer.h \
+  src/DecomRecorder.h src/Term.h src/TermGrader.h src/IdealFacade.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
   src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
-  src/Facade.h src/Timer.h src/IrreducibleDecomFacade.h src/Scanner.h
+  src/Facade.h src/Timer.h src/IrreducibleDecomFacade.h src/frobby.h \
+  src/TermConsumer.h src/TermTranslator.h src/Scanner.h
 $(outdir)Facade.o: src/Facade.cpp src/stdinc.h src/Facade.h src/Timer.h
 $(outdir)IOFacade.o: src/IOFacade.cpp src/stdinc.h src/IOFacade.h src/Facade.h \
   src/Timer.h src/IOHandler.h src/TermConsumer.h src/VarNames.h \
@@ -93,7 +94,8 @@ $(outdir)AnalyzeAction.o: src/AnalyzeAction.cpp src/stdinc.h src/AnalyzeAction.h
   src/ParameterGroup.h src/StringParameter.h src/BigIdeal.h \
   src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
   src/IdealFacade.h src/IrreducibleDecomParameters.h \
-  src/IrreducibleDecomFacade.h src/Scanner.h
+  src/IrreducibleDecomFacade.h src/frobby.h src/TermConsumer.h \
+  src/TermTranslator.h src/Scanner.h
 $(outdir)IdealFacade.o: src/IdealFacade.cpp src/stdinc.h src/IdealFacade.h \
   src/Facade.h src/Timer.h src/BigIdeal.h src/VarNames.h src/Ideal.h \
   src/TermTranslator.h src/IOHandler.h src/TermConsumer.h
@@ -143,11 +145,11 @@ $(outdir)IntersectAction.o: src/IntersectAction.cpp src/stdinc.h \
   src/IntersectFacade.h src/Scanner.h
 $(outdir)AssociatedPrimesFacade.o: src/AssociatedPrimesFacade.cpp src/stdinc.h \
   src/AssociatedPrimesFacade.h src/Facade.h src/Timer.h \
-  src/IrreducibleDecomFacade.h src/IrreducibleDecomParameters.h \
+  src/IrreducibleDecomFacade.h src/frobby.h src/TermConsumer.h \
+  src/TermTranslator.h src/VarNames.h src/IrreducibleDecomParameters.h \
   src/ParameterGroup.h src/Parameter.h src/BoolParameter.h \
-  src/StringParameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
-  src/Ideal.h src/DecomRecorder.h src/TermConsumer.h src/Term.h \
-  src/TermTranslator.h
+  src/StringParameter.h src/BigIdeal.h src/IOFacade.h src/Ideal.h \
+  src/DecomRecorder.h src/Term.h
 $(outdir)AssociatedPrimesAction.o: src/AssociatedPrimesAction.cpp src/stdinc.h \
   src/AssociatedPrimesAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
@@ -188,5 +190,10 @@ $(outdir)AlexanderDualAction.o: src/AlexanderDualAction.cpp src/stdinc.h \
   src/AlexanderDualAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
   src/StringParameter.h src/IOParameters.h src/BigIdeal.h src/VarNames.h \
-  src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h src/IOFacade.h \
-  src/Scanner.h
+  src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h src/frobby.h \
+  src/TermConsumer.h src/TermTranslator.h src/IOFacade.h src/Scanner.h
+$(outdir)frobby.o: src/frobby.cpp src/stdinc.h src/frobby.h src/BigIdeal.h \
+  src/VarNames.h src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
+  src/TermConsumer.h src/TermTranslator.h \
+  src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
+  src/BoolParameter.h src/StringParameter.h

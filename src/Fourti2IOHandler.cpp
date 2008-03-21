@@ -95,8 +95,8 @@ void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   size_t termCount;
   size_t varCount;
 
-  scanner.readInteger(termCount);
-  scanner.readInteger(varCount);
+  scanner.readSizeT(termCount);
+  scanner.readSizeT(varCount);
 
   VarNames names(varCount);
   ideal.clearAndSetNames(names);
