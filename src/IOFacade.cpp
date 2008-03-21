@@ -144,8 +144,9 @@ readLattice(Scanner& in, BigIdeal& ideal) {
     fourti2::readLatticeBasis(in, ideal);
   else if (in.getFormat() == "fplll")
     fplll::readLatticeBasis(in, ideal);
-  else
+  else {
     ASSERT(false);
+  }
 
   endAction();
 }
@@ -158,8 +159,9 @@ writeLattice(FILE* out, const BigIdeal& ideal, const string& format) {
     fourti2::writeLatticeBasis(out, ideal);
   else if (format == "fplll")
     fplll::writeLatticeBasis(out, ideal);
-  else
+  else {
     ASSERT(false);
+  }
 
   endAction();
 }
