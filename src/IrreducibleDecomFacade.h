@@ -19,7 +19,7 @@ class TermConsumer;
 #include "TermTranslator.h"
 class ExternalConsumer : public TermConsumer {
  public:
-  ExternalConsumer(Frobby::TermConsumer* consumer, TermTranslator* trans):
+  ExternalConsumer(Frobby::ExternalTermConsumer* consumer, TermTranslator* trans):
 	_varCount(trans->getNames().getVarCount()),
 	_consumer(consumer),
 	_translator(trans),
@@ -39,7 +39,7 @@ class ExternalConsumer : public TermConsumer {
 
  private:
   size_t _varCount;															
-  Frobby::TermConsumer* _consumer;
+  Frobby::ExternalTermConsumer* _consumer;
   TermTranslator* _translator;
   mpz_ptr* _exponentVector;
 };
@@ -59,7 +59,7 @@ class IrreducibleDecomFacade : private Facade {
 							const string& format);
   void computeAlexanderDual(BigIdeal& ideal,
 							const vector<mpz_class>& point,
-							Frobby::TermConsumer* consumer);
+							Frobby::ExternalTermConsumer* consumer);
 
   void computeFrobeniusNumber(const vector<mpz_class>& instance,
 							  BigIdeal& ideal, 
