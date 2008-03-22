@@ -255,16 +255,29 @@ const mpz_class& TermTranslator::
 getExponent(size_t variable, Exponent exponent) const {
   ASSERT(variable < _exponents.size());
   ASSERT(exponent < _exponents[variable].size());
-  
+
   return _exponents[variable][exponent];
 }
 
 const char* TermTranslator::
+getVarExponentString(size_t variable, Exponent exponent) const {
+  ASSERT(variable < _exponents.size());
+  ASSERT(exponent < _exponents[variable].size());
+
+  if (_stringExponents.empty())
+	makeStrings(true);
+  return (_stringExponents[variable][exponent]);
+}
+
+// TODO: have two separate exponent containers including and not
+// including the var, respectively.
+const char* TermTranslator::
 getExponentString(size_t variable, Exponent exponent) const {
   ASSERT(variable < _exponents.size());
   ASSERT(exponent < _exponents[variable].size());
-  ASSERT(!_stringExponents.empty());
 
+  if (_stringExponents.empty())
+	makeStrings(false);
   return (_stringExponents[variable][exponent]);
 }
 

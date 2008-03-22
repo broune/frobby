@@ -12,37 +12,7 @@ class SliceStrategy;
 class Ideal;
 class TermConsumer;
 
-
-// TODO: move this elsewhere
-#include "frobby.h"
-#include "TermConsumer.h"
-#include "TermTranslator.h"
-class ExternalConsumer : public TermConsumer {
- public:
-  ExternalConsumer(Frobby::ExternalTermConsumer* consumer, TermTranslator* trans):
-	_varCount(trans->getNames().getVarCount()),
-	_consumer(consumer),
-	_translator(trans),
-	_exponentVector(new mpz_ptr[_varCount]) {
-  }
-
-  ~ExternalConsumer() {
-	delete[] _exponentVector;
-  }
-
-  virtual void consume(const Term& term) {
-	for (size_t var = 0; var < _varCount; ++var)
-	  _exponentVector[var] =
-		const_cast<mpz_ptr>(_translator->getExponent(var, term).get_mpz_t());
-	_consumer->consume(_exponentVector);
-  }
-
- private:
-  size_t _varCount;															
-  Frobby::ExternalTermConsumer* _consumer;
-  TermTranslator* _translator;
-  mpz_ptr* _exponentVector;
-};
+#include "BigTermConsumer.h"
 
 class IrreducibleDecomFacade : private Facade {
  public:
@@ -57,9 +27,17 @@ class IrreducibleDecomFacade : private Facade {
   void computeAlexanderDual(BigIdeal& ideal,
 							const vector<mpz_class>& point, FILE* out,
 							const string& format);
+
+  // Writes the minimal generators of the Alexander dual of ideal to
+  // consumer and clears ideal. point is used as a the parameter, and
+  // if it is null, then the least common multiple of the minimal
+  // generators of ideal is used.
+  //
+  // If non-null, point must be divisible by the least common multiple
+  // of the generators of ideal.
   void computeAlexanderDual(BigIdeal& ideal,
-							const vector<mpz_class>& point,
-							Frobby::ExternalTermConsumer* consumer);
+							const vector<mpz_class>* point,
+							BigTermConsumer* consumer);
 
   void computeFrobeniusNumber(const vector<mpz_class>& instance,
 							  BigIdeal& ideal, 

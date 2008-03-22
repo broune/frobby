@@ -4,6 +4,39 @@
 #include "BigIdeal.h"
 #include "IrreducibleDecomFacade.h"
 #include "IrreducibleDecomParameters.h"
+#include "BigTermConsumer.h"
+#include "TermTranslator.h"
+#include "Term.h"
+
+class ExternalConsumerAdapter : public BigTermConsumer {
+public:
+  ExternalConsumerAdapter(Frobby::ExternalTermConsumer* consumer,
+						  size_t varCount):
+	_consumer(consumer),
+	_varCount(varCount) {
+	ASSERT(consumer != 0);
+  }
+
+  virtual ~ExternalConsumerAdapter() {
+  }
+
+  virtual void consume(const Term& term, TermTranslator* translator) {
+	ASSERT(term.getVarCount() == _varCount);
+	for (size_t var = 0; var < _varCount; ++var)
+	  _term[var] = const_cast<mpz_ptr>
+		(translator->getExponent(var, term).get_mpz_t());
+	_consumer->consume(_term);
+  }
+
+  virtual void consume(mpz_ptr* term) {
+	_consumer->consume(term);
+  }
+
+private:
+  Frobby::ExternalTermConsumer* _consumer;
+  mpz_ptr* _term;
+  size_t _varCount;
+};
 
 Frobby::ExternalTermConsumer::~ExternalTermConsumer() {
 }
@@ -57,5 +90,7 @@ void Frobby::alexanderDual(ExternalIdeal* ideal, const mpz_ptr* exponentVector,
   for (size_t var = 0; var < bigIdeal->getVarCount(); ++var)
 	mpz_set(point[var].get_mpz_t(), exponentVector[var]);
 
-  facade.computeAlexanderDual(*bigIdeal, point, consumer);
+  facade.computeAlexanderDual(*bigIdeal, &point,
+							  new ExternalConsumerAdapter
+							  (consumer, bigIdeal->getVarCount()));
 }
