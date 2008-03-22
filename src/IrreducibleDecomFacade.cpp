@@ -162,7 +162,7 @@ computeAlexanderDual(BigIdeal& bigIdeal, FILE* out, const string& format) {
 void IrreducibleDecomFacade::
 computeAlexanderDual(BigIdeal& bigIdeal,
 					 const vector<mpz_class>& pointParameter,
-					 Frobby::TermConsumer* consumerParameter) {
+					 Frobby::ExternalTermConsumer* consumerParameter) {
   // TODO: avoid code duplication
 
   // We have to remove the non-minimal generators before we take the
