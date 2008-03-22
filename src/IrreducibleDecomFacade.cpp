@@ -16,9 +16,11 @@
 #include "TermConsumer.h"
 #include "IdealFacade.h"
 
+#include "TranslatingTermConsumer.h"
+
 IrreducibleDecomFacade::
 IrreducibleDecomFacade(bool printActions,
-		       const IrreducibleDecomParameters& parameters):
+					   const IrreducibleDecomParameters& parameters):
   Facade(printActions),
   _parameters(parameters) {
 }
@@ -161,8 +163,8 @@ computeAlexanderDual(BigIdeal& bigIdeal, FILE* out, const string& format) {
 
 void IrreducibleDecomFacade::
 computeAlexanderDual(BigIdeal& bigIdeal,
-					 const vector<mpz_class>& pointParameter,
-					 Frobby::ExternalTermConsumer* consumerParameter) {
+					 const vector<mpz_class>* pointParameter,
+					 BigTermConsumer* consumerParameter) {
   // TODO: avoid code duplication
 
   // We have to remove the non-minimal generators before we take the
@@ -180,9 +182,11 @@ computeAlexanderDual(BigIdeal& bigIdeal,
 
   vector<mpz_class> point;
 
-  {
-	ASSERT(pointParameter.size() == bigIdeal.getVarCount());
-	point = pointParameter;
+  if (pointParameter == 0)
+	point = lcm;
+  else {
+	ASSERT(pointParameter->size() == bigIdeal.getVarCount());
+	point = *pointParameter;
 	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
 	  if (point[var] < lcm[var]) {
 		fputs("ERROR: The specified point to dualize on is not divisible by the\n"
@@ -201,7 +205,7 @@ computeAlexanderDual(BigIdeal& bigIdeal,
     translator.addArtinianPowers(ideal);
 
   TermConsumer* consumer =
-	new ExternalConsumer(consumerParameter, &translator);
+	new TranslatingTermConsumer(consumerParameter, &translator);
 
   endAction();
 

@@ -5,6 +5,7 @@
 #include "IrreducibleDecomFacade.h"
 #include "IOFacade.h"
 #include "Scanner.h"
+#include "IOHandler.h"
 
 const char* AlexanderDualAction::getName() const {
   return "alexdual";
@@ -44,10 +45,15 @@ void AlexanderDualAction::perform() {
   bool pointSpecified =
 	ioFacade.readAlexanderDualInstance(in, ideal, point);
 
+  BigTermConsumer* consumer =
+	IOHandler::getIOHandler
+	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
+
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
   if (pointSpecified)
-	facade.computeAlexanderDual(ideal, point, stdout,
-								_io.getOutputFormat());
+	facade.computeAlexanderDual(ideal, &point, consumer);
   else
-	facade.computeAlexanderDual(ideal, stdout, _io.getOutputFormat());
+	facade.computeAlexanderDual(ideal, 0, consumer);
+
+  delete consumer;
 }

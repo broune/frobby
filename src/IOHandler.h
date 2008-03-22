@@ -44,7 +44,9 @@ class IOHandler {
 					const VarNames& names, Scanner& scanner);
 };
 
-class IdealWriter : public TermConsumer {
+#include "BigTermConsumer.h"
+
+class IdealWriter : public TermConsumer, public BigTermConsumer {
  public:
   IdealWriter();
   IdealWriter(FILE* file, const VarNames& names);
@@ -55,6 +57,22 @@ class IdealWriter : public TermConsumer {
   virtual void consume(const Term& term) = 0;
 
   virtual void writeJustATerm(const Term& term);
+
+  // TODO: implement everywhere and make pure virtual
+  virtual void consume(const Term& term, TermTranslator* translator) {
+	if (_translator == 0)
+	  _translator = translator;
+	ASSERT(_translator == translator); // TODO: this is bad
+	consume(term);
+  }
+
+  // TODO: implement everywhere and make pure virtual
+  virtual void consume(mpz_ptr* term) {
+	vector<mpz_class> v(_names.getVarCount());
+	for (size_t var = 0; var < _names.getVarCount(); ++var) {
+	  v[var] = mpz_class(term[var]);
+	}
+  }
 
  protected:
   static void writeTerm(const vector<const char*>& term, FILE* file);

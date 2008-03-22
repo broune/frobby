@@ -35,12 +35,14 @@ public:
   const mpz_class& getExponent(size_t variable, Exponent exponent) const;
   const mpz_class& getExponent(size_t variable, const Term& term) const;
 
-  // As getExponent, except the string "[var]^[e]" is returned or null
-  // if the exponent is zero.  makeStrings must be called before
-  // getExponentString can be used.  If includeVar is false, then only
-  // "[e]" is returned. makeStrings must not be called twice.
+  // As getExponent, except the string "var^e" is returned or null if
+  // the exponent is zero, where var is the variable and e is the
+  // exponent.
+  const char* getVarExponentString(size_t variable, Exponent exponent) const;
+
+  // as getExponent, except the string "e" is returned, where e is the
+  // exponent.
   const char* getExponentString(size_t variable, Exponent exponent) const;
-  void makeStrings(bool includeVar) const;
 
   // The assigned IDs are those in the range [0, getMaxId()].
   Exponent getMaxId(size_t variable) const;
@@ -57,12 +59,13 @@ public:
 
   // Replaces var^v by var^(a[i] - v) except that var^0 is left
   // alone. It is a precondition that a[i] be larger than or equal to
-  // the mapped values. This undoes the effect of calling makeStrings.
+  // the mapped values.
   void dualize(const vector<mpz_class>& a);
 
   void print(FILE* file) const;
 
 private:
+  void makeStrings(bool includeVar) const;
   void clearStrings();
 
   TermTranslator(const TermTranslator&); // not suported

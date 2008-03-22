@@ -30,7 +30,6 @@ IdealWriter::IdealWriter(FILE* file,
   _file(file),
   _names(translator->getNames()),
   _translator(translator) {
-  _translator->makeStrings(includeVar);
 }
 
 IdealWriter::~IdealWriter() {
@@ -69,22 +68,22 @@ void IdealWriter::writeTerm(const vector<const char*>& term, FILE* file) {
 void IdealWriter::writeTerm(const Term& term,
 							const TermTranslator* translator,
 							FILE* file) {
-    char separator = ' ';
-    size_t varCount = term.getVarCount();
-    for (size_t j = 0; j < varCount; ++j) {
-      const char* exp = translator->getExponentString(j, term[j]);
-      if (exp == 0)
-	continue;
+  char separator = ' ';
+  size_t varCount = term.getVarCount();
+  for (size_t j = 0; j < varCount; ++j) {
+	const char* exp = translator->getVarExponentString(j, term[j]);
+	if (exp == 0)
+	  continue;
 
-      putc(separator, file);
-      separator = '*';
+	putc(separator, file);
+	separator = '*';
 
-      fputs(exp, file);
-    }
-
-    if (separator == ' ')
-      fputs(" 1", file);
+	fputs(exp, file);
   }
+
+  if (separator == ' ')
+	fputs(" 1", file);
+}
 
 void IdealWriter::writeTerm(const vector<mpz_class>& term,
 							const VarNames& names,
