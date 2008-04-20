@@ -21,15 +21,12 @@ class IrreducibleDecomFacade : private Facade {
 
   void printLabels(BigIdeal& ideal, FILE* out, const string& format);
 
-  // These all clear ideal.
-  void computeIrreducibleDecom(BigIdeal& ideal, FILE* out, const string& format);
-  void computeAlexanderDual(BigIdeal& ideal, FILE* out, const string& format);
-  void computeAlexanderDual(BigIdeal& ideal,
-							const vector<mpz_class>& point, FILE* out,
-							const string& format);
+  // Feed the irreducible decomposition of ideal to consumer and clear
+  // ideal.
+  void computeIrreducibleDecom(BigIdeal& ideal, BigTermConsumer* consumer);
 
-  // Writes the minimal generators of the Alexander dual of ideal to
-  // consumer and clears ideal. point is used as a the parameter, and
+  // Feed the minimal generators of the Alexander dual of ideal to
+  // consumer and clear ideal. point is used as a the parameter, and
   // if it is null, then the least common multiple of the minimal
   // generators of ideal is used.
   //
@@ -50,11 +47,6 @@ class IrreducibleDecomFacade : private Facade {
   void computeIrreducibleDecom(Ideal& ideal,
 							   TermConsumer* consumer,
 							   bool preMinimized);
-  void computeAlexanderDual(BigIdeal& ideal,
-							const vector<mpz_class>& point,
-							bool useLcm,
-							FILE* out,
-							const string& format);
 
   void runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy);
 

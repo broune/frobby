@@ -26,25 +26,34 @@ rawSources =															\
   AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
   TranslatingTermConsumer.cpp
 
-ldflags = -lgmpxx -lgmp
+GMP_INC_DIR="/sw/include"
+
+ldflags = -lgmpxx -lgmp -L/sw/lib
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\
-         -Wno-unused-parameter -Werror 
+         -Wno-unused-parameter -Werror -I$(GMP_INC_DIR)
 
 ifndef MODE
  MODE=release
 endif
 
+MATCH=false
 ifeq ($(MODE), release)
   outdir = bin/release/
   cflags += -O3
-else ifeq ($(MODE), debug)
+  MATCH=true
+endif
+ifeq ($(MODE), debug)
   outdir = bin/debug/
   cflags += -g -D DEBUG -fno-inline
-else ifeq ($(MODE), profile)
+  MATCH=true
+endif
+ifeq ($(MODE), profile)
   outdir = bin/profile/
   cflags += -g -pg -O3
   ldflags += -pg
-else ifeq ($(MODE), analysis)
+  MATCH=true
+endif
+ifeq ($(MODE), analysis)
   outdir = bin/analysis/
   cflags += -fsyntax-only -O1 -Wfloat-equal -Wundef			\
             -Wno-endif-labels -Wshadow -Wlarger-than-1000		\
@@ -55,17 +64,21 @@ else ifeq ($(MODE), analysis)
             -Wredundant-decls -Wunreachable-code -Winline		\
             -Wno-invalid-offsetof -Winvalid-pch -Wlong-long		\
             -Wdisabled-optimization
-else
+  MATCH=true
+endif
+
+ifeq ($(MATCH), false)
   $(error Unknown value of MODE: "$(MODE)")
 endif
 
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 program = frobby
+library = frobby.a
 
 # ***** Compilation
 
-.PHONY: all depend clean bin/$(program)
+.PHONY: all depend clean bin/$(program) test library
 all: bin/$(program) $(outdir)$(program)
 ifeq ($(MODE), profile)
 	rm -f gmon.out
@@ -100,13 +113,19 @@ endif
 $(outdir)$(program): $(objs) | $(outdir)
 ifneq ($(MODE), analysis)
 	g++ $(objs) $(ldflags) -o $(outdir)$(program)
-	mv -f $(outdir)$(program).exe $(outdir)$(program); echo
-
+	@mv -f $(outdir)$(program).exe $(outdir)$(program); echo
 endif
 ifeq ($(MODE), release)
 	strip $(outdir)$(program)
 endif
 
+# Link object files into static library
+library: $(outdir)$(library)
+$(outdir)$(library): $(objs) | $(outdir)
+ifneq ($(MODE), analysis)
+	rm -f $(outdir)$(library)
+	ar r $(outdir)$(library) $(patsubst main.o, , $(objs))
+endif
 
 # Compile and output object files.
 # In analysis mode no file is created, so create one

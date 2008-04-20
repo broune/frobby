@@ -19,7 +19,8 @@ $(outdir)IrreducibleDecomAction.o: src/IrreducibleDecomAction.cpp src/stdinc.h \
   src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
   src/StringParameter.h src/IrreducibleDecomParameters.h src/BigIdeal.h \
   src/VarNames.h src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
-  src/BigTermConsumer.h src/IOFacade.h src/Scanner.h
+  src/BigTermConsumer.h src/IOFacade.h src/Scanner.h src/IOHandler.h \
+  src/TermConsumer.h
 $(outdir)fplllIO.o: src/fplllIO.cpp src/stdinc.h src/fplllIO.h src/BigIdeal.h \
   src/VarNames.h src/Scanner.h
 $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h \
@@ -195,7 +196,8 @@ $(outdir)AlexanderDualAction.o: src/AlexanderDualAction.cpp src/stdinc.h \
   src/Parameter.h src/IrreducibleDecomParameters.h src/ParameterGroup.h \
   src/StringParameter.h src/IOParameters.h src/BigIdeal.h src/VarNames.h \
   src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
-  src/BigTermConsumer.h src/IOFacade.h src/Scanner.h
+  src/BigTermConsumer.h src/IOFacade.h src/Scanner.h src/IOHandler.h \
+  src/TermConsumer.h
 $(outdir)frobby.o: src/frobby.cpp src/stdinc.h src/frobby.h src/BigIdeal.h \
   src/VarNames.h src/IrreducibleDecomFacade.h src/Facade.h src/Timer.h \
   src/BigTermConsumer.h src/IrreducibleDecomParameters.h \
@@ -204,4 +206,5 @@ $(outdir)frobby.o: src/frobby.cpp src/stdinc.h src/frobby.h src/BigIdeal.h \
 $(outdir)BigTermConsumer.o: src/BigTermConsumer.cpp src/stdinc.h \
   src/BigTermConsumer.h
 $(outdir)TranslatingTermConsumer.o: src/TranslatingTermConsumer.cpp src/stdinc.h \
-  src/TranslatingTermConsumer.h src/TermConsumer.h
+  src/TranslatingTermConsumer.h src/TermConsumer.h src/Term.h \
+  src/TermTranslator.h src/VarNames.h src/BigTermConsumer.h
