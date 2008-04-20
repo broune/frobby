@@ -5,6 +5,7 @@
 #include "IrreducibleDecomFacade.h"
 #include "IOFacade.h"
 #include "Scanner.h"
+#include "IOHandler.h"
 
 const char* IrreducibleDecomAction::getName() const {
   return "irrdecom";
@@ -42,6 +43,12 @@ void IrreducibleDecomAction::perform() {
   IOFacade ioFacade(_printActions);
   ioFacade.readIdeal(in, ideal);
 
+  BigTermConsumer* consumer =
+	IOHandler::getIOHandler
+	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
+
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
-  facade.computeIrreducibleDecom(ideal, stdout, _io.getOutputFormat());
+  facade.computeIrreducibleDecom(ideal, consumer);
+
+  delete consumer;
 }

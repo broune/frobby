@@ -13,7 +13,8 @@ public:
   ExternalConsumerAdapter(Frobby::ExternalTermConsumer* consumer,
 						  size_t varCount):
 	_consumer(consumer),
-	_varCount(varCount) {
+	_varCount(varCount),
+	_term(new mpz_ptr[varCount]) {
 	ASSERT(consumer != 0);
   }
 
@@ -34,8 +35,8 @@ public:
 
 private:
   Frobby::ExternalTermConsumer* _consumer;
-  mpz_ptr* _term;
   size_t _varCount;
+  mpz_ptr* _term;
 };
 
 Frobby::ExternalTermConsumer::~ExternalTermConsumer() {
