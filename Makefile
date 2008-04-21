@@ -106,7 +106,7 @@ $(outdir)label:
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
 ifneq ($(MODE), analysis)
-	cd bin; cp -sf ../$(outdir)$(program) $(program); cd ..
+	cd bin; rm $(program); link ../$(outdir)$(program) $(program); cd ..
 endif
 
 # Link object files into executable
@@ -145,11 +145,7 @@ clean: tidy
 	rm -rf bin frobby_v*.tar.gz
 
 tidy:
-	find -name "*~" -exec rm -f {} \;
-	find -name "*.stackdump" -exec rm -f {} \;
-	find -name "gmon.out" -exec rm -f {} \;
-	find -name "*.orig" -exec rm -f {} \;
-	find -name "core" -exec rm -f {} \;
+	find .|grep -x ".*~\|.*\.stackdump\|gmon\.out\|.*\.orig\|.*/core\|core"|xargs rm -f
 
 # ***** Mercurial
 
