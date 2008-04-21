@@ -6,7 +6,7 @@ frobby.lnk
 *.stackdump
 core
 *.orig
-4ti2\*
+4ti2/*
 prof
 gmon.out
 disttmp
