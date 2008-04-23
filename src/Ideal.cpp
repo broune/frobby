@@ -38,8 +38,8 @@ bool Ideal::contains(const Exponent* term) const {
 }
 
 bool Ideal::strictlyContains(const Exponent* term) const {
-  const_iterator end = _terms.end();
-  for (const_iterator it = _terms.begin(); it != end; ++it)
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
     if (::strictlyDivides(*it, term, _varCount))
       return true;
   return false;
@@ -51,8 +51,8 @@ bool Ideal::isMinimallyGenerated() const {
 }
 
 bool Ideal::isIrreducible() const {
-  const_iterator end = _terms.end();
-  for (const_iterator it = _terms.begin(); it != end; ++it)
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
     if (getSizeOfSupport(*it, _varCount) != 1)
       return false;
   return true;
@@ -63,8 +63,8 @@ bool Ideal::isStronglyGeneric() {
 	singleDegreeSort(var);
 
 	Exponent lastExponent = 0;
-	const_iterator end = _terms.end();
-	for (const_iterator it = _terms.begin(); it != end; ++it) {
+	const_iterator stop = _terms.end();
+	for (const_iterator it = _terms.begin(); it != stop; ++it) {
 	  if (lastExponent != 0 && lastExponent == (*it)[var])
 		return false;
 	  lastExponent = (*it)[var];
@@ -75,8 +75,8 @@ bool Ideal::isStronglyGeneric() {
 
 void Ideal::getLcm(Exponent* lcm) const {
   ::setToIdentity(lcm, _varCount);
-  const_iterator end = _terms.end();
-  for (const_iterator it = _terms.begin(); it != end; ++it)
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
 	::lcm(lcm, lcm, *it, _varCount);
 }
 
@@ -87,17 +87,17 @@ void Ideal::getGcd(Exponent* gcd) const {
   }
 
   copy(_terms[0], _terms[0] + _varCount, gcd);
-  const_iterator end = _terms.end();
+  const_iterator stop = _terms.end();
   const_iterator it = _terms.begin();
-  for (++it; it != end; ++it)
+  for (++it; it != stop; ++it)
     ::gcd(gcd, gcd, *it, _varCount);
 }
 
 void Ideal::getLeastExponents(Exponent* least) const {
   ::setToIdentity(least, _varCount);
   
-  const_iterator end = _terms.end();
-  for (const_iterator it = _terms.begin(); it != end; ++it)
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
 	for (size_t var = 0; var < _varCount; ++var)
 	  if (least[var] == 0 || ((*it)[var] < least[var] && (*it)[var] > 0))
 		least[var] = (*it)[var];
@@ -105,8 +105,8 @@ void Ideal::getLeastExponents(Exponent* least) const {
 
 void Ideal::getSupportCounts(Exponent* counts) const {
   ::setToIdentity(counts, _varCount);
-  const_iterator end = _terms.end();
-  for (const_iterator it = begin(); it != end; ++it)
+  const_iterator stop = _terms.end();
+  for (const_iterator it = begin(); it != stop; ++it)
 	for (size_t var = 0; var < _varCount; ++var)
 	  if ((*it)[var] > 0)
 		counts[var] += 1;
@@ -118,10 +118,10 @@ bool Ideal::operator==(const Ideal& ideal) const {
   if (getGeneratorCount() != ideal.getGeneratorCount())
 	return false;
 
-  const_iterator end = _terms.end();
+  const_iterator stop = _terms.end();
   const_iterator it = begin();
   const_iterator it2 = ideal.begin();
-  for (; it != end; ++it, ++it2)
+  for (; it != stop; ++it, ++it2)
 	if (!equals(*it, *it2, getVarCount()))
 	  return false;
 
@@ -145,8 +145,8 @@ void Ideal::insert(const Exponent* exponents) {
 
 void Ideal::insert(const Ideal& ideal) {
   _terms.reserve(_terms.size() + ideal._terms.size());
-  Ideal::const_iterator end = ideal.end();
-  for (Ideal::const_iterator it = ideal.begin(); it != end; ++it)
+  Ideal::const_iterator stop = ideal.end();
+  for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it)
     insert(*it);
 }
 
@@ -184,18 +184,18 @@ void Ideal::singleDegreeSort(size_t var) {
 	    Term::AscendingSingleDegreeComparator(var, _varCount));
 }
 
-void Ideal::colon(const Exponent* colon) {
-  iterator end = _terms.end();
-  for (iterator it = _terms.begin(); it != end; ++it)
-    ::colon(*it, *it, colon, _varCount);
+void Ideal::colon(const Exponent* by) {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it)
+    ::colon(*it, *it, by, _varCount);
 }
 
-bool Ideal::colonReminimize(const Exponent* colon) {
+bool Ideal::colonReminimize(const Exponent* by) {
   ASSERT(isMinimallyGenerated());
 
   Minimizer minimizer(_varCount);
   pair<iterator, bool> pair =
-	minimizer.colonReminimize(_terms.begin(), _terms.end(), colon);
+	minimizer.colonReminimize(_terms.begin(), _terms.end(), by);
 
   _terms.erase(pair.first, _terms.end());
 
@@ -205,26 +205,26 @@ bool Ideal::colonReminimize(const Exponent* colon) {
 
 void Ideal::removeMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
-  iterator end = _terms.end();
-  for (iterator it = _terms.begin(); it != end; ++it) {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it) {
     if (!::divides(term, *it, _varCount)) {
 	  *newEnd = *it;
 	  ++newEnd;
     }
   }
-  _terms.erase(newEnd, end);
+  _terms.erase(newEnd, stop);
 }
 
 void Ideal::removeStrictMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
-  iterator end = _terms.end();
-  for (iterator it = _terms.begin(); it != end; ++it) {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it) {
     if (!::strictlyDivides(term, *it, _varCount)) {
 	  *newEnd = *it;
 	  ++newEnd;
     }
   }
-  _terms.erase(newEnd, end);
+  _terms.erase(newEnd, stop);
 }
 
 void Ideal::removeDuplicates() {

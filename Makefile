@@ -111,6 +111,9 @@ endif
 
 # Link object files into executable
 $(outdir)$(program): $(objs) | $(outdir)
+ifeq ($(MODE), analysis)
+	echo > $(outdir)$(program)
+endif
 ifneq ($(MODE), analysis)
 	g++ $(objs) $(ldflags) -o $(outdir)$(program)
 	@mv -f $(outdir)$(program).exe $(outdir)$(program); echo
@@ -138,7 +141,7 @@ endif
 
 # ***** Dependency management
 depend:
-	g++ -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
+	g++ ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
 -include .depend
 
 clean: tidy
@@ -154,6 +157,14 @@ commit: test
 	hg commit -m "$(MSG)"
 
 # ***** Distribution
+
+remoteCmd = --remotecmd /users/contrib/mercurial/bin/hg
+remoteUrl = ssh://daimi/projs/frobby
+pull:
+	hg pull $(remoteCmd) $(remoteUrl)
+push:
+	hg push $(remoteCmd) $(remoteUrl)
+
 
 distribution:
 	make depend
