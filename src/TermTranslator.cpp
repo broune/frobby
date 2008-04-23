@@ -67,7 +67,7 @@ void extractExponents(const vector<BigIdeal*>& ideals,
   exponentRefs.reserve(termCount + 1); // + 1 because we added the 0 above.
 
   // Collect the exponents
-  const int MaxSmall = 1000;
+  const int MaxSmall = 900;
   bool seen[MaxSmall + 1]; // avoid adding small numbers more than once
   fill_n(seen, MaxSmall + 1, false);
   seen[0] = true;
@@ -82,10 +82,10 @@ void extractExponents(const vector<BigIdeal*>& ideals,
 	  const mpz_class& e = ideal.getExponent(term, var);
 	  if (e <= MaxSmall) {
 		ASSERT(e.fits_uint_p());
-		unsigned int i = e.get_ui();
-		if (seen[i])
+		unsigned int ui = e.get_ui();
+		if (seen[ui])
 		  continue;
-		seen[i] = true;
+		seen[ui] = true;
 	  }
 	  exponentRefs.push_back(&(ideal.getExponent(term, var)));
 	}
