@@ -116,7 +116,9 @@ ifeq ($(MODE), analysis)
 endif
 ifneq ($(MODE), analysis)
 	g++ $(objs) $(ldflags) -o $(outdir)$(program)
-	@mv -f $(outdir)$(program).exe $(outdir)$(program); echo
+	if [ -f $(outdir)$(program).exe ]; then \
+	  mv -f $(outdir)$(program).exe $(outdir)$(program); \
+	fi
 endif
 ifeq ($(MODE), release)
 	strip $(outdir)$(program)
