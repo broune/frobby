@@ -1,35 +1,32 @@
 # ***** Variables
 
-rawSources =															\
-  main.cpp Action.cpp IOParameters.cpp									\
-  IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
-  randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
-  TransformAction.cpp													\
-  Macaulay2IOHandler.cpp NewMonosIOHandler.cpp HelpAction.cpp			\
-  stdinc.cpp DynamicFrobeniusAction.cpp dynamicFrobeniusAlgorithm.cpp	\
-  GenerateIdealAction.cpp GenerateFrobeniusAction.cpp					\
-  IrreducibleDecomFacade.cpp FrobeniusAction.cpp Facade.cpp				\
-  IOFacade.cpp DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp		\
-  AnalyzeAction.cpp IdealFacade.cpp Parameter.cpp						\
-  ParameterGroup.cpp IntegerParameter.cpp								\
-  IrreducibleDecomParameters.cpp BoolParameter.cpp						\
-  Scanner.cpp Partition.cpp StringParameter.cpp Term.cpp				\
-  TermTranslator.cpp Timer.cpp VarNames.cpp LatticeFormatAction.cpp		\
-  SliceAlgorithm.cpp													\
-  Ideal.cpp intersect.cpp IntersectFacade.cpp IntersectAction.cpp		\
-  AssociatedPrimesFacade.cpp AssociatedPrimesAction.cpp					\
-  PrimaryDecomAction.cpp Slice.cpp										\
-  IndependenceSplitter.cpp Projection.cpp								\
-  SliceStrategy.cpp lattice.cpp											\
-  LatticeFacade.cpp DecomRecorder.cpp									\
-  TermGrader.cpp Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp	\
-  AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
-  TranslatingTermConsumer.cpp
+rawSources = main.cpp Action.cpp IOParameters.cpp                       \
+  IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp      \
+  randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp              \
+  TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp      \
+  HelpAction.cpp stdinc.cpp DynamicFrobeniusAction.cpp                  \
+  dynamicFrobeniusAlgorithm.cpp GenerateIdealAction.cpp                 \
+  GenerateFrobeniusAction.cpp IrreducibleDecomFacade.cpp                \
+  FrobeniusAction.cpp Facade.cpp IOFacade.cpp                           \
+  DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp   \
+  IdealFacade.cpp Parameter.cpp ParameterGroup.cpp                      \
+  IntegerParameter.cpp IrreducibleDecomParameters.cpp                   \
+  BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp       \
+  Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp                    \
+  LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp    \
+  IntersectFacade.cpp IntersectAction.cpp AssociatedPrimesFacade.cpp    \
+  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp Slice.cpp           \
+  IndependenceSplitter.cpp Projection.cpp SliceStrategy.cpp             \
+  lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp        \
+  Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp                  \
+  AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp                \
+  TranslatingTermConsumer.cpp frobbyTest.cpp
+
 
 GMP_INC_DIR="/sw/include"
 
 ldflags = -lgmpxx -lgmp -L/sw/lib
-cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized	\
+cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
          -Wno-unused-parameter -Werror -I$(GMP_INC_DIR)
 
 ifndef MODE
@@ -55,14 +52,14 @@ ifeq ($(MODE), profile)
 endif
 ifeq ($(MODE), analysis)
   outdir = bin/analysis/
-  cflags += -fsyntax-only -O1 -Wfloat-equal -Wundef			\
-            -Wno-endif-labels -Wshadow -Wlarger-than-1000		\
-            -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings	\
-            -Wconversion -Wsign-compare -Waggregate-return		\
-            -Wmissing-noreturn -Wmissing-format-attribute		\
-            -Wno-multichar -Wno-deprecated-declarations -Wpacked	\
-            -Wredundant-decls -Wunreachable-code -Winline		\
-            -Wno-invalid-offsetof -Winvalid-pch -Wlong-long		\
+  cflags += -fsyntax-only -O1 -Wfloat-equal -Wundef                     \
+            -Wno-endif-labels -Wshadow -Wlarger-than-1000               \
+            -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings    \
+            -Wconversion -Wsign-compare -Waggregate-return              \
+            -Wmissing-noreturn -Wmissing-format-attribute               \
+            -Wno-multichar -Wno-deprecated-declarations -Wpacked        \
+            -Wredundant-decls -Wunreachable-code -Winline               \
+            -Wno-invalid-offsetof -Winvalid-pch -Wlong-long             \
             -Wdisabled-optimization
   MATCH=true
 endif

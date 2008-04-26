@@ -10,8 +10,8 @@
 
 class ExternalConsumerAdapter : public BigTermConsumer {
 public:
-  ExternalConsumerAdapter(Frobby::ExternalTermConsumer* consumer,
-						  size_t varCount):
+  ExternalConsumerAdapter(Frobby::TermConsumer* consumer,
+			  size_t varCount):
 	_consumer(consumer),
 	_varCount(varCount),
 	_term(new mpz_ptr[varCount]) {
@@ -19,6 +19,7 @@ public:
   }
 
   virtual ~ExternalConsumerAdapter() {
+    delete[] _term;
   }
 
   virtual void consume(const Term& term, TermTranslator* translator) {
@@ -34,64 +35,106 @@ public:
   }
 
 private:
-  Frobby::ExternalTermConsumer* _consumer;
+  Frobby::TermConsumer* _consumer;
   size_t _varCount;
   mpz_ptr* _term;
 };
 
-Frobby::ExternalTermConsumer::~ExternalTermConsumer() {
+Frobby::TermConsumer::~TermConsumer() {
 }
 
-Frobby::ExternalIdeal::ExternalIdeal(size_t variableCount, size_t expectedGeneratorCount) {
-  _data = new BigIdeal(VarNames(variableCount));
+namespace FrobbyImpl {
+  using ::BigIdeal;
 
-  BigIdeal* ideal = (BigIdeal*)_data;
-  ideal->reserve(expectedGeneratorCount);
+  class FrobbyIdealHelper {
+  public:
+    FrobbyIdealHelper(size_t variableCount):
+      _ideal(VarNames(variableCount)),
+      _atVariable(variableCount) {
+    }
+
+    static const BigIdeal& getIdeal(const Frobby::Ideal& ideal) {
+      return ideal._data->_ideal;
+    }
+
+  private:
+    friend class Frobby::Ideal;
+
+    BigIdeal _ideal;
+    size_t _atVariable;
+  };
 }
 
-Frobby::ExternalIdeal::ExternalIdeal(size_t variableCount) {
-  _data = new BigIdeal(VarNames(variableCount));
+Frobby::Ideal::Ideal(size_t variableCount) {
+  _data = new FrobbyImpl::FrobbyIdealHelper(variableCount);
 }
 
-Frobby::ExternalIdeal::~ExternalIdeal() {
-  BigIdeal* ideal = (BigIdeal*)_data;
-
-  delete ideal;
+Frobby::Ideal::Ideal(const Ideal& ideal) {
+  _data = new FrobbyImpl::FrobbyIdealHelper(*ideal._data);
 }
 
-void Frobby::ExternalIdeal::addGenerator(const mpz_ptr* exponentVector) {
-  BigIdeal* ideal = (BigIdeal*)_data;
-
-  ideal->newLastTerm();
-  for (size_t var = 0; var < ideal->getVarCount(); ++var)
-	mpz_set(ideal->getLastTermExponentRef(var).get_mpz_t(),
-			exponentVector[var]);
+Frobby::Ideal::~Ideal() {
+  delete _data;
 }
 
-void Frobby::ExternalIdeal::addGenerator(const mpz_t* exponentVector) {
-  BigIdeal* ideal = (BigIdeal*)_data;
-
-  ideal->newLastTerm();
-  for (size_t var = 0; var < ideal->getVarCount(); ++var)
-	mpz_set(ideal->getLastTermExponentRef(var).get_mpz_t(),
-			exponentVector[var]);
+Frobby::Ideal& Frobby::Ideal::operator=(const Ideal& ideal) {
+  delete _data;
+  _data = new FrobbyImpl::FrobbyIdealHelper(*ideal._data);
+  return *this;
 }
 
-void* Frobby::ExternalIdeal::getData() {
-  return _data;
+void Frobby::Ideal::addExponent(const mpz_t exponent) {
+  ASSERT(_data->_atVariable <= _data->_ideal.getVarCount());
+
+  if (_data->_atVariable == _data->_ideal.getVarCount()) {
+    _data->_ideal.newLastTerm();
+    _data->_atVariable = 0;
+    if (_data->_ideal.getVarCount() == 0)
+      return;
+  }
+
+  mpz_class& ref = _data->_ideal.getLastTermExponentRef(_data->_atVariable);
+  mpz_set(ref.get_mpz_t(), exponent);
+  ++_data->_atVariable;
 }
 
-void Frobby::alexanderDual(ExternalIdeal* ideal, const mpz_ptr* exponentVector,
-						   ExternalTermConsumer* consumer) {
+void Frobby::Ideal::addExponent(int exponent) {
+  mpz_class tmp(exponent);
+  addExponent(tmp.get_mpz_t());
+}
+
+void Frobby::Ideal::addExponent(unsigned int exponent) {
+  mpz_class tmp(exponent);
+  addExponent(tmp.get_mpz_t());
+}
+
+void Frobby::alexanderDual(const Ideal& ideal,
+			   const mpz_t* exponentVector,
+			   TermConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  vector<mpz_class> point;
+  if (exponentVector != 0) {
+    point.resize(bigIdeal.getVarCount());
+    for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+      mpz_set(point[var].get_mpz_t(), exponentVector[var]);
+  } else
+    bigIdeal.getLcm(point);
+
+  // We guarantee not to retain a reference to exponentVector when providing
+  // terms to the consumer, so we must set exponentVector
+  // to null. This is visible behavior if the caller is using something like
+  // the Boehm garbage collector.
+  exponentVector = 0;
+
+  // We copy the ideal because computeAlexanderDual clears the ideal,
+  // which we guarantee not to do. TODO: make computeAlexanderDual not
+  // do this and remove this copy.
+  BigIdeal bigIdealCopy(bigIdeal);
+
   IrreducibleDecomParameters params;
   IrreducibleDecomFacade facade(false, params);
-
-  BigIdeal* bigIdeal = (BigIdeal*)ideal->getData();
-  vector<mpz_class> point(bigIdeal->getVarCount());
-  for (size_t var = 0; var < bigIdeal->getVarCount(); ++var)
-	mpz_set(point[var].get_mpz_t(), exponentVector[var]);
-
-  facade.computeAlexanderDual(*bigIdeal, &point,
-							  new ExternalConsumerAdapter
-							  (consumer, bigIdeal->getVarCount()));
+  BigTermConsumer* adaptedConsumer = 
+    new ExternalConsumerAdapter(&consumer, bigIdealCopy.getVarCount());
+  facade.computeAlexanderDual(bigIdealCopy, &point, adaptedConsumer);
 }
