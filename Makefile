@@ -76,6 +76,10 @@ library = frobby.a
 # ***** Compilation
 
 .PHONY: all depend clean bin/$(program) test library
+
+# to make .depend able to mention these files  on other platforms.
+.PHONY: /sw/include/gmp.h /sw/include/gmpxx.h
+
 all: bin/$(program) $(outdir)$(program)
 ifeq ($(MODE), profile)
 	rm -f gmon.out
