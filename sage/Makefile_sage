@@ -1,0 +1,19 @@
+# Include this Makefile in the main Frobby Makefile to obtain the spkg target
+
+spkg: tidy depend
+ifndef VER
+	echo "Please specify version of Frobby spkg using VER=x.y.z";
+	exit 1;
+endif
+	rm -rf bin/sagetmp bin/frobby-$(VER) # clean up after any failed build
+
+	mkdir -p bin/sagetmp
+	cp sage/spkg-install sage/SPKG.txt bin/sagetmp/
+
+	mkdir bin/sagetmp/frobby
+	cp -r COPYING Makefile src test bin/sagetmp 
+	./addheaders `find bin/sagetmp/src|grep "\(.*\.h\)\|\(.*.cpp\)"`
+
+	mv bin/sagetmp bin/frobby-$(VER)
+	cd bin/; $(SAGE_ROOT)sage -pkg `pwd`/frobby-$(VER)
+	rm -rf bin/frobby-$(VER)

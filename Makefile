@@ -202,3 +202,6 @@ realdistribution: tidy
 	tar --create --gzip --file=frobby_v$(VER).tar.gz frobby_v$(VER)/
 	rm -fr frobby_v$(VER)	
 	ls -l frobby_v$(VER).tar.gz
+
+# provides the spkg target
+-include sage/Makefile_sage
