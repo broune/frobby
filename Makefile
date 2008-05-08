@@ -203,5 +203,5 @@ realdistribution: tidy
 	rm -fr frobby_v$(VER)	
 	ls -l frobby_v$(VER).tar.gz
 
-# provides the spkg target
+# provides the spkg target if the Sage related files are put into sage/
 -include sage/Makefile_sage
