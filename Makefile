@@ -198,7 +198,6 @@ realdistribution: tidy
 	mkdir frobby_v$(VER)
 	cp -r frobgrob COPYING Makefile src test frobby_v$(VER)
 	mkdir frobby_v$(VER)/4ti2
-	./addheaders `find frobby_v$(VER)/src|grep "\(.*\.h\)\|\(.*.cpp\)"`
 	tar --create --gzip --file=frobby_v$(VER).tar.gz frobby_v$(VER)/
 	rm -fr frobby_v$(VER)	
 	ls -l frobby_v$(VER).tar.gz
@@ -217,7 +216,6 @@ endif
 
 	mkdir bin/sagetmp/src
 	cp -r COPYING Makefile src test bin/sagetmp/src
-	./addheaders `find bin/sagetmp/src/src|grep "\(.*\.h\)\|\(.*.cpp\)"`
 
 	mv bin/sagetmp bin/frobby-$(VER)
 	cd bin/; $(SAGE_ROOT)sage -pkg `pwd`/frobby-$(VER)
