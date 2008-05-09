@@ -203,5 +203,22 @@ realdistribution: tidy
 	rm -fr frobby_v$(VER)	
 	ls -l frobby_v$(VER).tar.gz
 
-# provides the spkg target if the Sage related files are put into sage/
--include sage/Makefile_sage
+spkg: tidy depend
+ifndef VER
+	echo "Please specify version of Frobby spkg using VER=x.y.z";
+	exit 1;
+endif
+	if [ ! -d sage/ ]; then echo "sage/ directory not found."; exit 1; fi
+
+	# Ensure that previous builds have been cleaned up
+	rm -rf bin/sagetmp bin/frobby-$(VER) bin/frobby-$(VER).spkg
+
+	hg clone sage bin/sagetmp
+
+	mkdir bin/sagetmp/src
+	cp -r COPYING Makefile src test bin/sagetmp/src
+	./addheaders `find bin/sagetmp/src/src|grep "\(.*\.h\)\|\(.*.cpp\)"`
+
+	mv bin/sagetmp bin/frobby-$(VER)
+	cd bin/; $(SAGE_ROOT)sage -pkg `pwd`/frobby-$(VER)
+	rm -rf bin/frobby-$(VER)
