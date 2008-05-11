@@ -22,12 +22,15 @@ rawSources = main.cpp Action.cpp IOParameters.cpp                       \
   AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp                \
   TranslatingTermConsumer.cpp frobbyTest.cpp
 
-
+# This is for Mac 10.5. On other platforms this does not hurt, though it would
+# be nicer to not do it then.
 GMP_INC_DIR="/sw/include"
 
 ldflags = -lgmpxx -lgmp -L/sw/lib
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
          -Wno-unused-parameter -Werror -I$(GMP_INC_DIR)
+program = frobby
+library = libfrobby.a
 
 ifndef MODE
  MODE=release
@@ -42,6 +45,12 @@ endif
 ifeq ($(MODE), debug)
   outdir = bin/debug/
   cflags += -g -D DEBUG -fno-inline
+  MATCH=true
+endif
+ifeq ($(MODE), shared)
+  outdir = bin/shared/
+  cflags += -O3 -fPIC
+  library = frobby.so
   MATCH=true
 endif
 ifeq ($(MODE), profile)
@@ -70,8 +79,6 @@ endif
 
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
-program = frobby
-library = frobby.a
 
 # ***** Compilation
 
@@ -125,18 +132,20 @@ ifeq ($(MODE), release)
 	strip $(outdir)$(program)
 endif
 
-# Link object files into static library
-library: $(outdir)$(library)
-$(outdir)$(library): $(objs) | $(outdir)
-ifneq ($(MODE), analysis)
-	rm -f $(outdir)$(library)
-	ar r $(outdir)$(library) $(patsubst main.o, , $(objs))
+# Link object files into library
+library: bin/$(library)
+bin/$(library): $(objs) | /bin/
+	rm -f bin/$(library)
+ifeq ($(MODE), shared)
+	g++ -shared $(ldflags) -o bin/$(library) $(patsubst main.o, , $(objs))
+else
+	ar crs bin/$(library) $(patsubst main.o, , $(objs))
 endif
 
 # Compile and output object files.
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
-$(outdir)%.o: src/%.cpp | $(outdir)
+$(outdir)%.o: src/%.cpp
 	  g++ ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
 ifeq ($(MODE), analysis)
 	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
@@ -161,39 +170,19 @@ commit: test
 
 # ***** Distribution
 
-remoteCmd = --remotecmd /users/contrib/mercurial/bin/hg
 remoteUrl = ssh://daimi/projs/frobby
 pull:
-	hg pull $(remoteCmd) $(remoteUrl)
+	hg pull $(remoteUrl)
+	cd sage; hg pull $(remoteUrl)/sage
 push:
-	hg push $(remoteCmd) $(remoteUrl)
-
+	hg push $(remoteUrl)
+	cd sage; hg push $(remoteUrl)/sage
 
 distribution:
-	make depend
-	make realdistribution VER="$(VER)"
-
-fastdistribution: tidy
-	cd ..;tar --create --file=frobby_v$(VER).tar.gz frobby/ --gzip \
-	  --exclude=*/data/* --exclude=*/data \
-	  --exclude=*/.hg/* --exclude=*/.hg --exclude=.hgignore\
-	  --exclude=*/bin/* --exclude=*/bin \
-	  --exclude=*/save/* --exclude=*/save \
-	  --exclude=*/4ti2/* \
-	  --exclude=*.tar.gz \
-      --exclude=*/web/* \
-      --exclude=*/web \
-      --exclude=*/tmp/* \
-      --exclude=pullf \
-      --exclude=pushf \
-      --exclude=sync \
-      --exclude=*~ --exclude=*.orig \
-      --exclude=gmon.out \
-      --exclude=*.stackdump
-	mv ../frobby_v$(VER).tar.gz .
-	ls -l frobby_v$(VER).tar.gz
-
-realdistribution: tidy
+ifndef VER
+	echo "Please specify version of Frobby distribution using VER=x.y.z";
+	exit 1;
+endif
 	rm -fr frobby_v$(VER).tar.gz frobby_v$(VER)
 	mkdir frobby_v$(VER)
 	cp -r frobgrob COPYING Makefile src test frobby_v$(VER)
