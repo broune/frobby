@@ -27,7 +27,7 @@ $(outdir)fplllIO.o: src/fplllIO.cpp src/stdinc.h /sw/include/gmp.h \
   /sw/include/gmpxx.h src/fplllIO.h src/BigIdeal.h src/VarNames.h \
   src/Scanner.h
 $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h /sw/include/gmp.h \
-  /sw/include/gmpxx.h src/IOHandler.h src/TermConsumer.h src/VarNames.h \
+ /sw/include/gmpxx.h src/IOHandler.h src/TermConsumer.h src/VarNames.h \
   src/BigTermConsumer.h src/Scanner.h src/BigIdeal.h src/TermTranslator.h \
   src/Term.h src/Ideal.h src/NewMonosIOHandler.h src/MonosIOHandler.h \
   src/Macaulay2IOHandler.h src/Fourti2IOHandler.h src/NullIOHandler.h
