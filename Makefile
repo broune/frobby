@@ -28,7 +28,7 @@ GMP_INC_DIR="/sw/include"
 
 ldflags = -lgmpxx -lgmp -L/sw/lib
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
-         -Wno-unused-parameter -Werror -I$(GMP_INC_DIR)
+         -Wno-unused-parameter -Werror -isystem $(GMP_INC_DIR)
 program = frobby
 library = libfrobby.a
 
@@ -82,10 +82,7 @@ objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 # ***** Compilation
 
-.PHONY: all depend clean bin/$(program) test library
-
-# to make .depend able to mention these files  on other platforms.
-.PHONY: /sw/include/gmp.h /sw/include/gmpxx.h
+.PHONY: all depend clean bin/$(program) test library distribution clear
 
 all: bin/$(program) $(outdir)$(program)
 ifeq ($(MODE), profile)
