@@ -21,7 +21,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp					\
   AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
   TranslatingTermConsumer.cpp frobbyTest.cpp HilbertAction.cpp			\
-  HilbertSlice.cpp HilbertSliceAlgorithm.cpp
+  HilbertSlice.cpp HilbertSliceAlgorithm.cpp Polynomial.cpp				\
+  CanonicalCoefTermConsumer.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though it would
 # be nicer to not do it then.

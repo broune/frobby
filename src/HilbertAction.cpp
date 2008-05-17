@@ -67,5 +67,5 @@ void HilbertAction::perform() {
   }
 
   IdealFacade idealFacade(_printActions);
-  idealFacade.printHilbertSeries(ideal, stdout);
+  idealFacade.printHilbertSeries(ideal, _canonicalize, stdout);
 }

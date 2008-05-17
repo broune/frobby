@@ -200,6 +200,12 @@ void Ideal::singleDegreeSort(size_t var) {
 	    Term::AscendingSingleDegreeComparator(var, _varCount));
 }
 
+void Ideal::product(const Exponent* by) {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it)
+    ::product(*it, *it, by, _varCount);
+}
+
 void Ideal::colon(const Exponent* by) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it)
