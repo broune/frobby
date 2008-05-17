@@ -2,6 +2,16 @@
 
 TIMEFORMAT=$' (%2lR real)'
 
+echo -n "hilbert    "
+cd test/hilbert
+./runtests
+if [ $? != 0 ]
+then
+  exit 1
+fi
+echo
+cd ../..
+
 echo -n "decom      "
 cd test/decom
 ./runtests

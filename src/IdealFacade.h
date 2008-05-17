@@ -46,6 +46,7 @@ class IdealFacade : private Facade {
   // Sorts the variables of ideal.
   void sortVariables(BigIdeal& ideal);
 
+  void printHilbertSeries(const BigIdeal& ideal, FILE* out);
 
   void printAnalysis(FILE* out, BigIdeal& ideal);
   void printLcm(FILE* out, BigIdeal& ideal);
