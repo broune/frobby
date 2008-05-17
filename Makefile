@@ -77,14 +77,17 @@ ifeq ($(MATCH), false)
   $(error Unknown value of MODE: "$(MODE)")
 endif
 
+TMP_CMD = mkdir -p $(outdir)
+$(info $(TMP_CMD) $(shell mkdir -p $(outdir)))
+
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 # ***** Compilation
 
-.PHONY: all depend clean bin/$(program) test library distribution clear
+.PHONY: all depend clean bin/$(program) test library distribution clear setup
 
-all: bin/$(program) $(outdir)$(program)
+all: bin/$(program) $(outdir)$(program) setup
 ifeq ($(MODE), profile)
 	rm -f gmon.out
 	./bench
@@ -101,10 +104,6 @@ endif
 
 bench: all
 	cd data;time ./runbench $(OPTS)
-
-$(outdir):
-	mkdir -p $(outdir)
-
 
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
