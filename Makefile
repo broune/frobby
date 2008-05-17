@@ -102,10 +102,8 @@ endif
 bench: all
 	cd data;time ./runbench $(OPTS)
 
-$(outdir): $(outdir)label
+$(outdir):
 	mkdir -p $(outdir)
-$(outdir)label:
-	mkdir -p $(outdir)label
 
 
 # Make symbolic link to program from bin/
@@ -131,12 +129,12 @@ endif
 
 # Link object files into library
 library: bin/$(library)
-bin/$(library): $(objs) | /bin/
+bin/$(library): $(objs) | bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
-	g++ -shared $(ldflags) -o bin/$(library) $(patsubst main.o, , $(objs))
+	g++ -shared $(ldflags) -o bin/$(library) $(patsubst main.o,,$(objs))
 else
-	ar crs bin/$(library) $(patsubst main.o, , $(objs))
+	ar crs bin/$(library) $(patsubst main.o,,$(objs))
 endif
 
 # Compile and output object files.
