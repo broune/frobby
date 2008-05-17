@@ -115,6 +115,14 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
   endAction();
 }
 
+void IdealFacade::printHilbertSeries(const BigIdeal& ideal, FILE* out) {
+  beginAction("Computing and printing Hilbert series.");
+
+  fputs("[Hilbert series computation not yet implemented.]", out);
+
+  endAction();
+}
+
 void IdealFacade::printAnalysis(FILE* out, BigIdeal& bigIdeal) {
   beginAction("Computing and printing analysis.");
 
