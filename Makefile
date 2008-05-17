@@ -1,26 +1,27 @@
 # ***** Variables
 
-rawSources = main.cpp Action.cpp IOParameters.cpp                       \
-  IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp      \
-  randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp              \
-  TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp      \
-  HelpAction.cpp stdinc.cpp DynamicFrobeniusAction.cpp                  \
-  dynamicFrobeniusAlgorithm.cpp GenerateIdealAction.cpp                 \
-  GenerateFrobeniusAction.cpp IrreducibleDecomFacade.cpp                \
-  FrobeniusAction.cpp Facade.cpp IOFacade.cpp                           \
-  DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp   \
-  IdealFacade.cpp Parameter.cpp ParameterGroup.cpp                      \
-  IntegerParameter.cpp IrreducibleDecomParameters.cpp                   \
-  BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp       \
-  Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp                    \
-  LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp    \
-  IntersectFacade.cpp IntersectAction.cpp AssociatedPrimesFacade.cpp    \
-  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp Slice.cpp           \
-  IndependenceSplitter.cpp Projection.cpp SliceStrategy.cpp             \
-  lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp        \
-  Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp                  \
-  AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp                \
-  TranslatingTermConsumer.cpp frobbyTest.cpp HilbertAction.cpp
+rawSources = main.cpp Action.cpp IOParameters.cpp						\
+  IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
+  randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
+  TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp		\
+  HelpAction.cpp stdinc.cpp DynamicFrobeniusAction.cpp					\
+  dynamicFrobeniusAlgorithm.cpp GenerateIdealAction.cpp					\
+  GenerateFrobeniusAction.cpp IrreducibleDecomFacade.cpp				\
+  FrobeniusAction.cpp Facade.cpp IOFacade.cpp							\
+  DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp	\
+  IdealFacade.cpp Parameter.cpp ParameterGroup.cpp						\
+  IntegerParameter.cpp IrreducibleDecomParameters.cpp					\
+  BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp		\
+  Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp					\
+  LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp	\
+  IntersectFacade.cpp IntersectAction.cpp AssociatedPrimesFacade.cpp	\
+  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp Slice.cpp			\
+  IndependenceSplitter.cpp Projection.cpp SliceStrategy.cpp				\
+  lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp		\
+  Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp					\
+  AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
+  TranslatingTermConsumer.cpp frobbyTest.cpp HilbertAction.cpp			\
+  HilbertSlice.cpp HilbertSliceAlgorithm.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though it would
 # be nicer to not do it then.
