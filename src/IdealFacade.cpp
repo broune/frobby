@@ -21,6 +21,7 @@
 #include "Ideal.h"
 #include "TermTranslator.h"
 #include "IOHandler.h"
+#include "HilbertSliceAlgorithm.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -118,6 +119,7 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
 void IdealFacade::printHilbertSeries(const BigIdeal& ideal, FILE* out) {
   beginAction("Computing and printing Hilbert series.");
 
+  HilbertSliceAlgorithm algo;
   fputs("[Hilbert series computation not yet implemented.]", out);
 
   endAction();

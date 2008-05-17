@@ -23,6 +23,15 @@ class VarNames;
 class Scanner;
 class BigIdeal;
 
+// TODO: move and integrate this better.
+class Term;
+class CoefTermConsumer {
+ public:
+  virtual ~CoefTermConsumer() {}; // TODO: move the implementation to  .cpp
+
+  virtual void consume(const mpz_class& coef, const Term& term) = 0;
+};
+
 class Macaulay2IOHandler : public IOHandler {
 public:
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
@@ -34,6 +43,10 @@ public:
     (FILE* file, const TermTranslator* translator) const;
 
   virtual const char* getFormatName() const;
+
+  // TODO: integrate this better
+  static CoefTermConsumer* createCoefTermWriter
+	(FILE* file, const TermTranslator* translator);
 
 private:
   void readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner);
