@@ -14,33 +14,16 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_SLICE_ALGORITHM_GUARD
-#define HILBERT_SLICE_ALGORITHM_GUARD
+#ifndef COEF_TERM_CONSUMER_GUARD
+#define COEF_TERM_CONSUMER_GUARD
 
-class CoefTermConsumer;
-class HilbertSlice;
-
-class CoefTermConsumer;
-class Ideal;
-class HilbertSlice;
 class Term;
 
-class HilbertSliceAlgorithm {
+class CoefTermConsumer {
  public:
-  HilbertSliceAlgorithm();
+  virtual ~CoefTermConsumer() {}
 
-  void setConsumer(CoefTermConsumer* consumer);
-
-  void run(const Ideal& ideal);
-
- private:
-  void pivotSplit(HilbertSlice& slice);
-  void content(HilbertSlice& slice);
-  void baseContent(HilbertSlice& slice);
-
-  void getPivot(Term& pivot, const HilbertSlice& slice) const;
-
-  CoefTermConsumer* _consumer;
+  virtual void consume(const mpz_class& coef, const Term& term) = 0;
 };
 
 #endif

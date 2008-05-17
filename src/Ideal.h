@@ -92,6 +92,9 @@ public:
   // Sort the generators in ascending order according to the exponent of var.
   void singleDegreeSort(size_t var);
 
+  // Replace each generator g by g * term.
+  void product(const Exponent* term);
+
   // Replace each generator g by g : colon.
   void colon(const Exponent* colon);
 

@@ -17,7 +17,6 @@
 #include "stdinc.h"
 #include "Slice.h"
 
-#include "Ideal.h"
 #include "TermConsumer.h"
 
 Slice::Slice():

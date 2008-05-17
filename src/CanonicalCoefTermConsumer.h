@@ -14,33 +14,26 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_SLICE_ALGORITHM_GUARD
-#define HILBERT_SLICE_ALGORITHM_GUARD
+#ifndef CANONICAL_COEF_TERM_CONSUMER_GUARD
+#define CANONICAL_COEF_TERM_CONSUMER_GUARD
 
-class CoefTermConsumer;
-class HilbertSlice;
+#include "CoefTermConsumer.h"
+#include "Polynomial.h"
 
-class CoefTermConsumer;
-class Ideal;
-class HilbertSlice;
 class Term;
 
-class HilbertSliceAlgorithm {
+// Passes consumed items on in a canonical order. This requires
+// storing all items before any can be passed on.
+class CanonicalCoefTermConsumer : public CoefTermConsumer {
  public:
-  HilbertSliceAlgorithm();
+  CanonicalCoefTermConsumer(CoefTermConsumer* consumer, size_t varCount);
+  virtual ~CanonicalCoefTermConsumer();
 
-  void setConsumer(CoefTermConsumer* consumer);
-
-  void run(const Ideal& ideal);
+  virtual void consume(const mpz_class& coef, const Term& term);
 
  private:
-  void pivotSplit(HilbertSlice& slice);
-  void content(HilbertSlice& slice);
-  void baseContent(HilbertSlice& slice);
-
-  void getPivot(Term& pivot, const HilbertSlice& slice) const;
-
   CoefTermConsumer* _consumer;
+  Polynomial _polynomial;
 };
 
 #endif

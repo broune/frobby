@@ -14,33 +14,28 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_SLICE_ALGORITHM_GUARD
-#define HILBERT_SLICE_ALGORITHM_GUARD
+#include "stdinc.h"
+#include "CanonicalCoefTermConsumer.h"
 
-class CoefTermConsumer;
-class HilbertSlice;
+#include "Term.h"
 
-class CoefTermConsumer;
-class Ideal;
-class HilbertSlice;
-class Term;
+CanonicalCoefTermConsumer::
+CanonicalCoefTermConsumer(CoefTermConsumer* consumer, size_t varCount):
+  _consumer(consumer),
+  _polynomial(varCount) {
+  ASSERT(consumer != 0);
+}
 
-class HilbertSliceAlgorithm {
- public:
-  HilbertSliceAlgorithm();
+CanonicalCoefTermConsumer::~CanonicalCoefTermConsumer() {
+  for (size_t index = 0; index < _polynomial.getTermCount(); ++index)
+	_consumer->consume(_polynomial.getCoef(index), _polynomial.getTerm(index));
 
-  void setConsumer(CoefTermConsumer* consumer);
+  delete _consumer;
+}
 
-  void run(const Ideal& ideal);
+void CanonicalCoefTermConsumer::
+consume(const mpz_class& coef, const Term& term) {
+  ASSERT(term.getVarCount() == _polynomial.getVarCount());
 
- private:
-  void pivotSplit(HilbertSlice& slice);
-  void content(HilbertSlice& slice);
-  void baseContent(HilbertSlice& slice);
-
-  void getPivot(Term& pivot, const HilbertSlice& slice) const;
-
-  CoefTermConsumer* _consumer;
-};
-
-#endif
+  _polynomial.add(coef, term);
+}

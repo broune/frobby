@@ -22,15 +22,7 @@
 class VarNames;
 class Scanner;
 class BigIdeal;
-
-// TODO: move and integrate this better.
-class Term;
-class CoefTermConsumer {
- public:
-  virtual ~CoefTermConsumer() {}; // TODO: move the implementation to  .cpp
-
-  virtual void consume(const mpz_class& coef, const Term& term) = 0;
-};
+class CoefTermConsumer;
 
 class Macaulay2IOHandler : public IOHandler {
 public:

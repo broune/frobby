@@ -23,6 +23,9 @@
 #include "IOHandler.h"
 #include "HilbertSliceAlgorithm.h"
 
+#include "Macaulay2IOHandler.h"
+#include "CanonicalCoefTermConsumer.h"
+
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
 }
@@ -116,11 +119,22 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
   endAction();
 }
 
-void IdealFacade::printHilbertSeries(const BigIdeal& ideal, FILE* out) {
+void IdealFacade::printHilbertSeries(const BigIdeal& bigIdeal,
+									 bool canonicalize, FILE* out) {
   beginAction("Computing and printing Hilbert series.");
 
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal);
+  ideal.minimize();
+
+  CoefTermConsumer* consumer =
+	Macaulay2IOHandler::createCoefTermWriter(stdout, &translator);
+  if (canonicalize)
+	consumer = new CanonicalCoefTermConsumer(consumer, ideal.getVarCount());
+
   HilbertSliceAlgorithm algo;
-  fputs("[Hilbert series computation not yet implemented.]", out);
+  algo.setConsumer(consumer);
+  algo.run(ideal);
 
   endAction();
 }

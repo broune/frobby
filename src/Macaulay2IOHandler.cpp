@@ -20,6 +20,7 @@
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "VarNames.h"
+#include "CoefTermConsumer.h"
 
 class Macaulay2IdealWriter : public IdealWriter {
 public:
@@ -201,6 +202,8 @@ class CoefTermWriter : public CoefTermConsumer {
   }
 
   virtual ~CoefTermWriter() {
+	if (_justStartedWriting)
+	  fputc('0', _file);
     fputs(";\n", _file);
   };
 
@@ -219,8 +222,14 @@ class CoefTermWriter : public CoefTermConsumer {
 	  needsSeperator = false;
 	}
 	if (coef != 1) {
-	  if (coef == -1)
+	  if (coef == -1) {
 		fputc('-', _file);
+		if (term.isIdentity()) {
+		  fputc('1', _file);
+		  return;
+		}
+		needsSeperator = false;
+	  }
 	  else
 		gmp_fprintf(_file, "%Zd", coef.get_mpz_t());
 	}

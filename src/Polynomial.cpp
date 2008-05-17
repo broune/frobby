@@ -14,33 +14,28 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_SLICE_ALGORITHM_GUARD
-#define HILBERT_SLICE_ALGORITHM_GUARD
+#include "stdinc.h"
+#include "Polynomial.h"
 
-class CoefTermConsumer;
-class HilbertSlice;
+Polynomial::Polynomial(size_t varCount):
+  _varCount(varCount) {
+}
 
-class CoefTermConsumer;
-class Ideal;
-class HilbertSlice;
-class Term;
+void Polynomial::add(const mpz_class& coef, const Term& term) {
+  ASSERT(_varCount == term.getVarCount());
 
-class HilbertSliceAlgorithm {
- public:
-  HilbertSliceAlgorithm();
+  if (coef == 0)
+	return;
 
-  void setConsumer(CoefTermConsumer* consumer);
+  _terms.resize(_terms.size() + 1);
+  _terms.back().coef = coef;
+  _terms.back().term = term;
+}
 
-  void run(const Ideal& ideal);
+void Polynomial::sortLex() {
+  sort(_terms.begin(), _terms.end());
+}
 
- private:
-  void pivotSplit(HilbertSlice& slice);
-  void content(HilbertSlice& slice);
-  void baseContent(HilbertSlice& slice);
-
-  void getPivot(Term& pivot, const HilbertSlice& slice) const;
-
-  CoefTermConsumer* _consumer;
-};
-
-#endif
+bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {
+  return coefTerm.term < term;
+}
