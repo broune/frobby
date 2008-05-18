@@ -225,6 +225,26 @@ bool Ideal::colonReminimize(const Exponent* by) {
   return pair.second;
 }
 
+bool Ideal::colonReminimize(size_t var, Exponent e) {
+  ASSERT(isMinimallyGenerated());
+
+  Minimizer minimizer(_varCount);
+  pair<iterator, bool> pair =
+	minimizer.colonReminimize(_terms.begin(), _terms.end(), var, e);
+
+  _terms.erase(pair.first, _terms.end());
+
+  ASSERT(isMinimallyGenerated());
+  return pair.second;
+}
+
+void Ideal::remove(const_iterator it) {
+  ASSERT(begin() <= it);
+  ASSERT(it < end());
+  ::swap(const_cast<Exponent*&>(*it), *(_terms.end() - 1));
+  _terms.pop_back();
+}
+
 void Ideal::removeMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
   iterator stop = _terms.end();

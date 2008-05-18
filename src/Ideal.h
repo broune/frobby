@@ -101,6 +101,13 @@ public:
   // Equivalent to calling colon(by) and then minimize.
   bool colonReminimize(const Exponent* colon);
 
+  // Equivalent to calling colonReminimize(var raised to e).
+  bool colonReminimize(size_t var, Exponent e);
+
+  // Swaps it and the last element, and then removes the last element,
+  // which is the element originally pointed to by it.
+  void remove(const_iterator it);
+
   // Removes those generators that are multiples of term.
   void removeMultiples(const Exponent* term);
 
@@ -122,7 +129,7 @@ public:
   // true. Returns true if any generators were removed.
   template<class Predicate>
     bool removeIf(Predicate pred);
-  
+
  protected:
   class ExponentAllocator {
   public:
