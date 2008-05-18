@@ -100,17 +100,36 @@ void HilbertSliceAlgorithm::content(HilbertSlice& slice) {
 }
 
 void HilbertSliceAlgorithm::getPivot(Term& pivot,
-									 const HilbertSlice& slice) const {
+									 HilbertSlice& slice) const {
+  ASSERT(pivot.getVarCount() == slice.getVarCount());
+
+  // Get best (most populated) variable to split on.
+  Term co(slice.getVarCount());
+  slice.getIdeal().getSupportCounts(co);
+
   const Term& lcm = slice.getLcm();
-  size_t varCount = slice.getVarCount();
+  for (size_t var = 0; var < slice.getVarCount(); ++var)
+	if (lcm[var] <= 1)
+	  co[var] = 0;
 
-  pivot.setToIdentity();
-  for (size_t var = 0; var < varCount; ++var) {
-	if (lcm[var] > 1) {
-	  pivot[var] = 1;
-	  return;
-	}
+  ASSERT(!co.isIdentity());
+  size_t bestVar = co.getFirstMaxExponent();
+
+  // Get median positive exponent of bestVar.
+  slice.singleDegreeSortIdeal(bestVar);
+  Ideal::const_iterator end = slice.getIdeal().end();
+  Ideal::const_iterator begin = slice.getIdeal().begin();
+  while ((*begin)[bestVar] == 0) {
+	++begin;
+	ASSERT(begin != end);
   }
+  pivot.setToIdentity();
+  pivot[bestVar] = (*(begin + (distance(begin, end) ) / 2))[bestVar];
+  if (pivot[bestVar] == slice.getLcm()[bestVar])
+	pivot[bestVar] -= 1;
 
-  ASSERT(false);
+  ASSERT(!pivot.isIdentity());
+  ASSERT(!slice.getIdeal().contains(pivot));
+  ASSERT(!slice.getSubtract().contains(pivot));
+  ASSERT(pivot.strictlyDivides(slice.getLcm()));
 }
