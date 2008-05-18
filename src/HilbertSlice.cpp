@@ -132,40 +132,54 @@ void HilbertSlice::outerSlice(const Term& pivot) {
 }
 
 // TODO: rename, more elsewhere and integrate
-mpz_class getCoef(const Ideal& ideal) {
+void getCoef(Ideal& ideal, mpz_class& sum, bool negate) {
   size_t varCount = ideal.getVarCount();
 
-  Term lcm(varCount);
-  ideal.getLcm(lcm);
-  if (lcm.getSizeOfSupport() != varCount)
-	return 0;
+  // This object is reused for several different purposes in order to
+  // avoid havin to allocate and deallocate the underlying data
+  // structure.
+  Term term(varCount);
 
-  Term counts(varCount);
-  ideal.getSupportCounts(counts);
+  // term is used as lcm to ensure all variables appear in ideal.
+  ideal.getLcm(term);
+  if (term.getSizeOfSupport() != varCount)
+	return;
 
-  if (counts.isSquareFree()) {
-	if ((ideal.getGeneratorCount() % 2) == 0)
-	  return 1;
+  // term is used to contain support counts to choose best pivot and
+  // to detect base case.
+  ideal.getSupportCounts(term);
+
+  if (term.isSquareFree()) {
+	if ((ideal.getGeneratorCount() % 2) == 1)
+	  negate = !negate;
+	if (negate)
+	  sum -= 1;
 	else
-	  return -1;
+	  sum += 1;
+	return;
   }
+  size_t bestPivotVar = term.getFirstMaxExponent();
 
-  Term pivot(varCount);
-  pivot[counts.getFirstMaxExponent()] = 1;
+  // term is used to store pivot.
+  term.setToIdentity();
+  term[bestPivotVar] = 1;
 
+  // Handle inner slice. The scope preserves memory resources by
+  // deallocating the copied ideal early.
   Ideal inner(ideal);
-  inner.colonReminimize(pivot);
-  inner.insert(pivot); // to avoid having to keep track of supports
+  inner.colonReminimize(term);
+  inner.insert(term); // to avoid having to keep more track of supports
 
-  Ideal outer(ideal);
-  outer.removeMultiples(pivot);
-  outer.insert(pivot);
+  // Handle outer slice in-place using ideal.
+  ideal.removeMultiples(term);
+  ideal.insert(term);
 
-  // inner gets - due to having added pivot to the ideal.
-  return getCoef(outer) - getCoef(inner);
+  // inner is subtracted instead of added due to having added the
+  // pivot to the ideal.
+  getCoef(ideal, sum, negate);
+  getCoef(inner, sum, !negate);
 }
 
-// TODO
 bool HilbertSlice::baseCase(CoefTermConsumer* consumer) {
   // Check that each variable appears in some minimal generator.
   if (getLcm().getSizeOfSupport() < _varCount)
@@ -174,19 +188,23 @@ bool HilbertSlice::baseCase(CoefTermConsumer* consumer) {
   if (!getLcm().isSquareFree())
 	return false;
 
-  consumer->consume(getCoef(getIdeal()), getMultiply());
+  mpz_class coef;
+  getCoef(_ideal, coef, false);
+
+  consumer->consume(coef, getMultiply());
+  clear();
   return true;
 }
 
 void HilbertSlice::simplify() {
   ASSERT(!normalize());
 
-  // TODO applyLowerBound();
+  applyLowerBound();
   pruneSubtract();
 
   ASSERT(!normalize());
   ASSERT(!pruneSubtract());
-  //ASSERT(!applyLowerBound());
+  ASSERT(!applyLowerBound());
 }
 
 bool HilbertSlice::simplifyStep() {
@@ -289,29 +307,13 @@ bool HilbertSlice::applyLowerBound() {
 }
 
 bool HilbertSlice::getLowerBound(Term& bound, size_t var) const {
-  return false; // TODO
   bool seenAny = false;
-
-  const Term& lcm = getLcm();
 
   Ideal::const_iterator stop = getIdeal().end();
   for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
     if ((*it)[var] == 0)
       continue;
-        
-    // Use the fact that terms with a maximal exponent somewhere not
-    // at var cannot be a var-label.
-    bool relevant = true;
-    for (size_t var2 = 0; var2 < _varCount; ++var2) {
-      if (var2 != var && (*it)[var2] == lcm[var2]) {
-		relevant = false;
-		break;
-      }
-    }
-    
-    if (!relevant)
-      continue;
-    
+
     if (seenAny)
       bound.gcd(bound, *it);
     else {
@@ -322,7 +324,7 @@ bool HilbertSlice::getLowerBound(Term& bound, size_t var) const {
 
   if (seenAny) {
     ASSERT(bound[var] >= 1);
-    bound[var] -= 1;
+    bound.decrement();
     return true;
   } else {
     // In this case the content is empty.
