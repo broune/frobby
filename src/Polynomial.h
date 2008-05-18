@@ -40,7 +40,7 @@ class Polynomial {
   void add(const mpz_class& coef, const Term& term);
 
   // Sort the terms in lexicographic order.
-  void sortLex();
+  void sortTermsLex();
 
  private:
   struct CoefTerm {

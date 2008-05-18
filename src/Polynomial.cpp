@@ -32,7 +32,7 @@ void Polynomial::add(const mpz_class& coef, const Term& term) {
   _terms.back().term = term;
 }
 
-void Polynomial::sortLex() {
+void Polynomial::sortTermsLex() {
   sort(_terms.begin(), _terms.end());
 }
 

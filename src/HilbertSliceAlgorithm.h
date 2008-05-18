@@ -38,7 +38,7 @@ class HilbertSliceAlgorithm {
   void content(HilbertSlice& slice);
   void baseContent(HilbertSlice& slice);
 
-  void getPivot(Term& pivot, const HilbertSlice& slice) const;
+  void getPivot(Term& pivot, HilbertSlice& slice) const;
 
   CoefTermConsumer* _consumer;
 };

@@ -27,6 +27,7 @@ CanonicalCoefTermConsumer(CoefTermConsumer* consumer, size_t varCount):
 }
 
 CanonicalCoefTermConsumer::~CanonicalCoefTermConsumer() {
+  _polynomial.sortTermsLex();
   for (size_t index = 0; index < _polynomial.getTermCount(); ++index)
 	_consumer->consume(_polynomial.getCoef(index), _polynomial.getTerm(index));
 
