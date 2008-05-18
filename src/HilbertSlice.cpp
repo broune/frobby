@@ -154,14 +154,6 @@ bool baseCanSimplify(size_t var, const Ideal& ideal, const Term& counts) {
   }
   return false;
 }
-/*
-void removePurePowers(Ideal& ideal) {
-  size_t varCount = ideal.getVarCount();
-  for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it) {
-	if (::getSizeOfSupport(term, varCount) == 1)
-	  ;
-}
-*/
 
 size_t rid1(Ideal& ideal, Term& counts, bool& negate) {
   size_t varCount = ideal.getVarCount();
@@ -176,26 +168,20 @@ size_t rid1(Ideal& ideal, Term& counts, bool& negate) {
 
 	for (size_t other = 0; other < varCount; ++other) {
 	  if (counts[other] > 1 && (*it)[other] > 0) {
-		counts.setToIdentity();
-		counts[other] = 1;
-		ideal.colonReminimize(counts);
+		ideal.colonReminimize(other, 1);
 		return 1;
 	  }
 	}
 
-	counts = *it;
-	ideal.removeMultiples(counts); // only gets rid of *it itself
 	negate = !negate;
-	return counts.getSizeOfSupport();
+	size_t support = ::getSizeOfSupport(*it, varCount);
+	ideal.remove(it);
+	return support;
   }
-
-  return 0;
 
   for (size_t var = 0; var < varCount; ++var) {
 	if (baseCanSimplify(var, ideal, counts)) {
-	  counts.setToIdentity();
-	  counts[var] = 1;
-	  ideal.colonReminimize(counts);
+	  ideal.colonReminimize(var, 1);
 	  return 1;
 	}
   }
@@ -230,10 +216,36 @@ void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
 	  return;
 	}
 
+	if (ideal.getGeneratorCount() == 2) {
+	  if (negate)
+		sum -= 1;
+	  else
+		sum += 1;
+	  return;
+	}
+
 	size_t ridden = rid1(ideal, term, negate);
 	if (ridden != 0) {
 	  extraSupport += ridden;
 	  continue;
+	}
+
+	if (ideal.getGeneratorCount() == 3) {
+	  if (negate)
+		sum -= 2;
+	  else
+		sum += 2;
+	  return;
+	}
+
+	if (ideal.getGeneratorCount() == 4 &&
+		term[term.getFirstMaxExponent()] == 2 &&
+		term.getSizeOfSupport() == 4) {
+	  if (negate)
+		sum += 1;
+	  else
+		sum -= 1;
+	  return;
 	}
 
 	// term is used to store pivot.
@@ -248,7 +260,7 @@ void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
 	// outer.insert(term); we subtract instead of doing this
 
 	// Handle outer slice.
-	ideal.colonReminimize(term);
+	ideal.colonReminimize(bestPivotVar, 1);
 
 	// inner is subtracted instead of added due to having added the
 	// pivot to the ideal.
