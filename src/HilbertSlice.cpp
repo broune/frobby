@@ -132,6 +132,78 @@ void HilbertSlice::outerSlice(const Term& pivot) {
 }
 
 // TODO: rename and move
+bool baseCanSimplify(size_t var, const Ideal& ideal, const Term& counts) {
+  if (counts[var] == 0)
+	return false;
+  Ideal::const_iterator stop = ideal.end();
+
+  size_t varCount = counts.getVarCount();
+  for (size_t other = 0; other < varCount; ++other) {
+	if (other == var || counts[other] == 0)
+	  continue;
+
+	bool canSimplify = true;
+	for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it) {
+	  if ((*it)[var] == 0 && (*it)[other] > 0) {
+		canSimplify = false;
+		break;
+	  }
+	}
+	if (canSimplify)
+	  return true;
+  }
+  return false;
+}
+/*
+void removePurePowers(Ideal& ideal) {
+  size_t varCount = ideal.getVarCount();
+  for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it) {
+	if (::getSizeOfSupport(term, varCount) == 1)
+	  ;
+}
+*/
+
+size_t rid1(Ideal& ideal, Term& counts, bool& negate) {
+  size_t varCount = ideal.getVarCount();
+  for (size_t var = 0; var < varCount; ++var) {
+	if (counts[var] != 1)
+	  continue;
+
+	Ideal::const_iterator it = ideal.begin();
+	for (; (*it)[var] != 1; ++it) {
+	  ASSERT(it != ideal.end());
+	}
+
+	for (size_t other = 0; other < varCount; ++other) {
+	  if (counts[other] > 1 && (*it)[other] > 0) {
+		counts.setToIdentity();
+		counts[other] = 1;
+		ideal.colonReminimize(counts);
+		return 1;
+	  }
+	}
+
+	counts = *it;
+	ideal.removeMultiples(counts); // only gets rid of *it itself
+	negate = !negate;
+	return counts.getSizeOfSupport();
+  }
+
+  return 0;
+
+  for (size_t var = 0; var < varCount; ++var) {
+	if (baseCanSimplify(var, ideal, counts)) {
+	  counts.setToIdentity();
+	  counts[var] = 1;
+	  ideal.colonReminimize(counts);
+	  return 1;
+	}
+  }
+
+  return 0;
+}
+
+// TODO: rename and move
 void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
   size_t varCount = ideal.getVarCount();
 
@@ -142,14 +214,11 @@ void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
   Ideal outer(varCount);
 
   while (true) {
-	// term is used as lcm to ensure all variables appear in ideal.
-	ideal.getLcm(term);
-	if (term.getSizeOfSupport() + extraSupport != varCount)
-	  return;
-
 	// term is used to contain support counts to choose best pivot and
 	// to detect base case.
 	ideal.getSupportCounts(term);
+	if (term.getSizeOfSupport() + extraSupport != varCount)
+	  return;
 
 	if (term.isSquareFree()) {
 	  if ((ideal.getGeneratorCount() % 2) == 1)
@@ -160,9 +229,15 @@ void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
 		sum += 1;
 	  return;
 	}
-	size_t bestPivotVar = term.getFirstMaxExponent();
+
+	size_t ridden = rid1(ideal, term, negate);
+	if (ridden != 0) {
+	  extraSupport += ridden;
+	  continue;
+	}
 
 	// term is used to store pivot.
+	size_t bestPivotVar = term.getFirstMaxExponent();
 	term.setToIdentity();
 	term[bestPivotVar] = 1;
 
@@ -195,7 +270,8 @@ bool HilbertSlice::baseCase(CoefTermConsumer* consumer) {
   if (!getLcm().isSquareFree())
 	return false;
 
-  mpz_class coef;
+  static mpz_class coef;
+  coef = 0;
   getCoef(_ideal, coef, false, 0);
 
   consumer->consume(coef, getMultiply());
