@@ -131,53 +131,60 @@ void HilbertSlice::outerSlice(const Term& pivot) {
   _lowerBoundHint = pivot.getFirstNonZeroExponent();
 }
 
-// TODO: rename, more elsewhere and integrate
-void getCoef(Ideal& ideal, mpz_class& sum, bool negate) {
+// TODO: rename and move
+void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
   size_t varCount = ideal.getVarCount();
 
   // This object is reused for several different purposes in order to
   // avoid havin to allocate and deallocate the underlying data
   // structure.
   Term term(varCount);
+  Ideal outer(varCount);
 
-  // term is used as lcm to ensure all variables appear in ideal.
-  ideal.getLcm(term);
-  if (term.getSizeOfSupport() != varCount)
-	return;
+  while (true) {
+	// term is used as lcm to ensure all variables appear in ideal.
+	ideal.getLcm(term);
+	if (term.getSizeOfSupport() + extraSupport != varCount)
+	  return;
 
-  // term is used to contain support counts to choose best pivot and
-  // to detect base case.
-  ideal.getSupportCounts(term);
+	// term is used to contain support counts to choose best pivot and
+	// to detect base case.
+	ideal.getSupportCounts(term);
 
-  if (term.isSquareFree()) {
-	if ((ideal.getGeneratorCount() % 2) == 1)
-	  negate = !negate;
-	if (negate)
-	  sum -= 1;
-	else
-	  sum += 1;
-	return;
+	if (term.isSquareFree()) {
+	  if ((ideal.getGeneratorCount() % 2) == 1)
+		negate = !negate;
+	  if (negate)
+		sum -= 1;
+	  else
+		sum += 1;
+	  return;
+	}
+	size_t bestPivotVar = term.getFirstMaxExponent();
+
+	// term is used to store pivot.
+	term.setToIdentity();
+	term[bestPivotVar] = 1;
+
+	// Handle inner slice. The scope preserves memory resources by
+	// deallocating the copied ideal early.
+	outer = ideal;
+	outer.removeMultiples(term);
+	// outer.insert(term); we subtract instead of doing this
+
+	// Handle outer slice.
+	ideal.colonReminimize(term);
+
+	// inner is subtracted instead of added due to having added the
+	// pivot to the ideal.
+	getCoef(outer, sum, !negate, extraSupport + 1);
+
+	// Run loop again instead of a recursive call. This has the
+	// benefit of avoiding reallocation of data structures, and also a
+	// C++ compiler cannot be trusted to optimize tail recursive calls
+	// away.
+	++extraSupport;
   }
-  size_t bestPivotVar = term.getFirstMaxExponent();
-
-  // term is used to store pivot.
-  term.setToIdentity();
-  term[bestPivotVar] = 1;
-
-  // Handle inner slice. The scope preserves memory resources by
-  // deallocating the copied ideal early.
-  Ideal inner(ideal);
-  inner.colonReminimize(term);
-  inner.insert(term); // to avoid having to keep more track of supports
-
-  // Handle outer slice in-place using ideal.
-  ideal.removeMultiples(term);
-  ideal.insert(term);
-
-  // inner is subtracted instead of added due to having added the
-  // pivot to the ideal.
-  getCoef(ideal, sum, negate);
-  getCoef(inner, sum, !negate);
 }
 
 bool HilbertSlice::baseCase(CoefTermConsumer* consumer) {
@@ -189,7 +196,7 @@ bool HilbertSlice::baseCase(CoefTermConsumer* consumer) {
 	return false;
 
   mpz_class coef;
-  getCoef(_ideal, coef, false);
+  getCoef(_ideal, coef, false, 0);
 
   consumer->consume(coef, getMultiply());
   clear();
