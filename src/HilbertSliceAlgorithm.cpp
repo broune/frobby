@@ -93,27 +93,44 @@ void HilbertSliceAlgorithm::pivotSplit(HilbertSlice& slice) {
 }
 
 void HilbertSliceAlgorithm::content(HilbertSlice& slice) {
-  slice.simplify();
+  Term pivot(slice.getVarCount());
+  HilbertSlice inner;
 
-  if (!slice.baseCase(_consumer))
-	pivotSplit(slice);
+  while (true) {
+	slice.simplify();
+
+	if (slice.baseCase(_consumer))
+	  break;
+
+	inner = slice;
+	getPivot(pivot, slice);
+
+	ASSERT(!pivot.isIdentity()); 
+	ASSERT(!slice.getIdeal().contains(pivot));
+	ASSERT(!slice.getSubtract().contains(pivot));
+
+	inner.innerSlice(pivot);
+	slice.outerSlice(pivot);
+
+	content(inner);
+  }
 }
 
-void HilbertSliceAlgorithm::getPivot(Term& pivot,
+void HilbertSliceAlgorithm::getPivot(Term& term,
 									 HilbertSlice& slice) const {
-  ASSERT(pivot.getVarCount() == slice.getVarCount());
+  ASSERT(term.getVarCount() == slice.getVarCount());
 
-  // Get best (most populated) variable to split on.
-  Term co(slice.getVarCount());
-  slice.getIdeal().getSupportCounts(co);
+  // Get best (most populated) variable to split on. Term serves
+  // double-duty as a container of the support counts.
+  slice.getIdeal().getSupportCounts(term);
 
   const Term& lcm = slice.getLcm();
   for (size_t var = 0; var < slice.getVarCount(); ++var)
 	if (lcm[var] <= 1)
-	  co[var] = 0;
+	  term[var] = 0;
 
-  ASSERT(!co.isIdentity());
-  size_t bestVar = co.getFirstMaxExponent();
+  ASSERT(!term.isIdentity());
+  size_t bestVar = term.getFirstMaxExponent();
 
   // Get median positive exponent of bestVar.
   slice.singleDegreeSortIdeal(bestVar);
@@ -123,13 +140,13 @@ void HilbertSliceAlgorithm::getPivot(Term& pivot,
 	++begin;
 	ASSERT(begin != end);
   }
-  pivot.setToIdentity();
-  pivot[bestVar] = (*(begin + (distance(begin, end) ) / 2))[bestVar];
-  if (pivot[bestVar] == slice.getLcm()[bestVar])
-	pivot[bestVar] -= 1;
+  term.setToIdentity();
+  term[bestVar] = (*(begin + (distance(begin, end) ) / 2))[bestVar];
+  if (term[bestVar] == lcm[bestVar])
+	term[bestVar] -= 1;
 
-  ASSERT(!pivot.isIdentity());
-  ASSERT(!slice.getIdeal().contains(pivot));
-  ASSERT(!slice.getSubtract().contains(pivot));
-  ASSERT(pivot.strictlyDivides(slice.getLcm()));
+  ASSERT(!term.isIdentity());
+  ASSERT(!slice.getIdeal().contains(term));
+  ASSERT(!slice.getSubtract().contains(term));
+  ASSERT(term.strictlyDivides(slice.getLcm()));
 }
