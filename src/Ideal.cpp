@@ -212,6 +212,19 @@ void Ideal::colon(const Exponent* by) {
     ::colon(*it, *it, by, _varCount);
 }
 
+void Ideal::colon(size_t var, Exponent e) {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it) {
+	Exponent& ite = (*it)[var];
+	if (ite != 0) {
+	  if (ite > e)
+		ite -= e;
+	  else
+		ite = 0;
+	}
+  }
+}
+
 bool Ideal::colonReminimize(const Exponent* by) {
   ASSERT(isMinimallyGenerated());
 
@@ -257,6 +270,18 @@ void Ideal::removeMultiples(const Exponent* term) {
   _terms.erase(newEnd, stop);
 }
 
+void Ideal::removeMultiples(size_t var, Exponent e) {
+  iterator newEnd = _terms.begin();
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it) {
+    if ((*it)[var] < e) {
+	  *newEnd = *it;
+	  ++newEnd;
+    }
+  }
+  _terms.erase(newEnd, stop);
+}
+
 void Ideal::removeStrictMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
   iterator stop = _terms.end();
@@ -285,6 +310,14 @@ void Ideal::clearAndSetVarCount(size_t varCount) {
   _varCount = varCount;
   _terms.clear();
   _allocator.reset(varCount);
+}
+
+Ideal::const_iterator Ideal::getMultiple(size_t var) const {
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
+	if ((*it)[var] > 0)
+	  return it;
+  return stop;
 }
 
 Ideal& Ideal::operator=(const Ideal& ideal) {
