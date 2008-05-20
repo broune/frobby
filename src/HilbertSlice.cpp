@@ -157,36 +157,52 @@ bool baseCanSimplify(size_t var, const Ideal& ideal, const Term& counts) {
 
 size_t rid1(Ideal& ideal, Term& counts, bool& negate) {
   size_t varCount = ideal.getVarCount();
+  size_t adj = 0;
   for (size_t var = 0; var < varCount; ++var) {
 	if (counts[var] != 1)
 	  continue;
 
-	Ideal::const_iterator it = ideal.begin();
-	for (; (*it)[var] != 1; ++it) {
-	  ASSERT(it != ideal.end());
+	Ideal::const_iterator it = ideal.getMultiple(var);
+	ASSERT(it != ideal.end());
+
+	for (size_t other = 0; other < varCount; ++other) {
+	  if ((*it)[other] > 0) {
+		++adj;
+		if (counts[other] == 1)
+		  counts[other] = 0;
+	  } else
+		counts[other] = 0;
 	}
 
 	for (size_t other = 0; other < varCount; ++other) {
-	  if (counts[other] > 1 && (*it)[other] > 0) {
-		ideal.colonReminimize(other, 1);
-		return 1;
+	  if (counts[other] > 0) {
+		if (!ideal.colonReminimize(other, 1)) {
+		  ideal.clear();
+		  return 1;
+		}
 	  }
 	}
 
-	negate = !negate;
-	size_t support = ::getSizeOfSupport(*it, varCount);
+	it = ideal.getMultiple(var);
+	if (it == ideal.end()) {
+	  ideal.clear();
+	  return 1;
+	}
 	ideal.remove(it);
-	return support;
+	negate = !negate;
+
+	return adj;
   }
 
   for (size_t var = 0; var < varCount; ++var) {
 	if (baseCanSimplify(var, ideal, counts)) {
-	  ideal.colonReminimize(var, 1);
-	  return 1;
+	  if (!ideal.colonReminimize(var, 1))
+		ideal.clear();
+	  return adj + 1;
 	}
   }
 
-  return 0;
+  return adj;
 }
 
 // TODO: rename and move
@@ -202,6 +218,7 @@ void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
   while (true) {
 	// term is used to contain support counts to choose best pivot and
 	// to detect base case.
+
 	ideal.getSupportCounts(term);
 	if (term.getSizeOfSupport() + extraSupport != varCount)
 	  return;
@@ -248,16 +265,11 @@ void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
 	  return;
 	}
 
-	// term is used to store pivot.
 	size_t bestPivotVar = term.getFirstMaxExponent();
-	term.setToIdentity();
-	term[bestPivotVar] = 1;
 
-	// Handle inner slice. The scope preserves memory resources by
-	// deallocating the copied ideal early.
+	// Handle inner slice.
 	outer = ideal;
-	outer.removeMultiples(term);
-	// outer.insert(term); we subtract instead of doing this
+	outer.removeMultiples(bestPivotVar, 1);
 
 	// Handle outer slice.
 	ideal.colonReminimize(bestPivotVar, 1);
