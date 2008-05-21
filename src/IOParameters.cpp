@@ -69,7 +69,8 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
 
 	// The first condition at each if is the correct one. The other ones
 	// are attempts to catch easy mistakes.
-	if (c == 'R' || c == 'I' || c == 'Z' || c == '=' || c == 'm')
+	if (c == 'R' || c == 'I' || c == 'Z' || c == '=' || c == 'm' ||
+		c == 'W' || c == 'q' || c == 'Q')
 	  _inputFormat = "m2";
 	else if (c == '(' || c == 'l' || c == ')')
 	  _inputFormat = "newmonos";
