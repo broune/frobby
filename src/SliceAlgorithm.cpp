@@ -23,7 +23,7 @@
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "Partition.h"
-#include "Slice.h"
+#include "MsmSlice.h"
 #include "SliceStrategy.h"
 
 #include "IndependenceSplitter.h"
@@ -50,7 +50,7 @@ void SliceAlgorithm::runAndClear(Ideal& ideal) {
     for (size_t var = 0; var < initialMultiply.getVarCount(); ++var)
       initialMultiply[var] = 1;
 
-    Slice slice(ideal, Ideal(ideal.getVarCount()), initialMultiply);
+    MsmSlice slice(ideal, Ideal(ideal.getVarCount()), initialMultiply);
     _strategy->initialize(slice);
     content(slice);
   }
@@ -65,7 +65,7 @@ void SliceAlgorithm::runAndClear(Ideal& ideal) {
 }
 
 // Requires slice.getIdeal() to be minimized.
-bool SliceAlgorithm::independenceSplit(Slice& slice) {
+bool SliceAlgorithm::independenceSplit(MsmSlice& slice) {
   if (!_useIndependence)
     return false;
 
@@ -82,7 +82,7 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
   slice.clear(); // to save memory
 
   for (size_t i = 0; i < indep.getChildCount(); ++i) {
-    Slice& projSlice = indep.getSlice(i);
+    MsmSlice& projSlice = indep.getSlice(i);
 
     bool last = (i == indep.getChildCount() - 1);
     _strategy->doingIndependentPart(indep.getProjection(i), last);
@@ -98,7 +98,7 @@ bool SliceAlgorithm::independenceSplit(Slice& slice) {
   return true;
 }
 
-void SliceAlgorithm::labelSplit(Slice& slice) {
+void SliceAlgorithm::labelSplit(MsmSlice& slice) {
   ASSERT(!slice.normalize());
   size_t var = _strategy->getLabelSplitVariable(slice);
 
@@ -134,7 +134,7 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
     varLabel[var] -= 1;
 
     {
-      Slice child(ideal, slice.getSubtract(), slice.getMultiply());
+      MsmSlice child(ideal, slice.getSubtract(), slice.getMultiply());
 	  ASSERT(!child.normalize());
 
       child.innerSlice(varLabel);
@@ -155,11 +155,11 @@ void SliceAlgorithm::labelSplit(Slice& slice) {
   content(slice);
 }
 
-void SliceAlgorithm::pivotSplit(Slice& slice) {
+void SliceAlgorithm::pivotSplit(MsmSlice& slice) {
   // These scopes are here to preserve memory resources by calling
   // destructors early.
   {
-    Slice inner(slice);
+    MsmSlice inner(slice);
 
     {
       Term pivot(slice.getVarCount());
@@ -180,7 +180,7 @@ void SliceAlgorithm::pivotSplit(Slice& slice) {
   content(slice);
 }
 
-void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
+void SliceAlgorithm::content(MsmSlice& slice, bool simplifiedAndDependent) {
   _strategy->startingContent(slice);
   if (!simplifiedAndDependent)
     _strategy->simplify(slice);
@@ -204,7 +204,7 @@ void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
   _strategy->endingContent();
 }
 
-bool computeSingleMSM2(const Slice& slice, Term& msm) {
+bool computeSingleMSM2(const MsmSlice& slice, Term& msm) {
   msm.reset(slice.getVarCount());
   Term lcm(slice.getLcm());
 
@@ -236,7 +236,7 @@ bool computeSingleMSM2(const Slice& slice, Term& msm) {
   return true;
 }
 
-bool computeSingleMSM(const Slice& slice, Term& msm) {
+bool computeSingleMSM(const MsmSlice& slice, Term& msm) {
   for (size_t var = 0; var < msm.getVarCount(); ++var)
     if (slice.getLcm()[var] == 0)
       return false;

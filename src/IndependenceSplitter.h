@@ -21,30 +21,30 @@
 #include "Projection.h"
 #include "Ideal.h"
 #include <vector>
-#include "Slice.h"
+#include "MsmSlice.h"
 
 class Ideal;
 class Term;
 
 class IndependenceSplitter {
  public:
-  // Slice must be simplified and normalized.
-  IndependenceSplitter(const Partition& partition, Slice& slice);
+  // slice must be simplified and normalized.
+  IndependenceSplitter(const Partition& partition, MsmSlice& slice);
   ~IndependenceSplitter();
 
-  static void computePartition(Partition& partition, const Slice& slice);
+  static void computePartition(Partition& partition, const MsmSlice& slice);
   static bool shouldPerformSplit(const Partition& partition,
-				 const Slice& slice);
+				 const MsmSlice& slice);
 
   size_t getChildCount() const;
   Ideal* getMixedProjectionSubtract();
 
-  Slice& getSlice(size_t part);
+  MsmSlice& getSlice(size_t part);
   Projection& getProjection(size_t part);
 
  private:
   struct Child {
-    Slice slice;
+    MsmSlice slice;
     Projection projection;
 
     void swap(Child& child);
@@ -55,7 +55,7 @@ class IndependenceSplitter {
   void populateChildIdealsAndSingletonDecom(const vector<Child*>& childAt);
   void populateChildSubtracts(const vector<Child*>& childAt);
 
-  Slice& _slice;
+  MsmSlice& _slice;
   vector<Child> _children;
   Ideal* _mixedProjectionSubtract;
 };

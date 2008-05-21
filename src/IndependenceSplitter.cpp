@@ -17,12 +17,11 @@
 #include "stdinc.h"
 #include "IndependenceSplitter.h"
 
-#include "Slice.h"
 #include "Ideal.h"
 #include "Term.h"
 
 IndependenceSplitter::IndependenceSplitter(const Partition& partition,
-					   Slice& slice):
+					   MsmSlice& slice):
   _slice(slice),
   _mixedProjectionSubtract(0) {
 
@@ -171,7 +170,7 @@ void IndependenceSplitter::populateChildSubtracts
 }
 
 void IndependenceSplitter::computePartition
-(Partition& partition, const Slice& slice) {
+(Partition& partition, const MsmSlice& slice) {
   partition.reset(slice.getVarCount());
 
   Ideal::const_iterator idealEnd = slice.getIdeal().end();
@@ -185,7 +184,7 @@ void IndependenceSplitter::computePartition
 }
 
 bool IndependenceSplitter::shouldPerformSplit
-(const Partition& partition, const Slice& slice) {
+(const Partition& partition, const MsmSlice& slice) {
   size_t childCount = partition.getSetCount();
 
   if (childCount == 1)
@@ -216,7 +215,7 @@ size_t IndependenceSplitter::getChildCount() const {
 }
 
 
-Slice& IndependenceSplitter::getSlice(size_t part) {
+MsmSlice& IndependenceSplitter::getSlice(size_t part) {
   ASSERT(part < _children.size());
   return _children[part].slice;
 }

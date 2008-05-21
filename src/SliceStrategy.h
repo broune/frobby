@@ -20,7 +20,7 @@
 #include <string>
 #include "TermConsumer.h"
 
-class Slice;
+class MsmSlice;
 class Term;
 class TermTranslator;
 class Projection;
@@ -31,10 +31,10 @@ class SliceStrategy : public TermConsumer {
  public:
   virtual ~SliceStrategy();
 
-  virtual void initialize(const Slice& slice);
+  virtual void initialize(const MsmSlice& slice);
 
   // *** Methods for handling independence splits
-  virtual void doingIndependenceSplit(const Slice& slice,
+  virtual void doingIndependenceSplit(const MsmSlice& slice,
 									  Ideal* mixedProjectionSubtract) = 0;
   virtual void doingIndependentPart(const Projection& projection,
 									bool last) = 0;
@@ -43,7 +43,7 @@ class SliceStrategy : public TermConsumer {
 
   // *** Methods to inform debug strategies when the algorothm starts
   // processing the content of a slice and when it stops.
-  virtual void startingContent(const Slice& slice);
+  virtual void startingContent(const MsmSlice& slice);
   virtual void endingContent();
 
   // *** Methods for handling pivot and label splits
@@ -52,16 +52,16 @@ class SliceStrategy : public TermConsumer {
     LabelSplit = 1,
     PivotSplit = 2
   };
-  virtual SplitType getSplitType(const Slice& slice) = 0;
+  virtual SplitType getSplitType(const MsmSlice& slice) = 0;
 
-  virtual void getPivot(Term& pivot, Slice& slice);
-  virtual size_t getLabelSplitVariable(const Slice& slice);
+  virtual void getPivot(Term& pivot, MsmSlice& slice);
+  virtual size_t getLabelSplitVariable(const MsmSlice& slice);
 
   // report a msm to the strategy.
   virtual void consume(const Term& term) = 0;
 
   // Simplifies the slice prior to a split.
-  virtual void simplify(Slice& slice);
+  virtual void simplify(MsmSlice& slice);
 
 
   // *** Static methods to create strategies.

@@ -17,6 +17,7 @@
 #ifndef HILBERT_SLICE_GUARD
 #define HILBERT_SLICE_GUARD
 
+#include "Slice.h"
 #include "Term.h"
 #include "Ideal.h"
 
@@ -24,7 +25,7 @@ class CoefTermConsumer;
 
 // TODO: fix code duplication from Slice
 
-class HilbertSlice {
+class HilbertSlice : public Slice {
  public:
   HilbertSlice();
   HilbertSlice(const Ideal& ideal,
@@ -32,38 +33,7 @@ class HilbertSlice {
 			   const Term& multiply,
 			   CoefTermConsumer* consumer);
 
-  // *** Accessors
-
-  size_t getVarCount() const {return _varCount;}
-
-  const Ideal& getIdeal() const {return _ideal;}
-
-  Ideal& getSubtract() {return _subtract;}
-  const Ideal& getSubtract() const {return _subtract;}
-
-  Term& getMultiply() {return _multiply;}
-  const Term& getMultiply() const {return _multiply;}
-
-  // Returns the least common multiple of the generators of
-  // getIdeal().
-  const Term& getLcm() const;
-
-  void print(FILE* file) const;
-
   // *** Mutators
-
-  // Removes all generators of getIdeal() and getSubtract() and sets
-  // getMultiply() to the identity. Also changes getVarCount() to varCount.
-  void resetAndSetVarCount(size_t varCount);
-
-  // Clears getIdeal() and getSubtract(). Does not change getMultiply().
-  void clear();
-
-  // Calls singleDegreeSort on getIdeal().
-  void singleDegreeSortIdeal(size_t var);
-
-  // Inserts term into getIdeal().
-  void insertIntoIdeal(const Exponent* term);
 
   // Efficiently swaps the values of *this and slice while avoiding
   // copies.
@@ -103,27 +73,13 @@ class HilbertSlice {
   // characteristics can be different.
   bool simplifyStep();
 
-  // Removes those generators of getIdeal() that are strict multiples
-  // of some generator of getSubtract(). Returns true if any
-  // generators were removed.
-  bool normalize();
-
  private:
-  // Removes those generators of subtract that do not strictly divide
-  // the lcm of getIdeal(), or that lies within the ideal
-  // getIdeal(). Returns true if any generators were removed.
-  bool pruneSubtract();
-
   // Calculates a lower bound on the content of the slice (see
   // getLowerBound()) and calls innerSlice with that lower bound. This
   // is repeated until a fixed point is reached. Returns false if no
   // minimal generator of getIdeal() or getSubtract() has had their
   // support changed or if an empty base case is detected.
   bool applyLowerBound();
-
-  // Does an inner slice on the decremented least positive exponents
-  // that appear in ideal.
-  void applyTrivialLowerBound();
 
   // Returns a lower bound on the content of the slice. Returns false
   // if a base case is detected.
@@ -134,18 +90,7 @@ class HilbertSlice {
   // the slice. Returns false if an empty base case is detected.
   bool getLowerBound(Term& bound) const;
 
-  size_t _varCount;
-  Term _multiply;
-
-  mutable Term _lcm;
-  mutable bool _lcmUpdated;
-
-  Ideal _ideal;
-  Ideal _subtract;
-
   CoefTermConsumer* _consumer;
-
-  size_t _lowerBoundHint;
 };
 
 namespace std {

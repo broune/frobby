@@ -14,55 +14,25 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef SLICE_GUARD
-#define SLICE_GUARD
+#ifndef MSM_SLICE_GUARD
+#define MSM_SLICE_GUARD
 
+#include "Slice.h"
 #include "Term.h"
 #include "Ideal.h"
 
 class TermConsumer;
 
-class Slice {
+class MsmSlice : public Slice {
  public:
-  Slice();
-  Slice(const Ideal& ideal, const Ideal& subtract, const Term& multiply);
-
-  // *** Accessors
-
-  size_t getVarCount() const {return _varCount;}
-
-  const Ideal& getIdeal() const {return _ideal;}
-
-  Ideal& getSubtract() {return _subtract;}
-  const Ideal& getSubtract() const {return _subtract;}
-
-  Term& getMultiply() {return _multiply;}
-  const Term& getMultiply() const {return _multiply;}
-
-  // Returns the least common multiple of the generators of
-  // getIdeal().
-  const Term& getLcm() const;
-
-  void print(FILE* file) const;
+  MsmSlice();
+  MsmSlice(const Ideal& ideal, const Ideal& subtract, const Term& multiply);
 
   // *** Mutators
 
-  // Removes all generators of getIdeal() and getSubtract() and sets
-  // getMultiply() to the identity. Also changes getVarCount() to varCount.
-  void resetAndSetVarCount(size_t varCount);
-
-  // Clears getIdeal() and getSubtract(). Does not change getMultiply().
-  void clear();
-
-  // Calls singleDegreeSort on getIdeal().
-  void singleDegreeSortIdeal(size_t var);
-
-  // Inserts term into getIdeal().
-  void insertIntoIdeal(const Exponent* term);
-
   // Efficiently swaps the values of *this and slice while avoiding
   // copies.
-  void swap(Slice& slice);
+  void swap(MsmSlice& slice);
 
   // Computes an inner slice with the specified pivot, i.e. a colon by
   // pivot is applied to getMultiply() and getSubtract(), while
@@ -99,17 +69,7 @@ class Slice {
   // characteristics can be different.
   bool simplifyStep();
 
-  // Removes those generators of getIdeal() that are strict multiples
-  // of some generator of getSubtract(). Returns true if any
-  // generators were removed.
-  bool normalize();
-
  private:
-  // Removes those generators of subtract that do not strictly divide
-  // the lcm of getIdeal(), or that lies within the ideal
-  // getIdeal(). Returns true if any generators were removed.
-  bool pruneSubtract();
-
   // Removes those generators g of getIdeal() such that g[i] equals
   // getLcm()[i] for two distinct i. This is done iteratively until no
   // more generators can be removed in this way. Returns true if any
@@ -157,22 +117,11 @@ class Slice {
   // true if there are exactly two generators that are nowhere equal
   // to the lcm of getIdeal().
   bool twoNonMaxBaseCase(TermConsumer* consumer);
-
-  size_t _varCount;
-  Term _multiply;
-
-  mutable Term _lcm;
-  mutable bool _lcmUpdated;
-
-  Ideal _ideal;
-  Ideal _subtract;
-
-  size_t _lowerBoundHint;
 };
 
 namespace std {
   // This allows STL to swap slices more efficiently.
-  template<> inline void swap<Slice>(Slice& a, Slice& b) {
+  template<> inline void swap<MsmSlice>(MsmSlice& a, MsmSlice& b) {
     a.swap(b);
   }
 }

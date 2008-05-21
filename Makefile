@@ -15,14 +15,14 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp					\
   LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp	\
   IntersectFacade.cpp IntersectAction.cpp AssociatedPrimesFacade.cpp	\
-  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp Slice.cpp			\
+  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp MsmSlice.cpp		\
   IndependenceSplitter.cpp Projection.cpp SliceStrategy.cpp				\
   lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp		\
   Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp					\
   AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
   TranslatingTermConsumer.cpp frobbyTest.cpp HilbertAction.cpp			\
   HilbertSlice.cpp HilbertSliceAlgorithm.cpp Polynomial.cpp				\
-  CanonicalCoefTermConsumer.cpp HilbertStrategy.cpp
+  CanonicalCoefTermConsumer.cpp HilbertStrategy.cpp Slice.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though it would
 # be nicer to not do it then.

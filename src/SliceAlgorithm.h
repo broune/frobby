@@ -18,7 +18,7 @@
 #define SLICE_ALGORITHM_GUARD
 
 class Ideal;
-class Slice;
+class MsmSlice;
 class SliceStrategy;
 class Term;
 
@@ -36,11 +36,11 @@ class SliceAlgorithm {
   void runAndClear(Ideal& ideal);
 
  private:
-  void content(Slice& slice, bool simplifiedAndDependent = false);
+  void content(MsmSlice& slice, bool simplifiedAndDependent = false);
 
-  void labelSplit(Slice& slice);
-  void pivotSplit(Slice& slice);
-  bool independenceSplit(Slice& slice);
+  void labelSplit(MsmSlice& slice);
+  void pivotSplit(MsmSlice& slice);
+  bool independenceSplit(MsmSlice& slice);
 
   bool _useIndependence;
   SliceStrategy* _strategy;
@@ -49,6 +49,6 @@ class SliceAlgorithm {
 // For getting a single Maximal Standard Monomial. This may fail if
 // slice.getIdeal() is not artinian, in which case the return value is
 // false.
-bool computeSingleMSM(const Slice& slice, Term& msm);
+bool computeSingleMSM(const MsmSlice& slice, Term& msm);
 
 #endif
