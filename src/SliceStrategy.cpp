@@ -17,7 +17,7 @@
 #include "stdinc.h"
 #include "SliceStrategy.h"
 
-#include "Slice.h"
+#include "MsmSlice.h"
 #include "Term.h"
 #include "Ideal.h"
 #include "TermTranslator.h"
@@ -29,26 +29,26 @@
 SliceStrategy::~SliceStrategy() {
 }
 
-void SliceStrategy::initialize(const Slice& slice) {
+void SliceStrategy::initialize(const MsmSlice& slice) {
 }
 
-void SliceStrategy::startingContent(const Slice& slice) {
+void SliceStrategy::startingContent(const MsmSlice& slice) {
 }
 
 void SliceStrategy::endingContent() {
 }
 
-void SliceStrategy::simplify(Slice& slice) {
+void SliceStrategy::simplify(MsmSlice& slice) {
   slice.simplify();
 }
 
-void SliceStrategy::getPivot(Term& pivot, Slice& slice) {
+void SliceStrategy::getPivot(Term& pivot, MsmSlice& slice) {
   fputs("INTERNAL ERROR: Undefined SliceStrategy::getPivot called.\n", stderr);
   ASSERT(false);
   exit(1);
 }
 
-size_t SliceStrategy::getLabelSplitVariable(const Slice& slice) {
+size_t SliceStrategy::getLabelSplitVariable(const MsmSlice& slice) {
   fputs
     ("INTERNAL ERROR: Undefined SliceStrategy::getLabelSplitVariable called.\n",
      stderr);
@@ -73,7 +73,7 @@ public:
     getCurrentConsumer()->consume(term);
   }
 
-  virtual void doingIndependenceSplit(const Slice& slice,
+  virtual void doingIndependenceSplit(const MsmSlice& slice,
 									  Ideal* mixedProjectionSubtract) {
     _independenceSplits.push_back
       (new IndependenceSplit(slice,
@@ -97,7 +97,7 @@ public:
 private:
   class IndependenceSplit : public TermConsumer {
   public:
-    IndependenceSplit(const Slice& slice,
+    IndependenceSplit(const MsmSlice& slice,
 					  Ideal* mixedProjectionSubtract,
 					  TermConsumer* consumer):
       _partialTerm(slice.getMultiply()),
@@ -220,11 +220,11 @@ public:
 	_type(type) {
   }
 
-  SplitType getSplitType(const Slice& slice) {
+  SplitType getSplitType(const MsmSlice& slice) {
     return LabelSplit;
   }
 
-  size_t getLabelSplitVariable(const Slice& slice) {
+  size_t getLabelSplitVariable(const MsmSlice& slice) {
 	Term co(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(co);
 
@@ -302,11 +302,11 @@ public:
 	srand(0); // to make things repeatable
   }
  
-  SplitType getSplitType(const Slice& slice) {
+  SplitType getSplitType(const MsmSlice& slice) {
     return PivotSplit;
   }
 
-  void getPivot(Term& pivot, Slice& slice) {
+  void getPivot(Term& pivot, MsmSlice& slice) {
 	ASSERT(pivot.getVarCount() == slice.getVarCount());
 
 	if (_type == MinGen) {
@@ -366,7 +366,7 @@ private:
 	}
   }
 
-  void getGCDPivot(Slice& slice, Term& pivot, size_t var) {
+  void getGCDPivot(MsmSlice& slice, Term& pivot, size_t var) {
 	size_t nonDivisibleCount = 0;
 	Ideal::const_iterator end = slice.getIdeal().end();
 	for (Ideal::const_iterator it = slice.getIdeal().begin();
@@ -395,7 +395,7 @@ private:
 	pivot.decrement();
   }
 
-  void getMinGenPivot(Term& pivot, Slice& slice) {
+  void getMinGenPivot(Term& pivot, MsmSlice& slice) {
 	size_t nonSquareFreeCount = 0;
 	Ideal::const_iterator end = slice.getIdeal().end();
 	for (Ideal::const_iterator it = slice.getIdeal().begin();
@@ -419,7 +419,7 @@ private:
 	pivot.decrement();
   }
 
-  Exponent getMedianPositiveExponentOf(Slice& slice, size_t var) {
+  Exponent getMedianPositiveExponentOf(MsmSlice& slice, size_t var) {
 	slice.singleDegreeSortIdeal(var);
 	Ideal::const_iterator end = slice.getIdeal().end();
 	Ideal::const_iterator begin = slice.getIdeal().begin();
@@ -433,7 +433,7 @@ private:
   // Returns the variable that divides the most minimal generators of
   // those where some minimal generator is divisible by the square of
   // that variable.
-  size_t getBestVar(Slice& slice) {
+  size_t getBestVar(MsmSlice& slice) {
     Term co(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(co);
 
@@ -454,7 +454,7 @@ private:
 	return getRandomSupportVar(co);
   }
 
-  bool getIndependencePivot(Slice& slice, Term& pivot) {
+  bool getIndependencePivot(MsmSlice& slice, Term& pivot) {
 	if (slice.getVarCount() == 1)
 	  return false;
 
@@ -532,11 +532,11 @@ public:
     delete _strategy;
   }
 
-  virtual void initialize(const Slice& slice) {
+  virtual void initialize(const MsmSlice& slice) {
     _strategy->initialize(slice);
   }
 
-  virtual void doingIndependenceSplit(const Slice& slice,
+  virtual void doingIndependenceSplit(const MsmSlice& slice,
 				      Ideal* mixedProjectionSubtract) {
     _strategy->doingIndependenceSplit
       (slice, mixedProjectionSubtract);
@@ -554,7 +554,7 @@ public:
     _strategy->doneWithIndependenceSplit();
   }
 
-  virtual void startingContent(const Slice& slice) {
+  virtual void startingContent(const MsmSlice& slice) {
     _strategy->startingContent(slice);
   }
 
@@ -562,19 +562,19 @@ public:
     _strategy->endingContent();
   }
 
-  virtual void simplify(Slice& slice) {
+  virtual void simplify(MsmSlice& slice) {
     _strategy->simplify(slice);
   }
 
-  virtual SplitType getSplitType(const Slice& slice) {
+  virtual SplitType getSplitType(const MsmSlice& slice) {
     return _strategy->getSplitType(slice);
   }
 
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual void getPivot(Term& pivot, MsmSlice& slice) {
 	_strategy->getPivot(pivot, slice);
   }
 
-  virtual size_t getLabelSplitVariable(const Slice& slice) {
+  virtual size_t getLabelSplitVariable(const MsmSlice& slice) {
     return _strategy->getLabelSplitVariable(slice);
   }
 
@@ -601,7 +601,7 @@ public:
   }
 
   FrobeniusIndependenceSplit(const Projection& projection,
-							 const Slice& slice,
+							 const MsmSlice& slice,
 							 const mpz_class& toBeat,
 							 const TermGrader& grader,
 							 bool useBound):
@@ -667,7 +667,7 @@ public:
 	  _partValue = -1;
   }
 
-  void getPivot(Term& pivot, Slice& slice) {
+  void getPivot(Term& pivot, MsmSlice& slice) {
     const Term& lcm = slice.getLcm();
 
 	static mpz_class maxDiff;
@@ -705,7 +705,7 @@ public:
     return _outerPartProjection;
   }
 
-  void simplify(Slice& slice) {
+  void simplify(MsmSlice& slice) {
     if (slice.getIdeal().getGeneratorCount() == 0)
       return;
 
@@ -763,14 +763,14 @@ private:
   // The idea here is to see if any inner slices can be discarded,
   // allowing us to move to the outer slice. This has not turned out
   // to work well.
-  bool colonSimplify(Slice& slice) {
+  bool colonSimplify(MsmSlice& slice) {
 	bool simplified = true;
 
 	for (size_t var = 0; var < slice.getVarCount(); ++var) {
 	  if (slice.getLcm()[var] == 1)
 		continue;
 
-	  Slice inner(slice);
+	  MsmSlice inner(slice);
 	  Term pivot(slice.getVarCount());
 	  pivot[var] = slice.getLcm()[var] - 1;
 	  inner.innerSlice(pivot);
@@ -797,7 +797,7 @@ private:
   // apply to the outer slice on the pivot var. If that can be
   // discarded, then we can move to the inner slice. This has not
   // turned out to work well.
-  bool involvedBoundSimplify(Slice& slice) {
+  bool involvedBoundSimplify(MsmSlice& slice) {
     if (slice.getIdeal().getGeneratorCount() == 0)
       return false;
 
@@ -878,17 +878,17 @@ private:
     _outerPartProjection.reset(inverses);
   }
 
-  void getBasicUpperBound(const Slice& slice, Term& bound) {
+  void getBasicUpperBound(const MsmSlice& slice, Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
   }
 
-  void getUpperBound(const Slice& slice, Term& bound) {
+  void getUpperBound(const MsmSlice& slice, Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
     bound = slice.getLcm();
     adjustToBound(slice, bound);
   }
 
-  void adjustToBound(const Slice& slice, Term& bound) {
+  void adjustToBound(const MsmSlice& slice, Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
 
     bound.product(bound, slice.getMultiply());
@@ -962,7 +962,7 @@ public:
     ASSERT(_independenceSplits.empty());
   }
 
-  virtual void initialize(const Slice& slice) {
+  virtual void initialize(const MsmSlice& slice) {
     // The purpose of this is to initialize the bound so that it can
     // be used right away, instead of waiting for the slice algorithm
     // to produce some output first.
@@ -973,7 +973,7 @@ public:
 	}
   }
 
-  virtual void simplify(Slice& slice) {
+  virtual void simplify(MsmSlice& slice) {
     getCurrentSplit()->simplify(slice);
   }
 
@@ -981,26 +981,26 @@ public:
     getCurrentSplit()->consume(term);
   }
 
-  virtual SplitType getSplitType(const Slice& slice) {
+  virtual SplitType getSplitType(const MsmSlice& slice) {
 	if (_strategy == 0)
 	  return PivotSplit;
 	else
 	  return _strategy->getSplitType(slice);
   }
 
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual void getPivot(Term& pivot, MsmSlice& slice) {
 	if (_strategy != 0)
 	  _strategy->getPivot(pivot, slice);
 	else
 	  getCurrentSplit()->getPivot(pivot, slice);
   }
 
-  virtual size_t getLabelSplitVariable(const Slice& slice) {
+  virtual size_t getLabelSplitVariable(const MsmSlice& slice) {
 	ASSERT(_strategy != 0);
 	return _strategy->getLabelSplitVariable(slice);
   }
 
-  virtual void doingIndependenceSplit(const Slice& slice,
+  virtual void doingIndependenceSplit(const MsmSlice& slice,
 									  Ideal* mixedProjectionSubtract) {
     _independenceSplits.push_back
       (new FrobeniusIndependenceSplit
@@ -1097,14 +1097,14 @@ public:
 			(unsigned long)_independenceSplitCount);
   }
 
-  virtual void doingIndependenceSplit(const Slice& slice,
+  virtual void doingIndependenceSplit(const MsmSlice& slice,
 									  Ideal* mixedProjectionSubtract) {
     ++_independenceSplitCount;
     DecoratorSliceStrategy::doingIndependenceSplit(slice,
 												   mixedProjectionSubtract);
   }
 
-  void startingContent(const Slice& slice) {
+  void startingContent(const MsmSlice& slice) {
     if (_level > 0)
       _isBaseCase[_level - 1] = false;
 
@@ -1167,7 +1167,7 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
     _level(0) {
   }
   
-  virtual void doingIndependenceSplit(const Slice& slice,
+  virtual void doingIndependenceSplit(const MsmSlice& slice,
 				      Ideal* mixedProjectionSubtract) {
     fprintf(stderr, "DEBUG %lu: doing independence split.\n",
 	    (unsigned long)_level);
@@ -1201,7 +1201,7 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
     DecoratorSliceStrategy::doneWithIndependenceSplit();
   }
 
-  void startingContent(const Slice& slice) {
+  void startingContent(const MsmSlice& slice) {
     ++_level;
     fprintf(stderr, "DEBUG %lu: computing content of the following slice.\n",
 	    (unsigned long)_level);
@@ -1220,7 +1220,7 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
     DecoratorSliceStrategy::endingContent();
   }
 
-  void getPivot(Term& pivot, Slice& slice) {
+  void getPivot(Term& pivot, MsmSlice& slice) {
     DecoratorSliceStrategy::getPivot(pivot, slice);
     fprintf(stderr, "DEBUG %lu: performing pivot split on ",
 	    (unsigned long)_level);
@@ -1229,7 +1229,7 @@ class DebugSliceStrategy : public DecoratorSliceStrategy {
     fflush(stderr);
   }
 
-  size_t getLabelSplitVariable(const Slice& slice) {
+  size_t getLabelSplitVariable(const MsmSlice& slice) {
     size_t var = DecoratorSliceStrategy::getLabelSplitVariable(slice);
     fprintf(stderr, "DEBUG %lu: performing label split on var %lu.\n",
 	    (unsigned long)_level,

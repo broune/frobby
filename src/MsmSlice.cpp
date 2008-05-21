@@ -15,78 +15,20 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "Slice.h"
+#include "MsmSlice.h"
 
 #include "TermConsumer.h"
 
-Slice::Slice():
-  _varCount(0) {
+MsmSlice::MsmSlice():
+  Slice() {
 }
 
-Slice::Slice(const Ideal& ideal, const Ideal& subtract,
+MsmSlice::MsmSlice(const Ideal& ideal, const Ideal& subtract,
 			 const Term& multiply):
-  _varCount(multiply.getVarCount()),
-  _multiply(multiply),
-  _lcm(multiply.getVarCount()),
-  _lcmUpdated(false),
-  _ideal(ideal),
-  _subtract(subtract),
-  _lowerBoundHint(0) {
-  ASSERT(multiply.getVarCount() == ideal.getVarCount());
-  ASSERT(multiply.getVarCount() == subtract.getVarCount());
+  Slice(ideal, subtract, multiply) {
 }
 
-const Term& Slice::getLcm() const {
-#ifdef DEBUG
-  if (_lcmUpdated) {
-    Term tmp(_varCount);
-	_ideal.getLcm(tmp);
-    ASSERT(tmp == _lcm);
-  }
-#endif
-
-  if (!_lcmUpdated) {
-    getIdeal().getLcm(_lcm);
-    _lcmUpdated = true;
-  }
-  return _lcm;
-}
-
-void Slice::print(FILE* file) const {
-  fputs("Slice (multiply: ", file);
-  _multiply.print(file);
-  fputs("\n ideal: ", file);
-  getIdeal().print(file);
-  fputs(" subtract: ", file);
-  _subtract.print(file);
-}
-
-void Slice::resetAndSetVarCount(size_t varCount) {
-  _varCount = varCount;
-  _ideal.clearAndSetVarCount(varCount);
-  _subtract.clearAndSetVarCount(varCount);
-  _multiply.reset(varCount);
-  _lcm.reset(varCount);
-  _lcmUpdated = true;
-}
-
-void Slice::clear() {
-  _ideal.clear();
-  _subtract.clear();
-  _lcmUpdated = false;
-}
-
-void Slice::singleDegreeSortIdeal(size_t var) {
-  _ideal.singleDegreeSort(var);
-}
-
-void Slice::insertIntoIdeal(const Exponent* term) {
-  _ideal.insert(term);
-  if (_lcmUpdated)
-    _lcm.lcm(_lcm, term);
-}
-
-void Slice::swap(Slice& slice) {
+void MsmSlice::swap(MsmSlice& slice) {
   std::swap(_varCount, slice._varCount);
   _multiply.swap(slice._multiply);
   _lcm.swap(slice._lcm);
@@ -95,7 +37,7 @@ void Slice::swap(Slice& slice) {
   _subtract.swap(slice._subtract);
 }
 
-bool Slice::innerSlice(const Term& pivot) {
+bool MsmSlice::innerSlice(const Term& pivot) {
   ASSERT(getVarCount() == pivot.getVarCount());
 
   size_t size = _ideal.getGeneratorCount();
@@ -117,7 +59,7 @@ bool Slice::innerSlice(const Term& pivot) {
   return changed;
 }
 
-void Slice::outerSlice(const Term& pivot) {
+void MsmSlice::outerSlice(const Term& pivot) {
   ASSERT(getVarCount() == pivot.getVarCount());
 
   size_t count = getIdeal().getGeneratorCount();
@@ -131,7 +73,7 @@ void Slice::outerSlice(const Term& pivot) {
   _lowerBoundHint = pivot.getFirstNonZeroExponent();
 }
 
-bool Slice::baseCase(TermConsumer* consumer) {
+bool MsmSlice::baseCase(TermConsumer* consumer) {
   if (getIdeal().getGeneratorCount() < _varCount)
     return true;
 
@@ -167,7 +109,7 @@ bool Slice::baseCase(TermConsumer* consumer) {
   return true;
 }
 
-void Slice::simplify() {
+void MsmSlice::simplify() {
   ASSERT(!normalize());
 
   removeDoubleLcm();
@@ -183,7 +125,7 @@ void Slice::simplify() {
   ASSERT(!applyLowerBound());
 }
 
-bool Slice::simplifyStep() {
+bool MsmSlice::simplifyStep() {
   if (removeDoubleLcm())
 	return true;
   if (applyLowerBound())
@@ -191,62 +133,6 @@ bool Slice::simplifyStep() {
 
   pruneSubtract();
   return false;
-}
-
-// Helper class for normalize().
-class StrictMultiplePredicate {
-public:
-  StrictMultiplePredicate(const Exponent* term, size_t varCount):
-    _term(term), _varCount(varCount) {
-  }
-
-  bool operator()(const Exponent* term) {
-    return ::strictlyDivides(_term, term, _varCount);
-  }
-  
-private:
-  const Exponent* _term;
-  size_t _varCount;
-};
-
-bool Slice::normalize() {
-  bool removedAny = false;
-
-  Ideal::const_iterator stop = _subtract.end();
-  for (Ideal::const_iterator it = _subtract.begin(); it != stop; ++it) {
-    StrictMultiplePredicate pred(*it, _varCount);
-    if (_ideal.removeIf(pred)) {
-      removedAny = true;
-      _lcmUpdated = false;
-    }
-  }
-
-  return removedAny;
-}
-
-// Helper class for pruneSubtract().
-class PruneSubtractPredicate {
-public:
-  PruneSubtractPredicate(const Ideal& ideal, const Term& lcm):
-    _ideal(ideal), _lcm(lcm) {}
-
-  bool operator()(const Exponent* term) {
-    return
-      !::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
-      _ideal.contains(term);
-  }
-  
-private:
-  const Ideal& _ideal;
-  const Term& _lcm;
-};
-
-bool Slice::pruneSubtract() {
-  if (_subtract.getGeneratorCount() == 0)
-    return false;
-
-  PruneSubtractPredicate pred(getIdeal(), getLcm());
-  return _subtract.removeIf(pred);
 }
 
 // Helper class for removeDoubleLcm().
@@ -272,7 +158,7 @@ private:
   const Term& _lcm;
 };
 
-bool Slice::removeDoubleLcm() {
+bool MsmSlice::removeDoubleLcm() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
 
@@ -290,7 +176,7 @@ bool Slice::removeDoubleLcm() {
   return removedAny;
 }
 
-void Slice::applyTrivialLowerBound() {
+void MsmSlice::applyTrivialLowerBound() {
   Term bound(_varCount);
   _ideal.getLeastExponents(bound);
   bound.decrement();
@@ -298,7 +184,7 @@ void Slice::applyTrivialLowerBound() {
 	innerSlice(bound);
 }
 
-bool Slice::applyLowerBound() {
+bool MsmSlice::applyLowerBound() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
 
@@ -325,7 +211,7 @@ bool Slice::applyLowerBound() {
   return changed;
 }
 
-bool Slice::getLowerBound(Term& bound, size_t var) const {
+bool MsmSlice::getLowerBound(Term& bound, size_t var) const {
   bool seenAny = false;
 
   const Term& lcm = getLcm();
@@ -366,7 +252,7 @@ bool Slice::getLowerBound(Term& bound, size_t var) const {
   }
 }
 
-bool Slice::getLowerBound(Term& bound) const {
+bool MsmSlice::getLowerBound(Term& bound) const {
   ASSERT(_varCount > 0);
   Term tmp(_varCount);
 
@@ -381,7 +267,7 @@ bool Slice::getLowerBound(Term& bound) const {
   return true;
 }
 
-void Slice::twoVarBaseCase(TermConsumer* consumer) {
+void MsmSlice::twoVarBaseCase(TermConsumer* consumer) {
   ASSERT(_varCount == 2);
 
   singleDegreeSortIdeal(0);
@@ -413,7 +299,7 @@ void Slice::twoVarBaseCase(TermConsumer* consumer) {
   }
 }
 
-void Slice::oneMoreGeneratorBaseCase(TermConsumer* consumer) {
+void MsmSlice::oneMoreGeneratorBaseCase(TermConsumer* consumer) {
   ASSERT(_varCount + 1 == getIdeal().getGeneratorCount());
 
   // Since the slice is fully simplified, we must be dealing with an
@@ -476,7 +362,7 @@ bool getTheOnlyTwoNonMax(Ideal::const_iterator it,
   return count == 2;
 }
 
-bool Slice::twoNonMaxBaseCase(TermConsumer* consumer) {
+bool MsmSlice::twoNonMaxBaseCase(TermConsumer* consumer) {
   const Term& lcm = getLcm();
   Ideal::const_iterator stop = getIdeal().end();
 
