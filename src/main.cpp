@@ -27,7 +27,9 @@ int main(int argc, const char** argv) {
   fflush(stderr);
 #endif
 
-  srand(time(0));
+  srand((unsigned int)time(0) +
+		(unsigned int)getpid() +
+		(unsigned int)clock());
 
   string actionName = "help";
   if (argc > 1) {
