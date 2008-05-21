@@ -14,23 +14,37 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_SLICE_ALGORITHM_GUARD
-#define HILBERT_SLICE_ALGORITHM_GUARD
+#ifndef HILBERT_STRATEGY_GUARD
+#define HILBERT_STRATEGY_GUARD
 
-class CoefTermConsumer;
-class Ideal;
+#include <vector>
+#include "Term.h"
+
 class HilbertSlice;
+class Ideal;
+class CoefTermConsumer;
 
-class HilbertSliceAlgorithm {
+class HilbertStrategy {
  public:
-  HilbertSliceAlgorithm();
+  ~HilbertStrategy();
 
-  void setConsumer(CoefTermConsumer* consumer);
+  HilbertSlice* setupInitialSlice(const Ideal& ideal,
+								  CoefTermConsumer* consumer);
 
-  void run(const Ideal& ideal);
+  // Deletes the slice parameter.
+  pair<HilbertSlice*, HilbertSlice*> split(HilbertSlice* slice);
+
+  void freeSlice(HilbertSlice* slice);
 
  private:
-  CoefTermConsumer* _consumer;
+  HilbertSlice* newSlice();
+  void getPivot(Term& term, HilbertSlice& slice);
+
+  Term _term;
+
+  // It would make more sense with a stack, but that class has
+  // (surprisingly) proven to have too high overhead.
+  vector<HilbertSlice*> _sliceCache;
 };
 
 #endif
