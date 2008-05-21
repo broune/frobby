@@ -25,7 +25,7 @@
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "SliceAlgorithm.h"
-#include "SliceStrategy.h"
+#include "MsmStrategy.h"
 #include "TermIgnorer.h"
 #include "DecomRecorder.h"
 #include "TermGrader.h"
@@ -136,8 +136,8 @@ computeIrreducibleDecom(Ideal& ideal,
 	consumer->consume(Term(ideal.getVarCount()));
 	delete consumer;
   } else {
-    SliceStrategy* strategy =
-      SliceStrategy::newDecomStrategy(_parameters.getSplit(), consumer);    
+    MsmStrategy* strategy =
+      MsmStrategy::newDecomStrategy(_parameters.getSplit(), consumer);    
     runSliceAlgorithm(ideal, strategy);
   }
 
@@ -267,7 +267,7 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
   TermGrader grader(shiftedDegrees, &translator);
 
-  SliceStrategy* strategy = SliceStrategy::newFrobeniusStrategy
+  MsmStrategy* strategy = MsmStrategy::newFrobeniusStrategy
 	(_parameters.getSplit(), &recorder, grader, _parameters.getUseBound());
 
   runSliceAlgorithm(ideal, strategy);
@@ -287,14 +287,14 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 }
 
 void IrreducibleDecomFacade::
-runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy) {
+runSliceAlgorithm(Ideal& ideal, MsmStrategy* strategy) {
   ASSERT(strategy != 0);
 
   if (_parameters.getPrintStatistics())
-    strategy = SliceStrategy::addStatistics(strategy);
+    strategy = MsmStrategy::addStatistics(strategy);
 
   if (_parameters.getPrintDebug())
-    strategy = SliceStrategy::addDebugOutput(strategy);
+    strategy = MsmStrategy::addDebugOutput(strategy);
 
   SliceAlgorithm alg;
   alg.setUseIndependence(_parameters.getUseIndependence());
