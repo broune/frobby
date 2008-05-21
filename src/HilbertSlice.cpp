@@ -31,51 +31,6 @@ HilbertSlice::HilbertSlice(const Ideal& ideal, const Ideal& subtract,
   ASSERT(consumer != 0);
 }
 
-void HilbertSlice::swap(HilbertSlice& slice) {
-  std::swap(_varCount, slice._varCount);
-  _multiply.swap(slice._multiply);
-  _lcm.swap(slice._lcm);
-  std::swap(_lcmUpdated, slice._lcmUpdated);
-  _ideal.swap(slice._ideal);
-  _subtract.swap(slice._subtract);
-}
-
-bool HilbertSlice::innerSlice(const Term& pivot) {
-  ASSERT(getVarCount() == pivot.getVarCount());
-
-  size_t size = _ideal.getGeneratorCount();
-
-  _multiply.product(_multiply, pivot);
-  bool idealChanged = _ideal.colonReminimize(pivot);
-  bool subtractChanged = _subtract.colonReminimize(pivot);
-  bool changed = idealChanged || subtractChanged;
-  if (changed) {
-	normalize();
-	_lowerBoundHint = pivot.getFirstNonZeroExponent();
-  }
-
-  if (_ideal.getGeneratorCount() == size)
-    _lcm.colon(_lcm, pivot);
-  else
-    _lcmUpdated = false;
-
-  return changed;
-}
-
-void HilbertSlice::outerSlice(const Term& pivot) {
-  ASSERT(getVarCount() == pivot.getVarCount());
-
-  size_t count = getIdeal().getGeneratorCount();
-  _ideal.removeStrictMultiples(pivot);
-  if (getIdeal().getGeneratorCount() != count)
-    _lcmUpdated = false;
-
-  if (pivot.getSizeOfSupport() > 1)
-    getSubtract().insert(pivot);
-
-  _lowerBoundHint = pivot.getFirstNonZeroExponent();
-}
-
 // TODO: rename and move
 bool baseCanSimplify(size_t var, const Ideal& ideal, const Term& counts) {
   if (counts[var] == 0)
@@ -272,31 +227,9 @@ bool HilbertSlice::simplifyStep() {
   return false;
 }
 
-bool HilbertSlice::applyLowerBound() {
-  if (_ideal.getGeneratorCount() == 0)
-    return false;
-
-  bool changed = false;
-  size_t stepsWithNoChange = 0;
-
-  Term bound(_varCount);
-  size_t var = _lowerBoundHint;
-  while (stepsWithNoChange < _varCount) {
-    if (!getLowerBound(bound, var)) {
-      clear();
-      return true;
-    }
-
-	if (!bound.isIdentity() && innerSlice(bound)) {
-	  changed = true;
-	  stepsWithNoChange = 0;
-	} else
-      ++stepsWithNoChange;
-
-    var = (var + 1) % _varCount;
-  }
-
-  return changed;
+void HilbertSlice::swap(HilbertSlice& slice) {
+  Slice::swap(slice);
+  std::swap(_consumer, slice._consumer);
 }
 
 bool HilbertSlice::getLowerBound(Term& bound, size_t var) const {
@@ -323,19 +256,4 @@ bool HilbertSlice::getLowerBound(Term& bound, size_t var) const {
     // In this case the content is empty.
     return false;
   }
-}
-
-bool HilbertSlice::getLowerBound(Term& bound) const {
-  ASSERT(_varCount > 0);
-  Term tmp(_varCount);
-
-  if (!getLowerBound(bound, 0))
-    return false;
-  for (size_t var = 1; var < _varCount; ++var) {
-    if (!getLowerBound(tmp, var))
-      return false;
-    bound.lcm(bound, tmp);
-  }
-
-  return true;
 }

@@ -30,25 +30,6 @@ class MsmSlice : public Slice {
 
   // *** Mutators
 
-  // Efficiently swaps the values of *this and slice while avoiding
-  // copies.
-  void swap(MsmSlice& slice);
-
-  // Computes an inner slice with the specified pivot, i.e. a colon by
-  // pivot is applied to getMultiply() and getSubtract(), while
-  // getMultiply() is multiplied by pivot. The slice is then
-  // normalized.
-  //
-  // Returns true if the colon operation was non-trivial in the sense
-  // that it changed the support of any minimal generator of
-  // getIdeal() or getSubtract().
-  bool innerSlice(const Term& pivot);
-
-  // Computes an outer slice with the specified pivot, i.e. strict
-  // multiples of pivot are removed from getIdeal(), and pivot is
-  // added to getSubtract() if necessary.
-  void outerSlice(const Term& pivot);
-
   // Returns true if a base case is reached, and in that case outputs
   // the content to consumer. The slice must be fully simplified.
   //
@@ -57,17 +38,12 @@ class MsmSlice : public Slice {
   // square free.
   bool baseCase(TermConsumer* consumer);
 
-  // Simplies the slice such that normalize, pruneSubtract,
-  // removeDoubleLcm and applyLowerBound all return false. It is a
-  // precondition that the slice is already normalized.
-  void simplify();
+  virtual void simplify();
+  virtual bool simplifyStep();
 
-  // Like simplify(), except that only one simplification step is
-  // performed. If the return value is true, then the Slice may not be
-  // fully simplified yet. Iterating simplifyStep() has the same
-  // result as calling simplify(), though the performance
-  // characteristics can be different.
-  bool simplifyStep();
+  // Efficiently swaps the values of *this and slice while avoiding
+  // copies.
+  void swap(MsmSlice& slice);
 
  private:
   // Removes those generators g of getIdeal() such that g[i] equals
@@ -76,28 +52,12 @@ class MsmSlice : public Slice {
   // generators were removed.
   bool removeDoubleLcm();
 
-  // Calculates a lower bound on the content of the slice (see
-  // getLowerBound()) and calls innerSlice with that lower bound. This
-  // is repeated until a fixed point is reached. Returns false if no
-  // minimal generator of getIdeal() or getSubtract() has had their
-  // support changed or if an empty base case is detected.
-  bool applyLowerBound();
-
-  // Does an inner slice on the decremented least positive exponents
-  // that appear in ideal.
-  void applyTrivialLowerBound();
-
   // Calculates the gcd of those generators of getIdeal() that are
   // divisible by var. This gcd is then divided by var to yield a
   // lower bound on the content of the slice. Returns false if a base
   // case is detected. The real functionality is slight more
   // sophisticated.
-  bool getLowerBound(Term& bound, size_t var) const;
-
-  // Calculates the lcm of the lower bounds from the getLowerBound
-  // that takes a variable. This is a lower bound on the content of
-  // the slice. Returns false if an empty base case is detected.
-  bool getLowerBound(Term& bound) const;
+  virtual bool getLowerBound(Term& bound, size_t var) const;
 
   // Outputs the content of the slice to consumer. It is a
   // precondition that the slice is fully simplified and that

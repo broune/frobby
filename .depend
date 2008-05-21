@@ -135,8 +135,8 @@ $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceAlgorithm.h src/Term.h src/VarNames.h src/IOHandler.h \
   src/TermConsumer.h src/BigTermConsumer.h src/TermTranslator.h \
-  src/Ideal.h src/Partition.h src/MsmSlice.h src/SliceStrategy.h \
-  src/IndependenceSplitter.h src/Projection.h
+  src/Ideal.h src/Partition.h src/MsmSlice.h src/Slice.h \
+  src/SliceStrategy.h src/IndependenceSplitter.h src/Projection.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h \
   src/Minimizer.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
@@ -167,15 +167,15 @@ $(outdir)PrimaryDecomAction.o: src/PrimaryDecomAction.cpp src/stdinc.h \
   src/PrimaryDecomAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
   src/Facade.h src/Timer.h
-$(outdir)MsmSlice.o: src/MsmSlice.cpp src/stdinc.h src/MsmSlice.h src/Term.h \
-  src/Ideal.h src/TermConsumer.h
+$(outdir)MsmSlice.o: src/MsmSlice.cpp src/stdinc.h src/MsmSlice.h src/Slice.h \
+  src/Ideal.h src/Term.h src/TermConsumer.h
 $(outdir)IndependenceSplitter.o: src/IndependenceSplitter.cpp src/stdinc.h \
   src/IndependenceSplitter.h src/Partition.h src/Projection.h src/Ideal.h \
-  src/MsmSlice.h src/Term.h
+  src/MsmSlice.h src/Slice.h src/Term.h
 $(outdir)Projection.o: src/Projection.cpp src/stdinc.h src/Projection.h src/Term.h \
   src/Partition.h
 $(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
-  src/TermConsumer.h src/MsmSlice.h src/Term.h src/Ideal.h \
+  src/TermConsumer.h src/MsmSlice.h src/Slice.h src/Ideal.h src/Term.h \
   src/TermTranslator.h src/VarNames.h src/Projection.h \
   src/SliceAlgorithm.h src/TermGrader.h
 $(outdir)lattice.o: src/lattice.cpp src/stdinc.h src/lattice.h src/BigIdeal.h \
@@ -218,17 +218,18 @@ $(outdir)HilbertAction.o: src/HilbertAction.cpp src/stdinc.h src/HilbertAction.h
   src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
   src/IdealFacade.h src/Scanner.h
 $(outdir)HilbertSlice.o: src/HilbertSlice.cpp src/stdinc.h src/HilbertSlice.h \
-  src/Term.h src/Ideal.h src/CoefTermConsumer.h
+  src/Slice.h src/Ideal.h src/Term.h src/CoefTermConsumer.h
 $(outdir)HilbertSliceAlgorithm.o: src/HilbertSliceAlgorithm.cpp src/stdinc.h \
-  src/HilbertSliceAlgorithm.h src/HilbertSlice.h src/Term.h src/Ideal.h \
-  src/TermConsumer.h src/VarNames.h src/IOHandler.h src/BigTermConsumer.h \
-  src/TermTranslator.h src/Partition.h src/HilbertStrategy.h \
-  src/IndependenceSplitter.h src/Projection.h src/MsmSlice.h \
-  src/CoefTermConsumer.h
+  src/HilbertSliceAlgorithm.h src/HilbertSlice.h src/Slice.h src/Ideal.h \
+  src/Term.h src/TermConsumer.h src/VarNames.h src/IOHandler.h \
+  src/BigTermConsumer.h src/TermTranslator.h src/Partition.h \
+  src/HilbertStrategy.h src/IndependenceSplitter.h src/Projection.h \
+  src/MsmSlice.h src/CoefTermConsumer.h
 $(outdir)Polynomial.o: src/Polynomial.cpp src/stdinc.h src/Polynomial.h src/Term.h
 $(outdir)CanonicalCoefTermConsumer.o: src/CanonicalCoefTermConsumer.cpp \
   src/stdinc.h src/CanonicalCoefTermConsumer.h src/CoefTermConsumer.h \
   src/Polynomial.h src/Term.h
 $(outdir)HilbertStrategy.o: src/HilbertStrategy.cpp src/stdinc.h \
-  src/HilbertStrategy.h src/Term.h src/HilbertSlice.h src/Ideal.h \
-  src/CoefTermConsumer.h
+  src/HilbertStrategy.h src/Term.h src/HilbertSlice.h src/Slice.h \
+  src/Ideal.h src/CoefTermConsumer.h
+$(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h src/Ideal.h src/Term.h
