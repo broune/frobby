@@ -1,3 +1,3 @@
-R = ZZ[{}];
+R = QQ[];
 I = monomialIdeal(
 );
