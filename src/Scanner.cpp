@@ -72,12 +72,15 @@ unsigned int Scanner::getLineNumber() const {
   return _lineNumber;
 }
 
-void Scanner::printError() {
+void Scanner::printError(const char* error) {
   if (_formatName != "")
 	fprintf(stderr, "ERROR (format %s, line %lu): ",
 			_formatName.c_str(), _lineNumber);
   else
 	fprintf(stderr, "ERROR (line %lu): ",_lineNumber);
+
+  if (error != 0)
+	fputs(error, stderr);
 }
 
 void Scanner::expect(const char* str) {

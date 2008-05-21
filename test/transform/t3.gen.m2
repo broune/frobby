@@ -1,4 +1,4 @@
-R = ZZ[{a}];
+R = QQ[a];
 I = monomialIdeal(
  a^2,
  a^2,
