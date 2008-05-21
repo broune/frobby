@@ -28,51 +28,6 @@ MsmSlice::MsmSlice(const Ideal& ideal, const Ideal& subtract,
   Slice(ideal, subtract, multiply) {
 }
 
-void MsmSlice::swap(MsmSlice& slice) {
-  std::swap(_varCount, slice._varCount);
-  _multiply.swap(slice._multiply);
-  _lcm.swap(slice._lcm);
-  std::swap(_lcmUpdated, slice._lcmUpdated);
-  _ideal.swap(slice._ideal);
-  _subtract.swap(slice._subtract);
-}
-
-bool MsmSlice::innerSlice(const Term& pivot) {
-  ASSERT(getVarCount() == pivot.getVarCount());
-
-  size_t size = _ideal.getGeneratorCount();
-
-  _multiply.product(_multiply, pivot);
-  bool idealChanged = _ideal.colonReminimize(pivot);
-  bool subtractChanged = _subtract.colonReminimize(pivot);
-  bool changed = idealChanged || subtractChanged;
-  if (changed) {
-	normalize();
-	_lowerBoundHint = pivot.getFirstNonZeroExponent();
-  }
-
-  if (_ideal.getGeneratorCount() == size)
-    _lcm.colon(_lcm, pivot);
-  else
-    _lcmUpdated = false;
-
-  return changed;
-}
-
-void MsmSlice::outerSlice(const Term& pivot) {
-  ASSERT(getVarCount() == pivot.getVarCount());
-
-  size_t count = getIdeal().getGeneratorCount();
-  _ideal.removeStrictMultiples(pivot);
-  if (getIdeal().getGeneratorCount() != count)
-    _lcmUpdated = false;
-
-  if (pivot.getSizeOfSupport() > 1)
-    getSubtract().insert(pivot);
-
-  _lowerBoundHint = pivot.getFirstNonZeroExponent();
-}
-
 bool MsmSlice::baseCase(TermConsumer* consumer) {
   if (getIdeal().getGeneratorCount() < _varCount)
     return true;
@@ -135,6 +90,10 @@ bool MsmSlice::simplifyStep() {
   return false;
 }
 
+void MsmSlice::swap(MsmSlice& slice) {
+  Slice::swap(slice);
+}
+
 // Helper class for removeDoubleLcm().
 class DoubleLcmPredicate {
 public:
@@ -176,41 +135,6 @@ bool MsmSlice::removeDoubleLcm() {
   return removedAny;
 }
 
-void MsmSlice::applyTrivialLowerBound() {
-  Term bound(_varCount);
-  _ideal.getLeastExponents(bound);
-  bound.decrement();
-  if (!bound.isIdentity())
-	innerSlice(bound);
-}
-
-bool MsmSlice::applyLowerBound() {
-  if (_ideal.getGeneratorCount() == 0)
-    return false;
-
-  bool changed = false;
-  size_t stepsWithNoChange = 0;
-
-  Term bound(_varCount);
-  size_t var = _lowerBoundHint;
-  while (stepsWithNoChange < _varCount) {
-    if (!getLowerBound(bound, var)) {
-      clear();
-      return true;
-    }
-
-	if (!bound.isIdentity() && innerSlice(bound)) {
-	  changed = true;
-	  stepsWithNoChange = 0;
-	} else
-      ++stepsWithNoChange;
-
-    var = (var + 1) % _varCount;
-  }
-
-  return changed;
-}
-
 bool MsmSlice::getLowerBound(Term& bound, size_t var) const {
   bool seenAny = false;
 
@@ -250,21 +174,6 @@ bool MsmSlice::getLowerBound(Term& bound, size_t var) const {
     // In this case the content is empty.
     return false;
   }
-}
-
-bool MsmSlice::getLowerBound(Term& bound) const {
-  ASSERT(_varCount > 0);
-  Term tmp(_varCount);
-
-  if (!getLowerBound(bound, 0))
-    return false;
-  for (size_t var = 1; var < _varCount; ++var) {
-    if (!getLowerBound(tmp, var))
-      return false;
-    bound.lcm(bound, tmp);
-  }
-
-  return true;
 }
 
 void MsmSlice::twoVarBaseCase(TermConsumer* consumer) {
