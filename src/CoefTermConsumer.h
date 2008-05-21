@@ -26,4 +26,11 @@ class CoefTermConsumer {
   virtual void consume(const mpz_class& coef, const Term& term) = 0;
 };
 
+// TODO: move elsewhere
+class NullCoefTermConsumer : public CoefTermConsumer {
+  virtual ~NullCoefTermConsumer() {}
+
+  virtual void consume(const mpz_class& coef, const Term& term) {}
+};
+
 #endif

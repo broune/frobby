@@ -127,8 +127,12 @@ void IdealFacade::printHilbertSeries(const BigIdeal& bigIdeal,
   TermTranslator translator(bigIdeal, ideal);
   ideal.minimize();
 
-  CoefTermConsumer* consumer =
-	Macaulay2IOHandler::createCoefTermWriter(stdout, &translator);
+  CoefTermConsumer* consumer;
+  if (out == 0)
+	consumer = new NullCoefTermConsumer();
+  else
+	consumer = Macaulay2IOHandler::createCoefTermWriter(stdout, &translator);
+
   if (canonicalize)
 	consumer = new CanonicalCoefTermConsumer(consumer, ideal.getVarCount());
 

@@ -92,27 +92,79 @@ void HilbertSliceAlgorithm::pivotSplit(HilbertSlice& slice) {
   content(slice);
 }
 
-void HilbertSliceAlgorithm::content(HilbertSlice& slice) {
-  Term pivot(slice.getVarCount());
-  HilbertSlice inner;
+void HilbertSliceAlgorithm::content(HilbertSlice& initialSlice) {
+  vector<HilbertSlice*> slices;
+  slices.push_back(new HilbertSlice(initialSlice));
 
-  while (true) {
-	slice.simplify();
+  Term pivot(initialSlice.getVarCount());
+  size_t todoCount = 1;
 
-	if (slice.baseCase(_consumer))
-	  break;
+  while (todoCount > 0) {
+#if 0
+	fprintf(stderr, "******************* Slice queue of %i, capacity %i\n",
+			(int)todoCount, (int)slices.size());
+	for (size_t i = 0; i < todoCount; ++i)
+	  slices[i]->print(stderr);
+	fputs(          "******************* done with queue\n", stderr);
+#endif
 
-	inner = slice;
-	getPivot(pivot, slice);
+	if (todoCount == slices.size())
+	  slices.push_back(new HilbertSlice());
 
+	ASSERT(todoCount < slices.size());
+	HilbertSlice*& slice = slices[todoCount - 1];
+	HilbertSlice*& inner = slices[todoCount];
+	--todoCount;
+
+	getPivot(pivot, *slice);
+
+	ASSERT(pivot.getVarCount() == slice->getVarCount());
 	ASSERT(!pivot.isIdentity()); 
-	ASSERT(!slice.getIdeal().contains(pivot));
-	ASSERT(!slice.getSubtract().contains(pivot));
+	ASSERT(!slice->getIdeal().contains(pivot));
+	ASSERT(!slice->getSubtract().contains(pivot));
 
-	inner.innerSlice(pivot);
-	slice.outerSlice(pivot);
+	// Compute inner slice.
+	*inner = *slice;
+	inner->innerSlice(pivot);
+	inner->simplify();
+	bool keepInner = !inner->baseCase(_consumer);
+	if (!keepInner)
+	  inner->clear(); // To preserve memory.
 
-	content(inner);
+#if 0
+	fputs("************* inner\n", stderr);
+	inner->print(stderr);
+	fprintf(stderr, "KeepInner: %i\n", (int)keepInner);
+#endif
+
+	// Compute outer slice.
+	slice->outerSlice(pivot);
+	slice->simplify();
+	bool keepOuter = !slice->baseCase(_consumer);
+	if (!keepOuter)
+	  slice->clear(); // To preserve memory.
+
+#if 0
+	fputs("************* slice\n", stderr);
+	slice->print(stderr);
+	fprintf(stderr, "KeepOuter: %i\n", (int)keepOuter);
+#endif
+
+	if (keepOuter && keepInner) {
+	  // Do smallest first to keep queue short.
+	  if (inner->getIdeal().getGeneratorCount() >
+		  slice->getIdeal().getGeneratorCount())
+		swap(inner, slice);
+	  todoCount += 2;
+	}
+	else if (keepOuter && !keepInner)
+	  todoCount += 1;
+	else if (!keepOuter && keepInner) {
+	  swap(inner, slice);
+	  todoCount += 1;
+	} else {
+	  ASSERT(!keepOuter && !keepInner);
+	}
   }
 }
 

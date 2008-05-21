@@ -20,6 +20,7 @@
 #include "Action.h"
 #include "IOParameters.h"
 #include "BoolParameter.h"
+#include "StringParameter.h"
 
 class HilbertAction : public Action {
  public:
@@ -37,6 +38,7 @@ class HilbertAction : public Action {
 
  private:
   IOParameters _io;
+  StringParameter _oformat;
   BoolParameter _canonicalize;
 };
 

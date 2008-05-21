@@ -25,6 +25,11 @@
 HilbertAction::HilbertAction():
   _io(IOParameters::InputOnly),
 
+  _oformat
+  ("oformat",
+   "The output format. The supported formats are m2 and null.",
+   "m2"),
+
   _canonicalize
   ("canon",
    "Collect and sort terms to get a canonical representation.",
@@ -49,12 +54,24 @@ Action* HilbertAction::createNew() const {
 
 void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
+  parameters.push_back(&_oformat);
   parameters.push_back(&_canonicalize);
   Action::obtainParameters(parameters);
 }
 
 void HilbertAction::perform() {
   BigIdeal ideal;
+
+  FILE* output;
+  if (_oformat.getValue() == "m2") {
+	output = stdout;
+  } else if (_oformat.getValue() == "null") {
+	output = 0;
+  } else {
+	fprintf(stderr, "ERROR: Unknown output format \"%s\".",
+			_oformat.getValue().c_str());
+	exit(1);
+  }
 
   {
 	Scanner in(_io.getInputFormat(), stdin);
@@ -67,5 +84,5 @@ void HilbertAction::perform() {
   }
 
   IdealFacade idealFacade(_printActions);
-  idealFacade.printHilbertSeries(ideal, _canonicalize, stdout);
+  idealFacade.printHilbertSeries(ideal, _canonicalize, output);
 }
