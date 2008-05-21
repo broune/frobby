@@ -218,14 +218,17 @@ $(outdir)HilbertAction.o: src/HilbertAction.cpp src/stdinc.h src/HilbertAction.h
   src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
   src/IdealFacade.h src/Scanner.h
 $(outdir)HilbertSlice.o: src/HilbertSlice.cpp src/stdinc.h src/HilbertSlice.h \
-  src/Term.h src/Ideal.h src/Macaulay2IOHandler.h src/IOHandler.h \
-  src/TermConsumer.h src/VarNames.h src/BigTermConsumer.h
+  src/Term.h src/Ideal.h src/CoefTermConsumer.h
 $(outdir)HilbertSliceAlgorithm.o: src/HilbertSliceAlgorithm.cpp src/stdinc.h \
   src/HilbertSliceAlgorithm.h src/HilbertSlice.h src/Term.h src/Ideal.h \
   src/TermConsumer.h src/VarNames.h src/IOHandler.h src/BigTermConsumer.h \
-  src/TermTranslator.h src/Partition.h src/IndependenceSplitter.h \
-  src/Projection.h src/Slice.h src/Macaulay2IOHandler.h
+  src/TermTranslator.h src/Partition.h src/HilbertStrategy.h \
+  src/IndependenceSplitter.h src/Projection.h src/Slice.h \
+  src/CoefTermConsumer.h
 $(outdir)Polynomial.o: src/Polynomial.cpp src/stdinc.h src/Polynomial.h src/Term.h
 $(outdir)CanonicalCoefTermConsumer.o: src/CanonicalCoefTermConsumer.cpp \
   src/stdinc.h src/CanonicalCoefTermConsumer.h src/CoefTermConsumer.h \
   src/Polynomial.h src/Term.h
+$(outdir)HilbertStrategy.o: src/HilbertStrategy.cpp src/stdinc.h \
+  src/HilbertStrategy.h src/Term.h src/HilbertSlice.h src/Ideal.h \
+  src/CoefTermConsumer.h

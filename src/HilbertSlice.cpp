@@ -20,18 +20,23 @@
 #include "CoefTermConsumer.h"
 
 HilbertSlice::HilbertSlice():
-  _varCount(0) {
+  _varCount(0),
+  _lcmUpdated(false),
+  _consumer(0),
+  _lowerBoundHint(0) {
 }
 
 HilbertSlice::HilbertSlice(const Ideal& ideal, const Ideal& subtract,
-			 const Term& multiply):
+						   const Term& multiply, CoefTermConsumer* consumer):
   _varCount(multiply.getVarCount()),
   _multiply(multiply),
   _lcm(multiply.getVarCount()),
   _lcmUpdated(false),
   _ideal(ideal),
   _subtract(subtract),
+  _consumer(consumer),
   _lowerBoundHint(0) {
+  ASSERT(consumer != 0);
   ASSERT(multiply.getVarCount() == ideal.getVarCount());
   ASSERT(multiply.getVarCount() == subtract.getVarCount());
 }
@@ -286,7 +291,9 @@ void getCoef(Ideal& ideal, mpz_class& sum, bool negate, size_t extraSupport) {
   }
 }
 
-bool HilbertSlice::baseCase(CoefTermConsumer* consumer) {
+bool HilbertSlice::baseCase() {
+  ASSERT(_consumer != 0);
+
   // Check that each variable appears in some minimal generator.
   if (getLcm().getSizeOfSupport() < _varCount)
     return true;
@@ -294,11 +301,14 @@ bool HilbertSlice::baseCase(CoefTermConsumer* consumer) {
   if (!getLcm().isSquareFree())
 	return false;
 
+  if (_varCount == 0)
+	return true;
+
   static mpz_class coef;
   coef = 0;
   getCoef(_ideal, coef, false, 0);
 
-  consumer->consume(coef, getMultiply());
+  _consumer->consume(coef, getMultiply());
   clear();
   return true;
 }

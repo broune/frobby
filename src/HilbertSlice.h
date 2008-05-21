@@ -27,7 +27,10 @@ class CoefTermConsumer;
 class HilbertSlice {
  public:
   HilbertSlice();
-  HilbertSlice(const Ideal& ideal, const Ideal& subtract, const Term& multiply);
+  HilbertSlice(const Ideal& ideal,
+			   const Ideal& subtract,
+			   const Term& multiply,
+			   CoefTermConsumer* consumer);
 
   // *** Accessors
 
@@ -87,7 +90,7 @@ class HilbertSlice {
   // A base case is reached if not all variables divide the lcm of
   // getIdeal(), or if getGeneratorCount() is 2, or if getIdeal() is
   // square free.
-  bool baseCase(CoefTermConsumer* consumer);
+  bool baseCase();
 
   // Simplies the slice. It is a precondition that the slice is
   // already normalized.
@@ -139,6 +142,8 @@ class HilbertSlice {
 
   Ideal _ideal;
   Ideal _subtract;
+
+  CoefTermConsumer* _consumer;
 
   size_t _lowerBoundHint;
 };
