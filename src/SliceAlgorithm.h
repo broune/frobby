@@ -19,7 +19,7 @@
 
 class Ideal;
 class MsmSlice;
-class SliceStrategy;
+class MsmStrategy;
 class Term;
 
 // Computes the Maximal Standard Monomials (MSMs) of the input ideal.
@@ -28,7 +28,7 @@ class SliceAlgorithm {
   SliceAlgorithm();
 
   // setStrategy takes over ownership of the strategy.
-  void setStrategy(SliceStrategy* strategy);
+  void setStrategy(MsmStrategy* strategy);
   void setUseIndependence(bool useIndependence);
 
   // Runs the algorithm and clears ideal. Then deletes the strategy
@@ -43,7 +43,7 @@ class SliceAlgorithm {
   bool independenceSplit(MsmSlice& slice);
 
   bool _useIndependence;
-  SliceStrategy* _strategy;
+  MsmStrategy* _strategy;
 };
 
 // For getting a single Maximal Standard Monomial. This may fail if

@@ -24,7 +24,7 @@
 #include "Ideal.h"
 #include "Partition.h"
 #include "MsmSlice.h"
-#include "SliceStrategy.h"
+#include "MsmStrategy.h"
 
 #include "IndependenceSplitter.h"
 
@@ -33,7 +33,7 @@ SliceAlgorithm::SliceAlgorithm():
   _strategy(0) {
 }
 
-void SliceAlgorithm::setStrategy(SliceStrategy* strategy) {
+void SliceAlgorithm::setStrategy(MsmStrategy* strategy) {
   delete _strategy;
   _strategy = strategy;
 }
@@ -188,11 +188,11 @@ void SliceAlgorithm::content(MsmSlice& slice, bool simplifiedAndDependent) {
   if (!slice.baseCase(_strategy) &&
       (simplifiedAndDependent || !independenceSplit(slice))) {
     switch (_strategy->getSplitType(slice)) {
-    case SliceStrategy::LabelSplit:
+    case MsmStrategy::LabelSplit:
       labelSplit(slice);
       break;
 
-    case SliceStrategy::PivotSplit:
+    case MsmStrategy::PivotSplit:
       pivotSplit(slice);
       break;
 

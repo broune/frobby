@@ -74,7 +74,7 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/BigTermConsumer.h src/IOHandler.h src/TermConsumer.h src/VarNames.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h src/Parameter.h \
   src/BoolParameter.h src/StringParameter.h src/BigIdeal.h src/IOFacade.h \
-  src/TermTranslator.h src/Ideal.h src/SliceAlgorithm.h \
+  src/TermTranslator.h src/Ideal.h src/SliceAlgorithm.h src/MsmStrategy.h \
   src/SliceStrategy.h src/TermIgnorer.h src/DecomRecorder.h src/Term.h \
   src/TermGrader.h src/IdealFacade.h src/TranslatingTermConsumer.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
@@ -136,7 +136,8 @@ $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceAlgorithm.h src/Term.h src/VarNames.h src/IOHandler.h \
   src/TermConsumer.h src/BigTermConsumer.h src/TermTranslator.h \
   src/Ideal.h src/Partition.h src/MsmSlice.h src/Slice.h \
-  src/SliceStrategy.h src/IndependenceSplitter.h src/Projection.h
+  src/MsmStrategy.h src/SliceStrategy.h src/IndependenceSplitter.h \
+  src/Projection.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h \
   src/Minimizer.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
@@ -174,10 +175,10 @@ $(outdir)IndependenceSplitter.o: src/IndependenceSplitter.cpp src/stdinc.h \
   src/MsmSlice.h src/Slice.h src/Term.h
 $(outdir)Projection.o: src/Projection.cpp src/stdinc.h src/Projection.h src/Term.h \
   src/Partition.h
-$(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
-  src/TermConsumer.h src/MsmSlice.h src/Slice.h src/Ideal.h src/Term.h \
-  src/TermTranslator.h src/VarNames.h src/Projection.h \
-  src/SliceAlgorithm.h src/TermGrader.h
+$(outdir)MsmStrategy.o: src/MsmStrategy.cpp src/stdinc.h src/MsmStrategy.h \
+  src/SliceStrategy.h src/TermConsumer.h src/MsmSlice.h src/Slice.h \
+  src/Ideal.h src/Term.h src/TermTranslator.h src/VarNames.h \
+  src/Projection.h src/SliceAlgorithm.h src/TermGrader.h
 $(outdir)lattice.o: src/lattice.cpp src/stdinc.h src/lattice.h src/BigIdeal.h \
   src/VarNames.h
 $(outdir)LatticeFacade.o: src/LatticeFacade.cpp src/stdinc.h src/LatticeFacade.h \
@@ -233,3 +234,5 @@ $(outdir)HilbertStrategy.o: src/HilbertStrategy.cpp src/stdinc.h \
   src/HilbertStrategy.h src/Term.h src/HilbertSlice.h src/Slice.h \
   src/Ideal.h src/CoefTermConsumer.h
 $(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h src/Ideal.h src/Term.h
+$(outdir)SliceStrategy.o: src/SliceStrategy.cpp src/stdinc.h src/SliceStrategy.h \
+  src/Slice.h src/Ideal.h src/Term.h
