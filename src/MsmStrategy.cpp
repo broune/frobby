@@ -452,66 +452,6 @@ MsmStrategy* MsmStrategy::newDecomStrategy(const string& name,
   return new PivotMsmStrategy(pivotStrategy, consumer);
 }
 
-// A decorator (a design pattern) for a MsmStrategy that simply
-// delegates all calls. The purpose of this class is to act as a
-// convenient base class for other decorators.
-class DecoratorMsmStrategy : public MsmStrategy {
-public:
-  DecoratorMsmStrategy(MsmStrategy* strategy):
-    _strategy(strategy) {
-    ASSERT(strategy != 0);
-  }
-
-  virtual ~DecoratorMsmStrategy() {
-    delete _strategy;
-  }
-
-  virtual void initialize(const MsmSlice& slice) {
-    _strategy->initialize(slice);
-  }
-
-  virtual void doingIndependenceSplit(const MsmSlice& slice,
-				      Ideal* mixedProjectionSubtract) {
-    _strategy->doingIndependenceSplit
-      (slice, mixedProjectionSubtract);
-  }
-
-  virtual void doingIndependentPart(const Projection& projection, bool last) {
-    _strategy->doingIndependentPart(projection, last);
-  }
-
-  virtual bool doneWithIndependentPart() {
-    return _strategy->doneWithIndependentPart();
-  }
-
-  virtual void doneWithIndependenceSplit() {
-    _strategy->doneWithIndependenceSplit();
-  }
-
-  virtual void simplify(MsmSlice& slice) {
-    _strategy->simplify(slice);
-  }
-
-  virtual SplitType getSplitType(const MsmSlice& slice) {
-    return _strategy->getSplitType(slice);
-  }
-
-  virtual void getPivot(Term& pivot, MsmSlice& slice) {
-	_strategy->getPivot(pivot, slice);
-  }
-
-  virtual size_t getLabelSplitVariable(const MsmSlice& slice) {
-    return _strategy->getLabelSplitVariable(slice);
-  }
-
-  virtual void consume(const Term& term) {
-    _strategy->consume(term);
-  }
-
-private:
-  MsmStrategy* _strategy;
-};
-
 class FrobeniusIndependenceSplit : public TermConsumer {
 public:
   FrobeniusIndependenceSplit(const TermGrader& grader, bool useBound):
@@ -851,13 +791,7 @@ private:
   bool _useBound;
 };
 
-// Ignores subtraction of mixed generators when doing independence
-// splits. This is no problem right now, but it would become a problem
-// if SliceAlgorithm at a later point gets the (externally exposed)
-// capability to compute slices in general, rather than a complete
-// decomposition.
-//
-// Also ignores the possibility of "fake" artinians (e.g. in getPivot).
+// Ignores the possibility of "fake" artinians (e.g. in getPivot).
 //
 // The passed-in strategy is only used as a split strategy, and it
 // does NOT get informed about anything other than pivot and label
@@ -981,153 +915,14 @@ newFrobeniusStrategy(const string& name,
   return new FrobeniusMsmStrategy(strategy, consumer, grader, useBound);
 }
 
-class StatisticsMsmStrategy : public DecoratorMsmStrategy {
-public:
-  StatisticsMsmStrategy(MsmStrategy* strategy):
-    DecoratorMsmStrategy(strategy),
-    _level(0),
-    _consumeCount(0),
-    _independenceSplitCount(0) {
-  }
-
-  ~StatisticsMsmStrategy() {
-    fputs("**** Statistics\n", stderr);
-    size_t sum = 0;
-    size_t baseSum = 0;
-	size_t emptySum = 0;
-    for (size_t l = 0; l < _calls.size(); ++l) {
-      sum += _calls[l];
-      baseSum += _baseCases[l];
-	  emptySum += _empty[l];
-      if (false) {
-		fprintf(stderr,
-				"Level %lu had %lu calls of which %lu were base cases.\n",
-				(unsigned long)l + 1,
-				(unsigned long)_calls[l],
-				(unsigned long)_baseCases[l]);
-      }
-    }
-
-    fprintf(stderr,
-			"* recursive levels:    %lu\n"
-			"* decom size:          %lu\n" 
-			"* empty slices:        %lu\n"
-			"* base case slices:    %lu\n"
-			"* independence splits: %lu\n"
-			"* (numbers not corrected for independence splits)\n"
-			"****\n",
-			(unsigned long)_calls.size(),
-			(unsigned long)_consumeCount,
-			(unsigned long)emptySum,
-			(unsigned long)baseSum,
-			(unsigned long)_independenceSplitCount);
-  }
-
-  virtual void doingIndependenceSplit(const MsmSlice& slice,
-									  Ideal* mixedProjectionSubtract) {
-    ++_independenceSplitCount;
-    DecoratorMsmStrategy::doingIndependenceSplit(slice,
-												   mixedProjectionSubtract);
-  }
-
-  void consume(const Term& term) {
-	for (size_t level = _level; level > 0; --level) {
-	  if (!_isEmpty[level - 1])
-		break; // The remaining entries are already false
-	  _isEmpty[level - 1] = false;
-	}
-    ++_consumeCount;
-
-    DecoratorMsmStrategy::consume(term);
-  }
-
-private:
-  size_t _level;
-  vector<size_t> _calls;
-  vector<size_t> _baseCases;
-  vector<size_t> _isBaseCase;
-  vector<size_t> _empty;
-  vector<size_t> _isEmpty;
-  size_t _consumeCount;
-  size_t _independenceSplitCount;
-};
-
 MsmStrategy* MsmStrategy::addStatistics(MsmStrategy* strategy) {
-  return new StatisticsMsmStrategy(strategy);
+  fputs("INTERNAL ERROR: statistics are awaiting reimplementation.", stderr);
+  ASSERT(false);
+  exit(1);
 }
 
-class DebugMsmStrategy : public DecoratorMsmStrategy {
- public:
-  DebugMsmStrategy(MsmStrategy* strategy):
-    DecoratorMsmStrategy(strategy),
-    _level(0) {
-  }
-  
-  virtual void doingIndependenceSplit(const MsmSlice& slice,
-				      Ideal* mixedProjectionSubtract) {
-    fprintf(stderr, "DEBUG %lu: doing independence split.\n",
-	    (unsigned long)_level);
-    fflush(stderr);
-    DecoratorMsmStrategy::doingIndependenceSplit
-      (slice, mixedProjectionSubtract);
-  }
-
-  virtual void doingIndependentPart(const Projection& projection, bool last) {
-    fprintf(stderr, "DEBUG %lu: doing independent part\n",
-	    (unsigned long)_level);
-    if (last)
-      fputs(" (last)", stderr);
-    fputs(".\n", stderr);
-    fflush(stderr);
-    DecoratorMsmStrategy::doingIndependentPart(projection, last);
-  }
-
-  virtual bool doneWithIndependentPart() {
-    fprintf(stderr, "DEBUG %lu: done with that independent part.\n",
-	    (unsigned long)_level);
-    fflush(stderr);
-    
-    return DecoratorMsmStrategy::doneWithIndependentPart();
-  }
-  
-  virtual void doneWithIndependenceSplit() {
-    fprintf(stderr, "DEBUG %lu: done with independence split.\n",
-	    (unsigned long)_level);
-    fflush(stderr);
-    DecoratorMsmStrategy::doneWithIndependenceSplit();
-  }
-
-  void getPivot(Term& pivot, MsmSlice& slice) {
-    DecoratorMsmStrategy::getPivot(pivot, slice);
-    fprintf(stderr, "DEBUG %lu: performing pivot split on ",
-	    (unsigned long)_level);
-    pivot.print(stderr);
-    fputs(".\n", stderr);
-    fflush(stderr);
-  }
-
-  size_t getLabelSplitVariable(const MsmSlice& slice) {
-    size_t var = DecoratorMsmStrategy::getLabelSplitVariable(slice);
-    fprintf(stderr, "DEBUG %lu: performing label split on var %lu.\n",
-	    (unsigned long)_level,
-	    (unsigned long)var);
-    fflush(stderr);
-    return var;
-  }
-
-  void consume(const Term& term) {
-    fprintf(stderr, "DEBUG %lu: Writing ", (unsigned long)_level);
-    term.print(stderr);
-    fputs(" to output.\n", stderr);
-    fflush(stderr);
-
-    DecoratorMsmStrategy::consume(term);
-  }
-  
-private:
-  size_t _level;
-};
-
 MsmStrategy* MsmStrategy::addDebugOutput(MsmStrategy* strategy) {
-  return new DebugMsmStrategy(strategy);
+  fputs("INTERNAL ERROR: debug is awaiting reimplementation.", stderr);
+  ASSERT(false);
+  exit(1);
 }

@@ -28,23 +28,29 @@ class Term;
 
 class IndependenceSplitter {
  public:
-  // slice must be simplified and normalized.
-  IndependenceSplitter(const Partition& partition, MsmSlice* slice);
+  // Returns true if there are independent subsets of variabels. The
+  // other methods should only be called when the most recent call to
+  // analyze returned true.
+  bool analyze(const Slice& slice);
 
-  static bool computePartition(Partition& partition, const MsmSlice* slice);
+  size_t getOneVarCount() const {return _oneVarCount;}
+  size_t getTwoVarCount() const {return _twoVarCount;}
+  size_t getMoreThanTwoCount() const {return _moreThanTwoVarCount;}
 
-  MsmSlice& getLeftSlice() {return _leftSlice;}
-  Projection& getLeftProjection() {return _leftProjection;}
+  // Get the projection to the biggest independent subset of variables.
+  void getBigProjection(Projection& projection) const;
 
-  MsmSlice& getRightSlice() {return _rightSlice;}
-  Projection& getRightProjection() {return _rightProjection;}
+  // Get the projection to the rest of the variables.
+  void getRestProjection(Projection& projection) const;
 
  private:
-  MsmSlice _leftSlice;
-  Projection _leftProjection;
+  Partition _partition;
 
-  MsmSlice _rightSlice;
-  Projection _rightProjection;
+  size_t _oneVarCount;
+  size_t _twoVarCount;
+  size_t _moreThanTwoVarCount;
+
+  size_t _bigSet;
 };
 
 #endif
