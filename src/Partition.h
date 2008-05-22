@@ -22,6 +22,7 @@ class Term;
 class Partition {
  public:
   Partition();
+  Partition(const Partition& partition);
   ~Partition();
 
   void reset(size_t size);
@@ -41,6 +42,9 @@ class Partition {
   void print(FILE* file) const;
 
  private:
+  // Made private since it is not implemented.
+  Partition& operator=(const Partition&);
+
   int* _partitions;
   size_t _size;
   size_t _capacity;

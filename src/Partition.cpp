@@ -25,6 +25,14 @@ Partition::Partition():
   _capacity(0) {
 }
 
+Partition::Partition(const Partition& partition):
+  _size(partition._size),
+  _capacity(partition._size) {
+  _partitions = new int[_size];
+  std::copy(partition._partitions,
+			partition._partitions + _size, _partitions);
+}
+
 Partition::~Partition() {
   delete[] _partitions;
 }

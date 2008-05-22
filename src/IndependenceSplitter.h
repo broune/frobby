@@ -29,35 +29,22 @@ class Term;
 class IndependenceSplitter {
  public:
   // slice must be simplified and normalized.
-  IndependenceSplitter(const Partition& partition, MsmSlice& slice);
-  ~IndependenceSplitter();
+  IndependenceSplitter(const Partition& partition, MsmSlice* slice);
 
-  static void computePartition(Partition& partition, const MsmSlice& slice);
-  static bool shouldPerformSplit(const Partition& partition,
-				 const MsmSlice& slice);
+  static bool computePartition(Partition& partition, const MsmSlice* slice);
 
-  size_t getChildCount() const;
-  Ideal* getMixedProjectionSubtract();
+  MsmSlice& getLeftSlice() {return _leftSlice;}
+  Projection& getLeftProjection() {return _leftProjection;}
 
-  MsmSlice& getSlice(size_t part);
-  Projection& getProjection(size_t part);
+  MsmSlice& getRightSlice() {return _rightSlice;}
+  Projection& getRightProjection() {return _rightProjection;}
 
  private:
-  struct Child {
-    MsmSlice slice;
-    Projection projection;
+  MsmSlice _leftSlice;
+  Projection _leftProjection;
 
-    void swap(Child& child);
-    bool operator<(const Child& child) const;
-  };
-
-  void initializeChildren(const Partition& partition);
-  void populateChildIdealsAndSingletonDecom(const vector<Child*>& childAt);
-  void populateChildSubtracts(const vector<Child*>& childAt);
-
-  MsmSlice& _slice;
-  vector<Child> _children;
-  Ideal* _mixedProjectionSubtract;
+  MsmSlice _rightSlice;
+  Projection _rightProjection;
 };
 
 #endif

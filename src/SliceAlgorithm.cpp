@@ -45,17 +45,7 @@ void SliceAlgorithm::setUseIndependence(bool useIndependence) {
 void SliceAlgorithm::runAndClear(Ideal& ideal) {
   ASSERT(_strategy != 0);
 
-  if (ideal.getGeneratorCount() > 0) {
-    Term initialMultiply(ideal.getVarCount());
-    for (size_t var = 0; var < initialMultiply.getVarCount(); ++var)
-      initialMultiply[var] = 1;
-
-    MsmSlice slice(ideal, Ideal(ideal.getVarCount()), initialMultiply);
-    _strategy->initialize(slice);
-    content(slice);
-  }
-
-  ideal.clear();
+  content(_strategy->setupInitialSlice(ideal));
 
   // Now reset the fields to their default values.
   delete _strategy;
@@ -65,32 +55,27 @@ void SliceAlgorithm::runAndClear(Ideal& ideal) {
 }
 
 // Requires slice.getIdeal() to be minimized.
-bool SliceAlgorithm::independenceSplit(MsmSlice& slice) {
+bool SliceAlgorithm::independenceSplit(MsmSlice* slice) {
   if (!_useIndependence)
     return false;
 
   static Partition partition;
 
-  IndependenceSplitter::computePartition(partition, slice);
-  if (!IndependenceSplitter::shouldPerformSplit(partition, slice))
+  if (!IndependenceSplitter::computePartition(partition, slice))
     return false;
 
   IndependenceSplitter indep(partition, slice);
 
-  _strategy->doingIndependenceSplit(slice, indep.getMixedProjectionSubtract());
+  _strategy->doingIndependenceSplit(*slice, 0);
 
-  slice.clear(); // to save memory
+  _strategy->freeSlice(slice);
 
-  for (size_t i = 0; i < indep.getChildCount(); ++i) {
-    MsmSlice& projSlice = indep.getSlice(i);
+  _strategy->doingIndependentPart(indep.getLeftProjection(), false);
+  content(new MsmSlice(indep.getLeftSlice()));
 
-    bool last = (i == indep.getChildCount() - 1);
-    _strategy->doingIndependentPart(indep.getProjection(i), last);
-
-    content(projSlice, true);
-
-    if (!_strategy->doneWithIndependentPart())
-      break;
+  if (_strategy->doneWithIndependentPart()) {
+	_strategy->doingIndependentPart(indep.getRightProjection(), true);
+	content(new MsmSlice(indep.getRightSlice()));
   }
 
   _strategy->doneWithIndependenceSplit();
@@ -98,100 +83,38 @@ bool SliceAlgorithm::independenceSplit(MsmSlice& slice) {
   return true;
 }
 
-pair<MsmSlice*, MsmSlice*> SliceAlgorithm::labelSplit(MsmSlice* slice) {
-  ASSERT(!slice->normalize());
-  size_t var = _strategy->getLabelSplitVariable(*slice);
+void SliceAlgorithm::content(MsmSlice* initialSlice) {
+  if (initialSlice->baseCase(_strategy) ||
+	  independenceSplit(initialSlice))
+	return;
 
-  Term term(slice->getVarCount());
+  vector<MsmSlice*> slices;
+  slices.push_back(new MsmSlice(*initialSlice));
 
-  const Term& lcm = slice->getLcm();
+  while (!slices.empty()) {
+	MsmSlice* slice = slices.back();
+	slices.pop_back();
 
-  Ideal::const_iterator stop = slice->getIdeal().end();
-  Ideal::const_iterator label = stop;
-  bool hasTwoLabels = false;
-  for (Ideal::const_iterator it = slice->getIdeal().begin(); it != stop; ++it) {
-    if ((*it)[var] == 1) {
-	  term = *it;
-	  term[var] -= 1;
+	// TODO: do someting about slices that have *become* base cases,
+	// or that can now be simplified, due to improved bounds since
+	// they were pushed onto slices.
 
-	  bool couldBeLabel = !slice->getSubtract().contains(term);
-	  if (couldBeLabel) {
-		for (size_t v = 0; v < slice->getVarCount(); ++v) {
-		  if (term[v] == lcm[v]) {
-			couldBeLabel = false;
-			break;
-		  }
-		}
-	  }
+	pair<MsmSlice*, MsmSlice*> slicePair = _strategy->split(slice);
 
-	  if (couldBeLabel) {
-		if (label == stop)
-		  label = it;
-		else {
-		  hasTwoLabels = true;
-		  break;
-		}
-	  }
-	}
-  }
-
-  MsmSlice* hasLabelSlice = 0;
-  MsmSlice* notLabelSlice = new MsmSlice(*slice);
-
-  if (label != stop) {
-	term = *label;
-	term[var] -= 1;
-
-	hasLabelSlice = new MsmSlice(*slice);
-	hasLabelSlice->innerSlice(term);
-
-	if (hasTwoLabels)
-	  notLabelSlice->outerSlice(term);
-  }
-
-  if (!hasTwoLabels) {
-	term.setToIdentity();
-	term[var] = 1;
-	notLabelSlice->innerSlice(term);
-  }
-
-  return make_pair(hasLabelSlice, notLabelSlice);
-}
-
-pair<MsmSlice*, MsmSlice*> SliceAlgorithm::pivotSplit(MsmSlice* slice) {
-  Term pivot(slice->getVarCount());
-  _strategy->getPivot(pivot, *slice);
-
-  MsmSlice* inner = new MsmSlice(*slice);
-  MsmSlice* outer = new MsmSlice(*slice);
-
-  ASSERT(!pivot.isIdentity()); 
-  ASSERT(!slice->getIdeal().contains(pivot));
-  ASSERT(!slice->getSubtract().contains(pivot));
-
-  inner->innerSlice(pivot);
-  outer->outerSlice(pivot);
-
-  return make_pair(inner, outer);
-}
-
-void SliceAlgorithm::content(MsmSlice& slice, bool simplifiedAndDependent) {
-  _strategy->startingContent(slice);
-
-  if (!slice.baseCase(_strategy) && !independenceSplit(slice)) {
-	pair<MsmSlice*, MsmSlice*> slicePair = _strategy->split(&slice);
 	if (slicePair.first != 0) {
-	  content(*slicePair.first);
-	  delete slicePair.first;
+	  if (slicePair.first->baseCase(_strategy))
+		_strategy->freeSlice(slicePair.first);
+	  else if (!independenceSplit(slicePair.first))
+		slices.push_back(slicePair.first);
 	}
-	
+
 	if (slicePair.second != 0) {
-	  content(*slicePair.second);
-	  delete slicePair.second;
+	  if (slicePair.second->baseCase(_strategy))
+		_strategy->freeSlice(slicePair.second);
+	  else if (!independenceSplit(slicePair.second))
+		slices.push_back(slicePair.second);
 	}
   }
-
-  _strategy->endingContent();
 }
 
 bool computeSingleMSM2(const MsmSlice& slice, Term& msm) {

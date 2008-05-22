@@ -58,6 +58,10 @@ HilbertSlice* HilbertStrategy::setupInitialSlice(const Ideal& ideal,
 
 pair<HilbertSlice*, HilbertSlice*>
 HilbertStrategy::split(HilbertSlice* slice) {
+  pair<HilbertSlice*, HilbertSlice*> slicePair;
+  if (independenceSplit(slice, slicePair))
+	return slicePair;
+
   Term _term(slice->getVarCount());
   getPivot(_term, *slice);
 
@@ -76,11 +80,14 @@ HilbertStrategy::split(HilbertSlice* slice) {
   slice->outerSlice(_term);
   slice->simplify();
 
-  if (inner->getIdeal().getGeneratorCount() <
-	  slice->getIdeal().getGeneratorCount())
-	return make_pair(inner, slice);
-  else
-	return make_pair(slice, inner);
+  slicePair.first = inner;
+  slicePair.second = slice;
+
+  // Process smaller slices before larger ones to preserve memory.
+  if (slicePair.first->getIdeal().getGeneratorCount() <
+	  slicePair.second->getIdeal().getGeneratorCount())
+	swap(slicePair.first, slicePair.second);
+  return slicePair;
 }
 
 void HilbertStrategy::freeSlice(HilbertSlice* slice) {
@@ -131,4 +138,12 @@ void HilbertStrategy::getPivot(Term& term, HilbertSlice& slice) {
   ASSERT(!slice.getIdeal().contains(term));
   ASSERT(!slice.getSubtract().contains(term));
   ASSERT(term.strictlyDivides(slice.getLcm()));
+}
+
+bool HilbertStrategy::independenceSplit
+(HilbertSlice* slice, pair<HilbertSlice*, HilbertSlice*>& slicePair) {
+  ASSERT(slice != 0);
+
+
+  return false;
 }
