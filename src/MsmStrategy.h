@@ -32,6 +32,11 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
  public:
   virtual ~MsmStrategy();
 
+
+  virtual pair<MsmSlice*, MsmSlice*> split(MsmSlice* slice);
+
+
+
   virtual void initialize(const MsmSlice& slice);
 
   // *** Methods for handling independence splits
