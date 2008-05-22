@@ -76,7 +76,7 @@ size_t Partition::getSetSize(size_t set) const {
   for (size_t i = 0; i < _size; ++i) {
     if (i == getRoot(i)) {
       if (set == 0)
-	return -_partitions[i];
+		return -_partitions[i];
       --set;
     }
   }

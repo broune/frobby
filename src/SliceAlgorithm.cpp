@@ -59,24 +59,40 @@ bool SliceAlgorithm::independenceSplit(MsmSlice* slice) {
   if (!_useIndependence)
     return false;
 
-  static Partition partition;
+  static IndependenceSplitter indep;
 
-  if (!IndependenceSplitter::computePartition(partition, slice))
+  if (!indep.analyze(*slice))
     return false;
-
-  IndependenceSplitter indep(partition, slice);
 
   _strategy->doingIndependenceSplit(*slice, 0);
 
-  _strategy->freeSlice(slice);
+  static Projection projection;
+  static Projection projection2;
 
-  _strategy->doingIndependentPart(indep.getLeftProjection(), false);
-  content(new MsmSlice(indep.getLeftSlice()));
+  // have to have two projections, as the strategy keeps a reference
+  // to the projection rather than copy it or something like that.
+  // TODO: fix this.
+
+  MsmSlice* restSlice = new MsmSlice();
+  indep.getRestProjection(projection);
+  restSlice->setToProjOf(*slice, projection);
+
+  _strategy->doingIndependentPart(projection, false);
+
+  content(restSlice);
 
   if (_strategy->doneWithIndependentPart()) {
-	_strategy->doingIndependentPart(indep.getRightProjection(), true);
-	content(new MsmSlice(indep.getRightSlice()));
+
+	MsmSlice* bigSlice = new MsmSlice();
+	indep.getBigProjection(projection2);
+	bigSlice->setToProjOf(*slice, projection2);
+
+	_strategy->doingIndependentPart(projection2, true);
+	content(bigSlice);
+	_strategy->doneWithIndependentPart();
   }
+
+  _strategy->freeSlice(slice);
 
   _strategy->doneWithIndependenceSplit();
 
@@ -84,6 +100,7 @@ bool SliceAlgorithm::independenceSplit(MsmSlice* slice) {
 }
 
 void SliceAlgorithm::content(MsmSlice* initialSlice) {
+  initialSlice->print(stderr);
   if (initialSlice->baseCase(_strategy) ||
 	  independenceSplit(initialSlice))
 	return;

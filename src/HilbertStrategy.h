@@ -31,7 +31,7 @@ class HilbertStrategy {
   HilbertSlice* setupInitialSlice(const Ideal& ideal,
 								  CoefTermConsumer* consumer);
 
-  // Deletes the slice parameter.
+  // Takes over ownership of the slice parameter.
   pair<HilbertSlice*, HilbertSlice*> split(HilbertSlice* slice);
 
   void freeSlice(HilbertSlice* slice);
