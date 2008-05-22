@@ -68,13 +68,15 @@ void Slice::resetAndSetVarCount(size_t varCount) {
   _subtract.clearAndSetVarCount(varCount);
   _multiply.reset(varCount);
   _lcm.reset(varCount);
-  _lcmUpdated = true;
+  _lcmUpdated = false;
+  _lowerBoundHint = 0;
 }
 
 void Slice::clear() {
   _ideal.clear();
   _subtract.clear();
   _lcmUpdated = false;
+  _lowerBoundHint = 0;
 }
 
 void Slice::singleDegreeSortIdeal(size_t var) {

@@ -26,9 +26,39 @@
 #include "SliceAlgorithm.h"
 #include "TermGrader.h"
 
-pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice, MsmStrategy* strategy) {
+MsmSlice* MsmStrategy::setupInitialSlice(const Ideal& ideal) {
+  size_t varCount = ideal.getVarCount();
+
+  Term sliceMultiply(varCount);
+  for (size_t var = 0; var < varCount; ++var)
+	sliceMultiply[var] = 1;
+
+  MsmSlice* slice = new MsmSlice(ideal, Ideal(varCount), sliceMultiply);
+  simplify(*slice);
+  initialize(*slice);
+
+  return slice;
+}
+
+void MsmStrategy::freeSlice(MsmSlice* slice) {
+  ASSERT(slice != 0);
+
+  slice->clear(); // To preserve memory.
+  _sliceCache.push_back(slice);
+}
+
+MsmSlice* MsmStrategy::newSlice() {
+  if (_sliceCache.empty())
+	return new MsmSlice();
+
+  MsmSlice* slice = _sliceCache.back();
+  _sliceCache.pop_back();
+  return slice;
+}
+
+pair<MsmSlice*, MsmSlice*> MsmStrategy::labelSplit(MsmSlice* slice) {
   ASSERT(!slice->normalize());
-  size_t var = strategy->getLabelSplitVariable(*slice);
+  size_t var = getLabelSplitVariable(*slice);
 
   Term term(slice->getVarCount());
 
@@ -64,43 +94,43 @@ pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice, MsmStrategy* strategy) {
   }
 
   MsmSlice* hasLabelSlice = 0;
-  MsmSlice* notLabelSlice = new MsmSlice(*slice);
 
   if (label != stop) {
 	term = *label;
 	term[var] -= 1;
 
-	hasLabelSlice = new MsmSlice(*slice);
+	hasLabelSlice = newSlice();
+	*hasLabelSlice = *slice;
 	hasLabelSlice->innerSlice(term);
 
 	if (hasTwoLabels)
-	  notLabelSlice->outerSlice(term);
+	  slice->outerSlice(term);
   }
 
   if (!hasTwoLabels) {
 	term.setToIdentity();
 	term[var] = 1;
-	notLabelSlice->innerSlice(term);
+	slice->innerSlice(term);
   }
 
-  return make_pair(hasLabelSlice, notLabelSlice);
+  return make_pair(hasLabelSlice, slice);
 }
 
-pair<MsmSlice*, MsmSlice*> pivotSplit(MsmSlice* slice, MsmStrategy* strategy) {
+pair<MsmSlice*, MsmSlice*> MsmStrategy::pivotSplit(MsmSlice* slice) {
   Term pivot(slice->getVarCount());
-  strategy->getPivot(pivot, *slice);
-
-  MsmSlice* inner = new MsmSlice(*slice);
-  MsmSlice* outer = new MsmSlice(*slice);
+  getPivot(pivot, *slice);
 
   ASSERT(!pivot.isIdentity()); 
   ASSERT(!slice->getIdeal().contains(pivot));
   ASSERT(!slice->getSubtract().contains(pivot));
 
+  MsmSlice* inner = newSlice();
+  *inner = *slice;
   inner->innerSlice(pivot);
-  outer->outerSlice(pivot);
 
-  return make_pair(inner, outer);
+  slice->outerSlice(pivot);
+
+  return make_pair(inner, slice);
 }
 
 MsmStrategy::~MsmStrategy() {
@@ -111,11 +141,11 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::split(MsmSlice* slice) {
 
   switch (getSplitType(*slice)) {
   case MsmStrategy::LabelSplit:
-	slicePair = labelSplit(slice, this);
+	slicePair = labelSplit(slice);
 	break;
 
   case MsmStrategy::PivotSplit:
-	slicePair = pivotSplit(slice, this);
+	slicePair = pivotSplit(slice);
 	break;
 
   default:
@@ -132,12 +162,6 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::split(MsmSlice* slice) {
 }
 
 void MsmStrategy::initialize(const MsmSlice& slice) {
-}
-
-void MsmStrategy::startingContent(const MsmSlice& slice) {
-}
-
-void MsmStrategy::endingContent() {
 }
 
 void MsmStrategy::simplify(MsmSlice& slice) {
@@ -462,14 +486,6 @@ public:
 
   virtual void doneWithIndependenceSplit() {
     _strategy->doneWithIndependenceSplit();
-  }
-
-  virtual void startingContent(const MsmSlice& slice) {
-    _strategy->startingContent(slice);
-  }
-
-  virtual void endingContent() {
-    _strategy->endingContent();
   }
 
   virtual void simplify(MsmSlice& slice) {
@@ -1014,36 +1030,6 @@ public:
 												   mixedProjectionSubtract);
   }
 
-  void startingContent(const MsmSlice& slice) {
-    if (_level > 0)
-      _isBaseCase[_level - 1] = false;
-
-    if (_calls.size() == _level) {
-      _calls.push_back(0);
-      _baseCases.push_back(0);
-      _isBaseCase.push_back(true);
-	  _empty.push_back(0);
-	  _isEmpty.push_back(true);
-    }
-
-    _isBaseCase[_level] = true;
-	_isEmpty[_level] = true;
-    ++_calls[_level];
-    ++_level;
-
-    DecoratorMsmStrategy::startingContent(slice);
-  }
-
-  void endingContent() {
-    --_level;
-    if (_isBaseCase[_level])
-      ++_baseCases[_level];
-	if (_isEmpty[_level])
-	  ++_empty[_level];
-
-    DecoratorMsmStrategy::endingContent();
-  }
-
   void consume(const Term& term) {
 	for (size_t level = _level; level > 0; --level) {
 	  if (!_isEmpty[level - 1])
@@ -1109,25 +1095,6 @@ class DebugMsmStrategy : public DecoratorMsmStrategy {
 	    (unsigned long)_level);
     fflush(stderr);
     DecoratorMsmStrategy::doneWithIndependenceSplit();
-  }
-
-  void startingContent(const MsmSlice& slice) {
-    ++_level;
-    fprintf(stderr, "DEBUG %lu: computing content of the following slice.\n",
-	    (unsigned long)_level);
-    slice.print(stderr);
-    fflush(stderr);
-
-    DecoratorMsmStrategy::startingContent(slice);
-  }
-
-  void endingContent() {
-    fprintf(stderr, "DEBUG %lu: done computing content of that slice.\n",
-	    (unsigned long)_level);
-    fflush(stderr);
-    --_level;
-
-    DecoratorMsmStrategy::endingContent();
   }
 
   void getPivot(Term& pivot, MsmSlice& slice) {

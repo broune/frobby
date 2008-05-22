@@ -23,8 +23,6 @@
 
 class CoefTermConsumer;
 
-// TODO: fix code duplication from Slice
-
 class HilbertSlice : public Slice {
  public:
   HilbertSlice();

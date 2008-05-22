@@ -18,6 +18,7 @@
 #include "MsmSlice.h"
 
 #include "TermConsumer.h"
+#include "Projection.h"
 
 MsmSlice::MsmSlice():
   Slice() {
@@ -29,7 +30,7 @@ MsmSlice::MsmSlice(const Ideal& ideal, const Ideal& subtract,
 }
 
 bool MsmSlice::baseCase(TermConsumer* consumer) {
-  if (getIdeal().getGeneratorCount() < _varCount)
+  if (getIdeal().getGeneratorCount() < _varCount || _varCount == 0)
     return true;
 
   // Check that each variable appears in some minimal generator.
@@ -88,6 +89,41 @@ bool MsmSlice::simplifyStep() {
 
   pruneSubtract();
   return false;
+}
+
+void MsmSlice::setToProjOf
+(const MsmSlice& slice, const Projection& projection) {
+  resetAndSetVarCount(projection.getRangeVarCount());
+  ASSERT(!_lcmUpdated);
+  // We use _lcm as a temporary value.
+
+  Ideal::const_iterator stop = slice.getIdeal().end();
+  for (Ideal::const_iterator it = slice.getIdeal().begin();
+	   it != stop; ++it) {
+
+    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
+	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
+	  projection.project(_lcm, *it);
+	  insertIntoIdeal(_lcm);
+	}
+  }
+
+  stop = slice.getSubtract().end();
+  for (Ideal::const_iterator it = slice.getSubtract().begin();
+	   it != stop; ++it) {
+
+    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
+	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
+	  projection.project(_lcm, *it);
+	  getSubtract().insert(_lcm);
+	}
+  }
+
+  projection.project(getMultiply(), slice.getMultiply());
+  if (slice._lcmUpdated) {
+	projection.project(_lcm, slice._lcm);
+	_lcmUpdated = true;
+  }
 }
 
 void MsmSlice::swap(MsmSlice& slice) {

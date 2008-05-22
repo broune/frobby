@@ -36,11 +36,9 @@ class SliceAlgorithm {
   void runAndClear(Ideal& ideal);
 
  private:
-  void content(MsmSlice& slice, bool simplifiedAndDependent = false);
+  void content(MsmSlice* slice);
 
-  pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice);
-  pair<MsmSlice*, MsmSlice*> pivotSplit(MsmSlice* slice);
-  bool independenceSplit(MsmSlice& slice);
+  bool independenceSplit(MsmSlice* slice);
 
   bool _useIndependence;
   MsmStrategy* _strategy;

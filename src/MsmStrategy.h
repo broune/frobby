@@ -20,6 +20,7 @@
 #include "SliceStrategy.h"
 #include <string>
 #include "TermConsumer.h"
+#include <vector>
 
 class MsmSlice;
 class Term;
@@ -32,10 +33,26 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
  public:
   virtual ~MsmStrategy();
 
+  // ************* new interface
+
+  MsmSlice* setupInitialSlice(const Ideal& ideal);
 
   virtual pair<MsmSlice*, MsmSlice*> split(MsmSlice* slice);
 
+  void freeSlice(MsmSlice* slice);
 
+ private:
+  MsmSlice* newSlice();
+
+  pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice);
+  pair<MsmSlice*, MsmSlice*> pivotSplit(MsmSlice* slice);
+
+  // It would make more sense with a stack, but that class has
+  // (surprisingly) proven to have too high overhead.
+  vector<MsmSlice*> _sliceCache;
+
+  // ************* old interface
+ public:
 
   virtual void initialize(const MsmSlice& slice);
 
@@ -46,11 +63,6 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
 									bool last) = 0;
   virtual bool doneWithIndependentPart() = 0;
   virtual void doneWithIndependenceSplit() = 0;
-
-  // *** Methods to inform debug strategies when the algorothm starts
-  // processing the content of a slice and when it stops.
-  virtual void startingContent(const MsmSlice& slice);
-  virtual void endingContent();
 
   // *** Methods for handling pivot and label splits
 

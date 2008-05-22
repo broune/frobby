@@ -22,6 +22,7 @@
 #include "Ideal.h"
 
 class TermConsumer;
+class Projection;
 
 class MsmSlice : public Slice {
  public:
@@ -40,6 +41,8 @@ class MsmSlice : public Slice {
 
   virtual void simplify();
   virtual bool simplifyStep();
+
+  void setToProjOf(const MsmSlice& slice, const Projection& projection);
 
   // Efficiently swaps the values of *this and slice while avoiding
   // copies.

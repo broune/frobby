@@ -40,6 +40,9 @@ class HilbertStrategy {
   HilbertSlice* newSlice();
   void getPivot(Term& term, HilbertSlice& slice);
 
+  bool independenceSplit(HilbertSlice* slice,
+						 pair<HilbertSlice*, HilbertSlice*>& slicePair);
+
   Term _term;
 
   // It would make more sense with a stack, but that class has
