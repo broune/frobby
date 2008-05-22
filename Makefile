@@ -102,7 +102,7 @@ ifdef TESTCASE
 	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
 	cd test/$(TESTCASE); ./runtests $(TESTARGS); cd ../..
 else
-	export frobby=bin/$(program); ./test/runtests
+	export frobby=bin/$(program); ./test/runfulltests
 endif
 
 bench: all

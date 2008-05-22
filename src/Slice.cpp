@@ -118,7 +118,7 @@ void Slice::outerSlice(const Term& pivot) {
     _lcmUpdated = false;
 
   if (pivot.getSizeOfSupport() > 1)
-    getSubtract().insert(pivot);
+    getSubtract().insertReminimize(pivot);
 
   _lowerBoundHint = pivot.getFirstNonZeroExponent();
 }

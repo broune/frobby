@@ -102,57 +102,59 @@ void SliceAlgorithm::labelSplit(MsmSlice& slice) {
   ASSERT(!slice.normalize());
   size_t var = _strategy->getLabelSplitVariable(slice);
 
-  Ideal ideal(slice.getVarCount());
-  
+  Term term(slice.getVarCount());
+
+  const Term& lcm = slice.getLcm();
+
   Ideal::const_iterator stop = slice.getIdeal().end();
-  for (Ideal::const_iterator it = slice.getIdeal().begin(); it != stop; ++it)
-    if ((*it)[var] == 0)
-      ideal.insert(*it);
-
-  Term varLabel(slice.getVarCount());
-  varLabel[var] = 1;
-  ideal.insert(varLabel);
- 
-  Ideal* oldSubtract = 0;
-
-  size_t childCount = 0;
+  Ideal::const_iterator label = stop;
+  bool hasTwoLabels = false;
   for (Ideal::const_iterator it = slice.getIdeal().begin(); it != stop; ++it) {
-    if ((*it)[var] != 1)
-      continue;
-    if (childCount > 0) {
-	  if (oldSubtract == 0)
-		oldSubtract = new Ideal(slice.getSubtract());
+    if ((*it)[var] == 1) {
+	  term = *it;
+	  term[var] -= 1;
 
-	  // This is the previous varLabel.
-      slice.getSubtract().insertReminimize(varLabel);
+	  bool couldBeLabel = !slice.getSubtract().contains(term);
+	  if (couldBeLabel) {
+		for (size_t v = 0; v < slice.getVarCount(); ++v) {
+		  if (term[v] == lcm[v]) {
+			couldBeLabel = false;
+			break;
+		  }
+		}
+	  }
 
-	  // To normalize the child slice.
-	  ideal.removeStrictMultiples(varLabel);
+	  if (couldBeLabel) {
+		if (label == stop)
+		  label = it;
+		else {
+		  hasTwoLabels = true;
+		  break;
+		}
+	  }
 	}
-
-    varLabel = *it;
-    varLabel[var] -= 1;
-
-    {
-      MsmSlice child(ideal, slice.getSubtract(), slice.getMultiply());
-	  ASSERT(!child.normalize());
-
-      child.innerSlice(varLabel);
-      content(child);
-    }
-    ++childCount;
   }
 
-  if (oldSubtract != 0) {
-	slice.getSubtract().swap(*oldSubtract);
-	delete oldSubtract;
+  if (label != stop) {
+	term = *label;
+	term[var] -= 1;
+
+	MsmSlice hasLabelSlice(slice);
+	hasLabelSlice.innerSlice(term);
+	content(hasLabelSlice);
+
+	if (hasTwoLabels) {
+	  slice.outerSlice(term);
+	  content(slice);
+	}
   }
 
-  // Reuse varLabel to compute the inner slice.
-  varLabel.setToIdentity();
-  varLabel[var] = 1;
-  slice.innerSlice(varLabel);
-  content(slice);
+  if (!hasTwoLabels) {
+	term.setToIdentity();
+	term[var] = 1;
+	slice.innerSlice(term);
+	content(slice);
+  }
 }
 
 void SliceAlgorithm::pivotSplit(MsmSlice& slice) {
@@ -187,6 +189,7 @@ void SliceAlgorithm::content(MsmSlice& slice, bool simplifiedAndDependent) {
 
   if (!slice.baseCase(_strategy) &&
       (simplifiedAndDependent || !independenceSplit(slice))) {
+
     switch (_strategy->getSplitType(slice)) {
     case MsmStrategy::LabelSplit:
       labelSplit(slice);
