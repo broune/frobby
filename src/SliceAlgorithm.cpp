@@ -98,25 +98,25 @@ bool SliceAlgorithm::independenceSplit(MsmSlice& slice) {
   return true;
 }
 
-void SliceAlgorithm::labelSplit(MsmSlice& slice) {
-  ASSERT(!slice.normalize());
-  size_t var = _strategy->getLabelSplitVariable(slice);
+pair<MsmSlice*, MsmSlice*> SliceAlgorithm::labelSplit(MsmSlice* slice) {
+  ASSERT(!slice->normalize());
+  size_t var = _strategy->getLabelSplitVariable(*slice);
 
-  Term term(slice.getVarCount());
+  Term term(slice->getVarCount());
 
-  const Term& lcm = slice.getLcm();
+  const Term& lcm = slice->getLcm();
 
-  Ideal::const_iterator stop = slice.getIdeal().end();
+  Ideal::const_iterator stop = slice->getIdeal().end();
   Ideal::const_iterator label = stop;
   bool hasTwoLabels = false;
-  for (Ideal::const_iterator it = slice.getIdeal().begin(); it != stop; ++it) {
+  for (Ideal::const_iterator it = slice->getIdeal().begin(); it != stop; ++it) {
     if ((*it)[var] == 1) {
 	  term = *it;
 	  term[var] -= 1;
 
-	  bool couldBeLabel = !slice.getSubtract().contains(term);
+	  bool couldBeLabel = !slice->getSubtract().contains(term);
 	  if (couldBeLabel) {
-		for (size_t v = 0; v < slice.getVarCount(); ++v) {
+		for (size_t v = 0; v < slice->getVarCount(); ++v) {
 		  if (term[v] == lcm[v]) {
 			couldBeLabel = false;
 			break;
@@ -135,73 +135,60 @@ void SliceAlgorithm::labelSplit(MsmSlice& slice) {
 	}
   }
 
+  MsmSlice* hasLabelSlice = 0;
+  MsmSlice* notLabelSlice = new MsmSlice(*slice);
+
   if (label != stop) {
 	term = *label;
 	term[var] -= 1;
 
-	MsmSlice hasLabelSlice(slice);
-	hasLabelSlice.innerSlice(term);
-	content(hasLabelSlice);
+	hasLabelSlice = new MsmSlice(*slice);
+	hasLabelSlice->innerSlice(term);
 
-	if (hasTwoLabels) {
-	  slice.outerSlice(term);
-	  content(slice);
-	}
+	if (hasTwoLabels)
+	  notLabelSlice->outerSlice(term);
   }
 
   if (!hasTwoLabels) {
 	term.setToIdentity();
 	term[var] = 1;
-	slice.innerSlice(term);
-	content(slice);
+	notLabelSlice->innerSlice(term);
   }
+
+  return make_pair(hasLabelSlice, notLabelSlice);
 }
 
-void SliceAlgorithm::pivotSplit(MsmSlice& slice) {
-  // These scopes are here to preserve memory resources by calling
-  // destructors early.
-  {
-    MsmSlice inner(slice);
+pair<MsmSlice*, MsmSlice*> SliceAlgorithm::pivotSplit(MsmSlice* slice) {
+  Term pivot(slice->getVarCount());
+  _strategy->getPivot(pivot, *slice);
 
-    {
-      Term pivot(slice.getVarCount());
-      _strategy->getPivot(pivot, slice);
+  MsmSlice* inner = new MsmSlice(*slice);
+  MsmSlice* outer = new MsmSlice(*slice);
 
-      ASSERT(!pivot.isIdentity()); 
-      ASSERT(!slice.getIdeal().contains(pivot));
-      ASSERT(!slice.getSubtract().contains(pivot));
+  ASSERT(!pivot.isIdentity()); 
+  ASSERT(!slice->getIdeal().contains(pivot));
+  ASSERT(!slice->getSubtract().contains(pivot));
 
-      inner.innerSlice(pivot);
-      slice.outerSlice(pivot);
-    }
+  inner->innerSlice(pivot);
+  outer->outerSlice(pivot);
 
-    content(inner);
-  }
-
-  // Handle outer slice.
-  content(slice);
+  return make_pair(inner, outer);
 }
 
 void SliceAlgorithm::content(MsmSlice& slice, bool simplifiedAndDependent) {
   _strategy->startingContent(slice);
-  if (!simplifiedAndDependent)
-    _strategy->simplify(slice);
 
-  if (!slice.baseCase(_strategy) &&
-      (simplifiedAndDependent || !independenceSplit(slice))) {
-
-    switch (_strategy->getSplitType(slice)) {
-    case MsmStrategy::LabelSplit:
-      labelSplit(slice);
-      break;
-
-    case MsmStrategy::PivotSplit:
-      pivotSplit(slice);
-      break;
-
-    default:
-      ASSERT(false);
-    }
+  if (!slice.baseCase(_strategy) && !independenceSplit(slice)) {
+	pair<MsmSlice*, MsmSlice*> slicePair = _strategy->split(&slice);
+	if (slicePair.first != 0) {
+	  content(*slicePair.first);
+	  delete slicePair.first;
+	}
+	
+	if (slicePair.second != 0) {
+	  content(*slicePair.second);
+	  delete slicePair.second;
+	}
   }
 
   _strategy->endingContent();

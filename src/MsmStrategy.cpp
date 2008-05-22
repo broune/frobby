@@ -26,7 +26,109 @@
 #include "SliceAlgorithm.h"
 #include "TermGrader.h"
 
+pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice, MsmStrategy* strategy) {
+  ASSERT(!slice->normalize());
+  size_t var = strategy->getLabelSplitVariable(*slice);
+
+  Term term(slice->getVarCount());
+
+  const Term& lcm = slice->getLcm();
+
+  Ideal::const_iterator stop = slice->getIdeal().end();
+  Ideal::const_iterator label = stop;
+  bool hasTwoLabels = false;
+  for (Ideal::const_iterator it = slice->getIdeal().begin(); it != stop; ++it) {
+    if ((*it)[var] == 1) {
+	  term = *it;
+	  term[var] -= 1;
+
+	  bool couldBeLabel = !slice->getSubtract().contains(term);
+	  if (couldBeLabel) {
+		for (size_t v = 0; v < slice->getVarCount(); ++v) {
+		  if (term[v] == lcm[v]) {
+			couldBeLabel = false;
+			break;
+		  }
+		}
+	  }
+
+	  if (couldBeLabel) {
+		if (label == stop)
+		  label = it;
+		else {
+		  hasTwoLabels = true;
+		  break;
+		}
+	  }
+	}
+  }
+
+  MsmSlice* hasLabelSlice = 0;
+  MsmSlice* notLabelSlice = new MsmSlice(*slice);
+
+  if (label != stop) {
+	term = *label;
+	term[var] -= 1;
+
+	hasLabelSlice = new MsmSlice(*slice);
+	hasLabelSlice->innerSlice(term);
+
+	if (hasTwoLabels)
+	  notLabelSlice->outerSlice(term);
+  }
+
+  if (!hasTwoLabels) {
+	term.setToIdentity();
+	term[var] = 1;
+	notLabelSlice->innerSlice(term);
+  }
+
+  return make_pair(hasLabelSlice, notLabelSlice);
+}
+
+pair<MsmSlice*, MsmSlice*> pivotSplit(MsmSlice* slice, MsmStrategy* strategy) {
+  Term pivot(slice->getVarCount());
+  strategy->getPivot(pivot, *slice);
+
+  MsmSlice* inner = new MsmSlice(*slice);
+  MsmSlice* outer = new MsmSlice(*slice);
+
+  ASSERT(!pivot.isIdentity()); 
+  ASSERT(!slice->getIdeal().contains(pivot));
+  ASSERT(!slice->getSubtract().contains(pivot));
+
+  inner->innerSlice(pivot);
+  outer->outerSlice(pivot);
+
+  return make_pair(inner, outer);
+}
+
 MsmStrategy::~MsmStrategy() {
+}
+
+pair<MsmSlice*, MsmSlice*> MsmStrategy::split(MsmSlice* slice) {
+  pair<MsmSlice*, MsmSlice*> slicePair;
+
+  switch (getSplitType(*slice)) {
+  case MsmStrategy::LabelSplit:
+	slicePair = labelSplit(slice, this);
+	break;
+
+  case MsmStrategy::PivotSplit:
+	slicePair = pivotSplit(slice, this);
+	break;
+
+  default:
+	ASSERT(false);
+  }
+
+  if (slicePair.first != 0)
+	simplify(*slicePair.first);
+
+  if (slicePair.second != 0)
+	simplify(*slicePair.second);
+
+  return slicePair;
 }
 
 void MsmStrategy::initialize(const MsmSlice& slice) {

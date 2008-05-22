@@ -38,8 +38,8 @@ class SliceAlgorithm {
  private:
   void content(MsmSlice& slice, bool simplifiedAndDependent = false);
 
-  void labelSplit(MsmSlice& slice);
-  void pivotSplit(MsmSlice& slice);
+  pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice);
+  pair<MsmSlice*, MsmSlice*> pivotSplit(MsmSlice* slice);
   bool independenceSplit(MsmSlice& slice);
 
   bool _useIndependence;
