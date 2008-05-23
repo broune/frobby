@@ -23,31 +23,42 @@
 class HilbertSlice;
 class Ideal;
 class CoefTermConsumer;
+class SliceEvent;
+class HilbertIndependenceConsumer;
 
 class HilbertStrategy {
  public:
+  HilbertStrategy(bool useIndependence = false);
   ~HilbertStrategy();
 
   HilbertSlice* setupInitialSlice(const Ideal& ideal,
 								  CoefTermConsumer* consumer);
 
   // Takes over ownership of the slice parameter.
-  pair<HilbertSlice*, HilbertSlice*> split(HilbertSlice* slice);
+  pair<HilbertSlice*, HilbertSlice*> split(HilbertSlice* slice,
+										   SliceEvent*& event);
 
   void freeSlice(HilbertSlice* slice);
+  void freeConsumer(HilbertIndependenceConsumer* consumer);
 
  private:
   HilbertSlice* newSlice();
+  HilbertIndependenceConsumer* newConsumer();
+
   void getPivot(Term& term, HilbertSlice& slice);
 
   bool independenceSplit(HilbertSlice* slice,
-						 pair<HilbertSlice*, HilbertSlice*>& slicePair);
+						 pair<HilbertSlice*, HilbertSlice*>& slicePair,
+						 SliceEvent*& event);
 
   Term _term;
 
   // It would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
   vector<HilbertSlice*> _sliceCache;
+  vector<HilbertIndependenceConsumer*> _consumerCache;
+
+  bool _useIndependence;
 };
 
 #endif

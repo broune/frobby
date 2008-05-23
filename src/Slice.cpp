@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "Slice.h"
 
+#include "Projection.h"
+
 // The lcm is technically correct, but _lcmUpdated defaulting to false
 // is still a sensible choice.
 Slice::Slice():
@@ -154,6 +156,40 @@ bool Slice::normalize() {
   }
 
   return removedAny;
+}
+
+void Slice::setToProjOf
+(const Slice& slice, const Projection& projection) {
+  resetAndSetVarCount(projection.getRangeVarCount());
+
+  Ideal::const_iterator stop = slice.getIdeal().end();
+  for (Ideal::const_iterator it = slice.getIdeal().begin();
+	   it != stop; ++it) {
+
+    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
+	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
+	  projection.project(_lcm, *it);
+	  insertIntoIdeal(_lcm);
+	}
+  }
+
+  stop = slice.getSubtract().end();
+  for (Ideal::const_iterator it = slice.getSubtract().begin();
+	   it != stop; ++it) {
+
+    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
+	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
+	  projection.project(_lcm, *it);
+	  getSubtract().insert(_lcm);
+	}
+  }
+
+  projection.project(getMultiply(), slice.getMultiply());
+  if (slice._lcmUpdated) {
+	projection.project(_lcm, slice._lcm);
+	_lcmUpdated = true;
+  } else
+	_lcmUpdated = false;
 }
 
 void Slice::swap(Slice& slice) {

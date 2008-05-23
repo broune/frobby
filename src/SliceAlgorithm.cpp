@@ -60,21 +60,23 @@ bool SliceAlgorithm::independenceSplit(MsmSlice* slice) {
     return false;
 
   static IndependenceSplitter indep;
-
   if (!indep.analyze(*slice))
     return false;
 
   _strategy->doingIndependenceSplit(*slice, 0);
 
-  static Projection projection;
-  static Projection projection2;
+  Projection projection;
+  Projection projection2;
 
   // have to have two projections, as the strategy keeps a reference
   // to the projection rather than copy it or something like that.
   // TODO: fix this.
 
-  MsmSlice* restSlice = new MsmSlice();
+  // Have to do this before any recursive calls, since indep is static.
   indep.getRestProjection(projection);
+  indep.getBigProjection(projection2);
+
+  MsmSlice* restSlice = new MsmSlice();
   restSlice->setToProjOf(*slice, projection);
 
   _strategy->doingIndependentPart(projection, false);
@@ -84,7 +86,6 @@ bool SliceAlgorithm::independenceSplit(MsmSlice* slice) {
   if (_strategy->doneWithIndependentPart()) {
 
 	MsmSlice* bigSlice = new MsmSlice();
-	indep.getBigProjection(projection2);
 	bigSlice->setToProjOf(*slice, projection2);
 
 	_strategy->doingIndependentPart(projection2, true);
@@ -100,7 +101,6 @@ bool SliceAlgorithm::independenceSplit(MsmSlice* slice) {
 }
 
 void SliceAlgorithm::content(MsmSlice* initialSlice) {
-  initialSlice->print(stderr);
   if (initialSlice->baseCase(_strategy) ||
 	  independenceSplit(initialSlice))
 	return;

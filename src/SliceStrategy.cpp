@@ -162,6 +162,7 @@ bool getIndependencePivot(const Slice& slice, Term& pivot) {
 void SliceStrategy::getPivot(Term& pivot, Slice& slice, PivotStrategy ps) {
   ASSERT(ps != Unknown);
   ASSERT(pivot.getVarCount() == slice.getVarCount());
+  ASSERT(slice.getIdeal().isMinimallyGenerated());
 
   if (ps == MinGen) {
 	getMinGenPivot(pivot, slice);
