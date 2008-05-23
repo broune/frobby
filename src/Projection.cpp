@@ -26,29 +26,26 @@ size_t Projection::getRangeVarCount() const {
 }
 
 void Projection::reset(const Partition& partition,
-		       int number) {
-  _offsets.resize(partition.getSetSize(number));
+					   int number) {
+  _offsets.clear();
 
   size_t root = 0xFFFFFFFF;
   for (size_t i = 0; i < partition.getSize(); ++i) {
     if (i == partition.getRoot(i)) {
       if (number == 0) {
-	root = i;
-	break;
+		root = i;
+		break;
       }
       --number;
     }
   }
   ASSERT(number == 0 && root != 0xFFFFFFFF);
 
-  size_t projectionOffset = 0;
-
   for (size_t i = 0; i < partition.getSize(); ++i) {
     if (partition.getRoot(i) != root)
       continue;
 
-    _offsets[projectionOffset] = i;
-    ++projectionOffset;
+    _offsets.push_back(i);
   }
 }
 

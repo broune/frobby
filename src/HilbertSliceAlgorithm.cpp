@@ -29,6 +29,7 @@
 #include "HilbertStrategy.h"
 
 #include "IndependenceSplitter.h"
+#include "SliceEvent.h"
 
 #include "CoefTermConsumer.h"
 
@@ -47,6 +48,7 @@ void HilbertSliceAlgorithm::run(const Ideal& ideal) {
   HilbertStrategy* strategy = new HilbertStrategy();
 
   vector<HilbertSlice*> slices;
+  vector<SliceEvent*> events;
   HilbertSlice* initialSlice = strategy->setupInitialSlice(ideal, _consumer);
   if (!initialSlice->baseCase())
 	slices.push_back(initialSlice);
@@ -55,19 +57,27 @@ void HilbertSliceAlgorithm::run(const Ideal& ideal) {
 	HilbertSlice* slice = slices.back();
 	slices.pop_back();
 
-	ASSERT(!slice->baseCase());
+	if (slice == 0) {
+	  events.back()->raiseEvent();
+	  events.pop_back();
+	  continue;
+	}
 
-	pair<HilbertSlice*, HilbertSlice*> slicePair = strategy->split(slice);
+	if (slice->baseCase()) {
+	  strategy->freeSlice(slice);
+	  continue;
+	}
 
-	if (slicePair.first->baseCase())
-	  strategy->freeSlice(slicePair.first);
-	else
-	  slices.push_back(slicePair.first);
+	SliceEvent* event;
+	pair<HilbertSlice*, HilbertSlice*> slicePair =
+	  strategy->split(slice, event);
 
-	if (slicePair.second->baseCase())
-	  strategy->freeSlice(slicePair.second);
-	else
-	  slices.push_back(slicePair.second);
+	if (event != 0) {
+	  slices.push_back(0);
+	  events.push_back(event);
+	}
+	slices.push_back(slicePair.first);
+	slices.push_back(slicePair.second);
   }
 
   delete strategy;

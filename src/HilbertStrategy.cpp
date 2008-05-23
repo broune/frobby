@@ -21,11 +21,145 @@
 #include "HilbertSlice.h"
 #include "Ideal.h"
 #include "CoefTermConsumer.h"
+#include "Projection.h"
+#include "IndependenceSplitter.h"
+
+#include "SliceEvent.h"
+
+HilbertStrategy::HilbertStrategy(bool useIndependence):
+  _useIndependence(useIndependence) {
+}
+
+// TODO: move elsewhere
+class HilbertIndependenceConsumer : public CoefTermConsumer,
+									public SliceEvent {
+public:
+  HilbertIndependenceConsumer(HilbertStrategy* strategy):
+	_rightConsumer(this),
+	_strategy(strategy) {
+	ASSERT(strategy != 0);
+	clear();
+  }
+
+  void reset(CoefTermConsumer* parent,
+			 IndependenceSplitter& splitter,
+			 size_t varCount) {
+	ASSERT(parent != 0);
+
+	_tmpTerm.reset(varCount);
+	_parent = parent;
+
+	splitter.getBigProjection(_leftProjection);
+	splitter.getRestProjection(_rightProjection);
+
+	_rightTerms.clearAndSetVarCount(_rightProjection.getRangeVarCount());
+  }
+
+  void clear() {
+	_parent = 0;
+	_rightTerms.clear();
+	_rightCoefs.clear();
+  }
+
+  virtual void raiseEvent() {
+	ASSERT(_parent != 0);
+	clear();
+
+	ASSERT(_strategy != 0);
+	_strategy->freeConsumer(this);
+  }
+
+  CoefTermConsumer* getLeftConsumer() {
+	ASSERT(_parent != 0);
+	return this;
+  }
+
+  virtual void consume(const mpz_class& coef, const Term& term) {
+	ASSERT(_parent != 0);
+	consumeLeft(coef, term);
+  }
+
+  CoefTermConsumer* getRightConsumer() {
+	ASSERT(_parent != 0);
+	return &_rightConsumer;
+  }
+
+  const Projection& getLeftProjection() const {
+	ASSERT(_parent != 0);
+	return _leftProjection;
+  }
+
+  const Projection& getRightProjection() const {
+	ASSERT(_parent != 0);
+	return _rightProjection;
+  }
+
+private:
+  class RightConsumer : public CoefTermConsumer {
+  public:
+	RightConsumer(HilbertIndependenceConsumer* parent):
+	  _parent(parent) {
+	}
+
+	virtual void consume(const mpz_class& coef, const Term& term) {
+	  _parent->consumeRight(coef, term);
+	}
+
+  private:
+	HilbertIndependenceConsumer* _parent;
+  };
+
+  virtual void consumeLeft(const mpz_class& leftCoef, const Term& leftTerm) {
+	ASSERT(_tmpTerm.getVarCount() ==
+		   _leftProjection.getRangeVarCount() +
+		   _rightProjection.getRangeVarCount());
+
+	_leftProjection.inverseProject(_tmpTerm, leftTerm);
+
+	size_t rightSize = _rightTerms.getGeneratorCount();
+	ASSERT(rightSize == _rightCoefs.size());
+	for (size_t right = 0; right < rightSize; ++right) {
+	  _rightProjection.inverseProject(_tmpTerm,
+									  *(_rightTerms.begin() + right));
+	  // _rightTerms[right]);
+	  _tmpCoef = leftCoef * _rightCoefs[right];
+
+	  _parent->consume(_tmpCoef, _tmpTerm);
+	}
+  }
+
+  virtual void consumeRight(const mpz_class& coef, const Term& term) {
+	ASSERT(term.getVarCount() == _rightProjection.getRangeVarCount());
+	ASSERT(_rightTerms.getVarCount() == term.getVarCount());
+
+	_rightTerms.insert(term);
+	_rightCoefs.push_back(coef);
+  }
+
+  Term _tmpTerm;
+  mpz_class _tmpCoef;
+
+  CoefTermConsumer* _parent;
+  Projection _leftProjection;
+  Projection _rightProjection;
+
+  Ideal _rightTerms;
+  vector<mpz_class> _rightCoefs;
+
+  RightConsumer _rightConsumer;
+
+  HilbertStrategy* _strategy;
+};
 
 HilbertStrategy::~HilbertStrategy() {
   while (!_sliceCache.empty()) {
 	delete _sliceCache.back();
 	_sliceCache.pop_back();
+  }
+
+  while (!_consumerCache.empty()) {
+	delete _consumerCache.back();
+	_consumerCache.pop_back();
   }
 }
 
@@ -57,9 +191,10 @@ HilbertSlice* HilbertStrategy::setupInitialSlice(const Ideal& ideal,
 }
 
 pair<HilbertSlice*, HilbertSlice*>
-HilbertStrategy::split(HilbertSlice* slice) {
+HilbertStrategy::split(HilbertSlice* slice, SliceEvent*& event) {
+  event = 0;
   pair<HilbertSlice*, HilbertSlice*> slicePair;
-  if (independenceSplit(slice, slicePair))
+  if (_useIndependence && independenceSplit(slice, slicePair, event))
 	return slicePair;
 
   Term _term(slice->getVarCount());
@@ -140,10 +275,49 @@ void HilbertStrategy::getPivot(Term& term, HilbertSlice& slice) {
   ASSERT(term.strictlyDivides(slice.getLcm()));
 }
 
+void HilbertStrategy::freeConsumer(HilbertIndependenceConsumer* consumer) {
+  ASSERT(consumer != 0);
+  ASSERT(std::find(_consumerCache.begin(),
+				   _consumerCache.end(), consumer) ==
+		 _consumerCache.end());
+
+  _consumerCache.push_back(consumer);
+}
+
 bool HilbertStrategy::independenceSplit
-(HilbertSlice* slice, pair<HilbertSlice*, HilbertSlice*>& slicePair) {
+(HilbertSlice* slice, pair<HilbertSlice*, HilbertSlice*>& slicePair,
+ SliceEvent*& event) {
   ASSERT(slice != 0);
 
+  static IndependenceSplitter splitter; // TODO: get rid of static
+  if (!splitter.analyze(*slice))
+	return false;
 
-  return false;
+  HilbertIndependenceConsumer* consumer = newConsumer();
+  consumer->reset(slice->getConsumer(), splitter, slice->getVarCount());
+  event = consumer;
+
+  HilbertSlice* leftSlice = newSlice();
+  leftSlice->setToProjOf(*slice, consumer->getLeftProjection(),
+						 consumer->getLeftConsumer());
+
+  HilbertSlice* rightSlice = newSlice();
+  rightSlice->setToProjOf(*slice, consumer->getRightProjection(),
+						  consumer->getRightConsumer());
+
+  slicePair.first = leftSlice;
+  slicePair.second = rightSlice;
+
+  freeSlice(slice);
+
+  return true;
+}
+
+HilbertIndependenceConsumer* HilbertStrategy::newConsumer() {
+  if (_consumerCache.empty())
+	return new HilbertIndependenceConsumer(this);
+
+  HilbertIndependenceConsumer* consumer = _consumerCache.back();
+  _consumerCache.pop_back();
+  return consumer;
 }

@@ -17,8 +17,6 @@
 #include "stdinc.h"
 #include "Partition.h"
 
-#include "Term.h"
-
 Partition::Partition():
   _partitions(0),
   _size(0),
@@ -27,7 +25,8 @@ Partition::Partition():
 
 Partition::Partition(const Partition& partition):
   _size(partition._size),
-  _capacity(partition._size) {
+  _capacity(partition._size),
+  _setCount(partition._setCount) {
   _partitions = new int[_size];
   std::copy(partition._partitions,
 			partition._partitions + _size, _partitions);
@@ -45,27 +44,41 @@ void Partition::reset(size_t size) {
   }
 
   _size = size;
+  _setCount = size;
   fill_n(_partitions, _size, -1);
 }
 
-void Partition::join(size_t i, size_t j) {
+bool Partition::join(size_t i, size_t j) {
+  ASSERT(i < _size);
+  ASSERT(j < _size);
+
   size_t rootI = getRoot(i);
   size_t rootJ = getRoot(j);
-  
+
   if (rootI == rootJ)
-    return;
-  
-  _partitions[rootI] += _partitions[rootJ];
+    return false;
+
+  ASSERT(_partitions[rootJ] < 0);
+  ASSERT(_partitions[rootI] < 0);
+
+  // +1 to subtract the initial -1
+  _partitions[rootI] += _partitions[rootJ] + 1;
   _partitions[rootJ] = rootI;
+  --_setCount;
+
+  return true;
 }
 
-size_t Partition::getSetCount(size_t minSize) const {
-  size_t partitionCount = 0;
+size_t Partition::getSetCount() const {
+#ifdef DEBUG
+  size_t setCount = 0;
   for (size_t i = 0; i < _size; ++i)
-    if (i == getRoot(i) &&
-	(size_t)-_partitions[i] >= minSize)
-      ++partitionCount;
-  return partitionCount;
+    if (i == getRoot(i))
+      ++setCount;
+  ASSERT(_setCount == setCount);
+#endif
+
+  return _setCount;
 }
 
 size_t Partition::getSizeOfClassOf(size_t i) const {
@@ -75,8 +88,10 @@ size_t Partition::getSizeOfClassOf(size_t i) const {
 size_t Partition::getSetSize(size_t set) const {
   for (size_t i = 0; i < _size; ++i) {
     if (i == getRoot(i)) {
-      if (set == 0)
-		return -_partitions[i];
+      if (set == 0) {
+		ASSERT(_partitions[i] < 0);
+		return -(_partitions[i] + 1); // +1 to offset the initial -1
+	  }
       --set;
     }
   }
@@ -91,6 +106,12 @@ size_t Partition::getRoot(size_t i) const {
     return _partitions[i];
   } else
     return i;
+}
+
+void Partition::addToSet(size_t i) {
+  ASSERT(i < _size);
+  ASSERT(_partitions[getRoot(i)] < 0);
+  _partitions[getRoot(i)] -= 1;
 }
 
 size_t Partition::getSize() const {

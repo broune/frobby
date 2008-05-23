@@ -31,6 +31,8 @@ class HilbertSlice : public Slice {
 			   const Term& multiply,
 			   CoefTermConsumer* consumer);
 
+  CoefTermConsumer* getConsumer() {return _consumer;}
+
   // *** Mutators
 
   // Returns true if a base case is reached, and in that case outputs
@@ -43,6 +45,10 @@ class HilbertSlice : public Slice {
 
   virtual void simplify();
   virtual bool simplifyStep();
+
+  void setToProjOf(const Slice& slice,
+				   const Projection& projection,
+				   CoefTermConsumer* consumer);
 
   // Efficiently swaps the values of *this and slice while avoiding
   // copies.

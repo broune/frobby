@@ -120,6 +120,13 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::pivotSplit(MsmSlice* slice) {
   Term pivot(slice->getVarCount());
   getPivot(pivot, *slice);
 
+  if ((pivot.isIdentity()) ||
+	  (slice->getIdeal().contains(pivot)) ||
+	  (slice->getSubtract().contains(pivot))) {
+	slice->print(stderr);
+	pivot.print(stderr);
+  }
+
   ASSERT(!pivot.isIdentity()); 
   ASSERT(!slice->getIdeal().contains(pivot));
   ASSERT(!slice->getSubtract().contains(pivot));

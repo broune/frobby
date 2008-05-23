@@ -227,6 +227,14 @@ bool HilbertSlice::simplifyStep() {
   return false;
 }
 
+void HilbertSlice::setToProjOf(const Slice& slice,
+							   const Projection& projection,
+							   CoefTermConsumer* consumer) {
+  ASSERT(consumer != 0);
+  Slice::setToProjOf(slice, projection);
+  _consumer = consumer;
+}
+
 void HilbertSlice::swap(HilbertSlice& slice) {
   Slice::swap(slice);
   std::swap(_consumer, slice._consumer);

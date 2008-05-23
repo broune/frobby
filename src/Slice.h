@@ -20,6 +20,8 @@
 #include "Ideal.h"
 #include "Term.h"
 
+class Projection;
+
 class Slice {
  public:
   Slice();
@@ -93,7 +95,8 @@ class Slice {
   virtual bool simplifyStep() = 0;
 
  protected:
-  
+  void setToProjOf(const Slice& slice, const Projection& projection);
+
   void swap(Slice& slice);
 
   // Removes those generators of subtract that do not strictly divide

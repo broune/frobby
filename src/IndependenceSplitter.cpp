@@ -31,17 +31,21 @@ void IndependenceSplitter::getRestProjection(Projection& projection) const {
 
 bool IndependenceSplitter::analyze(const Slice& slice) {
   _partition.reset(slice.getVarCount());
-  
+
   Ideal::const_iterator stop = slice.getIdeal().end();
   for (Ideal::const_iterator it = slice.getIdeal().begin();
        it != stop; ++it) {
     size_t first = ::getFirstNonZeroExponent(*it, slice.getVarCount());
+	if (first == slice.getVarCount())
+	  return false;
+	_partition.addToSet(first);
     for (size_t var = first + 1; var < slice.getVarCount(); ++var)
       if ((*it)[var] > 0)
-		_partition.join(first, var);
+		if (_partition.join(first, var))
+		  if (_partition.getSetCount() == 1)
+			return false;
   }
 
-  // TODO: eliminate code duplication from above.
   stop = slice.getSubtract().end();
   for (Ideal::const_iterator it = slice.getSubtract().begin();
        it != stop; ++it) {
@@ -56,20 +60,11 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
   if (childCount == 1)
     return false;
 
-  _oneVarCount = 0;
-  _twoVarCount = 0;
-  _moreThanTwoVarCount = 0;
-  for (size_t i = 0; i < childCount; ++i) {
-    size_t size = _partition.getSetSize(i);
-    if (size == 1)
-      ++_oneVarCount;
-    else if (size == 2)
-      ++_twoVarCount;
-    else
-      ++_moreThanTwoVarCount;
-  }
-
-  if (_twoVarCount == 0 && _moreThanTwoVarCount <= 1)
+  size_t hasTwo = 0;
+  for (size_t i = 0; i < childCount; ++i)
+	if (_partition.getSetSize(i) >= 2)
+	  ++hasTwo;
+  if (hasTwo < 2)
 	return false;
 
   if (_partition.getSetCount() > 2) {
@@ -86,12 +81,21 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
 	ASSERT(_partition.getRoot(maxSet) != _partition.getRoot(nonMaxSet));
 
 	for (size_t set = 0; set < _partition.getSize(); ++set)
-	  if (_partition.getRoot(set) != maxSet)
+	  if (_partition.getRoot(set) != _partition.getRoot(maxSet))
 		_partition.join(set, nonMaxSet);
   }
   ASSERT(_partition.getSetCount() == 2);
 
-  _bigSet = 0; // TODO: make this actually correct.
+  /*
+  slice.print(stderr);
+  fprintf(stderr, "%i %i\n", _partition.getSetSize(0), _partition.getSetSize(1));
+  _partition.print(stderr);
+  */
+
+  if (_partition.getSetSize(0) > _partition.getSetSize(1))
+	_bigSet = 0;
+  else
+	_bigSet = 1;
 
   return true;
 }

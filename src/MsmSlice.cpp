@@ -18,7 +18,6 @@
 #include "MsmSlice.h"
 
 #include "TermConsumer.h"
-#include "Projection.h"
 
 MsmSlice::MsmSlice():
   Slice() {
@@ -93,37 +92,7 @@ bool MsmSlice::simplifyStep() {
 
 void MsmSlice::setToProjOf
 (const MsmSlice& slice, const Projection& projection) {
-  resetAndSetVarCount(projection.getRangeVarCount());
-  ASSERT(!_lcmUpdated);
-  // We use _lcm as a temporary value.
-
-  Ideal::const_iterator stop = slice.getIdeal().end();
-  for (Ideal::const_iterator it = slice.getIdeal().begin();
-	   it != stop; ++it) {
-
-    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
-	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
-	  projection.project(_lcm, *it);
-	  insertIntoIdeal(_lcm);
-	}
-  }
-
-  stop = slice.getSubtract().end();
-  for (Ideal::const_iterator it = slice.getSubtract().begin();
-	   it != stop; ++it) {
-
-    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
-	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
-	  projection.project(_lcm, *it);
-	  getSubtract().insert(_lcm);
-	}
-  }
-
-  projection.project(getMultiply(), slice.getMultiply());
-  if (slice._lcmUpdated) {
-	projection.project(_lcm, slice._lcm);
-	_lcmUpdated = true;
-  }
+  Slice::setToProjOf(slice, projection);
 }
 
 void MsmSlice::swap(MsmSlice& slice) {
