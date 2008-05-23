@@ -231,6 +231,7 @@ void HilbertSlice::setToProjOf(const Slice& slice,
 							   const Projection& projection,
 							   CoefTermConsumer* consumer) {
   ASSERT(consumer != 0);
+
   Slice::setToProjOf(slice, projection);
   _consumer = consumer;
 }

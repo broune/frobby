@@ -20,15 +20,22 @@
 #include "TermConsumer.h"
 
 MsmSlice::MsmSlice():
-  Slice() {
+  Slice(),
+  _consumer(0) {
 }
 
-MsmSlice::MsmSlice(const Ideal& ideal, const Ideal& subtract,
-			 const Term& multiply):
-  Slice(ideal, subtract, multiply) {
+MsmSlice::MsmSlice(const Ideal& ideal,
+				   const Ideal& subtract,
+				   const Term& multiply,
+				   TermConsumer* consumer):
+  Slice(ideal, subtract, multiply),
+  _consumer(consumer) {
+  ASSERT(consumer != 0);
 }
 
 bool MsmSlice::baseCase(TermConsumer* consumer) {
+  ASSERT(_consumer != 0);
+  ASSERT(consumer == _consumer);
   if (getIdeal().getGeneratorCount() < _varCount || _varCount == 0)
     return true;
 
@@ -90,13 +97,18 @@ bool MsmSlice::simplifyStep() {
   return false;
 }
 
-void MsmSlice::setToProjOf
-(const MsmSlice& slice, const Projection& projection) {
+void MsmSlice::setToProjOf(const MsmSlice& slice,
+						   const Projection& projection,
+						   TermConsumer* consumer) {
+  ASSERT(consumer != 0);
+
   Slice::setToProjOf(slice, projection);
+  _consumer = consumer;
 }
 
 void MsmSlice::swap(MsmSlice& slice) {
   Slice::swap(slice);
+  std::swap(_consumer, slice._consumer);
 }
 
 // Helper class for removeDoubleLcm().

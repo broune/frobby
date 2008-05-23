@@ -28,28 +28,43 @@ class TermTranslator;
 class Projection;
 class Ideal;
 class TermGrader;
+class IndependenceSplitter;
+class SliceEvent;
 
 class MsmStrategy : public SliceStrategy, public TermConsumer {
  public:
+  MsmStrategy();
   virtual ~MsmStrategy();
 
   // ************* new interface
 
-  MsmSlice* setupInitialSlice(const Ideal& ideal);
+  MsmSlice* setupInitialSlice(const Ideal& ideal, TermConsumer* consumer);
 
-  virtual pair<MsmSlice*, MsmSlice*> split(MsmSlice* slice);
+  void split(MsmSlice* slice,
+			 SliceEvent*& leftEvent, MsmSlice*& leftSlice,
+			 SliceEvent*& rightEvent, MsmSlice*& rightSlice);
 
   void freeSlice(MsmSlice* slice);
+
+  void setUseIndependence(bool useIndependence) {
+	_useIndependence = useIndependence;
+  }
 
  private:
   MsmSlice* newSlice();
 
   pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice);
   pair<MsmSlice*, MsmSlice*> pivotSplit(MsmSlice* slice);
+  bool independenceSplit
+	(MsmSlice* slice,
+	 SliceEvent*& leftEvent, MsmSlice*& leftSlice,
+	 SliceEvent*& rightEvent, MsmSlice*& rightSlice);
 
   // It would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
   vector<MsmSlice*> _sliceCache;
+
+  bool _useIndependence;
 
   // ************* old interface
  public:
@@ -58,10 +73,9 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
 
   // *** Methods for handling independence splits
   virtual void doingIndependenceSplit(const MsmSlice& slice,
-									  Ideal* mixedProjectionSubtract) = 0;
+									  IndependenceSplitter& splitter) = 0;
   virtual void doingIndependentPart(const Projection& projection,
 									bool last) = 0;
-  virtual bool doneWithIndependentPart() = 0;
   virtual void doneWithIndependenceSplit() = 0;
 
   // *** Methods for handling pivot and label splits
@@ -86,11 +100,11 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
 
   // These report an error and exit the program if the name is unknown.
   static MsmStrategy* newDecomStrategy(const string& name,
-										 TermConsumer* consumer);
+									   TermConsumer* consumer);
   static MsmStrategy* newFrobeniusStrategy(const string& name,
-											 TermConsumer* consumer,
-											 TermGrader& grader,
-											 bool useBound);
+										   TermConsumer* consumer,
+										   TermGrader& grader,
+										   bool useBound);
 
   static MsmStrategy* addStatistics(MsmStrategy* strategy);
   static MsmStrategy* addDebugOutput(MsmStrategy* strategy);
