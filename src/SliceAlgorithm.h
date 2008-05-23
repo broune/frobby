@@ -38,8 +38,6 @@ class SliceAlgorithm {
  private:
   void content(MsmSlice* slice);
 
-  bool independenceSplit(MsmSlice* slice);
-
   bool _useIndependence;
   MsmStrategy* _strategy;
 };

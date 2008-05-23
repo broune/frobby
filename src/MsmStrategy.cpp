@@ -25,15 +25,21 @@
 #include "Projection.h"
 #include "SliceAlgorithm.h"
 #include "TermGrader.h"
+#include "IndependenceSplitter.h"
+#include "SliceEvent.h"
 
-MsmSlice* MsmStrategy::setupInitialSlice(const Ideal& ideal) {
+MsmSlice* MsmStrategy::setupInitialSlice(const Ideal& ideal,
+										 TermConsumer* consumer) {
   size_t varCount = ideal.getVarCount();
 
   Term sliceMultiply(varCount);
   for (size_t var = 0; var < varCount; ++var)
 	sliceMultiply[var] = 1;
 
-  MsmSlice* slice = new MsmSlice(ideal, Ideal(varCount), sliceMultiply);
+  MsmSlice* slice = new MsmSlice(ideal,
+								 Ideal(varCount),
+								 sliceMultiply,
+								 consumer);
   simplify(*slice);
   initialize(*slice);
 
@@ -140,10 +146,135 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::pivotSplit(MsmSlice* slice) {
   return make_pair(inner, slice);
 }
 
+MsmStrategy::MsmStrategy():
+  _useIndependence(true) {
+}
+
 MsmStrategy::~MsmStrategy() {
 }
 
-pair<MsmSlice*, MsmSlice*> MsmStrategy::split(MsmSlice* slice) {
+class IndepEvents {
+public:
+  SliceEvent* getLeftEvent() {
+	return &_leftEvent;
+  }
+
+  SliceEvent* getRightEvent() {
+	return &_rightEvent;
+  }
+
+  const Projection& getLeftProjection() {
+	return _leftProjection;
+  }
+
+  const Projection& getRightProjection() {
+	return _rightProjection;
+  }
+
+  static IndepEvents* newEvents(MsmStrategy* strategy,
+								const MsmSlice& slice,
+								IndependenceSplitter& splitter) {
+	return new IndepEvents(strategy, slice, splitter);
+  }
+
+private:
+  IndepEvents(MsmStrategy* strategy,
+			  const MsmSlice& slice,
+			  IndependenceSplitter& splitter):
+	_strategy(strategy),
+	_leftEvent(this),
+	_rightEvent(this) {
+	splitter.getBigProjection(_leftProjection);
+	splitter.getRestProjection(_rightProjection);
+
+	_strategy->doingIndependenceSplit(slice, splitter);
+	_strategy->doingIndependentPart(_rightProjection, false);
+  }
+
+  void raiseLeftEvent() {
+	_strategy->doneWithIndependenceSplit();
+	delete this;
+  }
+
+  void raiseRightEvent() {
+	_strategy->doingIndependentPart(_leftProjection, true);
+  }
+
+  class LeftEvent : public SliceEvent {
+  public:
+	LeftEvent(IndepEvents* events):
+	  _events(events) {
+	}
+
+	virtual void raiseEvent() {
+	  _events->raiseLeftEvent();
+	}
+
+  private:
+	IndepEvents* _events;
+  };
+
+  class RightEvent : public SliceEvent {
+  public:
+	RightEvent(IndepEvents* events):
+	  _events(events) {
+	}
+
+	virtual void raiseEvent() {
+	  _events->raiseRightEvent();
+	}
+
+	IndepEvents* _events;
+  };
+
+  MsmStrategy* _strategy;
+
+  LeftEvent _leftEvent;
+  RightEvent _rightEvent;
+
+  // have to have two projections, as the strategy keeps a reference
+  // to the projection rather than copy it or something like that.
+  // TODO: change (=fix) this.
+  Projection _leftProjection;
+  Projection _rightProjection;
+};
+
+bool MsmStrategy::independenceSplit
+(MsmSlice* slice,
+ SliceEvent*& leftEvent, MsmSlice*& leftSlice,
+ SliceEvent*& rightEvent, MsmSlice*& rightSlice) {
+
+  static IndependenceSplitter indep;
+  if (!indep.analyze(*slice))
+    return false;
+
+  IndepEvents* events = IndepEvents::newEvents(this, *slice, indep);
+
+  leftEvent = events->getLeftEvent();
+  leftSlice = new MsmSlice();
+  leftSlice->setToProjOf(*slice, events->getLeftProjection(), this);
+
+  rightEvent = events->getRightEvent();
+  rightSlice = new MsmSlice();
+  rightSlice->setToProjOf(*slice, events->getRightProjection(), this);
+
+  freeSlice(slice);
+
+  return true;
+}
+
+void MsmStrategy::split(MsmSlice* slice,
+						SliceEvent*& leftEvent, MsmSlice*& leftSlice,
+						SliceEvent*& rightEvent, MsmSlice*& rightSlice) {
+  leftEvent = 0;
+  rightEvent = 0;
+
+  if (_useIndependence &&
+	  independenceSplit(slice,
+						leftEvent, leftSlice,
+						rightEvent, rightSlice))
+	return;
+
   pair<MsmSlice*, MsmSlice*> slicePair;
 
   switch (getSplitType(*slice)) {
@@ -165,7 +296,8 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::split(MsmSlice* slice) {
   if (slicePair.second != 0)
 	simplify(*slicePair.second);
 
-  return slicePair;
+  leftSlice = slicePair.first;
+  rightSlice = slicePair.second;
 }
 
 void MsmStrategy::initialize(const MsmSlice& slice) {
@@ -207,19 +339,15 @@ public:
   }
 
   virtual void doingIndependenceSplit(const MsmSlice& slice,
-									  Ideal* mixedProjectionSubtract) {
+									  IndependenceSplitter& splitter) {
     _independenceSplits.push_back
-      (new IndependenceSplit(slice,
-							 mixedProjectionSubtract,
-							 getCurrentConsumer()));
+      (new IndependenceSplit(splitter,
+							 getCurrentConsumer(),
+							 slice.getVarCount()));
   }
  
   virtual void doingIndependentPart(const Projection& projection, bool last) {
     getCurrentSplit()->setCurrentPart(projection, last);
-  }
-
-  virtual bool doneWithIndependentPart() {
-    return getCurrentSplit()->doneWithPart();
   }
 
   virtual void doneWithIndependenceSplit() {
@@ -230,97 +358,54 @@ public:
 private:
   class IndependenceSplit : public TermConsumer {
   public:
-    IndependenceSplit(const MsmSlice& slice,
-					  Ideal* mixedProjectionSubtract,
-					  TermConsumer* consumer):
-      _partialTerm(slice.getMultiply()),
-      _mixedProjectionSubtract(mixedProjectionSubtract),
-      _consumer(consumer),
-      _lastPartProjection(0) {
+    IndependenceSplit(IndependenceSplitter& splitter,
+					  TermConsumer* consumer,
+					  size_t varCount):
+	  _partialTerm(varCount),
+      _consumer(consumer) {
       ASSERT(_consumer != 0);
-    }
 
-    ~IndependenceSplit() {
+	  _right = true;
+	  splitter.getBigProjection(_leftProjection);
+	  splitter.getRestProjection(_rightProjection);
+
+	  _rightDecom.clearAndSetVarCount(_rightProjection.getRangeVarCount());
     }
 
     virtual void consume(const Term& term) {
-      if (_lastPartProjection != 0) {
-		_lastPartProjection->inverseProject(_partialTerm, term);
-		generateDecom();
-      } else
-		_parts.back().decom.insert(term);
+      if (_right)
+		consumeRight(term);
+	  else
+		consumeLeft(term);
     }
 
-    // Must set each part exactly once, and must call doneWithPart
-    // after having called setCurrentPart().
-    bool setCurrentPart(const Projection& projection, bool last) {
-      ASSERT(_lastPartProjection == 0);
-
-      if (last)
-		_lastPartProjection = &projection;
-      else {
-		if (_parts.empty()) {
-		  // We reserve space to ensure that no reallocation will
-		  // happen. Each part has at least two variables, and the
-		  // last part is not stored.
-		  _parts.reserve(_partialTerm.getVarCount() / 2 - 1);
-		}
-		_parts.resize(_parts.size() + 1);
-		_parts.back().projection = &projection;
-		_parts.back().decom.clearAndSetVarCount(projection.getRangeVarCount());
+	void consumeLeft(const Term& term) {
+	  _leftProjection.inverseProject(_partialTerm, term);
+      Ideal::const_iterator stop = _rightDecom.end();
+      for (Ideal::const_iterator it = _rightDecom.begin(); it != stop; ++it) {
+		_rightProjection.inverseProject(_partialTerm, *it);
+		_consumer->consume(_partialTerm);
       }
+	}
 
-      return true;
-    }
+	void consumeRight(const Term& term) {
+	  _rightDecom.insert(term);
+	}
 
-    bool doneWithPart() {
-      if (_lastPartProjection != 0)
-		return true;
-
-      bool hasDecom = (_parts.back().decom.getGeneratorCount() != 0);
-      return hasDecom;
+    void setCurrentPart(const Projection& projection, bool last) {
+	  _right = !last;
     }
 
   private:
-    void generateDecom() {
-      if (_parts.empty())
-		outputDecom();
-      else
-		generateDecom(_parts.size() - 1);
-    }
-
-    void generateDecom(size_t part) {
-      ASSERT(part < _parts.size());
-      const Part& p = _parts[part];
-
-      Ideal::const_iterator stop = p.decom.end();
-      for (Ideal::const_iterator it = p.decom.begin(); it != stop; ++it) {
-		p.projection->inverseProject(_partialTerm, *it);
-		if (part == 0)
-		  outputDecom();
-		else
-		  generateDecom(part - 1);
-      }
-    }
-
-    void outputDecom() {
-      ASSERT(_consumer != 0);
-      if (_mixedProjectionSubtract == 0 ||
-		  !_mixedProjectionSubtract->contains(_partialTerm))
-		_consumer->consume(_partialTerm);
-    }
-
-    struct Part {
-      const Projection* projection;
-      Ideal decom;
-    };
-    vector<Part> _parts;
+    Projection _leftProjection;
+	Projection _rightProjection;
+	Ideal _rightDecom;
 
     Term _partialTerm;
-    Ideal* _mixedProjectionSubtract;
 
     TermConsumer* _consumer;
-    const Projection* _lastPartProjection;
+
+	bool _right;
   };
 
   IndependenceSplit* getCurrentSplit() {
@@ -570,10 +655,6 @@ public:
 	pivot[maxOffset] = lcm[maxOffset] / 2;
   }
 
-  bool doneWithPart() {
-    return _improved;
-  }
-
   const Projection& getCurrentPartProjection() {
     return _outerPartProjection;
   }
@@ -633,72 +714,6 @@ public:
   }
 
 private:
-  // The idea here is to see if any inner slices can be discarded,
-  // allowing us to move to the outer slice. This has not turned out
-  // to work well.
-  bool colonSimplify(MsmSlice& slice) {
-	bool simplified = true;
-
-	for (size_t var = 0; var < slice.getVarCount(); ++var) {
-	  if (slice.getLcm()[var] == 1)
-		continue;
-
-	  MsmSlice inner(slice);
-	  Term pivot(slice.getVarCount());
-	  pivot[var] = slice.getLcm()[var] - 1;
-	  inner.innerSlice(pivot);
-
-	  Term bound(inner.getVarCount());
-	  Term oldBound(inner.getVarCount());
-	  Term colon(inner.getVarCount());
-	  getUpperBound(inner, bound);
-	  
-	  // Obtain bound for degree
-	  static mpz_class degree;
-	  getDegree(bound, _outerPartProjection, degree);
-	  
-	  // Check if improvement is possible
-	  if (degree <= _partValue) {
-		slice.outerSlice(pivot);
-		simplified = true;
-	  }
-	}
-	return simplified;
-  }
-
-  // For each variable var, the idea is to compute a bound that would
-  // apply to the outer slice on the pivot var. If that can be
-  // discarded, then we can move to the inner slice. This has not
-  // turned out to work well.
-  bool involvedBoundSimplify(MsmSlice& slice) {
-    if (slice.getIdeal().getGeneratorCount() == 0)
-      return false;
-
-    mpz_class degree;
-
-    Term colon(slice.getVarCount());
-    Term lcm(slice.getVarCount());
-    for (size_t var = 0; var < slice.getVarCount(); ++var) {
-      lcm.setToIdentity();
-
-      const Ideal& ideal = slice.getIdeal();
-      for (Ideal::const_iterator it = ideal.begin(); it != ideal.end(); ++it)
-		if ((*it)[var] <= 1)
-		  lcm.lcm(lcm, *it);
-
-      adjustToBound(slice, lcm);
-      getDegree(lcm, _outerPartProjection, degree);
-      if (degree <= _partValue)
-		colon[var] = 1;
-    }
-
-    if (colon.isIdentity())
-      return false;
-
-    slice.innerSlice(colon);
-    return true;
-  }
-
   Exponent improveLowerBound(size_t var,
 							 const mpz_class& upperBoundDegree,
 							 const Term& upperBound,
@@ -749,10 +764,6 @@ private:
     }
 
     _outerPartProjection.reset(inverses);
-  }
-
-  void getBasicUpperBound(const MsmSlice& slice, Term& bound) {
-    ASSERT(bound.getVarCount() == slice.getVarCount());
   }
 
   void getUpperBound(const MsmSlice& slice, Term& bound) {
@@ -868,8 +879,8 @@ public:
   }
 
   virtual void doingIndependenceSplit(const MsmSlice& slice,
-									  Ideal* mixedProjectionSubtract) {
-    _independenceSplits.push_back
+									  IndependenceSplitter& splitter) {
+	_independenceSplits.push_back
       (new FrobeniusIndependenceSplit
        (getCurrentSplit()->getCurrentPartProjection(),
 		slice,
@@ -877,15 +888,11 @@ public:
 		_grader,
 		_useBound));
   }
-
+  
   virtual void doingIndependentPart(const Projection& projection, bool last) {
     getCurrentSplit()->setCurrentPart(projection);
   }
-
-  virtual bool doneWithIndependentPart() {
-    return getCurrentSplit()->doneWithPart();
-  }
-
+  
   virtual void doneWithIndependenceSplit() {
     FrobeniusIndependenceSplit* oldSplit = getCurrentSplit();
     _independenceSplits.pop_back();

@@ -25,6 +25,7 @@
 #include "Partition.h"
 #include "MsmSlice.h"
 #include "MsmStrategy.h"
+#include "SliceEvent.h"
 
 #include "IndependenceSplitter.h"
 
@@ -45,7 +46,8 @@ void SliceAlgorithm::setUseIndependence(bool useIndependence) {
 void SliceAlgorithm::runAndClear(Ideal& ideal) {
   ASSERT(_strategy != 0);
 
-  content(_strategy->setupInitialSlice(ideal));
+  _strategy->setUseIndependence(_useIndependence);
+  content(_strategy->setupInitialSlice(ideal, _strategy));
 
   // Now reset the fields to their default values.
   delete _strategy;
@@ -54,83 +56,50 @@ void SliceAlgorithm::runAndClear(Ideal& ideal) {
   _useIndependence = true;
 }
 
-// Requires slice.getIdeal() to be minimized.
-bool SliceAlgorithm::independenceSplit(MsmSlice* slice) {
-  if (!_useIndependence)
-    return false;
-
-  static IndependenceSplitter indep;
-  if (!indep.analyze(*slice))
-    return false;
-
-  _strategy->doingIndependenceSplit(*slice, 0);
-
-  Projection projection;
-  Projection projection2;
-
-  // have to have two projections, as the strategy keeps a reference
-  // to the projection rather than copy it or something like that.
-  // TODO: fix this.
-
-  // Have to do this before any recursive calls, since indep is static.
-  indep.getRestProjection(projection);
-  indep.getBigProjection(projection2);
-
-  MsmSlice* restSlice = new MsmSlice();
-  restSlice->setToProjOf(*slice, projection);
-
-  _strategy->doingIndependentPart(projection, false);
-
-  content(restSlice);
-
-  if (_strategy->doneWithIndependentPart()) {
-
-	MsmSlice* bigSlice = new MsmSlice();
-	bigSlice->setToProjOf(*slice, projection2);
-
-	_strategy->doingIndependentPart(projection2, true);
-	content(bigSlice);
-	_strategy->doneWithIndependentPart();
-  }
-
-  _strategy->freeSlice(slice);
-
-  _strategy->doneWithIndependenceSplit();
-
-  return true;
-}
-
 void SliceAlgorithm::content(MsmSlice* initialSlice) {
-  if (initialSlice->baseCase(_strategy) ||
-	  independenceSplit(initialSlice))
-	return;
+  vector<SliceEvent*> events;
 
   vector<MsmSlice*> slices;
-  slices.push_back(new MsmSlice(*initialSlice));
+  slices.push_back(initialSlice);
 
   while (!slices.empty()) {
 	MsmSlice* slice = slices.back();
 	slices.pop_back();
 
-	// TODO: do someting about slices that have *become* base cases,
-	// or that can now be simplified, due to improved bounds since
-	// they were pushed onto slices.
-
-	pair<MsmSlice*, MsmSlice*> slicePair = _strategy->split(slice);
-
-	if (slicePair.first != 0) {
-	  if (slicePair.first->baseCase(_strategy))
-		_strategy->freeSlice(slicePair.first);
-	  else if (!independenceSplit(slicePair.first))
-		slices.push_back(slicePair.first);
+	if (slice == 0) {
+	  events.back()->raiseEvent();
+	  events.pop_back();
+	  continue;
 	}
 
-	if (slicePair.second != 0) {
-	  if (slicePair.second->baseCase(_strategy))
-		_strategy->freeSlice(slicePair.second);
-	  else if (!independenceSplit(slicePair.second))
-		slices.push_back(slicePair.second);
+	if (slice->baseCase(_strategy)) {
+	  _strategy->freeSlice(slice);
+	  continue;
 	}
+
+	SliceEvent* leftEvent;
+	SliceEvent* rightEvent;
+	MsmSlice* leftSlice;
+	MsmSlice* rightSlice;
+	_strategy->split(slice,
+					 leftEvent, leftSlice,
+					 rightEvent, rightSlice);
+
+	if (leftEvent != 0) {
+	  slices.push_back(0);
+	  events.push_back(leftEvent);
+	}
+
+	if (leftSlice != 0)
+	  slices.push_back(leftSlice);
+
+	if (rightEvent != 0) {
+	  slices.push_back(0);
+	  events.push_back(rightEvent);
+	}
+
+	if (rightSlice != 0)
+	  slices.push_back(rightSlice);
   }
 }
 
@@ -143,13 +112,13 @@ bool computeSingleMSM2(const MsmSlice& slice, Term& msm) {
     Ideal::const_iterator it = slice.getIdeal().begin();
     Ideal::const_iterator end = slice.getIdeal().end();
     for (; it != end; ++it) {
-      if (msm.dominates(*it)) {
-	ASSERT((*it)[var] > 0);
-	msm[var] = (*it)[var] - 1;
+	  if (msm.dominates(*it)) {
+		ASSERT((*it)[var] > 0);
+		msm[var] = (*it)[var] - 1;
       }
     }
   }
-
+  
 #ifdef DEBUG
   ASSERT(!slice.getIdeal().contains(msm));
   for (size_t var = 0; var < msm.getVarCount(); ++var) {

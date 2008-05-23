@@ -27,7 +27,12 @@ class Projection;
 class MsmSlice : public Slice {
  public:
   MsmSlice();
-  MsmSlice(const Ideal& ideal, const Ideal& subtract, const Term& multiply);
+  MsmSlice(const Ideal& ideal,
+		   const Ideal& subtract,
+		   const Term& multiply,
+		   TermConsumer* consumer);
+
+  TermConsumer* getConsumer() {return _consumer;}
 
   // *** Mutators
 
@@ -42,7 +47,9 @@ class MsmSlice : public Slice {
   virtual void simplify();
   virtual bool simplifyStep();
 
-  void setToProjOf(const MsmSlice& slice, const Projection& projection);
+  void setToProjOf(const MsmSlice& slice,
+				   const Projection& projection,
+				   TermConsumer* consumer);
 
   // Efficiently swaps the values of *this and slice while avoiding
   // copies.
@@ -80,6 +87,8 @@ class MsmSlice : public Slice {
   // true if there are exactly two generators that are nowhere equal
   // to the lcm of getIdeal().
   bool twoNonMaxBaseCase(TermConsumer* consumer);
+
+  TermConsumer* _consumer;
 };
 
 namespace std {
@@ -88,6 +97,5 @@ namespace std {
     a.swap(b);
   }
 }
-
 
 #endif

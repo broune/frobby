@@ -76,6 +76,7 @@ void HilbertSliceAlgorithm::run(const Ideal& ideal) {
 	  slices.push_back(0);
 	  events.push_back(event);
 	}
+
 	slices.push_back(slicePair.first);
 	slices.push_back(slicePair.second);
   }
