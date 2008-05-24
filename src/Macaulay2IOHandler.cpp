@@ -57,7 +57,7 @@ public:
 
 private:
   void writeHeader() {
-    fputs("R = ZZ[{", _file);
+    fputs("R = QQ[", _file);
 
     const char* pre = "";
     for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
@@ -65,7 +65,7 @@ private:
       fputs(_names.getName(i).c_str(), _file);
       pre = ", ";
     }
-    fputs("}];\n", _file);
+    fputs("];\n", _file);
     fputs("I = monomialIdeal(", _file);
   }
 
@@ -150,7 +150,11 @@ void Macaulay2IOHandler::readIrreducibleIdealList(BigIdeal& ideals,
 void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
   scanner.expect('R');
   scanner.expect('=');
-  scanner.expect("ZZ");
+  scanner.eatWhite();
+  if (scanner.peek() == 'Z')
+	scanner.expect("ZZ");
+  else
+	scanner.expect("QQ");
   scanner.expect('[');
 
   // The enclosing braces are optional, but if the start brace is
