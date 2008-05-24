@@ -22,6 +22,7 @@
 class VarNames;
 class Scanner;
 class BigIdeal;
+class CoefTermConsumer;
 
 class Macaulay2IOHandler : public IOHandler {
 public:
@@ -34,6 +35,10 @@ public:
     (FILE* file, const TermTranslator* translator) const;
 
   virtual const char* getFormatName() const;
+
+  // TODO: integrate this better
+  static CoefTermConsumer* createCoefTermWriter
+	(FILE* file, const TermTranslator* translator);
 
 private:
   void readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner);

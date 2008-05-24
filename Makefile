@@ -1,26 +1,29 @@
 # ***** Variables
 
-rawSources = main.cpp Action.cpp IOParameters.cpp                       \
-  IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp      \
-  randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp              \
-  TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp      \
-  HelpAction.cpp stdinc.cpp DynamicFrobeniusAction.cpp                  \
-  dynamicFrobeniusAlgorithm.cpp GenerateIdealAction.cpp                 \
-  GenerateFrobeniusAction.cpp IrreducibleDecomFacade.cpp                \
-  FrobeniusAction.cpp Facade.cpp IOFacade.cpp                           \
-  DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp   \
-  IdealFacade.cpp Parameter.cpp ParameterGroup.cpp                      \
-  IntegerParameter.cpp IrreducibleDecomParameters.cpp                   \
-  BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp       \
-  Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp                    \
-  LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp    \
-  IntersectFacade.cpp IntersectAction.cpp AssociatedPrimesFacade.cpp    \
-  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp Slice.cpp           \
-  IndependenceSplitter.cpp Projection.cpp SliceStrategy.cpp             \
-  lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp        \
-  Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp                  \
-  AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp                \
-  TranslatingTermConsumer.cpp frobbyTest.cpp
+rawSources = main.cpp Action.cpp IOParameters.cpp						\
+  IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
+  randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
+  TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp		\
+  HelpAction.cpp stdinc.cpp DynamicFrobeniusAction.cpp					\
+  dynamicFrobeniusAlgorithm.cpp GenerateIdealAction.cpp					\
+  GenerateFrobeniusAction.cpp IrreducibleDecomFacade.cpp				\
+  FrobeniusAction.cpp Facade.cpp IOFacade.cpp							\
+  DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp	\
+  IdealFacade.cpp Parameter.cpp ParameterGroup.cpp						\
+  IntegerParameter.cpp IrreducibleDecomParameters.cpp					\
+  BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp		\
+  Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp					\
+  LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp	\
+  IntersectFacade.cpp IntersectAction.cpp AssociatedPrimesFacade.cpp	\
+  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp MsmSlice.cpp		\
+  IndependenceSplitter.cpp Projection.cpp MsmStrategy.cpp				\
+  lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp		\
+  Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp					\
+  AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
+  TranslatingTermConsumer.cpp frobbyTest.cpp HilbertAction.cpp			\
+  HilbertSlice.cpp Polynomial.cpp										\
+  CanonicalCoefTermConsumer.cpp HilbertStrategy.cpp Slice.cpp			\
+  SliceStrategyCommon.cpp DebugStrategy.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -105,7 +108,7 @@ ifdef TESTCASE
 	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
 	cd test/$(TESTCASE); ./runtests $(TESTARGS); cd ../..
 else
-	export frobby=bin/$(program); ./test/runtests
+	export frobby=bin/$(program); ./test/runfulltests
 endif
 
 bench: all
@@ -157,7 +160,7 @@ depend:
 -include .depend
 
 clean: tidy
-	rm -rf bin frobby_v*.tar.gz
+	rm -rf bin
 
 tidy:
 	find .|grep -x ".*~\|.*\.stackdump\|gmon\.out\|.*\.orig\|.*/core\|core"|xargs rm -f

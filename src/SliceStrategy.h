@@ -17,65 +17,52 @@
 #ifndef SLICE_STRATEGY_GUARD
 #define SLICE_STRATEGY_GUARD
 
-#include <string>
-#include "TermConsumer.h"
-
 class Slice;
 class Term;
-class TermTranslator;
-class Projection;
+class SliceEvent;
 class Ideal;
-class TermGrader;
 
-class SliceStrategy : public TermConsumer {
+// This class describes the interface of a strategy object for the
+// Slice Algorithm. It determines what goes on when the algorithm
+// runs, allowing to specialize the algorithm to do several different
+// computations.
+class SliceStrategy {
  public:
-  virtual ~SliceStrategy();
+  virtual ~SliceStrategy() {}
 
-  virtual void initialize(const Slice& slice);
+  // This returns a slice based on ideal. This method should only be
+  // called once per strategy.
+  virtual Slice* setupInitialSlice(const Ideal& ideal) = 0;
 
-  // *** Methods for handling independence splits
-  virtual void doingIndependenceSplit(const Slice& slice,
-									  Ideal* mixedProjectionSubtract) = 0;
-  virtual void doingIndependentPart(const Projection& projection,
-									bool last) = 0;
-  virtual bool doneWithIndependentPart() = 0;
-  virtual void doneWithIndependenceSplit() = 0;
+  // Performs a split of slice and puts the output into the remaining
+  // four parameters. The strategy takes over ownership of slice,
+  // while passing on of leftSlice and rightSlice. Ownership of
+  // leftEvent and rightEvent is not passed on.
+  //
+  // The parameter slice must have been obtained through a method of
+  // this strategy - it must not have been allocated using new or by a
+  // different strategy.
+  //
+  // The algorithm must process rightSlice first, then raise
+  // rightEvent, then process leftSlice and finally raise leftEvent.
+  // Processing includes processing any child slices generated from
+  // further splits. Any of leftEvent, leftSlice, rightEvent and
+  // rightSlice can be 0 after split returns, in which case that
+  // output is to be ignored.
+  //
+  // leftEvent, leftSlice, rightEvent and rightSlice are only used to
+  // produce output from split. To make this point clear, they are
+  // required to be 0 when split gets called. Slice is not allowed to
+  // be 0.
+  virtual void split(Slice* slice,
+					 SliceEvent*& leftEvent, Slice*& leftSlice,
+					 SliceEvent*& rightEvent, Slice*& rightSlice) = 0;
 
-  // *** Methods to inform debug strategies when the algorothm starts
-  // processing the content of a slice and when it stops.
-  virtual void startingContent(const Slice& slice);
-  virtual void endingContent();
-
-  // *** Methods for handling pivot and label splits
-
-  enum SplitType {
-    LabelSplit = 1,
-    PivotSplit = 2
-  };
-  virtual SplitType getSplitType(const Slice& slice) = 0;
-
-  virtual void getPivot(Term& pivot, Slice& slice);
-  virtual size_t getLabelSplitVariable(const Slice& slice);
-
-  // report a msm to the strategy.
-  virtual void consume(const Term& term) = 0;
-
-  // Simplifies the slice prior to a split.
-  virtual void simplify(Slice& slice);
-
-
-  // *** Static methods to create strategies.
-
-  // These report an error and exit the program if the name is unknown.
-  static SliceStrategy* newDecomStrategy(const string& name,
-										 TermConsumer* consumer);
-  static SliceStrategy* newFrobeniusStrategy(const string& name,
-											 TermConsumer* consumer,
-											 TermGrader& grader,
-											 bool useBound);
-
-  static SliceStrategy* addStatistics(SliceStrategy* strategy);
-  static SliceStrategy* addDebugOutput(SliceStrategy* strategy);
+  // It is allowed to delete returned slices directly, but it is
+  // better to use freeSlice. freeSlice can only be called on slices
+  // obtained from a method of the same strategy. This allows caching
+  // of slices to avoid frequent allocations and deallocation.
+  virtual void freeSlice(Slice* slice) = 0;
 };
 
 #endif

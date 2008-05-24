@@ -23,7 +23,7 @@ class Ideal {
   typedef vector<Exponent*> Cont;
   typedef Cont::iterator iterator;
 
-public:
+ public:
   Ideal(size_t varCount = 0);
   Ideal(const Ideal& ideal);
   ~Ideal();
@@ -69,6 +69,10 @@ public:
   // counts[var] will be the number of generators divisible by var.
   void getSupportCounts(Exponent* counts) const;
 
+  // returns the first generator that var divides or end() if no such
+  // generator exists.
+  const_iterator getMultiple(size_t var) const;
+
   bool operator==(const Ideal& ideal) const;
 
   void print(FILE* file) const;
@@ -92,14 +96,28 @@ public:
   // Sort the generators in ascending order according to the exponent of var.
   void singleDegreeSort(size_t var);
 
-  // Replace each generator g by g : colon.
-  void colon(const Exponent* colon);
+  // Replace each generator g by g * term.
+  void product(const Exponent* term);
 
-  // Equivalent to calling colon(by) and then minimize.
+  // Replace each generator g by g : by. The second overload has by
+  // equal to var raised to e.
+  void colon(const Exponent* by);
+  void colon(size_t var, Exponent e);
+
+  // Equivalent to calling colon(by) and then minimize. The second
+  // overload has by equal to var raised to e. Returns true if the support
+  // of any generator was changed.
   bool colonReminimize(const Exponent* colon);
+  bool colonReminimize(size_t var, Exponent e);
 
-  // Removes those generators that are multiples of term.
+  // Swaps it and the last element, and then removes the last element,
+  // which is the element originally pointed to by it.
+  void remove(const_iterator it);
+
+  // Removes those generators that are multiples of term. The second
+  // overload has term equal to var raised to e.
   void removeMultiples(const Exponent* term);
+  void removeMultiples(size_t var, Exponent e);
 
   // Removes those generators that are strict multiples of term.
   void removeStrictMultiples(const Exponent* term);
@@ -119,7 +137,7 @@ public:
   // true. Returns true if any generators were removed.
   template<class Predicate>
     bool removeIf(Predicate pred);
-  
+
  protected:
   class ExponentAllocator {
   public:

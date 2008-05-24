@@ -17,191 +17,67 @@
 #include "stdinc.h"
 #include "SliceAlgorithm.h"
 
-#include "Term.h"
-#include "VarNames.h"
-#include "IOHandler.h"
-#include "TermTranslator.h"
-#include "Ideal.h"
-#include "Partition.h"
 #include "Slice.h"
-#include "SliceStrategy.h"
+#include "MsmStrategy.h"
+#include "HilbertStrategy.h"
+#include "SliceEvent.h"
+#include "DebugStrategy.h"
 
-#include "IndependenceSplitter.h"
+void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
+  ASSERT(strategy != 0);
 
-SliceAlgorithm::SliceAlgorithm():
-  _useIndependence(true),
-  _strategy(0) {
-}
+  vector<SliceEvent*> events;
+  vector<Slice*> slices;
+  slices.push_back(strategy->setupInitialSlice(ideal));
 
-void SliceAlgorithm::setStrategy(SliceStrategy* strategy) {
-  delete _strategy;
-  _strategy = strategy;
-}
+  while (!slices.empty()) {
+	Slice* slice = slices.back();
+	slices.pop_back();
 
-void SliceAlgorithm::setUseIndependence(bool useIndependence) {
-  _useIndependence = useIndependence;
-}
-
-void SliceAlgorithm::runAndClear(Ideal& ideal) {
-  ASSERT(_strategy != 0);
-
-  if (ideal.getGeneratorCount() > 0) {
-    Term initialMultiply(ideal.getVarCount());
-    for (size_t var = 0; var < initialMultiply.getVarCount(); ++var)
-      initialMultiply[var] = 1;
-
-    Slice slice(ideal, Ideal(ideal.getVarCount()), initialMultiply);
-    _strategy->initialize(slice);
-    content(slice);
-  }
-
-  ideal.clear();
-
-  // Now reset the fields to their default values.
-  delete _strategy;
-  _strategy = 0;
-
-  _useIndependence = true;
-}
-
-// Requires slice.getIdeal() to be minimized.
-bool SliceAlgorithm::independenceSplit(Slice& slice) {
-  if (!_useIndependence)
-    return false;
-
-  static Partition partition;
-
-  IndependenceSplitter::computePartition(partition, slice);
-  if (!IndependenceSplitter::shouldPerformSplit(partition, slice))
-    return false;
-
-  IndependenceSplitter indep(partition, slice);
-
-  _strategy->doingIndependenceSplit(slice, indep.getMixedProjectionSubtract());
-
-  slice.clear(); // to save memory
-
-  for (size_t i = 0; i < indep.getChildCount(); ++i) {
-    Slice& projSlice = indep.getSlice(i);
-
-    bool last = (i == indep.getChildCount() - 1);
-    _strategy->doingIndependentPart(indep.getProjection(i), last);
-
-    content(projSlice, true);
-
-    if (!_strategy->doneWithIndependentPart())
-      break;
-  }
-
-  _strategy->doneWithIndependenceSplit();
-
-  return true;
-}
-
-void SliceAlgorithm::labelSplit(Slice& slice) {
-  ASSERT(!slice.normalize());
-  size_t var = _strategy->getLabelSplitVariable(slice);
-
-  Ideal ideal(slice.getVarCount());
-  
-  Ideal::const_iterator stop = slice.getIdeal().end();
-  for (Ideal::const_iterator it = slice.getIdeal().begin(); it != stop; ++it)
-    if ((*it)[var] == 0)
-      ideal.insert(*it);
-
-  Term varLabel(slice.getVarCount());
-  varLabel[var] = 1;
-  ideal.insert(varLabel);
- 
-  Ideal* oldSubtract = 0;
-
-  size_t childCount = 0;
-  for (Ideal::const_iterator it = slice.getIdeal().begin(); it != stop; ++it) {
-    if ((*it)[var] != 1)
-      continue;
-    if (childCount > 0) {
-	  if (oldSubtract == 0)
-		oldSubtract = new Ideal(slice.getSubtract());
-
-	  // This is the previous varLabel.
-      slice.getSubtract().insertReminimize(varLabel);
-
-	  // To normalize the child slice.
-	  ideal.removeStrictMultiples(varLabel);
+	if (slice == 0) {
+	  events.back()->raiseEvent();
+	  events.pop_back();
+	  continue;
 	}
 
-    varLabel = *it;
-    varLabel[var] -= 1;
+	if (slice->baseCase()) {
+	  strategy->freeSlice(slice);
+	  continue;
+	}
 
-    {
-      Slice child(ideal, slice.getSubtract(), slice.getMultiply());
-	  ASSERT(!child.normalize());
+	SliceEvent* leftEvent = 0;
+	SliceEvent* rightEvent = 0;
+	Slice* leftSlice = 0;
+	Slice* rightSlice = 0;
+	strategy->split(slice,
+					leftEvent, leftSlice,
+					rightEvent, rightSlice);
 
-      child.innerSlice(varLabel);
-      content(child);
-    }
-    ++childCount;
+	if (leftEvent != 0) {
+	  slices.push_back(0);
+	  events.push_back(leftEvent);
+	}
+
+	if (leftSlice != 0)
+	  slices.push_back(leftSlice);
+
+	if (rightEvent != 0) {
+	  slices.push_back(0);
+	  events.push_back(rightEvent);
+	}
+
+	if (rightSlice != 0)
+	  slices.push_back(rightSlice);
   }
-
-  if (oldSubtract != 0) {
-	slice.getSubtract().swap(*oldSubtract);
-	delete oldSubtract;
-  }
-
-  // Reuse varLabel to compute the inner slice.
-  varLabel.setToIdentity();
-  varLabel[var] = 1;
-  slice.innerSlice(varLabel);
-  content(slice);
 }
 
-void SliceAlgorithm::pivotSplit(Slice& slice) {
-  // These scopes are here to preserve memory resources by calling
-  // destructors early.
-  {
-    Slice inner(slice);
-
-    {
-      Term pivot(slice.getVarCount());
-      _strategy->getPivot(pivot, slice);
-
-      ASSERT(!pivot.isIdentity()); 
-      ASSERT(!slice.getIdeal().contains(pivot));
-      ASSERT(!slice.getSubtract().contains(pivot));
-
-      inner.innerSlice(pivot);
-      slice.outerSlice(pivot);
-    }
-
-    content(inner);
-  }
-
-  // Handle outer slice.
-  content(slice);
+void computeMaximalStandardMonomials(Ideal& ideal, SliceStrategy* strategy) {
+  runSliceAlgorithm(ideal, strategy);
 }
 
-void SliceAlgorithm::content(Slice& slice, bool simplifiedAndDependent) {
-  _strategy->startingContent(slice);
-  if (!simplifiedAndDependent)
-    _strategy->simplify(slice);
-
-  if (!slice.baseCase(_strategy) &&
-      (simplifiedAndDependent || !independenceSplit(slice))) {
-    switch (_strategy->getSplitType(slice)) {
-    case SliceStrategy::LabelSplit:
-      labelSplit(slice);
-      break;
-
-    case SliceStrategy::PivotSplit:
-      pivotSplit(slice);
-      break;
-
-    default:
-      ASSERT(false);
-    }
-  }
-
-  _strategy->endingContent();
+void computeHilbertSeries(const Ideal& ideal, CoefTermConsumer* consumer) {
+  HilbertStrategy strategy(consumer);
+  runSliceAlgorithm(ideal, &strategy);
 }
 
 bool computeSingleMSM2(const Slice& slice, Term& msm) {
@@ -213,13 +89,13 @@ bool computeSingleMSM2(const Slice& slice, Term& msm) {
     Ideal::const_iterator it = slice.getIdeal().begin();
     Ideal::const_iterator end = slice.getIdeal().end();
     for (; it != end; ++it) {
-      if (msm.dominates(*it)) {
-	ASSERT((*it)[var] > 0);
-	msm[var] = (*it)[var] - 1;
+	  if (msm.dominates(*it)) {
+		ASSERT((*it)[var] > 0);
+		msm[var] = (*it)[var] - 1;
       }
     }
   }
-
+  
 #ifdef DEBUG
   ASSERT(!slice.getIdeal().contains(msm));
   for (size_t var = 0; var < msm.getVarCount(); ++var) {

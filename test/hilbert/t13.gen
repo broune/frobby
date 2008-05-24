@@ -1,0 +1,6 @@
+vars a, b, c, d, e;
+[
+c*d,
+d*e,
+a*b
+];

@@ -21,43 +21,36 @@
 #include "Projection.h"
 #include "Ideal.h"
 #include <vector>
-#include "Slice.h"
+#include "MsmSlice.h"
 
 class Ideal;
 class Term;
 
 class IndependenceSplitter {
  public:
-  // Slice must be simplified and normalized.
-  IndependenceSplitter(const Partition& partition, Slice& slice);
-  ~IndependenceSplitter();
+  // Returns true if there are independent subsets of variabels. The
+  // other methods should only be called when the most recent call to
+  // analyze returned true.
+  bool analyze(const Slice& slice);
 
-  static void computePartition(Partition& partition, const Slice& slice);
-  static bool shouldPerformSplit(const Partition& partition,
-				 const Slice& slice);
+  size_t getOneVarCount() const {return _oneVarCount;}
+  size_t getTwoVarCount() const {return _twoVarCount;}
+  size_t getMoreThanTwoCount() const {return _moreThanTwoVarCount;}
 
-  size_t getChildCount() const;
-  Ideal* getMixedProjectionSubtract();
+  // Get the projection to the biggest independent subset of variables.
+  void getBigProjection(Projection& projection) const;
 
-  Slice& getSlice(size_t part);
-  Projection& getProjection(size_t part);
+  // Get the projection to the rest of the variables.
+  void getRestProjection(Projection& projection) const;
 
  private:
-  struct Child {
-    Slice slice;
-    Projection projection;
+  Partition _partition;
 
-    void swap(Child& child);
-    bool operator<(const Child& child) const;
-  };
+  size_t _oneVarCount;
+  size_t _twoVarCount;
+  size_t _moreThanTwoVarCount;
 
-  void initializeChildren(const Partition& partition);
-  void populateChildIdealsAndSingletonDecom(const vector<Child*>& childAt);
-  void populateChildSubtracts(const vector<Child*>& childAt);
-
-  Slice& _slice;
-  vector<Child> _children;
-  Ideal* _mixedProjectionSubtract;
+  size_t _bigSet;
 };
 
 #endif

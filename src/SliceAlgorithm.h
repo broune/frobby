@@ -18,33 +18,18 @@
 #define SLICE_ALGORITHM_GUARD
 
 class Ideal;
+class MsmSlice;
+class MsmStrategy;
+class Term;
+class CoefTermConsumer;
+class Ideal;
+class HilbertSlice;
 class Slice;
 class SliceStrategy;
-class Term;
 
-// Computes the Maximal Standard Monomials (MSMs) of the input ideal.
-class SliceAlgorithm {
- public:
-  SliceAlgorithm();
+void computeHilbertSeries(const Ideal& ideal, CoefTermConsumer* consumer);
 
-  // setStrategy takes over ownership of the strategy.
-  void setStrategy(SliceStrategy* strategy);
-  void setUseIndependence(bool useIndependence);
-
-  // Runs the algorithm and clears ideal. Then deletes the strategy
-  // and consumer.
-  void runAndClear(Ideal& ideal);
-
- private:
-  void content(Slice& slice, bool simplifiedAndDependent = false);
-
-  void labelSplit(Slice& slice);
-  void pivotSplit(Slice& slice);
-  bool independenceSplit(Slice& slice);
-
-  bool _useIndependence;
-  SliceStrategy* _strategy;
-};
+void computeMaximalStandardMonomials(Ideal& ideal, SliceStrategy* strategy);
 
 // For getting a single Maximal Standard Monomial. This may fail if
 // slice.getIdeal() is not artinian, in which case the return value is
