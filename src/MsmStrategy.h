@@ -14,13 +14,14 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef MSM_SLICE_STRATEGY_GUARD
-#define MSM_SLICE_STRATEGY_GUARD
+#ifndef MSM_STRATEGY_GUARD
+#define MSM_STRATEGY_GUARD
 
-#include "SliceStrategy.h"
+#include "SliceStrategyCommon.h"
 #include <string>
 #include "TermConsumer.h"
 #include <vector>
+
 
 class MsmSlice;
 class Term;
@@ -31,39 +32,36 @@ class TermGrader;
 class IndependenceSplitter;
 class SliceEvent;
 
-class MsmStrategy : public SliceStrategy, public TermConsumer {
+class MsmStrategy : public SliceStrategyCommon, public TermConsumer {
  public:
   MsmStrategy();
   virtual ~MsmStrategy();
 
   // ************* new interface
 
-  Slice* setupInitialSlice(const Ideal& ideal, TermConsumer* consumer);
+  virtual Slice* setupInitialSlice(const Ideal& ideal);
 
   virtual void split(Slice* slice,
 					 SliceEvent*& leftEvent, Slice*& leftSlice,
 					 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  virtual void freeSlice(Slice* slice);
-
   void setUseIndependence(bool useIndependence) {
 	_useIndependence = useIndependence;
   }
 
+  virtual void getPivot(Term& pivot, Slice& slice); // TODO: make this private
+
  private:
-  MsmSlice* newSlice();
+  MsmSlice* newMsmSlice();
+  virtual Slice* allocateSlice();
+  virtual bool debugIsValidSlice(Slice* slice);
 
   void labelSplit(Slice* slice,
 				  Slice*& leftSlice, Slice*& rightSlice);
-  void pivotSplit(Slice* slice,
-				  Slice*& leftSlice, Slice*& rightSlice);
+
   bool independenceSplit(MsmSlice* slice,
 						 SliceEvent*& leftEvent, Slice*& leftSlice,
 						 SliceEvent*& rightEvent, Slice*& rightSlice);
-
-  // It would make more sense with a stack, but that class has
-  // (surprisingly) proven to have too high overhead.
-  vector<Slice*> _sliceCache;
 
   bool _useIndependence;
 
@@ -87,7 +85,6 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
   };
   virtual SplitType getSplitType(const Slice& slice) = 0;
 
-  virtual void getPivot(Term& pivot, Slice& slice);
   virtual size_t getLabelSplitVariable(const Slice& slice);
 
   // report a msm to the strategy.

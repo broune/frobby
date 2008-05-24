@@ -15,10 +15,63 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "SliceStrategy.h"
+#include "SliceStrategyCommon.h"
 
 #include "Slice.h"
 #include "Term.h"
+
+SliceStrategyCommon::~SliceStrategyCommon() {
+  while (!_sliceCache.empty()) {
+	delete _sliceCache.back();
+	_sliceCache.pop_back();
+  }
+}
+
+void SliceStrategyCommon::freeSlice(Slice* slice) {
+  ASSERT(slice != 0);
+  ASSERT(debugIsValidSlice(slice));
+
+  slice->clear(); // To preserve memory.
+  _sliceCache.push_back(slice);
+}
+
+Slice* SliceStrategyCommon::newSlice() {
+  Slice* slice;
+  if (!_sliceCache.empty()) {
+	slice = _sliceCache.back();
+	_sliceCache.pop_back();
+  } else
+	slice = allocateSlice();
+
+  ASSERT(debugIsValidSlice(slice));
+  return slice;
+}
+
+void SliceStrategyCommon::pivotSplit(Slice* slice,
+									 Slice*& leftSlice,
+									 Slice*& rightSlice) {
+  Term pivot(slice->getVarCount());
+  getPivot(pivot, *slice);
+
+  // Assert valid pivot.
+  ASSERT(!pivot.isIdentity()); 
+  ASSERT(!slice->getIdeal().contains(pivot));
+  ASSERT(!slice->getSubtract().contains(pivot));
+
+  // The inner slice.
+  leftSlice = newSlice();
+  *leftSlice = *slice;
+  leftSlice->innerSlice(pivot);
+
+  // The outer slice
+  rightSlice = slice;
+  rightSlice->outerSlice(pivot);
+
+  // Process the smaller one first to preserve memory.
+  if (leftSlice->getIdeal().getGeneratorCount() <
+	  rightSlice->getIdeal().getGeneratorCount())
+	std::swap(leftSlice, rightSlice);
+}
 
 size_t getRandomSupportVar(const Term& term) {
   ASSERT(!term.isIdentity());
@@ -159,7 +212,7 @@ bool getIndependencePivot(const Slice& slice, Term& pivot) {
   return false;
 }
 
-void SliceStrategy::getPivot(Term& pivot, Slice& slice, PivotStrategy ps) {
+void SliceStrategyCommon::getPivot(Term& pivot, Slice& slice, PivotStrategy ps) {
   ASSERT(ps != Unknown);
   ASSERT(pivot.getVarCount() == slice.getVarCount());
   ASSERT(slice.getIdeal().isMinimallyGenerated());
@@ -205,8 +258,8 @@ void SliceStrategy::getPivot(Term& pivot, Slice& slice, PivotStrategy ps) {
   }
 }
 
-SliceStrategy::PivotStrategy
-SliceStrategy::getPivotStrategy(const string& name) {
+SliceStrategyCommon::PivotStrategy
+SliceStrategyCommon::getPivotStrategy(const string& name) {
   if (name == "minimum")
     return Minimum;
   else if (name == "median")

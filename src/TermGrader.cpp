@@ -42,8 +42,8 @@ void TermGrader::getDegree(const Term& term, mpz_class& degree) const {
 }
 
 void TermGrader::getDegree(const Term& term,
-			   const Projection& projection,
-			   mpz_class& degree) const {
+						   const Projection& projection,
+						   mpz_class& degree) const {
   ASSERT(term.getVarCount() == projection.getRangeVarCount());
   degree = 0;
   for (size_t var = 0; var < term.getVarCount(); ++var)
@@ -51,8 +51,8 @@ void TermGrader::getDegree(const Term& term,
 }
 
 void TermGrader::getIncrementedDegree(const Term& term,
-				      const Projection& projection,
-				      mpz_class& degree) const {
+									  const Projection& projection,
+									  mpz_class& degree) const {
   ASSERT(term.getVarCount() == projection.getRangeVarCount());
   degree = 0;
   for (size_t var = 0; var < term.getVarCount(); ++var)

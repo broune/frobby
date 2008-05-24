@@ -26,7 +26,9 @@
 
 #include "SliceEvent.h"
 
-HilbertStrategy::HilbertStrategy(bool useIndependence):
+HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
+								 bool useIndependence):
+  _consumer(consumer),
   _useIndependence(useIndependence) {
 }
 
@@ -152,27 +154,21 @@ private:
 };
 
 HilbertStrategy::~HilbertStrategy() {
-  while (!_sliceCache.empty()) {
-	delete _sliceCache.back();
-	_sliceCache.pop_back();
-  }
-
   while (!_consumerCache.empty()) {
 	delete _consumerCache.back();
 	_consumerCache.pop_back();
   }
 }
 
-Slice* HilbertStrategy::setupInitialSlice(const Ideal& ideal,
-										  CoefTermConsumer* consumer) {
-  ASSERT(consumer != 0);
+Slice* HilbertStrategy::setupInitialSlice(const Ideal& ideal) {
+  ASSERT(_consumer != 0);
   _term.reset(ideal.getVarCount());
 
   size_t varCount = ideal.getVarCount();
   Ideal sliceIdeal(varCount);
 
   if (!ideal.contains(Term(varCount))) {
-	consumer->consume(1, Term(varCount));
+	_consumer->consume(1, Term(varCount));
 
 	if (ideal.getGeneratorCount() > 0) {
 	  Term allOnes(varCount);
@@ -185,7 +181,7 @@ Slice* HilbertStrategy::setupInitialSlice(const Ideal& ideal,
   }
 
   HilbertSlice* slice = new HilbertSlice(sliceIdeal, Ideal(varCount),
-										 Term(varCount), consumer);
+										 Term(varCount), _consumer);
   slice->simplify();
   return slice;
 }
@@ -216,7 +212,7 @@ split(Slice* sliceParam,
   ASSERT(!slice->getSubtract().contains(_term));
 
   // Compute inner slice.
-  HilbertSlice* inner = newSlice();
+  Slice* inner = newHilbertSlice();
   *inner = *slice;
   inner->innerSlice(_term);
   inner->simplify();
@@ -234,22 +230,20 @@ split(Slice* sliceParam,
 	swap(leftSlice, rightSlice);
 }
 
-void HilbertStrategy::freeSlice(Slice* slice) {
-  ASSERT(slice != 0);
-  ASSERT(dynamic_cast<HilbertSlice*>(slice) != 0);
-
-  slice->clear(); // To preserve memory.
-  _sliceCache.push_back(slice);
+HilbertSlice* HilbertStrategy::newHilbertSlice() {
+  Slice* slice = newSlice();
+  ASSERT(debugIsValidSlice(slice));
+  return static_cast<HilbertSlice*>(slice);
 }
 
-HilbertSlice* HilbertStrategy::newSlice() {
-  if (_sliceCache.empty())
-	return new HilbertSlice();
+Slice* HilbertStrategy::allocateSlice() {
+  return new HilbertSlice();
+}
 
-  Slice* slice = _sliceCache.back();
+bool HilbertStrategy::debugIsValidSlice(Slice* slice) {
+  ASSERT(slice != 0);
   ASSERT(dynamic_cast<HilbertSlice*>(slice) != 0);
-  _sliceCache.pop_back();
-  return (HilbertSlice*)slice;
+  return true;
 }
 
 void HilbertStrategy::getPivot(Term& term, Slice& slice) {
@@ -309,12 +303,12 @@ bool HilbertStrategy::independenceSplit(HilbertSlice* slice,
   consumer->reset(slice->getConsumer(), splitter, slice->getVarCount());
   leftEvent = consumer;
 
-  HilbertSlice* hilbertLeftSlice = newSlice();
+  HilbertSlice* hilbertLeftSlice = newHilbertSlice();
   hilbertLeftSlice->setToProjOf(*slice, consumer->getLeftProjection(),
 								consumer->getLeftConsumer());
   leftSlice = hilbertLeftSlice;
 
-  HilbertSlice* hilbertRightSlice = newSlice();
+  HilbertSlice* hilbertRightSlice = newHilbertSlice();
   hilbertRightSlice->setToProjOf(*slice, consumer->getRightProjection(),
 								 consumer->getRightConsumer());
   rightSlice = hilbertRightSlice;
