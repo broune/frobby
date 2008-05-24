@@ -1,0 +1,2 @@
+R = ZZ[{a, b, c, d}];
+p = -a*b*c*d+a*b*c+a*b*d-a+b*c*d-b*c-b*d+1;

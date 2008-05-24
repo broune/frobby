@@ -17,15 +17,16 @@
 #ifndef SLICE_GUARD
 #define SLICE_GUARD
 
-#include "Term.h"
 #include "Ideal.h"
+#include "Term.h"
 
-class TermConsumer;
+class Projection;
 
 class Slice {
  public:
   Slice();
   Slice(const Ideal& ideal, const Ideal& subtract, const Term& multiply);
+  virtual ~Slice() {}
 
   // *** Accessors
 
@@ -47,11 +48,18 @@ class Slice {
 
   // *** Mutators
 
+  // Returns true if a base case is reached, and in that case outputs
+  // the content to consumer. The slice must be fully simplified.
+  virtual bool baseCase() = 0;
+
+  virtual Slice& operator=(const Slice& slice) = 0;
+
   // Removes all generators of getIdeal() and getSubtract() and sets
   // getMultiply() to the identity. Also changes getVarCount() to varCount.
   void resetAndSetVarCount(size_t varCount);
 
   // Clears getIdeal() and getSubtract(). Does not change getMultiply().
+  // TODO: rename to shallow clear or something like that.
   void clear();
 
   // Calls singleDegreeSort on getIdeal().
@@ -59,10 +67,6 @@ class Slice {
 
   // Inserts term into getIdeal().
   void insertIntoIdeal(const Exponent* term);
-
-  // Efficiently swaps the values of *this and slice while avoiding
-  // copies.
-  void swap(Slice& slice);
 
   // Computes an inner slice with the specified pivot, i.e. a colon by
   // pivot is applied to getMultiply() and getSubtract(), while
@@ -79,42 +83,32 @@ class Slice {
   // added to getSubtract() if necessary.
   void outerSlice(const Term& pivot);
 
-  // Returns true if a base case is reached, and in that case outputs
-  // the content to consumer. The slice must be fully simplified.
-  //
-  // A base case is reached if not all variables divide the lcm of
-  // getIdeal(), or if getGeneratorCount() is 2, or if getIdeal() is
-  // square free.
-  bool baseCase(TermConsumer* consumer);
-
-  // Simplies the slice such that normalize, pruneSubtract,
-  // removeDoubleLcm and applyLowerBound all return false. It is a
-  // precondition that the slice is already normalized.
-  void simplify();
-
-  // Like simplify(), except that only one simplification step is
-  // performed. If the return value is true, then the Slice may not be
-  // fully simplified yet. Iterating simplifyStep() has the same
-  // result as calling simplify(), though the performance
-  // characteristics can be different.
-  bool simplifyStep();
-
   // Removes those generators of getIdeal() that are strict multiples
   // of some generator of getSubtract(). Returns true if any
   // generators were removed.
   bool normalize();
 
- private:
+  // Simplies the slice such that normalize, pruneSubtract,
+  // removeDoubleLcm and applyLowerBound all return false. It is a
+  // precondition that the slice is already normalized.
+  virtual void simplify() = 0;
+
+  // Like simplify(), except that only one simplification step is
+  // performed. If the return value is true, then the Slice may not be
+  // fully simplified yet. Iterating simplifyStep() has the same
+  // result as calling simplify(), though the performance
+  // characteristics can be worse.
+  virtual bool simplifyStep() = 0;
+
+ protected:
+  void setToProjOf(const Slice& slice, const Projection& projection);
+
+  void swap(Slice& slice);
+
   // Removes those generators of subtract that do not strictly divide
   // the lcm of getIdeal(), or that lies within the ideal
   // getIdeal(). Returns true if any generators were removed.
   bool pruneSubtract();
-
-  // Removes those generators g of getIdeal() such that g[i] equals
-  // getLcm()[i] for two distinct i. This is done iteratively until no
-  // more generators can be removed in this way. Returns true if any
-  // generators were removed.
-  bool removeDoubleLcm();
 
   // Calculates a lower bound on the content of the slice (see
   // getLowerBound()) and calls innerSlice with that lower bound. This
@@ -123,40 +117,12 @@ class Slice {
   // support changed or if an empty base case is detected.
   bool applyLowerBound();
 
-  // Does an inner slice on the decremented least positive exponents
-  // that appear in ideal.
-  void applyTrivialLowerBound();
-
   // Calculates the gcd of those generators of getIdeal() that are
   // divisible by var. This gcd is then divided by var to yield a
   // lower bound on the content of the slice. Returns false if a base
   // case is detected. The real functionality is slight more
   // sophisticated.
-  bool getLowerBound(Term& bound, size_t var) const;
-
-  // Calculates the lcm of the lower bounds from the getLowerBound
-  // that takes a variable. This is a lower bound on the content of
-  // the slice. Returns false if an empty base case is detected.
-  bool getLowerBound(Term& bound) const;
-
-  // Outputs the content of the slice to consumer. It is a
-  // precondition that the slice is fully simplified and that
-  // getVarCount() returns 2.
-  void twoVarBaseCase(TermConsumer* consumer);
-
-  // Outputs the content of the slice to consumer. It is a
-  // precondition that the slice is fully simplified and that
-  // getVarCount() plus one equals
-  // getIdeal().getGeneratorCount(). This will, due to simplification,
-  // be true if there is exactly one generator that is nowhere equal
-  // to the lcm of getIdeal().
-  void oneMoreGeneratorBaseCase(TermConsumer* consumer);
-
-  // Outputs the content of the slice to consumer or returns false. It
-  // is a precondition that the slice is fully simplified. Returns
-  // true if there are exactly two generators that are nowhere equal
-  // to the lcm of getIdeal().
-  bool twoNonMaxBaseCase(TermConsumer* consumer);
+  virtual bool getLowerBound(Term& bound, size_t var) const = 0;
 
   size_t _varCount;
   Term _multiply;
@@ -169,13 +135,5 @@ class Slice {
 
   size_t _lowerBoundHint;
 };
-
-namespace std {
-  // This allows STL to swap slices more efficiently.
-  template<> inline void swap<Slice>(Slice& a, Slice& b) {
-    a.swap(b);
-  }
-}
-
 
 #endif

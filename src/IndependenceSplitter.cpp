@@ -17,211 +17,85 @@
 #include "stdinc.h"
 #include "IndependenceSplitter.h"
 
-#include "Slice.h"
 #include "Ideal.h"
 #include "Term.h"
+#include "Projection.h"
 
-IndependenceSplitter::IndependenceSplitter(const Partition& partition,
-					   Slice& slice):
-  _slice(slice),
-  _mixedProjectionSubtract(0) {
-
-  initializeChildren(partition);
-
-  // A term belongs to the child childAt[i] if term[i] > 0.
-  vector<Child*> childAt(slice.getVarCount()); 
-  for (size_t c = 0; c < _children.size(); ++c)
-    for (size_t var = 0; var < _children[c].projection.getRangeVarCount();
-	 ++var)
-      childAt[_children[c].projection.getDomainVar(var)] = &(_children[c]);
-
-  populateChildIdealsAndSingletonDecom(childAt);
-  populateChildSubtracts(childAt);
-
-  for (size_t i = 0; i < _children.size(); ++i) {
-    _children[i].projection.project
-      (_children[i].slice.getMultiply(), _slice.getMultiply());
-  }
-
-  // Handle the smallest children first to save memory.
-  //
-  // A simple sort. The STL sort is not used to ensure that an
-  // efficient swap method is utilized.
-  for (size_t i = 0; i < _children.size(); ++i) {
-    for (size_t j = 1; j < _children.size(); ++j) {
-      Child& a = _children[j - 1];
-      Child& b = _children[j];
-      if (b < a)
-	a.swap(b);
-    }
-  }
+void IndependenceSplitter::getBigProjection(Projection& projection) const {
+  projection.reset(_partition, _bigSet);
 }
 
-bool IndependenceSplitter::Child::operator<(const Child& child) const {
-  if (slice.getVarCount() == child.slice.getVarCount())
-    return slice.getIdeal().getGeneratorCount() <
-      child.slice.getIdeal().getGeneratorCount();
-  else
-    return slice.getVarCount() < child.slice.getVarCount();
+void IndependenceSplitter::getRestProjection(Projection& projection) const {
+  projection.reset(_partition, 1 - _bigSet);
 }
 
-void IndependenceSplitter::Child::swap(Child& child) {
-  slice.swap(child.slice);
-  projection.swap(child.projection);
-}
+bool IndependenceSplitter::analyze(const Slice& slice) {
+  _partition.reset(slice.getVarCount());
 
-IndependenceSplitter::~IndependenceSplitter() {
-  delete _mixedProjectionSubtract;
-}
-
-// Set up entries in _children for those partition sets that are not
-// singletons (i.e. contains more than one variable).
-void IndependenceSplitter::initializeChildren(const Partition& partition) {
-  size_t setCount = partition.getSetCount();
-  for (size_t set = 0; set < setCount; ++set) {
-    size_t childVarCount = partition.getSetSize(set);
-
-    if (childVarCount == 1)
-      continue;
-
-    _children.resize(_children.size() + 1);
-    Child& child = _children.back();
-
-    child.slice.resetAndSetVarCount(childVarCount);
-    child.projection.reset(partition, set);
-  }
-}
-
-// Distribute the the terms of _slice.getIdeal() to the ideals of the
-// children. Also set up _singletonDecom to be the lcm of the
-// decompositions of the singleton children (i.e. those that contain
-// only one variable). Each of these decompositions contain only 1
-// element, so this is easy to do and _singletonDecom ends up
-// containing all the information we need about the singleton
-// decompositions.
-void IndependenceSplitter::populateChildIdealsAndSingletonDecom
-(const vector<Child*>& childAt) {
-  // tmp is static to avoid an allocation for each call.
-  static Term tmp;
-  if (tmp.getVarCount() < _slice.getVarCount())
-    tmp.reset(_slice.getVarCount());
-  Exponent* exponents = tmp.begin();
-
-  Ideal::const_iterator idealEnd = _slice.getIdeal().end();
-  for (Ideal::const_iterator it = _slice.getIdeal().begin();
-       it != idealEnd; ++it) {
-    size_t var = getFirstNonZeroExponent(*it, _slice.getVarCount());
-    ASSERT(var < _slice.getVarCount());
-
-    Child* child = childAt[var];
-    if (child == 0)
-      continue;
-
-    child->projection.project(exponents, *it);
-    ASSERT(!isIdentity(exponents, child->projection.getRangeVarCount()));
-
-    child->slice.insertIntoIdeal(exponents);
-  }
-}
-
-// Distributes _slice.getSubtract() among the children. Terms that
-// project into more than one child are saved in
-// _mixedProjectionSubtract.
-void IndependenceSplitter::populateChildSubtracts
-(const vector<Child*>& childAt) {
-  // tmp is static to avoid an allocation for each call.
-  static Term tmp;
-  if (tmp.getVarCount() < _slice.getVarCount())
-    tmp.reset(_slice.getVarCount());
-  Exponent* exponents = tmp.begin();
-
-  Ideal::const_iterator subtractEnd = _slice.getSubtract().end();
-  for (Ideal::const_iterator it = _slice.getSubtract().begin();
-       it != subtractEnd; ++it) {
-    bool hasMixedProjection = false;
-
-    Child* child = 0;
-    bool seenNonZeroExponent = false;
-    for (size_t var = 0; var < _slice.getVarCount(); ++var) {
-      if ((*it)[var] == 0)
-	continue;
-      if (!seenNonZeroExponent) {
-	child = childAt[var];
-	seenNonZeroExponent = true;
-      } else if (child != childAt[var]) {
-	hasMixedProjection = true;
-	break;
-      }
-    }
-
-    if (hasMixedProjection) {
-      if (_mixedProjectionSubtract == 0)
-	_mixedProjectionSubtract = new Ideal(_slice.getVarCount());
-      
-      product(exponents, *it, _slice.getMultiply(), _slice.getVarCount());
-      _mixedProjectionSubtract->insert(exponents);
-    } else if (child != 0) {
-      // child == 0 implies that *it projects onto a singleton.
-      child->projection.project(exponents, *it);
-      ASSERT(!isIdentity(exponents, child->projection.getRangeVarCount()));
-
-      child->slice.getSubtract().insert(exponents);
-    }
-  }
-}
-
-void IndependenceSplitter::computePartition
-(Partition& partition, const Slice& slice) {
-  partition.reset(slice.getVarCount());
-
-  Ideal::const_iterator idealEnd = slice.getIdeal().end();
+  Ideal::const_iterator stop = slice.getIdeal().end();
   for (Ideal::const_iterator it = slice.getIdeal().begin();
-       it != idealEnd; ++it) {
+       it != stop; ++it) {
+    size_t first = ::getFirstNonZeroExponent(*it, slice.getVarCount());
+	if (first == slice.getVarCount())
+	  return false;
+	_partition.addToSet(first);
+    for (size_t var = first + 1; var < slice.getVarCount(); ++var)
+      if ((*it)[var] > 0)
+		if (_partition.join(first, var))
+		  if (_partition.getSetCount() == 1)
+			return false;
+  }
+
+  stop = slice.getSubtract().end();
+  for (Ideal::const_iterator it = slice.getSubtract().begin();
+       it != stop; ++it) {
     size_t first = ::getFirstNonZeroExponent(*it, slice.getVarCount());
     for (size_t var = first + 1; var < slice.getVarCount(); ++var)
       if ((*it)[var] > 0)
-	partition.join(first, var);
+		_partition.join(first, var);
   }
-}
 
-bool IndependenceSplitter::shouldPerformSplit
-(const Partition& partition, const Slice& slice) {
-  size_t childCount = partition.getSetCount();
+  size_t childCount = _partition.getSetCount();
 
   if (childCount == 1)
     return false;
 
-  size_t at1 = 0;
-  size_t at2 = 0;
-  size_t over2 = 0;
-  for (size_t i = 0; i < childCount; ++i) {
-    size_t size = partition.getSetSize(i);
-    if (size == 1)
-      ++at1;
-    else if (size == 2)
-      ++at2;
-    else
-      ++over2;
+  size_t hasTwo = 0;
+  for (size_t i = 0; i < childCount; ++i)
+	if (_partition.getSetSize(i) >= 2)
+	  ++hasTwo;
+  if (hasTwo < 2)
+	return false;
+
+  if (_partition.getSetCount() > 2) {
+	size_t maxSet = 0;
+	for (size_t set = 1; set < _partition.getSize(); ++set)
+	  if (_partition.getSizeOfClassOf(set) >
+		  _partition.getSizeOfClassOf(maxSet))
+		maxSet = _partition.getRoot(set);
+
+	size_t nonMaxSet = 0;
+	for (size_t set = 0; set < _partition.getSize(); ++set)
+	  if (_partition.getRoot(maxSet) != _partition.getRoot(set))
+		nonMaxSet = set;
+	ASSERT(_partition.getRoot(maxSet) != _partition.getRoot(nonMaxSet));
+
+	for (size_t set = 0; set < _partition.getSize(); ++set)
+	  if (_partition.getRoot(set) != _partition.getRoot(maxSet))
+		_partition.join(set, nonMaxSet);
   }
+  ASSERT(_partition.getSetCount() == 2);
 
-  return at2 > 0 || over2 > 1;
-}
+  /*
+  slice.print(stderr);
+  fprintf(stderr, "%i %i\n", _partition.getSetSize(0), _partition.getSetSize(1));
+  _partition.print(stderr);
+  */
 
-Ideal* IndependenceSplitter::getMixedProjectionSubtract() {
-  return _mixedProjectionSubtract;
-}
+  if (_partition.getSetSize(0) > _partition.getSetSize(1))
+	_bigSet = 0;
+  else
+	_bigSet = 1;
 
-size_t IndependenceSplitter::getChildCount() const {
-  return _children.size();
-}
-
-
-Slice& IndependenceSplitter::getSlice(size_t part) {
-  ASSERT(part < _children.size());
-  return _children[part].slice;
-}
-
-Projection& IndependenceSplitter::getProjection(size_t part) {
-  ASSERT(part < _children.size());
-  return _children[part].projection;
+  return true;
 }

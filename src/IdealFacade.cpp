@@ -21,6 +21,10 @@
 #include "Ideal.h"
 #include "TermTranslator.h"
 #include "IOHandler.h"
+#include "SliceAlgorithm.h"
+
+#include "Macaulay2IOHandler.h"
+#include "CanonicalCoefTermConsumer.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -111,6 +115,29 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
   beginAction("Sorting generators.");
 
   ideal.sortVariables();
+
+  endAction();
+}
+
+void IdealFacade::printHilbertSeries(const BigIdeal& bigIdeal,
+									 bool canonicalize, FILE* out) {
+  beginAction("Computing and printing Hilbert series.");
+
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal);
+  ideal.minimize();
+
+  CoefTermConsumer* consumer;
+  if (out == 0)
+	consumer = new NullCoefTermConsumer();
+  else
+	consumer = Macaulay2IOHandler::createCoefTermWriter(stdout, &translator);
+
+  if (canonicalize)
+	consumer = new CanonicalCoefTermConsumer(consumer, ideal.getVarCount());
+
+  ::computeHilbertSeries(ideal, consumer);
+  delete consumer;
 
   endAction();
 }

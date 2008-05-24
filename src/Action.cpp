@@ -30,6 +30,7 @@
 #include "AssociatedPrimesAction.h"
 #include "PrimaryDecomAction.h"
 #include "AlexanderDualAction.h"
+#include "HilbertAction.h"
 
 Action::ActionContainer Action::_actions;
 
@@ -80,6 +81,9 @@ const Action::ActionContainer& Action::getActions() {
 
     static HelpAction help;
     _actions.push_back(&help);
+
+	static HilbertAction hilbert;
+	_actions.push_back(&hilbert);
 
     //static PrimaryDecomAction primaryDecom;
     //_actions.push_back(&primaryDecom);

@@ -17,33 +17,39 @@
 #ifndef PARTITION_GUARD
 #define PARTITION_GUARD
 
-class Term;
-
 class Partition {
  public:
   Partition();
+  Partition(const Partition& partition);
   ~Partition();
 
   void reset(size_t size);
 
-  void join(size_t i, size_t j);
+  bool join(size_t i, size_t j);
 
   size_t getSize() const;
 
-  size_t getSetCount(size_t minSize = 1) const;
+  size_t getSetCount() const;
 
   size_t getSetSize(size_t set) const;
 
   size_t getRoot(size_t i) const;
+
+  void addToSet(size_t i);
 
   size_t getSizeOfClassOf(size_t i) const;
 
   void print(FILE* file) const;
 
  private:
+  // Made private since it is not implemented.
+  Partition& operator=(const Partition&);
+
   int* _partitions;
   size_t _size;
   size_t _capacity;
+
+  size_t _setCount;
 };
 
 #endif

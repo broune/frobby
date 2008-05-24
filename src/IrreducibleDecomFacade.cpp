@@ -25,12 +25,13 @@
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "SliceAlgorithm.h"
-#include "SliceStrategy.h"
+#include "MsmStrategy.h"
 #include "TermIgnorer.h"
 #include "DecomRecorder.h"
 #include "TermGrader.h"
 #include "TermConsumer.h"
 #include "IdealFacade.h"
+#include "DebugStrategy.h"
 
 #include "TranslatingTermConsumer.h"
 
@@ -136,8 +137,8 @@ computeIrreducibleDecom(Ideal& ideal,
 	consumer->consume(Term(ideal.getVarCount()));
 	delete consumer;
   } else {
-    SliceStrategy* strategy =
-      SliceStrategy::newDecomStrategy(_parameters.getSplit(), consumer);    
+    MsmStrategy* strategy =
+      MsmStrategy::newDecomStrategy(_parameters.getSplit(), consumer);    
     runSliceAlgorithm(ideal, strategy);
   }
 
@@ -267,7 +268,7 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
   TermGrader grader(shiftedDegrees, &translator);
 
-  SliceStrategy* strategy = SliceStrategy::newFrobeniusStrategy
+  MsmStrategy* strategy = MsmStrategy::newFrobeniusStrategy
 	(_parameters.getSplit(), &recorder, grader, _parameters.getUseBound());
 
   runSliceAlgorithm(ideal, strategy);
@@ -287,17 +288,20 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 }
 
 void IrreducibleDecomFacade::
-runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy) {
-  ASSERT(strategy != 0);
+runSliceAlgorithm(Ideal& ideal, MsmStrategy* strategyParam) {
+  ASSERT(strategyParam != 0);
+
+  strategyParam->setUseIndependence(_parameters.getUseIndependence());
 
   if (_parameters.getPrintStatistics())
-    strategy = SliceStrategy::addStatistics(strategy);
+    strategyParam = MsmStrategy::addStatistics(strategyParam);
+
+  // TODO: move away from MsmStrategy to avoid the need for this.
+  SliceStrategy* strategy = strategyParam;
 
   if (_parameters.getPrintDebug())
-    strategy = SliceStrategy::addDebugOutput(strategy);
+	strategy = new DebugStrategy(strategy, stderr);
 
-  SliceAlgorithm alg;
-  alg.setUseIndependence(_parameters.getUseIndependence());
-  alg.setStrategy(strategy);
-  alg.runAndClear(ideal);
+  ::computeMaximalStandardMonomials(ideal, strategy);
+  delete strategy; // TODO: is this way of doing it really necessary?
 }

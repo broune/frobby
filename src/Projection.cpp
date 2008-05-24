@@ -26,29 +26,26 @@ size_t Projection::getRangeVarCount() const {
 }
 
 void Projection::reset(const Partition& partition,
-		       int number) {
-  _offsets.resize(partition.getSetSize(number));
+					   int number) {
+  _offsets.clear();
 
   size_t root = 0xFFFFFFFF;
   for (size_t i = 0; i < partition.getSize(); ++i) {
     if (i == partition.getRoot(i)) {
       if (number == 0) {
-	root = i;
-	break;
+		root = i;
+		break;
       }
       --number;
     }
   }
   ASSERT(number == 0 && root != 0xFFFFFFFF);
 
-  size_t projectionOffset = 0;
-
   for (size_t i = 0; i < partition.getSize(); ++i) {
     if (partition.getRoot(i) != root)
       continue;
 
-    _offsets[projectionOffset] = i;
-    ++projectionOffset;
+    _offsets.push_back(i);
   }
 }
 
@@ -84,6 +81,13 @@ void Projection::inverseProject(Term& to, const Exponent* from) const {
 size_t Projection::inverseProjectVar(size_t rangeVar) const {
   ASSERT(rangeVar < _offsets.size());
   return _offsets[rangeVar];
+}
+
+bool Projection::domainVarHasProjection(size_t var) const {
+  for (size_t rangeVar = 0; rangeVar < _offsets.size(); ++rangeVar)
+	if (var == inverseProjectVar(rangeVar))
+	  return true;
+  return false;
 }
 
 void Projection::print(FILE* file) const {

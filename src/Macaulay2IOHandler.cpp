@@ -20,6 +20,7 @@
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "VarNames.h"
+#include "CoefTermConsumer.h"
 
 class Macaulay2IdealWriter : public IdealWriter {
 public:
@@ -179,4 +180,86 @@ void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner
   scanner.match(';');
 
   ideal.clearAndSetNames(names);
+}
+
+// TODO: integrate this better and move some of it elsewhere
+#include "TermTranslator.h"
+#include "Term.h"
+class CoefTermWriter : public CoefTermConsumer {
+ public:
+  CoefTermWriter(FILE* file, const TermTranslator* translator):
+	_file(file),
+	_translator(translator),
+	_justStartedWriting(true) {
+	// TODO: get rid of this code duplication from the ideal writer.
+    fputs("R = ZZ[{", _file);
+
+	const VarNames& names = _translator->getNames();
+    const char* pre = "";
+    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+      fputs(pre, _file);
+      fputs(names.getName(i).c_str(), _file);
+      pre = ", ";
+    }
+    fputs("}];\n", _file);
+    fputs("p = ", _file);
+  }
+
+  virtual ~CoefTermWriter() {
+	if (_justStartedWriting)
+	  fputc('0', _file);
+    fputs(";\n", _file);
+  };
+
+  virtual void consume(const mpz_class& coef, const Term& term) {
+    if (_justStartedWriting)
+      _justStartedWriting = false;
+	else if (coef >= 0)
+	  fputc('+', _file);
+
+	bool needsSeperator = true;
+	if (coef == 1) {
+	  if (term.isIdentity()) {
+		fputc('1', _file);
+		return;
+	  }
+	  needsSeperator = false;
+	}
+	if (coef != 1) {
+	  if (coef == -1) {
+		fputc('-', _file);
+		if (term.isIdentity()) {
+		  fputc('1', _file);
+		  return;
+		}
+		needsSeperator = false;
+	  }
+	  else
+		gmp_fprintf(_file, "%Zd", coef.get_mpz_t());
+	}
+
+	size_t varCount = term.getVarCount();
+	for (size_t j = 0; j < varCount; ++j) {
+	  const char* exp = _translator->getVarExponentString(j, term[j]);
+	  if (exp == 0)
+		continue;
+
+	  if (needsSeperator)
+		putc('*', _file);
+	  else
+		needsSeperator = true;
+
+	  fputs(exp, _file);
+	}
+  }
+
+private:
+  FILE* _file;
+  const TermTranslator* _translator;
+  bool _justStartedWriting;
+};
+
+CoefTermConsumer* Macaulay2IOHandler::createCoefTermWriter
+(FILE* file, const TermTranslator* translator) {
+  return new CoefTermWriter(file, translator);
 }
