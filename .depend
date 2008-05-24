@@ -77,7 +77,7 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/TermTranslator.h src/Ideal.h src/SliceAlgorithm.h src/MsmStrategy.h \
   src/SliceStrategyCommon.h src/SliceStrategy.h src/TermIgnorer.h \
   src/DecomRecorder.h src/Term.h src/TermGrader.h src/IdealFacade.h \
-  src/TranslatingTermConsumer.h
+  src/DebugStrategy.h src/TranslatingTermConsumer.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
@@ -136,7 +136,8 @@ $(outdir)LatticeFormatAction.o: src/LatticeFormatAction.cpp src/stdinc.h \
 $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceAlgorithm.h src/Slice.h src/Ideal.h src/Term.h \
   src/MsmStrategy.h src/SliceStrategyCommon.h src/SliceStrategy.h \
-  src/TermConsumer.h src/HilbertStrategy.h src/SliceEvent.h
+  src/TermConsumer.h src/HilbertStrategy.h src/SliceEvent.h \
+  src/DebugStrategy.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h \
   src/Minimizer.h
 $(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
@@ -234,3 +235,5 @@ $(outdir)Slice.o: src/Slice.cpp src/stdinc.h src/Slice.h src/Ideal.h src/Term.h 
 $(outdir)SliceStrategyCommon.o: src/SliceStrategyCommon.cpp src/stdinc.h \
   src/SliceStrategyCommon.h src/SliceStrategy.h src/Slice.h src/Ideal.h \
   src/Term.h
+$(outdir)DebugStrategy.o: src/DebugStrategy.cpp src/stdinc.h src/DebugStrategy.h \
+  src/SliceStrategy.h
