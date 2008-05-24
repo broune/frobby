@@ -21,14 +21,14 @@
 #include "MsmStrategy.h"
 #include "HilbertStrategy.h"
 #include "SliceEvent.h"
+#include "DebugStrategy.h"
 
-void runSliceAlgorithm(Slice* initialSlice, SliceStrategy* strategy) {
-  ASSERT(initialSlice != 0);
+void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
   ASSERT(strategy != 0);
 
   vector<SliceEvent*> events;
   vector<Slice*> slices;
-  slices.push_back(initialSlice);
+  slices.push_back(strategy->setupInitialSlice(ideal));
 
   while (!slices.empty()) {
 	Slice* slice = slices.back();
@@ -71,14 +71,13 @@ void runSliceAlgorithm(Slice* initialSlice, SliceStrategy* strategy) {
   }
 }
 
-
-void computeMaximalStandardMonomials(Ideal& ideal, MsmStrategy* strategy) {
-  runSliceAlgorithm(strategy->setupInitialSlice(ideal, strategy), strategy);
+void computeMaximalStandardMonomials(Ideal& ideal, SliceStrategy* strategy) {
+  runSliceAlgorithm(ideal, strategy);
 }
 
 void computeHilbertSeries(const Ideal& ideal, CoefTermConsumer* consumer) {
-  HilbertStrategy strategy;
-  runSliceAlgorithm(strategy.setupInitialSlice(ideal, consumer), &strategy);
+  HilbertStrategy strategy(consumer);
+  runSliceAlgorithm(ideal, &strategy);
 }
 
 bool computeSingleMSM2(const Slice& slice, Term& msm) {

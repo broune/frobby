@@ -28,8 +28,7 @@
 #include "IndependenceSplitter.h"
 #include "SliceEvent.h"
 
-Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal,
-										 TermConsumer* consumer) {
+Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal) {
   size_t varCount = ideal.getVarCount();
 
   Term sliceMultiply(varCount);
@@ -39,29 +38,27 @@ Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal,
   Slice* slice = new MsmSlice(ideal,
 							  Ideal(varCount),
 							  sliceMultiply,
-							  consumer);
+							  this);
   simplify(*slice);
   initialize(*slice);
 
   return slice;
 }
 
-void MsmStrategy::freeSlice(Slice* slice) {
-  ASSERT(slice != 0);
+MsmSlice* MsmStrategy::newMsmSlice() {
+  Slice* slice = newSlice();
   ASSERT(dynamic_cast<MsmSlice*>(slice) != 0);
-
-  slice->clear(); // To preserve memory.
-  _sliceCache.push_back(slice);
+  return static_cast<MsmSlice*>(slice);
 }
 
-MsmSlice* MsmStrategy::newSlice() {
-  if (_sliceCache.empty())
-	return new MsmSlice();
+Slice* MsmStrategy::allocateSlice() {
+  return new MsmSlice();
+}
 
-  Slice* slice = _sliceCache.back();
+bool MsmStrategy::debugIsValidSlice(Slice* slice) {
+  ASSERT(slice != 0);
   ASSERT(dynamic_cast<MsmSlice*>(slice) != 0);
-  _sliceCache.pop_back();
-  return (MsmSlice*)slice;
+  return true;
 }
 
 void MsmStrategy::labelSplit(Slice* slice,
@@ -124,32 +121,6 @@ void MsmStrategy::labelSplit(Slice* slice,
   }
 
   leftSlice = hasLabelSlice;
-  rightSlice = slice;
-}
-
-void MsmStrategy::pivotSplit(Slice* slice, 
-							 Slice*& leftSlice, Slice*& rightSlice) {
-  Term pivot(slice->getVarCount());
-  getPivot(pivot, *slice);
-
-  if ((pivot.isIdentity()) ||
-	  (slice->getIdeal().contains(pivot)) ||
-	  (slice->getSubtract().contains(pivot))) {
-	slice->print(stderr);
-	pivot.print(stderr);
-  }
-
-  ASSERT(!pivot.isIdentity()); 
-  ASSERT(!slice->getIdeal().contains(pivot));
-  ASSERT(!slice->getSubtract().contains(pivot));
-
-  Slice* inner = newSlice();
-  *inner = *slice;
-  inner->innerSlice(pivot);
-
-  slice->outerSlice(pivot);
-
-  leftSlice = inner;
   rightSlice = slice;
 }
 
@@ -526,7 +497,7 @@ public:
   }
 
   void getPivot(Term& pivot, Slice& slice) {
-	SliceStrategy::getPivot(pivot, slice, _pivotStrategy);
+	SliceStrategyCommon::getPivot(pivot, slice, _pivotStrategy);
 	return;
   }
 
@@ -543,10 +514,10 @@ MsmStrategy* MsmStrategy::newDecomStrategy(const string& name,
   else if (name == "varlabel")
     return new LabelMsmStrategy(LabelMsmStrategy::VarLabel, consumer);
 
-  SliceStrategy::PivotStrategy pivotStrategy =
-	SliceStrategy::getPivotStrategy(name);
+  SliceStrategyCommon::PivotStrategy pivotStrategy =
+	SliceStrategyCommon::getPivotStrategy(name);
 
-  if (pivotStrategy == SliceStrategy::Unknown) {
+  if (pivotStrategy == SliceStrategyCommon::Unknown) {
 	fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n", name.c_str());
 	exit(1);
   }
@@ -611,9 +582,6 @@ public:
   }
 
   void setCurrentPart(const Projection& projection) {
-    if (!_improved)
-      return;
-
     _improved = false;
     _partProjection = &projection;
 
@@ -828,9 +796,9 @@ private:
 class FrobeniusMsmStrategy : public MsmStrategy {
 public:
   FrobeniusMsmStrategy(MsmStrategy* strategy,
-						 TermConsumer* consumer,
-						 TermGrader& grader,
-						 bool useBound):
+					   TermConsumer* consumer,
+					   TermGrader& grader,
+					   bool useBound):
 	_strategy(strategy),
     _consumer(consumer),
     _grader(grader),

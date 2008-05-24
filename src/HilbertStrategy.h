@@ -27,43 +27,42 @@ class SliceEvent;
 class HilbertIndependenceConsumer;
 class Slice;
 
-#include "SliceStrategy.h"
+#include "SliceStrategyCommon.h"
 
-class HilbertStrategy : public SliceStrategy {
+class HilbertStrategy : public SliceStrategyCommon {
  public:
-  HilbertStrategy(bool useIndependence = false);
+  HilbertStrategy(CoefTermConsumer* consumer, bool useIndependence = false);
   virtual ~HilbertStrategy();
 
-  Slice* setupInitialSlice(const Ideal& ideal,
-						   CoefTermConsumer* consumer);
+  virtual Slice* setupInitialSlice(const Ideal& ideal);
 
-  // Takes over ownership of the slice parameter.
   virtual void split(Slice* slice,
 					 SliceEvent*& leftEvent, Slice*& leftSlice,
 					 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  virtual void freeSlice(Slice* slice);
   void freeConsumer(HilbertIndependenceConsumer* consumer);
 
  private:
-  HilbertSlice* newSlice();
   HilbertIndependenceConsumer* newConsumer();
 
-  void getPivot(Term& term, Slice& slice);
+  HilbertSlice* newHilbertSlice();
+  virtual Slice* allocateSlice();
+  virtual bool debugIsValidSlice(Slice* slice);
+
+  virtual void getPivot(Term& term, Slice& slice);
 
   bool independenceSplit(HilbertSlice* slice,
 						 SliceEvent*& leftEvent,
 						 Slice*& leftSlice,
 						 Slice*& rightSlice);
 
-
   Term _term;
 
   // It would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
-  vector<Slice*> _sliceCache;
   vector<HilbertIndependenceConsumer*> _consumerCache;
 
+  CoefTermConsumer* _consumer;
   bool _useIndependence;
 };
 
