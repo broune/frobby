@@ -19,12 +19,19 @@
 
 class Slice;
 class Term;
+class SliceEvent;
 
 #include <string>
 
 class SliceStrategy {
  public:
   virtual ~SliceStrategy() {}
+
+  virtual void split(Slice* slice,
+					 SliceEvent*& leftEvent, Slice*& leftSlice,
+					 SliceEvent*& rightEvent, Slice*& rightSlice) = 0;
+
+  virtual void freeSlice(Slice* slice) = 0;
 
  protected:
   enum PivotStrategy {

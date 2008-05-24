@@ -28,7 +28,7 @@
 #include "IndependenceSplitter.h"
 #include "SliceEvent.h"
 
-MsmSlice* MsmStrategy::setupInitialSlice(const Ideal& ideal,
+Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal,
 										 TermConsumer* consumer) {
   size_t varCount = ideal.getVarCount();
 
@@ -36,18 +36,19 @@ MsmSlice* MsmStrategy::setupInitialSlice(const Ideal& ideal,
   for (size_t var = 0; var < varCount; ++var)
 	sliceMultiply[var] = 1;
 
-  MsmSlice* slice = new MsmSlice(ideal,
-								 Ideal(varCount),
-								 sliceMultiply,
-								 consumer);
+  Slice* slice = new MsmSlice(ideal,
+							  Ideal(varCount),
+							  sliceMultiply,
+							  consumer);
   simplify(*slice);
   initialize(*slice);
 
   return slice;
 }
 
-void MsmStrategy::freeSlice(MsmSlice* slice) {
+void MsmStrategy::freeSlice(Slice* slice) {
   ASSERT(slice != 0);
+  ASSERT(dynamic_cast<MsmSlice*>(slice) != 0);
 
   slice->clear(); // To preserve memory.
   _sliceCache.push_back(slice);
@@ -57,12 +58,14 @@ MsmSlice* MsmStrategy::newSlice() {
   if (_sliceCache.empty())
 	return new MsmSlice();
 
-  MsmSlice* slice = _sliceCache.back();
+  Slice* slice = _sliceCache.back();
+  ASSERT(dynamic_cast<MsmSlice*>(slice) != 0);
   _sliceCache.pop_back();
-  return slice;
+  return (MsmSlice*)slice;
 }
 
-pair<MsmSlice*, MsmSlice*> MsmStrategy::labelSplit(MsmSlice* slice) {
+void MsmStrategy::labelSplit(Slice* slice,
+							 Slice*& leftSlice, Slice*& rightSlice) {
   ASSERT(!slice->normalize());
   size_t var = getLabelSplitVariable(*slice);
 
@@ -73,7 +76,8 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::labelSplit(MsmSlice* slice) {
   Ideal::const_iterator stop = slice->getIdeal().end();
   Ideal::const_iterator label = stop;
   bool hasTwoLabels = false;
-  for (Ideal::const_iterator it = slice->getIdeal().begin(); it != stop; ++it) {
+  for (Ideal::const_iterator it = slice->getIdeal().begin();
+	   it != stop; ++it) {
     if ((*it)[var] == 1) {
 	  term = *it;
 	  term[var] -= 1;
@@ -99,7 +103,7 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::labelSplit(MsmSlice* slice) {
 	}
   }
 
-  MsmSlice* hasLabelSlice = 0;
+  Slice* hasLabelSlice = 0;
 
   if (label != stop) {
 	term = *label;
@@ -119,10 +123,12 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::labelSplit(MsmSlice* slice) {
 	slice->innerSlice(term);
   }
 
-  return make_pair(hasLabelSlice, slice);
+  leftSlice = hasLabelSlice;
+  rightSlice = slice;
 }
 
-pair<MsmSlice*, MsmSlice*> MsmStrategy::pivotSplit(MsmSlice* slice) {
+void MsmStrategy::pivotSplit(Slice* slice, 
+							 Slice*& leftSlice, Slice*& rightSlice) {
   Term pivot(slice->getVarCount());
   getPivot(pivot, *slice);
 
@@ -137,13 +143,14 @@ pair<MsmSlice*, MsmSlice*> MsmStrategy::pivotSplit(MsmSlice* slice) {
   ASSERT(!slice->getIdeal().contains(pivot));
   ASSERT(!slice->getSubtract().contains(pivot));
 
-  MsmSlice* inner = newSlice();
+  Slice* inner = newSlice();
   *inner = *slice;
   inner->innerSlice(pivot);
 
   slice->outerSlice(pivot);
 
-  return make_pair(inner, slice);
+  leftSlice = inner;
+  rightSlice = slice;
 }
 
 MsmStrategy::MsmStrategy():
@@ -172,14 +179,14 @@ public:
   }
 
   static IndepEvents* newEvents(MsmStrategy* strategy,
-								const MsmSlice& slice,
+								const Slice& slice,
 								IndependenceSplitter& splitter) {
 	return new IndepEvents(strategy, slice, splitter);
   }
 
 private:
   IndepEvents(MsmStrategy* strategy,
-			  const MsmSlice& slice,
+			  const Slice& slice,
 			  IndependenceSplitter& splitter):
 	_strategy(strategy),
 	_leftEvent(this),
@@ -241,8 +248,8 @@ private:
 
 bool MsmStrategy::independenceSplit
 (MsmSlice* slice,
- SliceEvent*& leftEvent, MsmSlice*& leftSlice,
- SliceEvent*& rightEvent, MsmSlice*& rightSlice) {
+ SliceEvent*& leftEvent, Slice*& leftSlice,
+ SliceEvent*& rightEvent, Slice*& rightSlice) {
 
   static IndependenceSplitter indep;
   if (!indep.analyze(*slice))
@@ -251,23 +258,31 @@ bool MsmStrategy::independenceSplit
   IndepEvents* events = IndepEvents::newEvents(this, *slice, indep);
 
   leftEvent = events->getLeftEvent();
-  leftSlice = new MsmSlice();
-  leftSlice->setToProjOf(*slice, events->getLeftProjection(), this);
+  MsmSlice* msmLeftSlice = new MsmSlice();
+  msmLeftSlice->setToProjOf(*slice, events->getLeftProjection(), this);
+  leftSlice = msmLeftSlice;
 
   rightEvent = events->getRightEvent();
-  rightSlice = new MsmSlice();
-  rightSlice->setToProjOf(*slice, events->getRightProjection(), this);
+  MsmSlice* msmRightSlice = new MsmSlice();
+  msmRightSlice->setToProjOf(*slice, events->getRightProjection(), this);
+  rightSlice = msmRightSlice;
 
   freeSlice(slice);
 
   return true;
 }
 
-void MsmStrategy::split(MsmSlice* slice,
-						SliceEvent*& leftEvent, MsmSlice*& leftSlice,
-						SliceEvent*& rightEvent, MsmSlice*& rightSlice) {
-  leftEvent = 0;
-  rightEvent = 0;
+void MsmStrategy::split(Slice* sliceParam,
+						SliceEvent*& leftEvent, Slice*& leftSlice,
+						SliceEvent*& rightEvent, Slice*& rightSlice) {
+  ASSERT(sliceParam != 0);
+  ASSERT(dynamic_cast<MsmSlice*>(sliceParam) != 0);
+  MsmSlice* slice = (MsmSlice*)sliceParam;
+
+  ASSERT(leftEvent == 0);
+  ASSERT(leftSlice == 0);
+  ASSERT(rightEvent == 0);
+  ASSERT(rightSlice == 0);
 
   if (_useIndependence &&
 	  independenceSplit(slice,
@@ -275,45 +290,40 @@ void MsmStrategy::split(MsmSlice* slice,
 						rightEvent, rightSlice))
 	return;
 
-  pair<MsmSlice*, MsmSlice*> slicePair;
-
   switch (getSplitType(*slice)) {
   case MsmStrategy::LabelSplit:
-	slicePair = labelSplit(slice);
+	labelSplit(slice, leftSlice, rightSlice);
 	break;
 
   case MsmStrategy::PivotSplit:
-	slicePair = pivotSplit(slice);
+	pivotSplit(slice, leftSlice, rightSlice);
 	break;
 
   default:
 	ASSERT(false);
   }
 
-  if (slicePair.first != 0)
-	simplify(*slicePair.first);
+  if (leftSlice != 0)
+	simplify(*leftSlice);
 
-  if (slicePair.second != 0)
-	simplify(*slicePair.second);
-
-  leftSlice = slicePair.first;
-  rightSlice = slicePair.second;
+  if (rightSlice != 0)
+	simplify(*rightSlice);
 }
 
-void MsmStrategy::initialize(const MsmSlice& slice) {
+void MsmStrategy::initialize(const Slice& slice) {
 }
 
-void MsmStrategy::simplify(MsmSlice& slice) {
+void MsmStrategy::simplify(Slice& slice) {
   slice.simplify();
 }
 
-void MsmStrategy::getPivot(Term& pivot, MsmSlice& slice) {
+void MsmStrategy::getPivot(Term& pivot, Slice& slice) {
   fputs("INTERNAL ERROR: Undefined MsmStrategy::getPivot called.\n", stderr);
   ASSERT(false);
   exit(1);
 }
 
-size_t MsmStrategy::getLabelSplitVariable(const MsmSlice& slice) {
+size_t MsmStrategy::getLabelSplitVariable(const Slice& slice) {
   fputs
     ("INTERNAL ERROR: Undefined MsmStrategy::getLabelSplitVariable called.\n",
      stderr);
@@ -338,7 +348,7 @@ public:
     getCurrentConsumer()->consume(term);
   }
 
-  virtual void doingIndependenceSplit(const MsmSlice& slice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 									  IndependenceSplitter& splitter) {
     _independenceSplits.push_back
       (new IndependenceSplit(splitter,
@@ -438,11 +448,11 @@ public:
 	_type(type) {
   }
 
-  SplitType getSplitType(const MsmSlice& slice) {
+  SplitType getSplitType(const Slice& slice) {
     return LabelSplit;
   }
 
-  size_t getLabelSplitVariable(const MsmSlice& slice) {
+  size_t getLabelSplitVariable(const Slice& slice) {
 	Term co(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(co);
 
@@ -511,11 +521,11 @@ public:
 	srand(0); // to make things repeatable
   }
 
-  SplitType getSplitType(const MsmSlice& slice) {
+  SplitType getSplitType(const Slice& slice) {
     return PivotSplit;
   }
 
-  void getPivot(Term& pivot, MsmSlice& slice) {
+  void getPivot(Term& pivot, Slice& slice) {
 	SliceStrategy::getPivot(pivot, slice, _pivotStrategy);
 	return;
   }
@@ -559,7 +569,7 @@ public:
   }
 
   FrobeniusIndependenceSplit(const Projection& projection,
-							 const MsmSlice& slice,
+							 const Slice& slice,
 							 const mpz_class& toBeat,
 							 const TermGrader& grader,
 							 bool useBound):
@@ -625,7 +635,7 @@ public:
 	  _partValue = -1;
   }
 
-  void getPivot(Term& pivot, MsmSlice& slice) {
+  void getPivot(Term& pivot, Slice& slice) {
     const Term& lcm = slice.getLcm();
 
 	static mpz_class maxDiff;
@@ -659,7 +669,7 @@ public:
     return _outerPartProjection;
   }
 
-  void simplify(MsmSlice& slice) {
+  void simplify(Slice& slice) {
     if (slice.getIdeal().getGeneratorCount() == 0)
       return;
 
@@ -766,13 +776,13 @@ private:
     _outerPartProjection.reset(inverses);
   }
 
-  void getUpperBound(const MsmSlice& slice, Term& bound) {
+  void getUpperBound(const Slice& slice, Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
     bound = slice.getLcm();
     adjustToBound(slice, bound);
   }
 
-  void adjustToBound(const MsmSlice& slice, Term& bound) {
+  void adjustToBound(const Slice& slice, Term& bound) {
     ASSERT(bound.getVarCount() == slice.getVarCount());
 
     bound.product(bound, slice.getMultiply());
@@ -840,7 +850,7 @@ public:
     ASSERT(_independenceSplits.empty());
   }
 
-  virtual void initialize(const MsmSlice& slice) {
+  virtual void initialize(const Slice& slice) {
     // The purpose of this is to initialize the bound so that it can
     // be used right away, instead of waiting for the slice algorithm
     // to produce some output first.
@@ -851,7 +861,7 @@ public:
 	}
   }
 
-  virtual void simplify(MsmSlice& slice) {
+  virtual void simplify(Slice& slice) {
     getCurrentSplit()->simplify(slice);
   }
 
@@ -859,26 +869,26 @@ public:
     getCurrentSplit()->consume(term);
   }
 
-  virtual SplitType getSplitType(const MsmSlice& slice) {
+  virtual SplitType getSplitType(const Slice& slice) {
 	if (_strategy == 0)
 	  return PivotSplit;
 	else
 	  return _strategy->getSplitType(slice);
   }
 
-  virtual void getPivot(Term& pivot, MsmSlice& slice) {
+  virtual void getPivot(Term& pivot, Slice& slice) {
 	if (_strategy != 0)
 	  _strategy->getPivot(pivot, slice);
 	else
 	  getCurrentSplit()->getPivot(pivot, slice);
   }
 
-  virtual size_t getLabelSplitVariable(const MsmSlice& slice) {
+  virtual size_t getLabelSplitVariable(const Slice& slice) {
 	ASSERT(_strategy != 0);
 	return _strategy->getLabelSplitVariable(slice);
   }
 
-  virtual void doingIndependenceSplit(const MsmSlice& slice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 									  IndependenceSplitter& splitter) {
 	_independenceSplits.push_back
       (new FrobeniusIndependenceSplit

@@ -64,6 +64,18 @@ void Slice::print(FILE* file) const {
   _subtract.print(file);
 }
 
+Slice& Slice::operator=(const Slice& slice) {
+  _varCount = slice._varCount;
+  _ideal = slice._ideal;
+  _subtract = slice._subtract;
+  _multiply = slice._multiply;
+  _lcm = slice._lcm;
+  _lcmUpdated = slice._lcmUpdated;
+  _lowerBoundHint = slice._lowerBoundHint;  
+
+  return *this;
+}
+
 void Slice::resetAndSetVarCount(size_t varCount) {
   _varCount = varCount;
   _ideal.clearAndSetVarCount(varCount);

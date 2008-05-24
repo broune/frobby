@@ -48,6 +48,12 @@ class Slice {
 
   // *** Mutators
 
+  // Returns true if a base case is reached, and in that case outputs
+  // the content to consumer. The slice must be fully simplified.
+  virtual bool baseCase() = 0;
+
+  virtual Slice& operator=(const Slice& slice) = 0;
+
   // Removes all generators of getIdeal() and getSubtract() and sets
   // getMultiply() to the identity. Also changes getVarCount() to varCount.
   void resetAndSetVarCount(size_t varCount);

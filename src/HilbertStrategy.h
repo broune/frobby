@@ -25,37 +25,43 @@ class Ideal;
 class CoefTermConsumer;
 class SliceEvent;
 class HilbertIndependenceConsumer;
+class Slice;
 
-class HilbertStrategy {
+#include "SliceStrategy.h"
+
+class HilbertStrategy : public SliceStrategy {
  public:
   HilbertStrategy(bool useIndependence = false);
-  ~HilbertStrategy();
+  virtual ~HilbertStrategy();
 
-  HilbertSlice* setupInitialSlice(const Ideal& ideal,
-								  CoefTermConsumer* consumer);
+  Slice* setupInitialSlice(const Ideal& ideal,
+						   CoefTermConsumer* consumer);
 
   // Takes over ownership of the slice parameter.
-  pair<HilbertSlice*, HilbertSlice*> split(HilbertSlice* slice,
-										   SliceEvent*& event);
+  virtual void split(Slice* slice,
+					 SliceEvent*& leftEvent, Slice*& leftSlice,
+					 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  void freeSlice(HilbertSlice* slice);
+  virtual void freeSlice(Slice* slice);
   void freeConsumer(HilbertIndependenceConsumer* consumer);
 
  private:
   HilbertSlice* newSlice();
   HilbertIndependenceConsumer* newConsumer();
 
-  void getPivot(Term& term, HilbertSlice& slice);
+  void getPivot(Term& term, Slice& slice);
 
   bool independenceSplit(HilbertSlice* slice,
-						 pair<HilbertSlice*, HilbertSlice*>& slicePair,
-						 SliceEvent*& event);
+						 SliceEvent*& leftEvent,
+						 Slice*& leftSlice,
+						 Slice*& rightSlice);
+
 
   Term _term;
 
   // It would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
-  vector<HilbertSlice*> _sliceCache;
+  vector<Slice*> _sliceCache;
   vector<HilbertIndependenceConsumer*> _consumerCache;
 
   bool _useIndependence;

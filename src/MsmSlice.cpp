@@ -33,9 +33,9 @@ MsmSlice::MsmSlice(const Ideal& ideal,
   ASSERT(consumer != 0);
 }
 
-bool MsmSlice::baseCase(TermConsumer* consumer) {
+bool MsmSlice::baseCase() {
   ASSERT(_consumer != 0);
-  ASSERT(consumer == _consumer);
+
   if (getIdeal().getGeneratorCount() < _varCount || _varCount == 0)
     return true;
 
@@ -44,20 +44,20 @@ bool MsmSlice::baseCase(TermConsumer* consumer) {
     return true;
 
   if (_varCount == 1) {
-    consumer->consume(_multiply);
+    _consumer->consume(_multiply);
     return true;
   }
   if (_varCount == 2) {
-    twoVarBaseCase(consumer);
+    twoVarBaseCase();
     return true;
   }
 
   if (getIdeal().getGeneratorCount() > _varCount) {
     if (getIdeal().getGeneratorCount() == _varCount + 1) {
-      oneMoreGeneratorBaseCase(consumer);
+      oneMoreGeneratorBaseCase();
       return true;
     }
-    if (twoNonMaxBaseCase(consumer))
+    if (twoNonMaxBaseCase())
       return true;
     
     return false;
@@ -67,8 +67,16 @@ bool MsmSlice::baseCase(TermConsumer* consumer) {
   ASSERT(getLcm().isSquareFree());
   ASSERT(getIdeal().isIrreducible());
 
-  consumer->consume(_multiply);
+  _consumer->consume(_multiply);
   return true;
+}
+
+Slice& MsmSlice::operator=(const Slice& slice) {
+  ASSERT(dynamic_cast<const MsmSlice*>(&slice) != 0);
+
+  Slice::operator=(slice);
+  _consumer = ((MsmSlice&)slice)._consumer;
+  return *this;
 }
 
 void MsmSlice::simplify() {
@@ -193,7 +201,7 @@ bool MsmSlice::getLowerBound(Term& bound, size_t var) const {
   }
 }
 
-void MsmSlice::twoVarBaseCase(TermConsumer* consumer) {
+void MsmSlice::twoVarBaseCase() {
   ASSERT(_varCount == 2);
 
   singleDegreeSortIdeal(0);
@@ -220,12 +228,12 @@ void MsmSlice::twoVarBaseCase(TermConsumer* consumer) {
       term[0] += _multiply[0];
       term[1] += _multiply[1];
       
-      consumer->consume(term);
+      _consumer->consume(term);
     }
   }
 }
 
-void MsmSlice::oneMoreGeneratorBaseCase(TermConsumer* consumer) {
+void MsmSlice::oneMoreGeneratorBaseCase() {
   ASSERT(_varCount + 1 == getIdeal().getGeneratorCount());
 
   // Since the slice is fully simplified, we must be dealing with an
@@ -252,7 +260,7 @@ void MsmSlice::oneMoreGeneratorBaseCase(TermConsumer* consumer) {
 	  msm[var] = 0; // try *it as var-label
       if (!getSubtract().contains(msm)) {
 		_multiply[var] -= getLcm()[var] - 1;
-		consumer->consume(_multiply);
+		_consumer->consume(_multiply);
 		_multiply[var] += getLcm()[var] - 1;
       }
 	  msm[var] = getLcm()[var] - 1;
@@ -288,7 +296,7 @@ bool getTheOnlyTwoNonMax(Ideal::const_iterator it,
   return count == 2;
 }
 
-bool MsmSlice::twoNonMaxBaseCase(TermConsumer* consumer) {
+bool MsmSlice::twoNonMaxBaseCase() {
   const Term& lcm = getLcm();
   Ideal::const_iterator stop = getIdeal().end();
 
@@ -340,7 +348,7 @@ bool MsmSlice::twoNonMaxBaseCase(TermConsumer* consumer) {
       msm[var2] = nonMax2[var2] - 1;
       if (!getSubtract().contains(msm)) {
 		tmp.product(msm, _multiply);
-		consumer->consume(tmp);
+		_consumer->consume(tmp);
       }
       msm[var2] = lcm[var2] - 1;
       msm[var1] = lcm[var1] - 1;
@@ -359,7 +367,7 @@ bool MsmSlice::twoNonMaxBaseCase(TermConsumer* consumer) {
     msm[var] = e - 1;
     if (!getSubtract().contains(msm)) {
       tmp.product(msm, _multiply);
-      consumer->consume(tmp);
+      _consumer->consume(tmp);
     }
     msm[var] = lcm[var] - 1;
   }
