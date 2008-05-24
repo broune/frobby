@@ -76,11 +76,21 @@ void HelpAction::displayTopic() {
 
     for (vector<Parameter*>::const_iterator it = parameters.begin();
 		 it != parameters.end(); ++it) {
+
       string defaultValue;
       (*it)->getValue(defaultValue);
+
+	  string rawDesc((*it)->getDescription());
+	  string desc;
+	  for (size_t i = 0; i < rawDesc.size(); ++i) {
+		desc += rawDesc[i];
+		if (rawDesc[i] == '\n' && i + 1 != rawDesc.size())
+		  desc += "   "; // do proper indentation.";
+	  }
+
       fprintf(stdout, "\n -%s %s   (default is %s)\n   %s\n",
 			  (*it)->getName(), (*it)->getParameterName(),
-			  defaultValue.c_str(), (*it)->getDescription());
+			  defaultValue.c_str(), desc.c_str());
     }
   }
 }

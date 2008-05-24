@@ -1,4 +1,4 @@
-R = ZZ[{}];
+R = QQ[];
 I = monomialIdeal(
  1
 );

@@ -25,11 +25,17 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   CanonicalCoefTermConsumer.cpp HilbertStrategy.cpp Slice.cpp			\
   SliceStrategyCommon.cpp DebugStrategy.cpp
 
-# This is for Mac 10.5. On other platforms this does not hurt, though it would
-# be nicer to not do it then.
-GMP_INC_DIR="/sw/include"
+# This is for Mac 10.5. On other platforms this does not hurt, though
+# it would be nicer to not do it then. The same thing is true of
+# -L/sw/lib for ldflags.
+ifndef GMP_INC_DIR
+  GMP_INC_DIR="/sw/include"
+endif
 
-ldflags = -lgmpxx -lgmp -L/sw/lib
+ifndef ldflags
+  ldflags = -lgmpxx -lgmp -L/sw/lib
+endif
+
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
          -Wno-unused-parameter -Werror -isystem $(GMP_INC_DIR)
 program = frobby
