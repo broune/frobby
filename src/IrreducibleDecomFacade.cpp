@@ -296,8 +296,8 @@ runSliceAlgorithm(Ideal& ideal, MsmStrategy* strategy) {
   if (_parameters.getPrintDebug())
     strategy = MsmStrategy::addDebugOutput(strategy);
 
-  SliceAlgorithm alg;
-  alg.setUseIndependence(_parameters.getUseIndependence());
-  alg.setStrategy(strategy);
-  alg.runAndClear(ideal);
+  strategy->setUseIndependence(_parameters.getUseIndependence());
+
+  ::computeMaximalStandardMonomials(ideal, strategy);
+  delete strategy; // TODO: is this way of doing it really necessary?
 }

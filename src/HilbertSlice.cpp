@@ -208,6 +208,14 @@ bool HilbertSlice::baseCase() {
   return true;
 }
 
+Slice& HilbertSlice::operator=(const Slice& slice) {
+  ASSERT(dynamic_cast<const HilbertSlice*>(&slice) != 0);
+
+  Slice::operator=(slice);
+  _consumer = ((HilbertSlice&)slice)._consumer;
+  return *this;
+}
+
 void HilbertSlice::simplify() {
   ASSERT(!normalize());
 

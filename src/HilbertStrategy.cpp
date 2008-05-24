@@ -163,8 +163,8 @@ HilbertStrategy::~HilbertStrategy() {
   }
 }
 
-HilbertSlice* HilbertStrategy::setupInitialSlice(const Ideal& ideal,
-												 CoefTermConsumer* consumer) {
+Slice* HilbertStrategy::setupInitialSlice(const Ideal& ideal,
+										  CoefTermConsumer* consumer) {
   ASSERT(consumer != 0);
   _term.reset(ideal.getVarCount());
 
@@ -190,12 +190,22 @@ HilbertSlice* HilbertStrategy::setupInitialSlice(const Ideal& ideal,
   return slice;
 }
 
-pair<HilbertSlice*, HilbertSlice*>
-HilbertStrategy::split(HilbertSlice* slice, SliceEvent*& event) {
-  event = 0;
-  pair<HilbertSlice*, HilbertSlice*> slicePair;
-  if (_useIndependence && independenceSplit(slice, slicePair, event))
-	return slicePair;
+void HilbertStrategy::
+split(Slice* sliceParam,
+	  SliceEvent*& leftEvent, Slice*& leftSlice,
+	  SliceEvent*& rightEvent, Slice*& rightSlice) {
+  ASSERT(sliceParam != 0);
+  ASSERT(dynamic_cast<HilbertSlice*>(sliceParam) != 0);
+  HilbertSlice* slice = (HilbertSlice*)sliceParam;
+
+  ASSERT(leftEvent == 0);
+  ASSERT(leftSlice == 0);
+  ASSERT(rightEvent == 0);
+  ASSERT(rightSlice == 0);
+
+  if (_useIndependence &&
+	  independenceSplit(slice, leftEvent, leftSlice, rightSlice))
+	return;
 
   Term _term(slice->getVarCount());
   getPivot(_term, *slice);
@@ -215,18 +225,18 @@ HilbertStrategy::split(HilbertSlice* slice, SliceEvent*& event) {
   slice->outerSlice(_term);
   slice->simplify();
 
-  slicePair.first = inner;
-  slicePair.second = slice;
+  leftSlice = inner;
+  rightSlice = slice;
 
   // Process smaller slices before larger ones to preserve memory.
-  if (slicePair.first->getIdeal().getGeneratorCount() <
-	  slicePair.second->getIdeal().getGeneratorCount())
-	swap(slicePair.first, slicePair.second);
-  return slicePair;
+  if (leftSlice->getIdeal().getGeneratorCount() <
+	  rightSlice->getIdeal().getGeneratorCount())
+	swap(leftSlice, rightSlice);
 }
 
-void HilbertStrategy::freeSlice(HilbertSlice* slice) {
+void HilbertStrategy::freeSlice(Slice* slice) {
   ASSERT(slice != 0);
+  ASSERT(dynamic_cast<HilbertSlice*>(slice) != 0);
 
   slice->clear(); // To preserve memory.
   _sliceCache.push_back(slice);
@@ -236,12 +246,13 @@ HilbertSlice* HilbertStrategy::newSlice() {
   if (_sliceCache.empty())
 	return new HilbertSlice();
 
-  HilbertSlice* slice = _sliceCache.back();
+  Slice* slice = _sliceCache.back();
+  ASSERT(dynamic_cast<HilbertSlice*>(slice) != 0);
   _sliceCache.pop_back();
-  return slice;
+  return (HilbertSlice*)slice;
 }
 
-void HilbertStrategy::getPivot(Term& term, HilbertSlice& slice) {
+void HilbertStrategy::getPivot(Term& term, Slice& slice) {
   ASSERT(term.getVarCount() == slice.getVarCount());
 
   // Get best (most populated) variable to split on. Term serves
@@ -284,9 +295,10 @@ void HilbertStrategy::freeConsumer(HilbertIndependenceConsumer* consumer) {
   _consumerCache.push_back(consumer);
 }
 
-bool HilbertStrategy::independenceSplit
-(HilbertSlice* slice, pair<HilbertSlice*, HilbertSlice*>& slicePair,
- SliceEvent*& event) {
+bool HilbertStrategy::independenceSplit(HilbertSlice* slice,
+										SliceEvent*& leftEvent,
+										Slice*& leftSlice,
+										Slice*& rightSlice) {
   ASSERT(slice != 0);
 
   static IndependenceSplitter splitter; // TODO: get rid of static
@@ -295,18 +307,17 @@ bool HilbertStrategy::independenceSplit
 
   HilbertIndependenceConsumer* consumer = newConsumer();
   consumer->reset(slice->getConsumer(), splitter, slice->getVarCount());
-  event = consumer;
+  leftEvent = consumer;
 
-  HilbertSlice* leftSlice = newSlice();
-  leftSlice->setToProjOf(*slice, consumer->getLeftProjection(),
-						 consumer->getLeftConsumer());
+  HilbertSlice* hilbertLeftSlice = newSlice();
+  hilbertLeftSlice->setToProjOf(*slice, consumer->getLeftProjection(),
+								consumer->getLeftConsumer());
+  leftSlice = hilbertLeftSlice;
 
-  HilbertSlice* rightSlice = newSlice();
-  rightSlice->setToProjOf(*slice, consumer->getRightProjection(),
-						  consumer->getRightConsumer());
-
-  slicePair.first = leftSlice;
-  slicePair.second = rightSlice;
+  HilbertSlice* hilbertRightSlice = newSlice();
+  hilbertRightSlice->setToProjOf(*slice, consumer->getRightProjection(),
+								 consumer->getRightConsumer());
+  rightSlice = hilbertRightSlice;
 
   freeSlice(slice);
 

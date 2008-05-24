@@ -38,13 +38,13 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
 
   // ************* new interface
 
-  MsmSlice* setupInitialSlice(const Ideal& ideal, TermConsumer* consumer);
+  Slice* setupInitialSlice(const Ideal& ideal, TermConsumer* consumer);
 
-  void split(MsmSlice* slice,
-			 SliceEvent*& leftEvent, MsmSlice*& leftSlice,
-			 SliceEvent*& rightEvent, MsmSlice*& rightSlice);
+  virtual void split(Slice* slice,
+					 SliceEvent*& leftEvent, Slice*& leftSlice,
+					 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  void freeSlice(MsmSlice* slice);
+  virtual void freeSlice(Slice* slice);
 
   void setUseIndependence(bool useIndependence) {
 	_useIndependence = useIndependence;
@@ -53,26 +53,27 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
  private:
   MsmSlice* newSlice();
 
-  pair<MsmSlice*, MsmSlice*> labelSplit(MsmSlice* slice);
-  pair<MsmSlice*, MsmSlice*> pivotSplit(MsmSlice* slice);
-  bool independenceSplit
-	(MsmSlice* slice,
-	 SliceEvent*& leftEvent, MsmSlice*& leftSlice,
-	 SliceEvent*& rightEvent, MsmSlice*& rightSlice);
+  void labelSplit(Slice* slice,
+				  Slice*& leftSlice, Slice*& rightSlice);
+  void pivotSplit(Slice* slice,
+				  Slice*& leftSlice, Slice*& rightSlice);
+  bool independenceSplit(MsmSlice* slice,
+						 SliceEvent*& leftEvent, Slice*& leftSlice,
+						 SliceEvent*& rightEvent, Slice*& rightSlice);
 
   // It would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
-  vector<MsmSlice*> _sliceCache;
+  vector<Slice*> _sliceCache;
 
   bool _useIndependence;
 
   // ************* old interface
  public:
 
-  virtual void initialize(const MsmSlice& slice);
+  virtual void initialize(const Slice& slice);
 
   // *** Methods for handling independence splits
-  virtual void doingIndependenceSplit(const MsmSlice& slice,
+  virtual void doingIndependenceSplit(const Slice& slice,
 									  IndependenceSplitter& splitter) = 0;
   virtual void doingIndependentPart(const Projection& projection,
 									bool last) = 0;
@@ -84,16 +85,16 @@ class MsmStrategy : public SliceStrategy, public TermConsumer {
     LabelSplit = 1,
     PivotSplit = 2
   };
-  virtual SplitType getSplitType(const MsmSlice& slice) = 0;
+  virtual SplitType getSplitType(const Slice& slice) = 0;
 
-  virtual void getPivot(Term& pivot, MsmSlice& slice);
-  virtual size_t getLabelSplitVariable(const MsmSlice& slice);
+  virtual void getPivot(Term& pivot, Slice& slice);
+  virtual size_t getLabelSplitVariable(const Slice& slice);
 
   // report a msm to the strategy.
   virtual void consume(const Term& term) = 0;
 
   // Simplifies the slice prior to a split.
-  virtual void simplify(MsmSlice& slice);
+  virtual void simplify(Slice& slice);
 
 
   // *** Static methods to create strategies.

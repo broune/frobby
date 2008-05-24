@@ -21,7 +21,7 @@
 #include "Ideal.h"
 #include "TermTranslator.h"
 #include "IOHandler.h"
-#include "HilbertSliceAlgorithm.h"
+#include "SliceAlgorithm.h"
 
 #include "Macaulay2IOHandler.h"
 #include "CanonicalCoefTermConsumer.h"
@@ -136,9 +136,8 @@ void IdealFacade::printHilbertSeries(const BigIdeal& bigIdeal,
   if (canonicalize)
 	consumer = new CanonicalCoefTermConsumer(consumer, ideal.getVarCount());
 
-  HilbertSliceAlgorithm algo;
-  algo.setConsumer(consumer);
-  algo.run(ideal);
+  ::computeHilbertSeries(ideal, consumer);
+  delete consumer;
 
   endAction();
 }

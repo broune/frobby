@@ -17,53 +17,21 @@
 #include "stdinc.h"
 #include "SliceAlgorithm.h"
 
-#include "Term.h"
-#include "VarNames.h"
-#include "IOHandler.h"
-#include "TermTranslator.h"
-#include "Ideal.h"
-#include "Partition.h"
-#include "MsmSlice.h"
+#include "Slice.h"
 #include "MsmStrategy.h"
+#include "HilbertStrategy.h"
 #include "SliceEvent.h"
 
-#include "IndependenceSplitter.h"
+void runSliceAlgorithm(Slice* initialSlice, SliceStrategy* strategy) {
+  ASSERT(initialSlice != 0);
+  ASSERT(strategy != 0);
 
-SliceAlgorithm::SliceAlgorithm():
-  _useIndependence(true),
-  _strategy(0) {
-}
-
-void SliceAlgorithm::setStrategy(MsmStrategy* strategy) {
-  delete _strategy;
-  _strategy = strategy;
-}
-
-void SliceAlgorithm::setUseIndependence(bool useIndependence) {
-  _useIndependence = useIndependence;
-}
-
-void SliceAlgorithm::runAndClear(Ideal& ideal) {
-  ASSERT(_strategy != 0);
-
-  _strategy->setUseIndependence(_useIndependence);
-  content(_strategy->setupInitialSlice(ideal, _strategy));
-
-  // Now reset the fields to their default values.
-  delete _strategy;
-  _strategy = 0;
-
-  _useIndependence = true;
-}
-
-void SliceAlgorithm::content(MsmSlice* initialSlice) {
   vector<SliceEvent*> events;
-
-  vector<MsmSlice*> slices;
+  vector<Slice*> slices;
   slices.push_back(initialSlice);
 
   while (!slices.empty()) {
-	MsmSlice* slice = slices.back();
+	Slice* slice = slices.back();
 	slices.pop_back();
 
 	if (slice == 0) {
@@ -72,18 +40,18 @@ void SliceAlgorithm::content(MsmSlice* initialSlice) {
 	  continue;
 	}
 
-	if (slice->baseCase(_strategy)) {
-	  _strategy->freeSlice(slice);
+	if (slice->baseCase()) {
+	  strategy->freeSlice(slice);
 	  continue;
 	}
 
-	SliceEvent* leftEvent;
-	SliceEvent* rightEvent;
-	MsmSlice* leftSlice;
-	MsmSlice* rightSlice;
-	_strategy->split(slice,
-					 leftEvent, leftSlice,
-					 rightEvent, rightSlice);
+	SliceEvent* leftEvent = 0;
+	SliceEvent* rightEvent = 0;
+	Slice* leftSlice = 0;
+	Slice* rightSlice = 0;
+	strategy->split(slice,
+					leftEvent, leftSlice,
+					rightEvent, rightSlice);
 
 	if (leftEvent != 0) {
 	  slices.push_back(0);
@@ -103,7 +71,17 @@ void SliceAlgorithm::content(MsmSlice* initialSlice) {
   }
 }
 
-bool computeSingleMSM2(const MsmSlice& slice, Term& msm) {
+
+void computeMaximalStandardMonomials(Ideal& ideal, MsmStrategy* strategy) {
+  runSliceAlgorithm(strategy->setupInitialSlice(ideal, strategy), strategy);
+}
+
+void computeHilbertSeries(const Ideal& ideal, CoefTermConsumer* consumer) {
+  HilbertStrategy strategy;
+  runSliceAlgorithm(strategy.setupInitialSlice(ideal, consumer), &strategy);
+}
+
+bool computeSingleMSM2(const Slice& slice, Term& msm) {
   msm.reset(slice.getVarCount());
   Term lcm(slice.getLcm());
 
@@ -135,7 +113,7 @@ bool computeSingleMSM2(const MsmSlice& slice, Term& msm) {
   return true;
 }
 
-bool computeSingleMSM(const MsmSlice& slice, Term& msm) {
+bool computeSingleMSM(const Slice& slice, Term& msm) {
   for (size_t var = 0; var < msm.getVarCount(); ++var)
     if (slice.getLcm()[var] == 0)
       return false;

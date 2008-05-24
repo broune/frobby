@@ -21,7 +21,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp					\
   AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
   TranslatingTermConsumer.cpp frobbyTest.cpp HilbertAction.cpp			\
-  HilbertSlice.cpp HilbertSliceAlgorithm.cpp Polynomial.cpp				\
+  HilbertSlice.cpp Polynomial.cpp										\
   CanonicalCoefTermConsumer.cpp HilbertStrategy.cpp Slice.cpp			\
   SliceStrategy.cpp
 

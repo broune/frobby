@@ -36,13 +36,12 @@ class MsmSlice : public Slice {
 
   // *** Mutators
 
-  // Returns true if a base case is reached, and in that case outputs
-  // the content to consumer. The slice must be fully simplified.
-  //
   // A base case is reached if not all variables divide the lcm of
   // getIdeal(), or if getGeneratorCount() is 2, or if getIdeal() is
   // square free.
-  bool baseCase(TermConsumer* consumer);
+  virtual bool baseCase();
+
+  virtual Slice& operator=(const Slice& slice);
 
   virtual void simplify();
   virtual bool simplifyStep();
@@ -72,7 +71,7 @@ class MsmSlice : public Slice {
   // Outputs the content of the slice to consumer. It is a
   // precondition that the slice is fully simplified and that
   // getVarCount() returns 2.
-  void twoVarBaseCase(TermConsumer* consumer);
+  void twoVarBaseCase();
 
   // Outputs the content of the slice to consumer. It is a
   // precondition that the slice is fully simplified and that
@@ -80,13 +79,13 @@ class MsmSlice : public Slice {
   // getIdeal().getGeneratorCount(). This will, due to simplification,
   // be true if there is exactly one generator that is nowhere equal
   // to the lcm of getIdeal().
-  void oneMoreGeneratorBaseCase(TermConsumer* consumer);
+  void oneMoreGeneratorBaseCase();
 
   // Outputs the content of the slice to consumer or returns false. It
   // is a precondition that the slice is fully simplified. Returns
   // true if there are exactly two generators that are nowhere equal
   // to the lcm of getIdeal().
-  bool twoNonMaxBaseCase(TermConsumer* consumer);
+  bool twoNonMaxBaseCase();
 
   TermConsumer* _consumer;
 };
