@@ -31,7 +31,7 @@ class Slice;
 
 class HilbertStrategy : public SliceStrategyCommon {
  public:
-  HilbertStrategy(CoefTermConsumer* consumer, bool useIndependence = false);
+  HilbertStrategy(CoefTermConsumer* consumer);
   virtual ~HilbertStrategy();
 
   virtual Slice* setupInitialSlice(const Ideal& ideal);
