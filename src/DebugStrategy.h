@@ -30,6 +30,8 @@ class DebugStrategy : public SliceStrategy {
   DebugStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~DebugStrategy();
 
+  virtual void setUseIndependence(bool use);
+
   virtual Slice* setupInitialSlice(const Ideal& ideal);
 
   virtual void split(Slice* slice,

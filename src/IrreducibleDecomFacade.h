@@ -24,7 +24,7 @@ class IrreducibleDecomParameters;
 class BigIdeal;
 class Strategy;
 class TermTranslator;
-class MsmStrategy;
+class SliceStrategy;
 class Ideal;
 class TermConsumer;
 
@@ -64,7 +64,7 @@ class IrreducibleDecomFacade : private Facade {
 							   TermConsumer* consumer,
 							   bool preMinimized);
 
-  void runSliceAlgorithm(Ideal& ideal, MsmStrategy* strategy);
+  void runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy);
 
   const IrreducibleDecomParameters& _parameters;
 };

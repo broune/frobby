@@ -57,10 +57,6 @@ class MsmStrategy : public SliceStrategyCommon {
 					 SliceEvent*& leftEvent, Slice*& leftSlice,
 					 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  void setUseIndependence(bool useIndependence) {
-	_useIndependence = useIndependence;
-  }
-
   virtual void getPivot(Term& pivot, Slice& slice); // TODO: make this private
 
  private:
@@ -87,10 +83,6 @@ class MsmStrategy : public SliceStrategyCommon {
   // These report an error and exit the program if the name is unknown.
   static MsmStrategy* newDecomStrategy(const string& name,
 									   TermConsumer* consumer);
-  static MsmStrategy* newFrobeniusStrategy(const string& name,
-										   TermConsumer* consumer,
-										   TermGrader& grader,
-										   bool useBound);
 
  private:
   enum SplitStrategy {
@@ -98,7 +90,6 @@ class MsmStrategy : public SliceStrategyCommon {
     PivotSplit = 2
   };
 
-  bool _useIndependence;
   SplitStrategy _splitStrategy;
   PivotStrategy _pivotStrategy;
   LabelStrategy _labelStrategy;
