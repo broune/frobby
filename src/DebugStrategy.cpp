@@ -30,6 +30,14 @@ DebugStrategy::~DebugStrategy() {
   fflush(_out);
 }
 
+void DebugStrategy::setUseIndependence(bool use) {
+  if (use)
+	fputs("Turning on independence splits.", _out);
+  else
+	fputs("Turning off independence splits.", _out);
+  _strategy->setUseIndependence(use);
+}
+
 Slice* DebugStrategy::setupInitialSlice(const Ideal& ideal) {
   fputs("Constructing initial slice.\n", _out);
   return _strategy->setupInitialSlice(ideal);

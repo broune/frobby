@@ -32,6 +32,7 @@
 #include "TermConsumer.h"
 #include "IdealFacade.h"
 #include "DebugStrategy.h"
+#include "FrobeniusStrategy.h"
 
 #include "TranslatingTermConsumer.h"
 
@@ -268,7 +269,7 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
   vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
   TermGrader grader(shiftedDegrees, &translator);
 
-  MsmStrategy* strategy = MsmStrategy::newFrobeniusStrategy
+  MsmStrategy* strategy = FrobeniusStrategy::newFrobeniusStrategy
 	(_parameters.getSplit(), &recorder, grader, _parameters.getUseBound());
 
   runSliceAlgorithm(ideal, strategy);
@@ -288,20 +289,17 @@ computeFrobeniusNumber(const vector<mpz_class>& instance,
 }
 
 void IrreducibleDecomFacade::
-runSliceAlgorithm(Ideal& ideal, MsmStrategy* strategyParam) {
-  ASSERT(strategyParam != 0);
+runSliceAlgorithm(Ideal& ideal, SliceStrategy* strategy) {
+  ASSERT(strategy != 0);
 
-  strategyParam->setUseIndependence(_parameters.getUseIndependence());
+  strategy->setUseIndependence(_parameters.getUseIndependence());
+
+  if (_parameters.getPrintDebug())
+	strategy = new DebugStrategy(strategy, stderr);
 
   // TODO: reimplement
   //if (_parameters.getPrintStatistics())
   //  strategyParam = MsmStrategy::addStatistics(strategyParam);
-
-  // TODO: move away from MsmStrategy to avoid the need for this.
-  SliceStrategy* strategy = strategyParam;
-
-  if (_parameters.getPrintDebug())
-	strategy = new DebugStrategy(strategy, stderr);
 
   ::computeMaximalStandardMonomials(ideal, strategy);
   delete strategy; // TODO: is this way of doing it really necessary?

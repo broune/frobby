@@ -34,6 +34,8 @@ class SliceStrategyCommon : public SliceStrategy {
 
   virtual void freeSlice(Slice* slice);
 
+  virtual void setUseIndependence(bool use);
+
  protected:
   // Directly allocate a slice of the correct type using new.
   virtual Slice* allocateSlice() = 0;
@@ -57,6 +59,8 @@ class SliceStrategyCommon : public SliceStrategy {
   // Used by pivotSplit to obtain a pivot.
   virtual void getPivot(Term& pivot, Slice& slice) = 0;
 
+  bool getUseIndependence() const;
+
   enum PivotStrategy {
 	Unknown, // Cannot be used to obtain pivots.
     Minimum,
@@ -71,6 +75,8 @@ class SliceStrategyCommon : public SliceStrategy {
   static PivotStrategy getPivotStrategy(const string& name);
 
  private:
+  bool _useIndependence;
+
   // This is the cache maintained through newSlice and freeSlice. It
   // would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
