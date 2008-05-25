@@ -99,3 +99,7 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
 
   return true;
 }
+
+size_t IndependenceSplitter::getVarCount() const {
+  return _partition.getSize();
+}

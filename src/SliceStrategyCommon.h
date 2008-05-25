@@ -29,6 +29,7 @@ class Term;
 // for derived classes.
 class SliceStrategyCommon : public SliceStrategy {
  public:
+  SliceStrategyCommon();
   virtual ~SliceStrategyCommon();
 
   virtual void freeSlice(Slice* slice);

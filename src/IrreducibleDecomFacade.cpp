@@ -293,8 +293,9 @@ runSliceAlgorithm(Ideal& ideal, MsmStrategy* strategyParam) {
 
   strategyParam->setUseIndependence(_parameters.getUseIndependence());
 
-  if (_parameters.getPrintStatistics())
-    strategyParam = MsmStrategy::addStatistics(strategyParam);
+  // TODO: reimplement
+  //if (_parameters.getPrintStatistics())
+  //  strategyParam = MsmStrategy::addStatistics(strategyParam);
 
   // TODO: move away from MsmStrategy to avoid the need for this.
   SliceStrategy* strategy = strategyParam;

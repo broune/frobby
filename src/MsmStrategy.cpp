@@ -38,9 +38,8 @@ Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal) {
   Slice* slice = new MsmSlice(ideal,
 							  Ideal(varCount),
 							  sliceMultiply,
-							  this);
+							  _consumer);
   simplify(*slice);
-  initialize(*slice);
 
   return slice;
 }
@@ -124,21 +123,39 @@ void MsmStrategy::labelSplit(Slice* slice,
   rightSlice = slice;
 }
 
-MsmStrategy::MsmStrategy():
-  _useIndependence(true) {
+MsmStrategy::MsmStrategy(TermConsumer* consumer): 
+  _useIndependence(true),
+  _consumer(consumer) {
 }
 
 MsmStrategy::~MsmStrategy() {
 }
 
-class IndepEvents {
+void MsmStrategy::setPivotStrategy(PivotStrategy pivotStrategy) {
+  _splitStrategy = PivotSplit;
+  _pivotStrategy = pivotStrategy;
+  _labelStrategy = Unknown2;
+}
+
+void MsmStrategy::setLabelStrategy(LabelStrategy labelStrategy) {
+  _splitStrategy = LabelSplit;
+  _pivotStrategy = Unknown;
+  _labelStrategy = labelStrategy;
+}
+
+
+class MsmIndependenceSplit : public TermConsumer, public SliceEvent {
 public:
   SliceEvent* getLeftEvent() {
-	return &_leftEvent;
+	return this;
   }
 
-  SliceEvent* getRightEvent() {
-	return &_rightEvent;
+  TermConsumer* getLeftConsumer() {
+	return this;
+  }
+
+  TermConsumer* getRightConsumer() {
+	return &_rightConsumer;
   }
 
   const Projection& getLeftProjection() {
@@ -149,72 +166,47 @@ public:
 	return _rightProjection;
   }
 
-  static IndepEvents* newEvents(MsmStrategy* strategy,
-								const Slice& slice,
-								IndependenceSplitter& splitter) {
-	return new IndepEvents(strategy, slice, splitter);
-  }
+  void reset(TermConsumer* consumer,
+			 IndependenceSplitter& splitter) {
+	_consumer = consumer;
+	_tmpTerm.reset(splitter.getVarCount());
 
-private:
-  IndepEvents(MsmStrategy* strategy,
-			  const Slice& slice,
-			  IndependenceSplitter& splitter):
-	_strategy(strategy),
-	_leftEvent(this),
-	_rightEvent(this) {
 	splitter.getBigProjection(_leftProjection);
 	splitter.getRestProjection(_rightProjection);
 
-	_strategy->doingIndependenceSplit(slice, splitter);
-	_strategy->doingIndependentPart(_rightProjection, false);
+	_rightConsumer._decom.clearAndSetVarCount
+	  (_rightProjection.getRangeVarCount());	
   }
 
-  void raiseLeftEvent() {
-	_strategy->doneWithIndependenceSplit();
+private:
+  virtual void raiseEvent() {
 	delete this;
   }
 
-  void raiseRightEvent() {
-	_strategy->doingIndependentPart(_leftProjection, true);
+  virtual void consume(const Term& term) {
+	_leftProjection.inverseProject(_tmpTerm, term);
+	Ideal::const_iterator stop = _rightConsumer._decom.end();
+	for (Ideal::const_iterator it = _rightConsumer._decom.begin();
+		 it != stop; ++it) {
+	  _rightProjection.inverseProject(_tmpTerm, *it);
+	  _consumer->consume(_tmpTerm);
+	}
   }
 
-  class LeftEvent : public SliceEvent {
-  public:
-	LeftEvent(IndepEvents* events):
-	  _events(events) {
+  struct RightConsumer : public TermConsumer {
+	virtual void consume(const Term& term) {
+	  _decom.insert(term);
 	}
 
-	virtual void raiseEvent() {
-	  _events->raiseLeftEvent();
-	}
+	Ideal _decom;
+  } _rightConsumer;
 
-  private:
-	IndepEvents* _events;
-  };
+  TermConsumer* _consumer;
 
-  class RightEvent : public SliceEvent {
-  public:
-	RightEvent(IndepEvents* events):
-	  _events(events) {
-	}
-
-	virtual void raiseEvent() {
-	  _events->raiseRightEvent();
-	}
-
-	IndepEvents* _events;
-  };
-
-  MsmStrategy* _strategy;
-
-  LeftEvent _leftEvent;
-  RightEvent _rightEvent;
-
-  // have to have two projections, as the strategy keeps a reference
-  // to the projection rather than copy it or something like that.
-  // TODO: change (=fix) this.
   Projection _leftProjection;
   Projection _rightProjection;
+
+  Term _tmpTerm;
 };
 
 bool MsmStrategy::independenceSplit
@@ -226,16 +218,17 @@ bool MsmStrategy::independenceSplit
   if (!indep.analyze(*slice))
     return false;
 
-  IndepEvents* events = IndepEvents::newEvents(this, *slice, indep);
+  MsmIndependenceSplit* events = new MsmIndependenceSplit();
+  events->reset(slice->getConsumer(), indep);
 
-  leftEvent = events->getLeftEvent();
+  leftEvent = events;
   MsmSlice* msmLeftSlice = new MsmSlice();
-  msmLeftSlice->setToProjOf(*slice, events->getLeftProjection(), this);
+  msmLeftSlice->setToProjOf(*slice, events->getLeftProjection(), events);
   leftSlice = msmLeftSlice;
 
-  rightEvent = events->getRightEvent();
   MsmSlice* msmRightSlice = new MsmSlice();
-  msmRightSlice->setToProjOf(*slice, events->getRightProjection(), this);
+  msmRightSlice->setToProjOf(*slice, events->getRightProjection(),
+							 events->getRightConsumer());
   rightSlice = msmRightSlice;
 
   freeSlice(slice);
@@ -248,20 +241,18 @@ void MsmStrategy::split(Slice* sliceParam,
 						SliceEvent*& rightEvent, Slice*& rightSlice) {
   ASSERT(sliceParam != 0);
   ASSERT(dynamic_cast<MsmSlice*>(sliceParam) != 0);
-  MsmSlice* slice = (MsmSlice*)sliceParam;
+  MsmSlice* slice = static_cast<MsmSlice*>(sliceParam);
 
   ASSERT(leftEvent == 0);
   ASSERT(leftSlice == 0);
   ASSERT(rightEvent == 0);
   ASSERT(rightSlice == 0);
 
-  if (_useIndependence &&
-	  independenceSplit(slice,
-						leftEvent, leftSlice,
-						rightEvent, rightSlice))
+  if (_useIndependence && independenceSplit
+	  (slice, leftEvent, leftSlice, rightEvent, rightSlice))
 	return;
 
-  switch (getSplitType(*slice)) {
+  switch (_splitStrategy) {
   case MsmStrategy::LabelSplit:
 	labelSplit(slice, leftSlice, rightSlice);
 	break;
@@ -281,248 +272,99 @@ void MsmStrategy::split(Slice* sliceParam,
 	simplify(*rightSlice);
 }
 
-void MsmStrategy::initialize(const Slice& slice) {
-}
-
 void MsmStrategy::simplify(Slice& slice) {
   slice.simplify();
 }
 
 void MsmStrategy::getPivot(Term& pivot, Slice& slice) {
-  fputs("INTERNAL ERROR: Undefined MsmStrategy::getPivot called.\n", stderr);
-  ASSERT(false);
-  exit(1);
+  ASSERT(_splitStrategy == PivotSplit);
+  SliceStrategyCommon::getPivot(pivot, slice, _pivotStrategy);
 }
 
 size_t MsmStrategy::getLabelSplitVariable(const Slice& slice) {
-  fputs
-    ("INTERNAL ERROR: Undefined MsmStrategy::getLabelSplitVariable called.\n",
-     stderr);
-  ASSERT(false);
-  exit(1);
-}
+  ASSERT(_splitStrategy == LabelSplit);
 
-class DecomMsmStrategy : public MsmStrategy {
-public:
-  DecomMsmStrategy(TermConsumer* consumer):
-    _consumer(consumer) {
-  }
+  Term co(slice.getVarCount());
+  slice.getIdeal().getSupportCounts(co);
 
-  virtual ~DecomMsmStrategy() {
-    ASSERT(_independenceSplits.empty());
-    delete _consumer;
-  }
-
-  virtual void consume(const Term& term) {
-    ASSERT(getCurrentConsumer() != 0);
-
-    getCurrentConsumer()->consume(term);
-  }
-
-  virtual void doingIndependenceSplit(const Slice& slice,
-									  IndependenceSplitter& splitter) {
-    _independenceSplits.push_back
-      (new IndependenceSplit(splitter,
-							 getCurrentConsumer(),
-							 slice.getVarCount()));
-  }
- 
-  virtual void doingIndependentPart(const Projection& projection, bool last) {
-    getCurrentSplit()->setCurrentPart(projection, last);
-  }
-
-  virtual void doneWithIndependenceSplit() {
-    delete getCurrentSplit();
-    _independenceSplits.pop_back();
-  }
-
-private:
-  class IndependenceSplit : public TermConsumer {
-  public:
-    IndependenceSplit(IndependenceSplitter& splitter,
-					  TermConsumer* consumer,
-					  size_t varCount):
-	  _partialTerm(varCount),
-      _consumer(consumer) {
-      ASSERT(_consumer != 0);
-
-	  _right = true;
-	  splitter.getBigProjection(_leftProjection);
-	  splitter.getRestProjection(_rightProjection);
-
-	  _rightDecom.clearAndSetVarCount(_rightProjection.getRangeVarCount());
-    }
-
-    virtual void consume(const Term& term) {
-      if (_right)
-		consumeRight(term);
-	  else
-		consumeLeft(term);
-    }
-
-	void consumeLeft(const Term& term) {
-	  _leftProjection.inverseProject(_partialTerm, term);
-      Ideal::const_iterator stop = _rightDecom.end();
-      for (Ideal::const_iterator it = _rightDecom.begin(); it != stop; ++it) {
-		_rightProjection.inverseProject(_partialTerm, *it);
-		_consumer->consume(_partialTerm);
-      }
-	}
-
-	void consumeRight(const Term& term) {
-	  _rightDecom.insert(term);
-	}
-
-    void setCurrentPart(const Projection& projection, bool last) {
-	  _right = !last;
-    }
-
-  private:
-    Projection _leftProjection;
-	Projection _rightProjection;
-	Ideal _rightDecom;
-
-    Term _partialTerm;
-
-    TermConsumer* _consumer;
-
-	bool _right;
-  };
-
-  IndependenceSplit* getCurrentSplit() {
-    ASSERT(!_independenceSplits.empty());
-    ASSERT(_independenceSplits.back() != 0);
-    return _independenceSplits.back();
-  }
-
-  TermConsumer* getCurrentConsumer() {
-    if (_independenceSplits.empty())
-      return _consumer;
-    else
-      return getCurrentSplit();
-  }
-
-  vector<IndependenceSplit*> _independenceSplits;
-  TermConsumer* _consumer;
-};
-
-class LabelMsmStrategy : public DecomMsmStrategy {
-public:
-  enum Type {
-	MaxLabel,
-	MinLabel,
-    VarLabel
-  };
-
-  LabelMsmStrategy(Type type, TermConsumer* consumer):
-    DecomMsmStrategy(consumer),
-	_type(type) {
-  }
-
-  SplitType getSplitType(const Slice& slice) {
-    return LabelSplit;
-  }
-
-  size_t getLabelSplitVariable(const Slice& slice) {
-	Term co(slice.getVarCount());
-	slice.getIdeal().getSupportCounts(co);
-
-	if (_type == MaxLabel) {
-	  // Return the variable that divides the most minimal generators.
-	  // This cannot be an invalid split because if every count was 1,
-	  // then this would be a base case.
-	  return co.getFirstMaxExponent();
-	}
-
-	// For each variable, count number of terms with exponent of 1
-	Term co1(slice.getVarCount());
-	Ideal::const_iterator end = slice.getIdeal().end();
-	for (Ideal::const_iterator it = slice.getIdeal().begin();
-		 it != end; ++it) {
-	  // This way we avoid bad splits.
-	  if (getSizeOfSupport(*it, slice.getVarCount()) == 1)
-		continue;
-	  for (size_t var = 0; var < slice.getVarCount(); ++var)
-		if ((*it)[var] == 1)
-		  co1[var] += 1;
-	}
-
-	// The slice is simplified and not a base case slice.
-	ASSERT(!co1.isIdentity());
-
-	if (_type == VarLabel) {
-	  // Return the least variable that is valid.
-	  for (size_t var = 0; ; ++var) {
-		ASSERT(var < slice.getVarCount());
-		if (co1[var] > 0)
-		  return var;
-	  }
-	}
-
-	if (_type != MinLabel) {
-	  fputs("INTERNAL ERROR: Undefined label split type.\n", stderr);
-	  ASSERT(false);
-	  exit(1);
-	}
-
-	// Zero those variables of co that have more than the least number
-	// of exponent 1 minimal generators.
-	size_t mostGeneric = 0;
-	for (size_t var = 1; var < slice.getVarCount(); ++var)
-	  if (mostGeneric == 0 || (mostGeneric > co1[var] && co1[var] > 0))
-		mostGeneric = co1[var];
-	for (size_t var = 0; var < slice.getVarCount(); ++var)
-	  if (co1[var] != mostGeneric)
-		co[var] = 0;
-
-	// Among those with least exponent 1 minimal generators, return
-	// the variable that divides the most minimal generators.
+  if (_labelStrategy == MaxLabel) {
+	// Return the variable that divides the most minimal generators.
+	// This cannot be an invalid split because if every count was 1,
+	// then this would be a base case.
 	return co.getFirstMaxExponent();
   }
 
-  private:
-	Type _type;
-}; 
-
-class PivotMsmStrategy : public DecomMsmStrategy {
-public:
-  PivotMsmStrategy(PivotStrategy pivotStrategy, TermConsumer* consumer):
-    DecomMsmStrategy(consumer),
-    _pivotStrategy(pivotStrategy) {
-	srand(0); // to make things repeatable
+  // For each variable, count number of terms with exponent of 1
+  Term co1(slice.getVarCount());
+  Ideal::const_iterator end = slice.getIdeal().end();
+  for (Ideal::const_iterator it = slice.getIdeal().begin();
+	   it != end; ++it) {
+	// This way we avoid bad splits.
+	if (getSizeOfSupport(*it, slice.getVarCount()) == 1)
+	  continue;
+	for (size_t var = 0; var < slice.getVarCount(); ++var)
+	  if ((*it)[var] == 1)
+		co1[var] += 1;
   }
 
-  SplitType getSplitType(const Slice& slice) {
-    return PivotSplit;
+  // The slice is simplified and not a base case slice.
+  ASSERT(!co1.isIdentity());
+
+  if (_labelStrategy == VarLabel) {
+	// Return the least variable that is valid.
+	for (size_t var = 0; ; ++var) {
+	  ASSERT(var < slice.getVarCount());
+	  if (co1[var] > 0)
+		return var;
+	}
   }
 
-  void getPivot(Term& pivot, Slice& slice) {
-	SliceStrategyCommon::getPivot(pivot, slice, _pivotStrategy);
-	return;
-  }
-
-private:
-  PivotStrategy _pivotStrategy;
-};
-
-MsmStrategy* MsmStrategy::newDecomStrategy(const string& name,
-										   TermConsumer* consumer) {
-  if (name == "maxlabel")
-    return new LabelMsmStrategy(LabelMsmStrategy::MaxLabel, consumer);
-  else if (name == "minlabel")
-    return new LabelMsmStrategy(LabelMsmStrategy::MinLabel, consumer);
-  else if (name == "varlabel")
-    return new LabelMsmStrategy(LabelMsmStrategy::VarLabel, consumer);
-
-  SliceStrategyCommon::PivotStrategy pivotStrategy =
-	SliceStrategyCommon::getPivotStrategy(name);
-
-  if (pivotStrategy == SliceStrategyCommon::Unknown) {
-	fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n", name.c_str());
+  if (_labelStrategy != MinLabel) {
+	fputs("INTERNAL ERROR: Undefined label split type.\n", stderr);
+	ASSERT(false);
 	exit(1);
   }
 
-  return new PivotMsmStrategy(pivotStrategy, consumer);
+  // Zero those variables of co that have more than the least number
+  // of exponent 1 minimal generators.
+  size_t mostGeneric = 0;
+  for (size_t var = 1; var < slice.getVarCount(); ++var)
+	if (mostGeneric == 0 || (mostGeneric > co1[var] && co1[var] > 0))
+	  mostGeneric = co1[var];
+  for (size_t var = 0; var < slice.getVarCount(); ++var)
+	if (co1[var] != mostGeneric)
+	  co[var] = 0;
+
+  // Among those with least exponent 1 minimal generators, return
+  // the variable that divides the most minimal generators.
+  return co.getFirstMaxExponent();
+}
+
+bool MsmStrategy::setSplitStrategy(const string& name) {
+  if (name == "maxlabel")
+	setLabelStrategy(MaxLabel);
+  else if (name == "minlabel")
+	setLabelStrategy(MinLabel);
+  else if (name == "varlabel")
+	setLabelStrategy(VarLabel);
+  else {
+	PivotStrategy pivotStrategy = SliceStrategyCommon::getPivotStrategy(name);
+	if (pivotStrategy == Unknown)
+	  return false;
+
+	setPivotStrategy(pivotStrategy);
+  }
+  return true;
+}
+
+MsmStrategy* MsmStrategy::newDecomStrategy(const string& name,
+										   TermConsumer* consumer) {
+  MsmStrategy* strategy = new MsmStrategy(consumer);
+  if (!strategy->setSplitStrategy(name)) {
+	fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n", name.c_str());
+	exit(1);
+  }
+  return strategy;
 }
 
 class FrobeniusIndependenceSplit : public TermConsumer {
@@ -791,20 +633,24 @@ private:
 // does NOT get informed about anything other than pivot and label
 // split requests. If it is null, then a specialized grade-base pivot
 // selection algorithm is used.
-class FrobeniusMsmStrategy : public MsmStrategy {
+class FrobeniusMsmStrategy : public MsmStrategy, TermConsumer {
 public:
-  FrobeniusMsmStrategy(MsmStrategy* strategy,
-					   TermConsumer* consumer,
+  FrobeniusMsmStrategy(TermConsumer* consumer,
 					   TermGrader& grader,
 					   bool useBound):
-	_strategy(strategy),
+	MsmStrategy(this),
     _consumer(consumer),
     _grader(grader),
 	_useBound(useBound) {
-    ASSERT(_consumer != 0);
+    ASSERT(consumer != 0);
 
     _independenceSplits.push_back
       (new FrobeniusIndependenceSplit(_grader, _useBound));
+  }
+
+  void setFrobPivotStrategy() {
+	setPivotStrategy(Unknown);
+	_useFrobPivotStrategy = true;
   }
 
   virtual ~FrobeniusMsmStrategy() {
@@ -816,17 +662,6 @@ public:
     ASSERT(_independenceSplits.empty());
   }
 
-  virtual void initialize(const Slice& slice) {
-    // The purpose of this is to initialize the bound so that it can
-    // be used right away, instead of waiting for the slice algorithm
-    // to produce some output first.
-	if (_useBound) {
-	  Term msm;
-	  if (computeSingleMSM(slice, msm))
-		consume(msm);
-	}
-  }
-
   virtual void simplify(Slice& slice) {
     getCurrentSplit()->simplify(slice);
   }
@@ -835,47 +670,11 @@ public:
     getCurrentSplit()->consume(term);
   }
 
-  virtual SplitType getSplitType(const Slice& slice) {
-	if (_strategy == 0)
-	  return PivotSplit;
-	else
-	  return _strategy->getSplitType(slice);
-  }
-
   virtual void getPivot(Term& pivot, Slice& slice) {
-	if (_strategy != 0)
-	  _strategy->getPivot(pivot, slice);
-	else
+	if (_useFrobPivotStrategy)
 	  getCurrentSplit()->getPivot(pivot, slice);
-  }
-
-  virtual size_t getLabelSplitVariable(const Slice& slice) {
-	ASSERT(_strategy != 0);
-	return _strategy->getLabelSplitVariable(slice);
-  }
-
-  virtual void doingIndependenceSplit(const Slice& slice,
-									  IndependenceSplitter& splitter) {
-	_independenceSplits.push_back
-      (new FrobeniusIndependenceSplit
-       (getCurrentSplit()->getCurrentPartProjection(),
-		slice,
-		getCurrentSplit()->getCurrentPartValue(),
-		_grader,
-		_useBound));
-  }
-  
-  virtual void doingIndependentPart(const Projection& projection, bool last) {
-    getCurrentSplit()->setCurrentPart(projection);
-  }
-  
-  virtual void doneWithIndependenceSplit() {
-    FrobeniusIndependenceSplit* oldSplit = getCurrentSplit();
-    _independenceSplits.pop_back();
-
-    if (oldSplit->hasImprovement())
-      consume(oldSplit->getBound());
-    delete oldSplit;
+	else
+	  MsmStrategy::getPivot(pivot, slice);
   }
 
 private:
@@ -884,11 +683,12 @@ private:
     return _independenceSplits.back();
   }
 
-  MsmStrategy* _strategy;
   TermConsumer* _consumer;
   vector<FrobeniusIndependenceSplit*> _independenceSplits;
   const TermGrader& _grader;
   bool _useBound;
+
+  bool _useFrobPivotStrategy;
 };
 
 MsmStrategy* MsmStrategy::
@@ -896,23 +696,13 @@ newFrobeniusStrategy(const string& name,
 					 TermConsumer* consumer,
 					 TermGrader& grader,
 					 bool useBound) {
-  MsmStrategy* strategy;
+  FrobeniusMsmStrategy* strategy =
+	new FrobeniusMsmStrategy(consumer, grader, useBound);
+
   if (name == "frob")
-	strategy = 0;
+	strategy->setFrobPivotStrategy();
   else
-	strategy = newDecomStrategy(name, 0);
+	strategy->setSplitStrategy(name);
 
-  return new FrobeniusMsmStrategy(strategy, consumer, grader, useBound);
-}
-
-MsmStrategy* MsmStrategy::addStatistics(MsmStrategy* strategy) {
-  fputs("INTERNAL ERROR: statistics are awaiting reimplementation.", stderr);
-  ASSERT(false);
-  exit(1);
-}
-
-MsmStrategy* MsmStrategy::addDebugOutput(MsmStrategy* strategy) {
-  fputs("INTERNAL ERROR: debug is awaiting reimplementation.", stderr);
-  ASSERT(false);
-  exit(1);
+  return strategy;
 }
