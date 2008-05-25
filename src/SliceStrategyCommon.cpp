@@ -20,7 +20,8 @@
 #include "Slice.h"
 #include "Term.h"
 
-SliceStrategyCommon::SliceStrategyCommon() {
+SliceStrategyCommon::SliceStrategyCommon():
+  _useIndependence(true) {
   srand(0); // To make things repeatable.
 }
 
