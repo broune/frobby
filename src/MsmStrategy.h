@@ -32,10 +32,22 @@ class TermGrader;
 class IndependenceSplitter;
 class SliceEvent;
 
-class MsmStrategy : public SliceStrategyCommon, public TermConsumer {
+class MsmStrategy : public SliceStrategyCommon {
  public:
-  MsmStrategy();
+  enum LabelStrategy {
+	Unknown2, // TODO: rename
+	MaxLabel,
+	MinLabel,
+    VarLabel
+  };
+
+  MsmStrategy(TermConsumer* consumer);
   virtual ~MsmStrategy();
+
+  // Returns false if name is an unknown split strategy.
+  bool setSplitStrategy(const string& name);
+  void setPivotStrategy(PivotStrategy pivotStrategy);
+  void setLabelStrategy(LabelStrategy labelStrategy);
 
   // ************* new interface
 
@@ -63,39 +75,15 @@ class MsmStrategy : public SliceStrategyCommon, public TermConsumer {
 						 SliceEvent*& leftEvent, Slice*& leftSlice,
 						 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  bool _useIndependence;
-
-  // ************* old interface
- public:
-
-  virtual void initialize(const Slice& slice);
-
-  // *** Methods for handling independence splits
-  virtual void doingIndependenceSplit(const Slice& slice,
-									  IndependenceSplitter& splitter) = 0;
-  virtual void doingIndependentPart(const Projection& projection,
-									bool last) = 0;
-  virtual void doneWithIndependenceSplit() = 0;
-
-  // *** Methods for handling pivot and label splits
-
-  enum SplitType {
-    LabelSplit = 1,
-    PivotSplit = 2
-  };
-  virtual SplitType getSplitType(const Slice& slice) = 0;
-
-  virtual size_t getLabelSplitVariable(const Slice& slice);
-
-  // report a msm to the strategy.
-  virtual void consume(const Term& term) = 0;
-
   // Simplifies the slice prior to a split.
   virtual void simplify(Slice& slice);
 
+ private:
+  size_t getLabelSplitVariable(const Slice& slice);
+
 
   // *** Static methods to create strategies.
-
+ public:
   // These report an error and exit the program if the name is unknown.
   static MsmStrategy* newDecomStrategy(const string& name,
 									   TermConsumer* consumer);
@@ -104,8 +92,18 @@ class MsmStrategy : public SliceStrategyCommon, public TermConsumer {
 										   TermGrader& grader,
 										   bool useBound);
 
-  static MsmStrategy* addStatistics(MsmStrategy* strategy);
-  static MsmStrategy* addDebugOutput(MsmStrategy* strategy);
+ private:
+  enum SplitStrategy {
+    LabelSplit = 1,
+    PivotSplit = 2
+  };
+
+  bool _useIndependence;
+  SplitStrategy _splitStrategy;
+  PivotStrategy _pivotStrategy;
+  LabelStrategy _labelStrategy;
+
+  TermConsumer* _consumer;
 };
 
 #endif

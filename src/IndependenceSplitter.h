@@ -33,6 +33,8 @@ class IndependenceSplitter {
   // analyze returned true.
   bool analyze(const Slice& slice);
 
+  size_t getVarCount() const;
+
   size_t getOneVarCount() const {return _oneVarCount;}
   size_t getTwoVarCount() const {return _twoVarCount;}
   size_t getMoreThanTwoCount() const {return _moreThanTwoVarCount;}

@@ -20,6 +20,10 @@
 #include "Slice.h"
 #include "Term.h"
 
+SliceStrategyCommon::SliceStrategyCommon() {
+  srand(0); // To make things repeatable.
+}
+
 SliceStrategyCommon::~SliceStrategyCommon() {
   while (!_sliceCache.empty()) {
 	delete _sliceCache.back();
