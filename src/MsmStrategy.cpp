@@ -555,12 +555,11 @@ public:
   }
 
   virtual void consume(const Term& term) {
-    static mpz_class newDegree;
-    getDegree(term, _outerPartProjection, newDegree);
+    getDegree(term, _outerPartProjection, _tmpInt);
 
-    if (newDegree > _partValue) {
+    if (_tmpInt > _partValue) {
       _partProjection->inverseProject(_bound, term);
-      _partValue = newDegree;
+      _partValue = _tmpInt;
       _improved = true;
     }
   }
@@ -595,9 +594,8 @@ public:
 	  if (_toBeat == -1)
 		_partValue = -1;
 	  else {
-		static mpz_class tmp;
-		getDegree(_bound, _projection, tmp);
-		_partValue = _toBeat - (tmp - _partValue);
+		getDegree(_bound, _projection, _tmpInt);
+		_partValue = _toBeat - (_tmpInt - _partValue);
 	  }
 	} else
 	  _partValue = -1;
@@ -606,8 +604,8 @@ public:
   void getPivot(Term& pivot, Slice& slice) {
     const Term& lcm = slice.getLcm();
 
-	static mpz_class maxDiff;
-	static mpz_class diff;
+	mpz_class maxDiff;
+	mpz_class diff;
 
 	maxDiff = -1;
     size_t maxOffset = (size_t)-1;
@@ -653,7 +651,7 @@ public:
 
 	while (true) {
 	  // Obtain bound for degree
-	  static mpz_class degree;
+	  mpz_class degree;
 	  getDegree(bound, _outerPartProjection, degree);
 
 	  // Check if improvement is possible
@@ -700,7 +698,7 @@ private:
 	  return 0;
 
 	size_t outerVar = _outerPartProjection.inverseProjectVar(var);
-	static mpz_class baseUpperBoundDegree;
+	mpz_class baseUpperBoundDegree;
 	baseUpperBoundDegree = upperBoundDegree -
 	  _grader.getGrade(outerVar, upperBound[var]);
 
@@ -718,11 +716,10 @@ private:
 		mid = low + (high - low) / 2;
 	  }
 
-	  static mpz_class degreeLess;
-	  degreeLess = baseUpperBoundDegree +
+	  _tmpInt = baseUpperBoundDegree +
 		_grader.getGrade(outerVar, lowerBound[var] + mid);
 
-	  if (degreeLess <= _partValue)
+	  if (_tmpInt <= _partValue)
 		low = mid + 1;
 	  else
 		high = mid;
@@ -785,6 +782,7 @@ private:
   Projection _projection;
 
   bool _useBound;
+  mpz_class _tmpInt;
 };
 
 // Ignores the possibility of "fake" artinians (e.g. in getPivot).
