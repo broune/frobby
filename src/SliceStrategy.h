@@ -30,6 +30,8 @@ class SliceStrategy {
  public:
   virtual ~SliceStrategy() {}
 
+  virtual void setUseIndependence(bool use) = 0;
+
   // This returns a slice based on ideal. This method should only be
   // called once per strategy.
   virtual Slice* setupInitialSlice(const Ideal& ideal) = 0;

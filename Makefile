@@ -23,7 +23,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   TranslatingTermConsumer.cpp frobbyTest.cpp HilbertAction.cpp			\
   HilbertSlice.cpp Polynomial.cpp										\
   CanonicalCoefTermConsumer.cpp HilbertStrategy.cpp Slice.cpp			\
-  SliceStrategyCommon.cpp DebugStrategy.cpp
+  SliceStrategyCommon.cpp DebugStrategy.cpp FrobeniusStrategy.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

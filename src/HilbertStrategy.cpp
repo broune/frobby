@@ -26,10 +26,8 @@
 
 #include "SliceEvent.h"
 
-HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
-								 bool useIndependence):
-  _consumer(consumer),
-  _useIndependence(useIndependence) {
+HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer):
+  _consumer(consumer) {
 }
 
 // TODO: move elsewhere
@@ -199,7 +197,7 @@ split(Slice* sliceParam,
   ASSERT(rightEvent == 0);
   ASSERT(rightSlice == 0);
 
-  if (_useIndependence &&
+  if (getUseIndependence() &&
 	  independenceSplit(slice, leftEvent, leftSlice, rightSlice))
 	return;
 

@@ -39,6 +39,10 @@ void SliceStrategyCommon::freeSlice(Slice* slice) {
   _sliceCache.push_back(slice);
 }
 
+void SliceStrategyCommon::setUseIndependence(bool use) {
+  _useIndependence = use;
+}
+
 Slice* SliceStrategyCommon::newSlice() {
   Slice* slice;
   if (!_sliceCache.empty()) {
@@ -216,7 +220,12 @@ bool getIndependencePivot(const Slice& slice, Term& pivot) {
   return false;
 }
 
-void SliceStrategyCommon::getPivot(Term& pivot, Slice& slice, PivotStrategy ps) {
+bool SliceStrategyCommon::getUseIndependence() const {
+  return _useIndependence;
+}
+
+void SliceStrategyCommon::getPivot
+(Term& pivot, Slice& slice, PivotStrategy ps) {
   ASSERT(ps != Unknown);
   ASSERT(pivot.getVarCount() == slice.getVarCount());
   ASSERT(slice.getIdeal().isMinimallyGenerated());

@@ -77,7 +77,8 @@ $(outdir)IrreducibleDecomFacade.o: src/IrreducibleDecomFacade.cpp src/stdinc.h \
   src/TermTranslator.h src/Ideal.h src/SliceAlgorithm.h src/MsmStrategy.h \
   src/SliceStrategyCommon.h src/SliceStrategy.h src/TermIgnorer.h \
   src/DecomRecorder.h src/Term.h src/TermGrader.h src/IdealFacade.h \
-  src/DebugStrategy.h src/TranslatingTermConsumer.h
+  src/DebugStrategy.h src/FrobeniusStrategy.h \
+  src/TranslatingTermConsumer.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IrreducibleDecomParameters.h src/ParameterGroup.h \
@@ -237,3 +238,7 @@ $(outdir)SliceStrategyCommon.o: src/SliceStrategyCommon.cpp src/stdinc.h \
   src/Term.h
 $(outdir)DebugStrategy.o: src/DebugStrategy.cpp src/stdinc.h src/DebugStrategy.h \
   src/SliceStrategy.h
+$(outdir)FrobeniusStrategy.o: src/FrobeniusStrategy.cpp src/stdinc.h \
+  src/FrobeniusStrategy.h src/MsmStrategy.h src/SliceStrategyCommon.h \
+  src/SliceStrategy.h src/TermConsumer.h src/Term.h src/TermGrader.h \
+  src/Slice.h src/Ideal.h
