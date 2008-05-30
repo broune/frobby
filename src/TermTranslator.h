@@ -74,9 +74,11 @@ public:
   const VarNames& getNames() const;
 
   // Replaces var^v by var^(a[i] - v) except that var^0 is left
-  // alone. It is a precondition that a[i] be larger than or equal to
-  // the mapped values.
+  // alone.
   void dualize(const vector<mpz_class>& a);
+
+  // Replaces var^v by var^(v-1).
+  void decrement();
 
   void print(FILE* file) const;
 

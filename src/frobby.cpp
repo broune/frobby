@@ -18,7 +18,7 @@
 #include "frobby.h"
 
 #include "BigIdeal.h"
-#include "IrreducibleDecomFacade.h"
+#include "SliceFacade.h"
 #include "IrreducibleDecomParameters.h"
 #include "BigTermConsumer.h"
 #include "TermTranslator.h"
@@ -148,9 +148,11 @@ void Frobby::alexanderDual(const Ideal& ideal,
   // do this and remove this copy.
   BigIdeal bigIdealCopy(bigIdeal);
 
-  IrreducibleDecomParameters params;
-  IrreducibleDecomFacade facade(false, params);
   BigTermConsumer* adaptedConsumer = 
     new ExternalConsumerAdapter(&consumer, bigIdealCopy.getVarCount());
-  facade.computeAlexanderDual(bigIdealCopy, &point, adaptedConsumer);
+  SliceFacade facade(bigIdealCopy, adaptedConsumer, false);
+  IrreducibleDecomParameters params;
+  params.apply(facade);
+
+  facade.computeAlexanderDual(point);
 }

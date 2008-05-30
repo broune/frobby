@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "DebugStrategy.h"
 
+#include "Slice.h"
+
 DebugStrategy::DebugStrategy(SliceStrategy* strategy, FILE* out):
   _strategy(strategy),
   _out(out) {
@@ -32,15 +34,18 @@ DebugStrategy::~DebugStrategy() {
 
 void DebugStrategy::setUseIndependence(bool use) {
   if (use)
-	fputs("Turning on independence splits.", _out);
+	fputs("DEBUG: Turning on independence splits.", _out);
   else
-	fputs("Turning off independence splits.", _out);
+	fputs("DEBUG: Turning off independence splits.", _out);
   _strategy->setUseIndependence(use);
 }
 
 Slice* DebugStrategy::setupInitialSlice(const Ideal& ideal) {
-  fputs("Constructing initial slice.\n", _out);
-  return _strategy->setupInitialSlice(ideal);
+  fputs("DEBUG: Constructing initial slice.\n", _out);
+  Slice* initialSlice = _strategy->setupInitialSlice(ideal);
+  fputs("DEBUG: Initial slice is as follows.\n", _out);
+  initialSlice->print(_out);
+  return initialSlice;
 }
 
 void DebugStrategy::split(Slice* slice,

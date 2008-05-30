@@ -14,34 +14,20 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef ANALYZE_ACTION_GUARD
-#define ANALYZE_ACTION_GUARD
+#ifndef COEF_BIG_TERM_CONSUMER_GUARD
+#define COEF_BIG_TERM_CONSUMER_GUARD
 
-#include "Action.h"
-#include "BoolParameter.h"
-#include "IOParameters.h"
+class Term;
 
-class AnalyzeAction : public Action {
+class CoefBigTermConsumer {
  public:
-  AnalyzeAction();
+  virtual ~CoefBigTermConsumer() {}
 
-  virtual const char* getName() const;
-  virtual const char* getShortDescription() const;
-  virtual const char* getDescription() const;
+  virtual void consume(const mpz_class& coef,
+					   const Term& term,
+					   TermTranslator* translator) = 0;
 
-  virtual Action* createNew() const;
-
-  virtual void obtainParameters(vector<Parameter*>& parameters);
-
-  virtual void perform();
-
- private:
-  IOParameters _io;
-  BoolParameter _printLcm;
-  BoolParameter _printVarCount;
-  BoolParameter _printGeneratorCount;
-  BoolParameter _printMaximumExponent;
-  BoolParameter _printMinimal;
+  virtual void consume(const mpz_class& coef, mpz_ptr* term) = 0;
 };
 
 #endif

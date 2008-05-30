@@ -32,11 +32,6 @@ AnalyzeAction::AnalyzeAction():
    "Print the least common multiple of the generators.",
    false),
   
-  _printLabels
-  ("label",
-   "Print the irreducible decomposition along with labels.",
-   false),
-
   _printVarCount
   ("varCount",
    "Print the number of variables.",
@@ -82,7 +77,6 @@ void AnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
 
   parameters.push_back(&_printLcm);
-  parameters.push_back(&_printLabels);
   parameters.push_back(&_printVarCount);
   parameters.push_back(&_printGeneratorCount);
   parameters.push_back(&_printMaximumExponent);
@@ -102,11 +96,6 @@ void AnalyzeAction::perform() {
   IdealFacade idealFacade(_printActions);
   if (_printLcm)
 	idealFacade.printLcm(stdout, ideal);
-  if (_printLabels) {
-	IrreducibleDecomParameters params;
-	IrreducibleDecomFacade irrFacade(_printActions, params);
-	irrFacade.printLabels(ideal, stdout, _io.getOutputFormat());
-  }
   if (_printVarCount) {
 	fprintf(stdout, "%lu\n", (unsigned long)ideal.getVarCount());
   }

@@ -31,6 +31,7 @@ class Ideal;
 class TermGrader;
 class IndependenceSplitter;
 class SliceEvent;
+class TermConsumer;
 
 class MsmStrategy : public SliceStrategyCommon {
  public:

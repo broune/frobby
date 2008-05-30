@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "IrreducibleDecomParameters.h"
 
+#include "SliceFacade.h"
+
 IrreducibleDecomParameters::IrreducibleDecomParameters(bool exposeBoundParam):
   ParameterGroup("", ""),
 
@@ -95,4 +97,12 @@ bool IrreducibleDecomParameters::getMinimal() const {
 
 const string& IrreducibleDecomParameters::getSplit() const {
   return _split;
+}
+
+void IrreducibleDecomParameters::apply(SliceFacade& facade) const {
+  facade.setPrintDebug(getPrintDebug());
+  facade.setPrintStatistics(getPrintStatistics());
+  facade.setUseIndependence(getUseIndependence());
+  facade.setIsMinimallyGenerated(getMinimal());
+  facade.setSplitStrategy(getSplit().c_str(), true);  
 }

@@ -14,34 +14,24 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef ANALYZE_ACTION_GUARD
-#define ANALYZE_ACTION_GUARD
+#ifndef BIG_TERM_RECORDER_GUARD
+#define BIG_TERM_RECORDER_GUARD
 
-#include "Action.h"
-#include "BoolParameter.h"
-#include "IOParameters.h"
+#include "BigTermConsumer.h"
 
-class AnalyzeAction : public Action {
- public:
-  AnalyzeAction();
+class BigIdeal;
 
-  virtual const char* getName() const;
-  virtual const char* getShortDescription() const;
-  virtual const char* getDescription() const;
+class BigTermRecorder : public BigTermConsumer {
+public:
+  // DecomRecorder does not take over ownership of recordInto.
+  BigTermRecorder(BigIdeal* recordInto);
+  virtual ~BigTermRecorder();
 
-  virtual Action* createNew() const;
+  virtual void consume(const Term& term, TermTranslator* translator);
+  virtual void consume(mpz_ptr* term);
 
-  virtual void obtainParameters(vector<Parameter*>& parameters);
-
-  virtual void perform();
-
- private:
-  IOParameters _io;
-  BoolParameter _printLcm;
-  BoolParameter _printVarCount;
-  BoolParameter _printGeneratorCount;
-  BoolParameter _printMaximumExponent;
-  BoolParameter _printMinimal;
+private:
+  BigIdeal* _recordInto;
 };
 
 #endif

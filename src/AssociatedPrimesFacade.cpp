@@ -24,6 +24,8 @@
 #include "Ideal.h"
 #include "DecomRecorder.h"
 #include "TermTranslator.h"
+#include "IOHandler.h"
+#include "SliceFacade.h"
 
 #include <sstream>
 
@@ -36,6 +38,21 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
 					   const IrreducibleDecomParameters& params,
 					   FILE* out,
 					   const string& format) {
+  IOHandler* handler = IOHandler::getIOHandler(format);
+  ASSERT(handler != 0);
+
+  BigTermConsumer* consumer = handler->createWriter(out, bigIdeal.getNames());
+
+  SliceFacade facade(bigIdeal, consumer, isPrintingActions());
+  facade.setSplitStrategy(params.getSplit().c_str(), true);
+  facade.setPrintDebug(params.getPrintDebug());
+
+  facade.computeAssociatedPrimes();
+
+  delete consumer;
+
+
+  /*
   IrreducibleDecomFacade facade(isPrintingActions(), params);
   
   Ideal ideal(bigIdeal.getVarCount());
@@ -47,7 +64,7 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   if (ideal.getGeneratorCount() > 0)
 	translator.addArtinianPowers(ideal);
 
-  facade.computeIrreducibleDecom(ideal, new DecomRecorder(&decom));
+  facade.computeIrreducibleDecom2(ideal, new DecomRecorder(&decom));
 
   beginAction("Computing associated primes from irreducible decomposition.");
 
@@ -77,4 +94,5 @@ computeAPUsingIrrDecom(BigIdeal& bigIdeal,
   ioFacade.writeIdeal(out, bigIdeal, format);
 
   endAction();
+  */
 }

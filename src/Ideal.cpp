@@ -53,6 +53,14 @@ bool Ideal::contains(const Exponent* term) const {
   return false;
 }
 
+bool Ideal::containsIdentity() const {
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
+    if (::isIdentity(*it, _varCount))
+      return true;
+  return false;
+}
+
 bool Ideal::strictlyContains(const Exponent* term) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
@@ -64,6 +72,10 @@ bool Ideal::strictlyContains(const Exponent* term) const {
 bool Ideal::isMinimallyGenerated() const {
   Minimizer minimizer(_varCount);
   return minimizer.isMinimallyGenerated(_terms.begin(), _terms.end());
+}
+
+bool Ideal::isZeroIdeal() const {
+  return _terms.empty();
 }
 
 bool Ideal::isIrreducible() const {
