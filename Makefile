@@ -14,7 +14,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp		\
   Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp					\
   LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp	\
-  IntersectFacade.cpp IntersectAction.cpp AssociatedPrimesFacade.cpp	\
+  IntersectFacade.cpp IntersectAction.cpp								\
   AssociatedPrimesAction.cpp PrimaryDecomAction.cpp MsmSlice.cpp		\
   IndependenceSplitter.cpp Projection.cpp MsmStrategy.cpp				\
   lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp		\

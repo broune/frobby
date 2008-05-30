@@ -19,9 +19,11 @@
 
 #include "BigIdeal.h"
 #include "IOFacade.h"
-#include "AssociatedPrimesFacade.h"
+#include "SliceFacade.h"
 #include "IrreducibleDecomParameters.h"
 #include "Scanner.h"
+#include "BigTermConsumer.h"
+#include "IOHandler.h"
 
 AssociatedPrimesAction::AssociatedPrimesAction() {
 }
@@ -61,8 +63,11 @@ void AssociatedPrimesAction::perform() {
   IOFacade ioFacade(_printActions);
   ioFacade.readIdeal(in, ideal);
 
-  AssociatedPrimesFacade facade(_printActions);
+  BigTermConsumer* consumer = IOHandler::getIOHandler
+	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
+  SliceFacade facade(ideal, consumer, _printActions);
+  _decomParameters.apply(facade);
+  facade.computeAssociatedPrimes();
 
-  facade.computeAPUsingIrrDecom(ideal, _decomParameters, stdout,
-								_io.getOutputFormat());
+  delete consumer;
 }
