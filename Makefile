@@ -6,7 +6,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp		\
   HelpAction.cpp stdinc.cpp DynamicFrobeniusAction.cpp					\
   dynamicFrobeniusAlgorithm.cpp GenerateIdealAction.cpp					\
-  GenerateFrobeniusAction.cpp IrreducibleDecomFacade.cpp				\
+  GenerateFrobeniusAction.cpp											\
   FrobeniusAction.cpp Facade.cpp IOFacade.cpp							\
   DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp	\
   IdealFacade.cpp Parameter.cpp ParameterGroup.cpp						\

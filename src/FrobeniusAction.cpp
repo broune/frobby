@@ -19,7 +19,8 @@
 
 #include "BigIdeal.h"
 #include "IOFacade.h"
-#include "IrreducibleDecomFacade.h"
+#include "SliceFacade.h"
+#include "BigTermRecorder.h"
 #include "Scanner.h"
 
 FrobeniusAction::FrobeniusAction():
@@ -70,11 +71,18 @@ void FrobeniusAction::perform() {
   Scanner in("", stdin);
   ioFacade.readFrobeniusInstanceWithGrobnerBasis(in, ideal, instance);
 
-  IrreducibleDecomFacade facade(_printActions, _decomParameters);
-
   vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
   vector<mpz_class> bigVector;
-  facade.computeFrobeniusNumber(shiftedDegrees, ideal, bigVector);
+
+  BigIdeal maxSolution(ideal.getVarCount());
+  BigTermRecorder consumer(&maxSolution);
+
+  SliceFacade facade(ideal, &consumer, _printActions);
+  _decomParameters.apply(facade);
+  facade.solveStandardProgram(shiftedDegrees, _decomParameters.getUseBound());
+
+  ASSERT(maxSolution.getGeneratorCount() == 1);
+  bigVector = maxSolution[0];
 
   mpz_class frobeniusNumber = -instance[0];
   for (size_t i = 1; i < instance.size(); ++i)
