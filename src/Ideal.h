@@ -39,7 +39,11 @@ class Ideal {
 
   bool isIncomparable(const Exponent* term) const;
 
+  // Returns true if any generator divides term.
   bool contains(const Exponent* term) const;
+
+  // Returns true if the identity is one of the generators.
+  bool containsIdentity() const;
 
   // Returns true if some minimal generator strictly divides term.
   bool strictlyContains(const Exponent* term) const;
@@ -47,16 +51,19 @@ class Ideal {
   // Returns true if no generator divides another.
   bool isMinimallyGenerated() const;
 
+  // Returns true if there are no generators.
+  bool isZeroIdeal() const;
+
   // Returns true if all generators are pure powers. This only
   // corresponds to the mathematical definition of an irreducible
   // polynomial ideal if the ideal is minimally generated.
   bool isIrreducible() const;
 
-  // Returns true if no exponent of the same variable appears in two
-  // distinct generators. This only corresponds to the mathematical
-  // definition of strongly generic if the ideal is minimally
-  // generated. This method is not const because it permutes the
-  // generators.
+  // Returns true if no non-zero exponent of the same variable appears
+  // in two distinct generators. This only corresponds to the
+  // mathematical definition of strongly generic if the ideal is
+  // minimally generated. This method is not const because it permutes
+  // the generators.
   bool isStronglyGeneric();
 
   void getLcm(Exponent* lcm) const;

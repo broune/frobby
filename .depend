@@ -242,3 +242,4 @@ $(outdir)FrobeniusStrategy.o: src/FrobeniusStrategy.cpp src/stdinc.h \
   src/FrobeniusStrategy.h src/MsmStrategy.h src/SliceStrategyCommon.h \
   src/SliceStrategy.h src/TermConsumer.h src/Term.h src/TermGrader.h \
   src/Slice.h src/Ideal.h
+$(outdir)SliceFacade.o: src/SliceFacade.cpp src/stdinc.h src/SliceFacade.h

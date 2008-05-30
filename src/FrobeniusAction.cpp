@@ -72,14 +72,18 @@ void FrobeniusAction::perform() {
 
   IrreducibleDecomFacade facade(_printActions, _decomParameters);
 
-  mpz_class frobeniusNumber;
-  vector<mpz_class> vector;
-  facade.computeFrobeniusNumber(instance, ideal, frobeniusNumber, vector);
+  vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
+  vector<mpz_class> bigVector;
+  facade.computeFrobeniusNumber(shiftedDegrees, ideal, bigVector);
+
+  mpz_class frobeniusNumber = -instance[0];
+  for (size_t i = 1; i < instance.size(); ++i)
+	frobeniusNumber += bigVector[i - 1] * instance[i];
 
   if (_displaySolution) {
-	fputc('(', stdout);
-	for (size_t i = 0; i < vector.size(); ++i)
-	  gmp_fprintf(stdout, "%s%Zd", i == 0 ? "" : ", ", vector[i].get_mpz_t());
+	fputs("(-1", stdout);
+	for (size_t i = 0; i < bigVector.size(); ++i)
+	  gmp_fprintf(stdout, ", %Zd", bigVector[i].get_mpz_t());
 	fputs(")\n", stdout);
   }
 

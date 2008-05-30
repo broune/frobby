@@ -208,18 +208,18 @@ void TermTranslator::addArtinianPowers(Ideal& ideal) const {
 }
 
 void TermTranslator::dualize(const vector<mpz_class>& a) {
-  bool hasStrings = !_stringExponents.empty();
-  if (hasStrings)
-	clearStrings();
-
-  for (size_t var = 0; var < _exponents.size(); ++var) {
-    for (size_t exp = 0; exp < _exponents[var].size(); ++exp) {
-	  ASSERT(_exponents[var][exp] <= a[var]);
-
+  clearStrings();
+  for (size_t var = 0; var < _exponents.size(); ++var)
+    for (size_t exp = 0; exp < _exponents[var].size(); ++exp)
 	  if (_exponents[var][exp] != 0)
 		_exponents[var][exp] = a[var] - _exponents[var][exp] + 1;
-	}
-  }
+}
+
+void TermTranslator::decrement() {
+  clearStrings();
+  for (size_t var = 0; var < _exponents.size(); ++var)
+    for (size_t exp = 0; exp < _exponents[var].size(); ++exp)
+	  _exponents[var][exp] -= 1;
 }
 
 void TermTranslator::print(FILE* file) const {

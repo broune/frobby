@@ -127,5 +127,5 @@ void VarNames::print(FILE* file) const {
       fputs(", ", file);
     fprintf(file, "%lu<->\"%s\"", (unsigned long)i, getName(i).c_str());
   }
-  fputc(')', file);
+  fputs(")\n", file);
 }

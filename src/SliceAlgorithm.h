@@ -27,13 +27,8 @@ class HilbertSlice;
 class Slice;
 class SliceStrategy;
 
+void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy);
+
 void computeHilbertSeries(const Ideal& ideal, CoefTermConsumer* consumer);
-
-void computeMaximalStandardMonomials(Ideal& ideal, SliceStrategy* strategy);
-
-// For getting a single Maximal Standard Monomial. This may fail if
-// slice.getIdeal() is not artinian, in which case the return value is
-// false.
-bool computeSingleMSM(const Slice& slice, Term& msm);
 
 #endif

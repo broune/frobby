@@ -32,7 +32,6 @@ public:
 
 private:
   Ideal* _recordInto;
-  Term _tmp;
 };
 
 #endif

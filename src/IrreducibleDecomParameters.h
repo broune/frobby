@@ -21,6 +21,8 @@
 #include "BoolParameter.h"
 #include "StringParameter.h"
 
+class SliceFacade;
+
 class IrreducibleDecomParameters : public ParameterGroup {
  public:
   IrreducibleDecomParameters(bool exposeBoundParam = false);
@@ -35,6 +37,8 @@ class IrreducibleDecomParameters : public ParameterGroup {
   bool getMinimal() const;
   
   const string& getSplit() const;
+
+  void apply(SliceFacade& facade) const;
 
  private:
   bool _exposeBoundParam;

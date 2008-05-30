@@ -18,10 +18,10 @@
 #include "AlexanderDualAction.h"
 
 #include "BigIdeal.h"
-#include "IrreducibleDecomFacade.h"
 #include "IOFacade.h"
 #include "Scanner.h"
 #include "IOHandler.h"
+#include "SliceFacade.h"
 
 const char* AlexanderDualAction::getName() const {
   return "alexdual";
@@ -61,15 +61,16 @@ void AlexanderDualAction::perform() {
   bool pointSpecified =
 	ioFacade.readAlexanderDualInstance(in, ideal, point);
 
-  BigTermConsumer* consumer =
-	IOHandler::getIOHandler
+  BigTermConsumer* consumer = IOHandler::getIOHandler
 	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
 
-  IrreducibleDecomFacade facade(_printActions, _decomParameters);
+  SliceFacade facade(ideal, consumer, _printActions);
+  _decomParameters.apply(facade);
+
   if (pointSpecified)
-	facade.computeAlexanderDual(ideal, &point, consumer);
+	facade.computeAlexanderDual(point);
   else
-	facade.computeAlexanderDual(ideal, 0, consumer);
+	facade.computeAlexanderDual();
 
   delete consumer;
 }
