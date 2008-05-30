@@ -18,7 +18,7 @@
 #include "IrreducibleDecomAction.h"
 
 #include "BigIdeal.h"
-#include "IrreducibleDecomFacade.h"
+#include "SliceFacade.h"
 #include "IOFacade.h"
 #include "Scanner.h"
 #include "IOHandler.h"
@@ -59,12 +59,12 @@ void IrreducibleDecomAction::perform() {
   IOFacade ioFacade(_printActions);
   ioFacade.readIdeal(in, ideal);
 
-  BigTermConsumer* consumer =
-	IOHandler::getIOHandler
+  BigTermConsumer* consumer = IOHandler::getIOHandler
 	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
 
-  IrreducibleDecomFacade facade(_printActions, _decomParameters);
-  facade.computeIrreducibleDecom(ideal, consumer);
+  SliceFacade facade(ideal, consumer, _printActions);
+  _decomParameters.apply(facade);
+  facade.computeIrreducibleDecomposition();
 
   delete consumer;
 }
