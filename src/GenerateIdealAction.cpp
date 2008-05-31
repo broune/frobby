@@ -91,5 +91,5 @@ void GenerateIdealAction::perform() {
   }
 
   IOFacade ioFacade(_printActions);
-  ioFacade.writeIdeal(stdout, ideal, _io.getOutputFormat());
+  ioFacade.writeIdeal(ideal, _io.getOutputHandler(), stdout);
 }

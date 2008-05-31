@@ -20,7 +20,6 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "Scanner.h"
-#include "IOHandler.h"
 #include "SliceFacade.h"
 
 const char* AlexanderDualAction::getName() const {
@@ -50,27 +49,24 @@ void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AlexanderDualAction::perform() {
-  Scanner in(_io.getInputFormat(), stdin);
-  _io.autoDetectInputFormat(in);
-  _io.validateFormats();
-
   BigIdeal ideal;
   vector<mpz_class> point;
+  bool pointSpecified;
 
-  IOFacade ioFacade(_printActions);
-  bool pointSpecified =
-	ioFacade.readAlexanderDualInstance(in, ideal, point);
+  {
+	Scanner in(_io.getInputFormat(), stdin);
+	_io.autoDetectInputFormat(in);
+	_io.validateFormats();
 
-  BigTermConsumer* consumer = IOHandler::getIOHandler
-	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
+	IOFacade ioFacade(_printActions);
+	pointSpecified = ioFacade.readAlexanderDualInstance(in, ideal, point);
+  }
 
-  SliceFacade facade(ideal, consumer, _printActions);
+  SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
   _decomParameters.apply(facade);
 
   if (pointSpecified)
 	facade.computeAlexanderDual(point);
   else
 	facade.computeAlexanderDual();
-
-  delete consumer;
 }

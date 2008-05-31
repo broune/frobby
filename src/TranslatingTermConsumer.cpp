@@ -37,3 +37,24 @@ void TranslatingTermConsumer::consume(const Term& term) {
 
   _consumer->consume(term, _translator);
 }
+
+
+#include "CoefBigTermConsumer.h"
+
+TranslatingCoefTermConsumer::TranslatingCoefTermConsumer
+(CoefBigTermConsumer* consumer, TermTranslator* translator):
+  _consumer(consumer),
+  _translator(translator) {
+  ASSERT(consumer != 0);
+  ASSERT(translator != 0);
+}
+
+TranslatingCoefTermConsumer::~TranslatingCoefTermConsumer() {
+}
+
+void TranslatingCoefTermConsumer::
+consume(const mpz_class& coef, const Term& term) {
+  ASSERT(term.getVarCount() == _translator->getNames().getVarCount());
+
+  _consumer->consume(coef, term, _translator);
+}

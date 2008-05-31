@@ -22,73 +22,37 @@
 #include "VarNames.h"
 #include "CoefTermConsumer.h"
 
-class Macaulay2IdealWriter : public IdealWriter {
-public:
-  Macaulay2IdealWriter(FILE* file, const VarNames& names):
-    IdealWriter(file, names),
-    _justStartedWritingIdeal(true) {
-    writeHeader();
-  }
-
-  Macaulay2IdealWriter(FILE* file, const TermTranslator* translator):
-    IdealWriter(file, translator, true),
-    _justStartedWritingIdeal(true) {
-    writeHeader();
-  }
-
-  virtual ~Macaulay2IdealWriter() {
-    fputs("\n);\n", _file);
-  }
-
-  virtual void consume(const vector<const char*>& term) {
-    writeSeparator();
-    writeTerm(term, _file);
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-    writeSeparator();
-    writeTerm(term, _names, _file);
-  }
-
-  virtual void consume(const Term& term) {
-    writeSeparator();
-    writeTerm(term, _translator, _file);
-  }
-
-private:
-  void writeHeader() {
-    fputs("R = QQ[", _file);
+void Macaulay2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+    fputs("R = QQ[", out);
 
     const char* pre = "";
-    for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
-      fputs(pre, _file);
-      fputs(_names.getName(i).c_str(), _file);
+    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+      fputs(pre, out);
+      fputs(names.getName(i).c_str(), out);
       pre = ", ";
     }
-    fputs("];\n", _file);
-    fputs("I = monomialIdeal(", _file);
-  }
-
-  void writeSeparator() {
-    if (_justStartedWritingIdeal) {
-      _justStartedWritingIdeal = false;
-      fputs("\n", _file);
-    }
-    else
-      fputs(",\n", _file);
-  }
-
-  bool _justStartedWritingIdeal;
-};
-
-IdealWriter* Macaulay2IOHandler::
-createWriter(FILE* file, const VarNames& names) const {
-  return new Macaulay2IdealWriter(file, names);
+    fputs("];\n", out);
+    fputs("I = monomialIdeal(", out);
 }
 
-IdealWriter* Macaulay2IOHandler::
-createWriter(FILE* file, const TermTranslator* translator) const {
-  return new Macaulay2IdealWriter(file, translator);
+void Macaulay2IOHandler::writeTermOfIdeal(const Term& term,
+										  const TermTranslator* translator,
+										  bool isFirst,
+										  FILE* out) {
+  fputs(isFirst ? "\n " : ",\n ", out);
+  IOHandler::writeTermProduct(term, translator, out);
+}
+
+void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+										  const VarNames& names,
+										  bool isFirst,
+										  FILE* out) {
+  fputs(isFirst ? "\n " : ",\n ", out);
+  IOHandler::writeTermProduct(term, names, out);
+}
+
+void Macaulay2IOHandler::writeIdealFooter(FILE* out) {
+  fputs("\n);\n", out);  
 }
 
 void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {

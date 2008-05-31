@@ -21,7 +21,6 @@
 #include "SliceFacade.h"
 #include "IOFacade.h"
 #include "Scanner.h"
-#include "IOHandler.h"
 
 const char* IrreducibleDecomAction::getName() const {
   return "irrdecom";
@@ -50,21 +49,18 @@ void IrreducibleDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void IrreducibleDecomAction::perform() {
-  Scanner in(_io.getInputFormat(), stdin);
-  _io.autoDetectInputFormat(in);
-  _io.validateFormats();
-
   BigIdeal ideal;
 
-  IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(in, ideal);
+  {
+	Scanner in(_io.getInputFormat(), stdin);
+	_io.autoDetectInputFormat(in);
+	_io.validateFormats();
 
-  BigTermConsumer* consumer = IOHandler::getIOHandler
-	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
+	IOFacade ioFacade(_printActions);
+	ioFacade.readIdeal(in, ideal);
+  }
 
-  SliceFacade facade(ideal, consumer, _printActions);
+  SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
   _decomParameters.apply(facade);
   facade.computeIrreducibleDecomposition();
-
-  delete consumer;
 }

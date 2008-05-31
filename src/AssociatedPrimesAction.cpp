@@ -23,7 +23,6 @@
 #include "IrreducibleDecomParameters.h"
 #include "Scanner.h"
 #include "BigTermConsumer.h"
-#include "IOHandler.h"
 
 AssociatedPrimesAction::AssociatedPrimesAction() {
 }
@@ -54,20 +53,18 @@ void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AssociatedPrimesAction::perform() {
-  Scanner in(_io.getInputFormat(), stdin);
-  _io.autoDetectInputFormat(in);
-  _io.validateFormats();
- 
   BigIdeal ideal;
 
-  IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(in, ideal);
+  {
+	Scanner in(_io.getInputFormat(), stdin);
+	_io.autoDetectInputFormat(in);
+	_io.validateFormats();
+	
+	IOFacade ioFacade(_printActions);
+	ioFacade.readIdeal(in, ideal);
+  }
 
-  BigTermConsumer* consumer = IOHandler::getIOHandler
-	(_io.getOutputFormat())->createWriter(stdout, ideal.getNames());
-  SliceFacade facade(ideal, consumer, _printActions);
+  SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
   _decomParameters.apply(facade);
   facade.computeAssociatedPrimes();
-
-  delete consumer;
 }

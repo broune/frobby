@@ -25,20 +25,31 @@ class BigIdeal;
 
 class Fourti2IOHandler : public IOHandler {
 public:
+  Fourti2IOHandler();
+
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
 
-  virtual void writeIdeal(FILE* out, const BigIdeal& ideal);
-
-  // These are not supported. Use writeIdeal instead.
-  virtual IdealWriter* createWriter
-    (FILE* file, const VarNames& names) const;
-  virtual IdealWriter* createWriter
-    (FILE* file, const TermTranslator* translator) const;
-
   virtual const char* getFormatName() const;
+
+  virtual void writeIdealHeader(const VarNames& names,
+								size_t generatorCount,
+								FILE* out);
+
+  virtual void writeTermOfIdeal(const Term& term,
+								const TermTranslator* translator,
+								bool isFirst,
+								FILE* out);
+  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+								const VarNames& names,
+								bool isFirst,
+								FILE* out);
+  virtual void writeIdealFooter(FILE* out);
+
+  // This is not supported.
+  virtual void writeIdealHeader(const VarNames& names, FILE* out);
 
  private:
   void displayWarning() const;

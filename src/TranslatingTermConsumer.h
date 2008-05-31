@@ -36,4 +36,22 @@ class TranslatingTermConsumer : public TermConsumer {
   TermTranslator* _translator;
 };
 
+#include "CoefTermConsumer.h"
+
+class CoefBigTermConsumer;
+
+// TODO: move or remove
+class TranslatingCoefTermConsumer : public CoefTermConsumer {
+ public:
+  TranslatingCoefTermConsumer(CoefBigTermConsumer* consumer,
+							  TermTranslator* translator);
+  virtual ~TranslatingCoefTermConsumer();
+
+  virtual void consume(const mpz_class& coef, const Term& term);
+
+ private:
+  CoefBigTermConsumer* _consumer;
+  TermTranslator* _translator;
+};
+
 #endif

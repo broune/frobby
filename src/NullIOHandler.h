@@ -30,10 +30,23 @@ public:
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
 
-  virtual IdealWriter* createWriter
-    (FILE* file, const VarNames& names) const;
-  virtual IdealWriter* createWriter
-    (FILE* file, const TermTranslator* translator) const;
+  virtual TermConsumer* createIdealWriter(TermTranslator* translator,
+										  FILE* out);
+
+  virtual CoefTermConsumer* createCoefTermWriter
+	(FILE* file,
+	 const TermTranslator* translator);
+
+  virtual void writeIdealHeader(const VarNames& names, FILE* out);
+  virtual void writeTermOfIdeal(const Term& term,
+								const TermTranslator* translator,
+								bool isFirst,
+								FILE* out);
+  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+								const VarNames& names,
+								bool isFirst,
+								FILE* out);
+  virtual void writeIdealFooter(FILE* out);
 
   virtual bool hasMoreInput(Scanner& scanner) const;
 

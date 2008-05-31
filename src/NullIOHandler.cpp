@@ -18,35 +18,39 @@
 #include "NullIOHandler.h"
 
 #include "BigIdeal.h"
+#include "CoefTermConsumer.h"
+#include "TermConsumer.h"
 
-class NullIdealWriter : public IdealWriter {
-public:
-  NullIdealWriter() {
-  }
-
-  virtual ~NullIdealWriter() {
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-  }
-
-  virtual void consume(const Term& term) {
-  }
-};
-
-IdealWriter* NullIOHandler::
-createWriter(FILE* file, const VarNames& names) const {
-  return new NullIdealWriter();
+TermConsumer* NullIOHandler::createIdealWriter(TermTranslator* translator,
+											   FILE* file) {
+  return new NullTermConsumer();
 }
 
-IdealWriter* NullIOHandler::
-createWriter(FILE* file, const TermTranslator* translator) const {
-  return new NullIdealWriter();
+void NullIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+}
+
+void NullIOHandler::writeTermOfIdeal(const Term& term,
+									 const TermTranslator* translator,
+									 bool isFirst,
+									 FILE* out) {
+}
+
+void NullIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+									 const VarNames& names,
+									 bool isFirst,
+									 FILE* out) {
+}
+
+void NullIOHandler::writeIdealFooter(FILE* out) {
+}
+
+CoefTermConsumer* NullIOHandler::createCoefTermWriter
+(FILE* file, const TermTranslator* translator) {
+  return new NullCoefTermConsumer();
 }
 
 void NullIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-  VarNames names;
-  ideal.clearAndSetNames(names);
+  ideal.clearAndSetNames(VarNames());
 }
 
 void NullIOHandler::readIrreducibleDecomposition(Scanner& scanner,

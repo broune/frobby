@@ -22,90 +22,62 @@
 #include "Term.h"
 #include "TermTranslator.h"
 
-#include <sstream>
+void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
+										size_t generatorCount,
+										FILE* out) {
+  ASSERT(out != 0);
 
-// We have to store all the output before writing it out because we
-// need to writer the number of terms at the top of the file.
-class Fourti2IdealWriter : public IdealWriter {
-public:
-  Fourti2IdealWriter(FILE* file, const VarNames& names):
-    IdealWriter(file, names),
-	_termCount(0) {
+  fprintf(out, "%lu %lu\n",
+		  (unsigned long)generatorCount,
+		  (unsigned long)names.getVarCount());
+}
+
+void Fourti2IOHandler::writeTermOfIdeal(const Term& term,
+										const TermTranslator* translator,
+										bool isFirst,
+										FILE* out) {
+  ASSERT(translator != 0);
+  ASSERT(out != 0);
+  ASSERT(term.getVarCount() == translator->getNames().getVarCount());
+
+  size_t varCount = term.getVarCount();
+  for (size_t var = 0; var < varCount; ++var) {
+	if (var != 0)
+	  fputc(' ', out);
+	const char* exp = translator->getExponentString(var, term[var]);
+	if (exp == 0)
+	  exp = "0";
+	fputs(exp, out);
   }
+  fputc('\n', out);
+}
 
-  Fourti2IdealWriter(FILE* file, const TermTranslator* translator):
-    IdealWriter(file, translator, false),
-	_termCount(0) {
+void Fourti2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+										const VarNames& names,
+										bool isFirst,
+										FILE* out) {
+  ASSERT(out != 0);
+  ASSERT(term.size() == names.getVarCount());
+
+  size_t varCount = term.size();
+  for (size_t var = 0; var < varCount; ++var) {
+	if (var != 0)
+	  fputc(' ', out);
+	mpz_out_str(out, 10, term[var].get_mpz_t());
   }
+  fputc('\n', out);
+}
 
-  virtual ~Fourti2IdealWriter() {
-	fprintf(stdout, "%lu %lu\n%s",
-			(unsigned long)_termCount,
-			(unsigned long)_names.getVarCount(),
-			_output.c_str());
-  }
+void Fourti2IOHandler::writeIdealFooter(FILE* out) {
+}
 
-  virtual void consume(const vector<const char*>& term) {
-	++_termCount;
-	size_t varCount = term.size();
-	for (size_t var = 0; var < varCount; ++var) {
-	  const char* exp = term[var];
-	  if (exp == 0)
-		exp = "0";
-	  if (var != 0)
-		_output += ' ';
-	  _output += exp;
-	}
-	_output += '\n';
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-	++_termCount;
-	size_t varCount = term.size();
-	for (size_t var = 0; var < varCount; ++var) {
-	  if (var != 0)
-		_output += ' ';
-	  _output += term[var].get_str();
-	}
-	_output += '\n';
-  }
-
-  virtual void consume(const Term& term) {
-	ASSERT(_translator != 0);
-
-	++_termCount;
-    size_t varCount = term.getVarCount();
-    for (size_t var = 0; var < varCount; ++var) {
-	  if (var != 0)
-		_output += ' ';
-	  const char* exp = _translator->getExponentString(var, term[var]);
-	  if (exp == 0)
-		exp = "0";
-	  _output += exp;
-	}
-	_output += '\n';
-  }
-
-  void writeJustATerm(const Term& term) {
-	ASSERT(_translator != 0);
-
-    size_t varCount = term.getVarCount();
-    for (size_t var = 0; var < varCount; ++var) {
-	  fputc(' ', _file);
-	  const char* exp = _translator->getExponentString(var, term[var]);
-	  if (exp == 0)
-		exp = "0";
-	  fputs(exp, _file);
-	}
-  }
-
-private:
-  void writeTerm(const Term& term) {
-  }
-
-  string _output;
-  size_t _termCount;
-};
+void Fourti2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+  fputs("INTERNAL ERROR: writeIdealHeader called on object of type\n"
+		"Fourti2IOHandler using the overload that does not specify size.\n",
+		stderr);
+  ASSERT(false);
+  exit(1);
+}
 
 void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   size_t termCount;
@@ -140,39 +112,10 @@ void Fourti2IOHandler::readTerm(Scanner& in, const VarNames& names,
 	in.readIntegerAndNegativeAsZero(term[var]);
 }
 
-void Fourti2IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
-  fprintf(out, "%lu %lu\n",
-		  (unsigned long)ideal.getGeneratorCount(),
-		  (unsigned long)ideal.getVarCount());
-
-  for (size_t term = 0; term < ideal.getGeneratorCount(); ++term) {
-	for (size_t var = 0; var < ideal[term].size(); ++var) {
-	  if (var != 0)
-		fputc(' ', out);
-	  gmp_fprintf(out, "%Zd", ideal[term][var].get_mpz_t());
-	}
-	fputc('\n', out);
-  }
-}
-
-IdealWriter* Fourti2IOHandler::createWriter
-(FILE* file, const VarNames& names) const {
-  displayWarning();
-  return new Fourti2IdealWriter(file, names);
-}
-
-IdealWriter* Fourti2IOHandler::createWriter
-(FILE* file, const TermTranslator* translator) const {
-  displayWarning();
-  return new Fourti2IdealWriter(file, translator);
-}
-
 const char* Fourti2IOHandler::getFormatName() const {
   return "4ti2";
 }
 
-void Fourti2IOHandler::displayWarning() const {
-  fputs("NOTE: Using the 4ti2 format makes it necessary to store all of\n"
-		"the output in memory before writing it out. This can increase memory\n"
-		"consumption and decrease performance.\n", stderr);
+Fourti2IOHandler::Fourti2IOHandler():
+  IOHandler(true) {
 }

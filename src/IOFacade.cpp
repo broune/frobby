@@ -66,12 +66,10 @@ void IOFacade::readIdeals(Scanner& in, vector<BigIdeal*>& ideals) {
   endAction();
 }
 
-
-void IOFacade::writeIdeal(FILE* out, BigIdeal& ideal, const string& format) {
-  beginAction("Writing monomial ideal.");
-
-  IOHandler* handler = IOHandler::getIOHandler(format);
+void IOFacade::writeIdeal(BigIdeal& ideal, IOHandler* handler, FILE* out) {
   ASSERT(handler != 0);
+
+  beginAction("Writing monomial ideal.");
 
   handler->writeIdeal(out, ideal);
 

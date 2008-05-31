@@ -76,25 +76,6 @@ void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal) {
   endAction();
 }
 
-void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal, FILE* out,
-									 const string& format) {
-  beginAction("Minimizing and writing ideal.");
-
-  Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal, true);
-  bigIdeal.clear();
-
-  ideal.minimize();
-  ideal.sortReverseLex();
-
-  IOHandler* handler = IOHandler::getIOHandler(format);
-  ASSERT(handler != 0);
-  
-  handler->writeIdeal(out, ideal, &translator);
-
-  endAction();
-}
-
 void IdealFacade::sortGeneratorsUnique(BigIdeal& ideal) {
   beginAction("Sorting generators and removing duplicates.");
 
@@ -115,29 +96,6 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
   beginAction("Sorting generators.");
 
   ideal.sortVariables();
-
-  endAction();
-}
-
-void IdealFacade::printHilbertSeries(const BigIdeal& bigIdeal,
-									 bool canonicalize, FILE* out) {
-  beginAction("Computing and printing Hilbert series.");
-
-  Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal);
-  ideal.minimize();
-
-  CoefTermConsumer* consumer;
-  if (out == 0)
-	consumer = new NullCoefTermConsumer();
-  else
-	consumer = Macaulay2IOHandler::createCoefTermWriter(stdout, &translator);
-
-  if (canonicalize)
-	consumer = new CanonicalCoefTermConsumer(consumer, ideal.getVarCount());
-
-  ::computeHilbertSeries(ideal, consumer);
-  delete consumer;
 
   endAction();
 }

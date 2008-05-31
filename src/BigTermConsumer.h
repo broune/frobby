@@ -25,7 +25,6 @@ class BigTermConsumer {
   virtual ~BigTermConsumer();
 
   virtual void consume(const Term& term, TermTranslator* translator) = 0;
-  virtual void consume(mpz_ptr* term) = 0;
 };
 
 #endif
