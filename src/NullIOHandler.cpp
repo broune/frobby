@@ -21,6 +21,17 @@
 #include "CoefTermConsumer.h"
 #include "TermConsumer.h"
 
+NullIOHandler::NullIOHandler():
+  IOHandler("null", "Ignores input and produces no output.", false) {
+  registerInput(MonomialIdeal);
+  registerInput(Polynomial);
+  registerInput(MonomialIdealList);
+
+  registerOutput(MonomialIdeal);
+  registerOutput(Polynomial);
+  registerOutput(MonomialIdealList);
+}
+
 TermConsumer* NullIOHandler::createIdealWriter(TermTranslator* translator,
 											   FILE* file) {
   return new NullTermConsumer();
@@ -59,8 +70,4 @@ void NullIOHandler::readIrreducibleDecomposition(Scanner& scanner,
 
 bool NullIOHandler::hasMoreInput(Scanner& scanner) const {
   return false;
-}
-
-const char* NullIOHandler::getFormatName() const {
-  return "null";
 }

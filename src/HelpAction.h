@@ -18,11 +18,10 @@
 #define HELP_ACTION_GUARD
 
 #include "Action.h"
+#include <string>
 
 class HelpAction : public Action {
  public:
-  HelpAction();
-
   virtual const char* getName() const;
   virtual const char* getShortDescription() const;
   virtual const char* getDescription() const;
@@ -37,9 +36,10 @@ class HelpAction : public Action {
   virtual void perform();
 
  private:
-  void displayTopic();
+  void displayActionHelp(Action* action);
+  void displayIOHelp();
 
-  Action* _topic;
+  string _topic;
 };
 
 #endif

@@ -22,6 +22,13 @@
 #include "Term.h"
 #include "TermTranslator.h"
 
+Fourti2IOHandler::Fourti2IOHandler():
+  IOHandler("4ti2", "Format used by the software package 4ti2.", true) {
+  registerInput(MonomialIdeal);
+  registerInput(MonomialIdealList);
+  registerOutput(MonomialIdeal);
+}
+
 void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
 										size_t generatorCount,
 										FILE* out) {
@@ -110,12 +117,4 @@ void Fourti2IOHandler::readTerm(Scanner& in, const VarNames& names,
   term.resize(names.getVarCount());
   for (size_t var = 0; var < names.getVarCount(); ++var)
 	in.readIntegerAndNegativeAsZero(term[var]);
-}
-
-const char* Fourti2IOHandler::getFormatName() const {
-  return "4ti2";
-}
-
-Fourti2IOHandler::Fourti2IOHandler():
-  IOHandler(true) {
 }

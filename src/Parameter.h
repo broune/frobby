@@ -17,6 +17,8 @@
 #ifndef PARAMETER_GUARD
 #define PARAMETER_GUARD
 
+#include <string>
+
 class Parameter {
  public:
   Parameter(const char* name, const char* description);
@@ -38,8 +40,8 @@ protected:
 				  unsigned int paramCount);
 
  private:
-  const char* _name;
-  const char* _description;
+  string _name;
+  string _description;
 };
 
 #endif

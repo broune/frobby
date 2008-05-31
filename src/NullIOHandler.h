@@ -27,6 +27,8 @@ class BigIdeal;
 // never writes anything to the output.
 class NullIOHandler : public IOHandler {
 public:
+  NullIOHandler();
+
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
 
@@ -49,8 +51,6 @@ public:
   virtual void writeIdealFooter(FILE* out);
 
   virtual bool hasMoreInput(Scanner& scanner) const;
-
-  virtual const char* getFormatName() const;
 };
 
 #endif

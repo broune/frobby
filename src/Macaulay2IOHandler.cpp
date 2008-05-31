@@ -22,6 +22,14 @@
 #include "VarNames.h"
 #include "CoefTermConsumer.h"
 
+Macaulay2IOHandler::Macaulay2IOHandler():
+  IOHandler("m2", "Format understandable by the program Macaulay 2.", false) {
+  registerInput(MonomialIdeal);
+  registerInput(MonomialIdealList);
+  registerOutput(MonomialIdeal);
+  registerOutput(Polynomial);
+}
+
 void Macaulay2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
     fputs("R = QQ[", out);
 
@@ -78,10 +86,6 @@ void Macaulay2IOHandler::readIrreducibleDecomposition(Scanner& scanner,
   readVarsAndClearIdeal(decom, scanner);
   readIrreducibleIdealList(decom, scanner);
   scanner.expectEOF();
-}
-
-const char* Macaulay2IOHandler::getFormatName() const {
-  return "m2";
 }
 
 void Macaulay2IOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {

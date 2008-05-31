@@ -21,46 +21,80 @@
 #include "MonosIOHandler.h"
 #include "Scanner.h"
 
-IOParameters::IOParameters(Type type):
-  ParameterGroup("", ""),
-  _type(type),
+IOParameters::IOParameters(DataType input, DataType output):
+  _inputType(input),
+  _outputType(output),
+  _inputFormat(0),
+  _outputFormat(0) {
 
-  _inputFormat
-  ("iformat",
-   "The supported input formats are monos, m2, 4ti2, null and newmonos.\n"
-   "The special format autodetect instructs Frobby to figure the format\n"
-   "out by itself, which it will do correctly if the input has no errors.",
-   "autodetect"),
+  string inputFormats;
+  string outputFormats;
 
-  _outputFormat
-  ("oformat",
-   type == OutputOnly ?
-   "The supported output formats are monos, m2, 4ti2, null and newmonos." :
-   "The output format. The additional format \"input\" means use input format.",
-   type == OutputOnly ? 
-   MonosIOHandler().getFormatName() : "input") {
-  if (type != OutputOnly)
-	addParameter(&_inputFormat);
-  if (type != InputOnly)
-	addParameter(&_outputFormat);
+  string defaultOutput;
+  if (_inputType != IOHandler::None)
+	defaultOutput = "input";
+
+  const vector<IOHandler*> handlers = IOHandler::getIOHandlers();
+  for (vector<IOHandler*>::const_iterator handlerIt = handlers.begin();
+	   handlerIt != handlers.end(); ++handlerIt) {
+	IOHandler* handler = *handlerIt;
+
+	if (handler->supportsInput(_inputType)) {
+	  inputFormats += ' ';
+	  inputFormats += handler->getName();
+	}
+	if (handler->supportsOutput(_outputType)) {
+	  if (defaultOutput.empty())
+		defaultOutput = handler->getName();
+	  outputFormats += ' ';
+	  outputFormats += handler->getName();
+	}
+  }
+
+  if (_inputType != IOHandler::None) {
+	string desc =
+	  "The supported input formats are:" + inputFormats + ".\n"
+	  "The special format autodetect instructs Frobby to guess the format.\n"
+	  "Type 'frobby help io' for more information on input formats.";
+
+	_inputFormat = new StringParameter("iformat", desc.c_str(),  "autodetect");
+	addParameter(_inputFormat);
+  }
+
+  if (output != IOHandler::None) {
+	string desc =
+	  "The supported output formats are:" + outputFormats + ".\n";
+	if (_inputType != IOHandler::None) {
+	  desc += "The special format input instructs Frobby to use the input format.\n";
+	}
+	desc += "Type 'frobby help io' for more information on output formats.";
+
+	_outputFormat = new StringParameter("oformat", desc.c_str(),
+										defaultOutput);
+	addParameter(_outputFormat);
+  }
 }
 
 void IOParameters::setOutputFormat(const string& format) {
-  _outputFormat = format;
+  ASSERT(_inputType != IOHandler::None);
+
+  *_outputFormat = format;
 }
 
 const string& IOParameters::getInputFormat() const {
-  ASSERT(_type != OutputOnly);
-  return _inputFormat;
+  ASSERT(_inputType != IOHandler::None);
+
+  return *_inputFormat;
 }
 
 const string& IOParameters::getOutputFormat() const {
-  ASSERT(_type != InputOnly);
+  ASSERT(_outputType != IOHandler::None);
 
-  if (_type != OutputOnly && _outputFormat.getValue() == "input")
-	return _inputFormat;
-  else
-	return _outputFormat;
+  if (_inputType != IOHandler::None &&
+	  _outputFormat->getValue() == "input")
+	return *_inputFormat;
+
+  return *_outputFormat;
 }
 
 IOHandler* IOParameters::getInputHandler() const {
@@ -76,9 +110,9 @@ IOHandler* IOParameters::getOutputHandler() const {
 }
 
 void IOParameters::autoDetectInputFormat(Scanner& in) {
-  ASSERT(_type != OutputOnly);
+  ASSERT(_inputType != IOHandler::None);
 
-  if (_inputFormat.getValue() == "autodetect") {
+  if (_inputFormat->getValue() == "autodetect") {
 	// Get to the first non-whitespace character.
 	in.eatWhite();
 	int c = in.peek();
@@ -87,33 +121,51 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
 	// are attempts to catch easy mistakes.
 	if (c == 'R' || c == 'I' || c == 'Z' || c == '=' || c == 'm' ||
 		c == 'W' || c == 'q' || c == 'Q')
-	  _inputFormat = "m2";
+	  *_inputFormat = "m2";
 	else if (c == '(' || c == 'l' || c == ')')
-	  _inputFormat = "newmonos";
+	  *_inputFormat = "newmonos";
 	else if (isdigit(c) || c == '+' || c == '-')
-	  _inputFormat = "4ti2";
+	  *_inputFormat = "4ti2";
 	else // c shold be 'v' here, but we use monos as a fall back
-	  _inputFormat = "monos";
+	  *_inputFormat = "monos";
   }
 
   if (in.getFormat() == "autodetect")
-	in.setFormat(_inputFormat);
+	in.setFormat(*_inputFormat);
 }
 
 void IOParameters::validateFormats() const {
   IOFacade facade(false);
 
-  if (_type != OutputOnly &&
-	  !facade.isValidMonomialIdealFormat(getInputFormat())) {
-    fprintf(stderr, "ERROR: Unknown input format \"%s\".\n",
-			getInputFormat().c_str());
-    exit(1);
+  if (_inputType != IOHandler::None) {
+	IOHandler* handler = IOHandler::getIOHandler(getInputFormat());
+	if (handler == 0) {
+	  fprintf(stderr, "ERROR: Unknown input format \"%s\".\n",
+			  getInputFormat().c_str());
+	  exit(1);
+	}
+
+	if (!handler->supportsInput(_inputType)) {
+	  fprintf(stderr, "ERROR: The %s format does not support input of %s.",
+			  handler->getName(),
+			  IOHandler::getDataTypeName(_inputType));
+	  exit(1);
+	}
   }
 
-  if (_type != InputOnly &&
-	  !facade.isValidMonomialIdealFormat(getOutputFormat())) {
-    fprintf(stderr, "ERROR: Unknown output format \"%s\".\n",
-			getOutputFormat().c_str());
-    exit(1);
+  if (_outputType != IOHandler::None) {
+	IOHandler* handler = IOHandler::getIOHandler(getOutputFormat());
+	if (handler == 0) {
+	  fprintf(stderr, "ERROR: Unknown output format \"%s\".\n",
+			  getOutputFormat().c_str());
+	  exit(1);
+	}
+
+	if (!handler->supportsOutput(_outputType)) {
+	  fprintf(stderr, "ERROR: The %s format does not support output of %s.",
+			  handler->getName(),
+			  IOHandler::getDataTypeName(_outputType));
+	  exit(1);
+	}
   }
 }

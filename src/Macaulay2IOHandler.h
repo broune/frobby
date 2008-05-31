@@ -26,10 +26,10 @@ class CoefTermConsumer;
 
 class Macaulay2IOHandler : public IOHandler {
 public:
+  Macaulay2IOHandler();
+
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
-
-  virtual const char* getFormatName() const;
 
   virtual void writeIdealHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfIdeal(const Term& term,

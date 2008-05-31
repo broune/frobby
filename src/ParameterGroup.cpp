@@ -17,8 +17,8 @@
 #include "stdinc.h"
 #include "ParameterGroup.h"
 
-ParameterGroup::ParameterGroup(const char* name, const char* description):
-  Parameter(name, description) {
+ParameterGroup::ParameterGroup():
+  Parameter("", "") {
 }
 
 ParameterGroup::~ParameterGroup() {

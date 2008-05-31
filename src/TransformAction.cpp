@@ -23,6 +23,8 @@
 #include "Scanner.h"
 
 TransformAction::TransformAction():
+  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal),
+
   _canonicalize
   ("canon",
    "Sort generators and variables to get canonical representation.",

@@ -22,6 +22,10 @@
 #include "Scanner.h"
 #include "SliceFacade.h"
 
+AlexanderDualAction::AlexanderDualAction():
+  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
+}
+
 const char* AlexanderDualAction::getName() const {
   return "alexdual";
 }

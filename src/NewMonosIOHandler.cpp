@@ -21,6 +21,13 @@
 #include "BigIdeal.h"
 #include "VarNames.h"
 
+NewMonosIOHandler::NewMonosIOHandler():
+  IOHandler("newmonos", "Newer format used by the program Monos.", false) {
+  registerInput(MonomialIdeal);
+  registerInput(MonomialIdealList);
+  registerOutput(MonomialIdeal);
+}
+
 void NewMonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
   fputs("(monomial-ideal-with-order\n (lex-order", out);
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
@@ -67,10 +74,6 @@ void NewMonosIOHandler::readIrreducibleDecomposition(Scanner& scanner,
 
   while (!scanner.match(')'))
     readIrreducibleIdeal(decom, scanner);
-}
-
-const char* NewMonosIOHandler::getFormatName() const {
-  return "newmonos";
 }
 
 void NewMonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {

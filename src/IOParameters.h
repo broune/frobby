@@ -19,19 +19,15 @@
 
 #include "ParameterGroup.h"
 #include "StringParameter.h"
+#include "IOHandler.h"
 
-class IOHandler;
 class Scanner;
 
 class IOParameters : public ParameterGroup {
  public:
-  enum Type {
-	InputOnly,
-	OutputOnly,
-	InputAndOutput
-  };
+  typedef IOHandler::DataType DataType;
 
-  IOParameters(Type type = InputAndOutput);
+  IOParameters(DataType input, DataType output);
 
   void setOutputFormat(const string& format);
 
@@ -46,13 +42,17 @@ class IOParameters : public ParameterGroup {
   // as a place holder for the auto detected format. If the format on
   // in is autodetect, it will (also) be set.
   void autoDetectInputFormat(Scanner& in);
+
+  // Exits with an error message if the input or output format us not
+  // known.
   void validateFormats() const;
 
  private:
-  Type _type;
+  DataType _inputType;
+  DataType _outputType;
 
-  StringParameter _inputFormat;
-  StringParameter _outputFormat;
+  StringParameter* _inputFormat;
+  StringParameter* _outputFormat;
 };
 
 #endif

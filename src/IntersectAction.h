@@ -22,6 +22,8 @@
 
 class IntersectAction : public Action {
  public:
+  IntersectAction();
+
   virtual const char* getName() const;
   virtual const char* getShortDescription() const;
   virtual const char* getDescription() const;
