@@ -98,27 +98,18 @@ void TransformAction::perform() {
   if (_radical)
 	idealFacade.takeRadical(ideal);
 
-  if (_minimize || _radical) {
-	if (_deform)
-	  idealFacade.sortAllAndMinimize(ideal);
-	else {
-	  idealFacade.sortAllAndMinimize(ideal, stdout,
-									 _io.getOutputFormat());
-	  return;
-	}
-  }
-
-  if (_canonicalize)
-	idealFacade.sortVariables(ideal);
-
-  if (_unique)
-	idealFacade.sortGeneratorsUnique(ideal);
+  if (_minimize || _radical)
+	idealFacade.sortAllAndMinimize(ideal);
 
   if (_deform)
 	idealFacade.deform(ideal);
 
-  if (_sort || _canonicalize)
+  if (_canonicalize)
+	idealFacade.sortVariables(ideal);
+  if (_unique )
+	idealFacade.sortGeneratorsUnique(ideal);
+  else if (_sort || _canonicalize)
 	idealFacade.sortGenerators(ideal);
 
-  facade.writeIdeal(stdout, ideal, _io.getOutputFormat());
+  facade.writeIdeal(ideal, _io.getOutputHandler(), stdout);
 }

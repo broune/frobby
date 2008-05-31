@@ -20,36 +20,83 @@
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "TermTranslator.h"
-#include "Term.h"
 #include "Ideal.h"
+#include "Term.h"
 
+#include "TermConsumer.h"
+#include "VarNames.h"
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
 #include "Macaulay2IOHandler.h"
 #include "Fourti2IOHandler.h"
 #include "NullIOHandler.h"
 
-#include <cctype>
+class IdealWriter : public TermConsumer {
+public:
+  IdealWriter(IOHandler* handler, TermTranslator* translator, FILE* out):
+	_handler(handler),
+	_translator(translator),
+	_out(out),
+	_first(true) {
+	ASSERT(handler != 0);
+	ASSERT(translator != 0);
+	ASSERT(out != 0);
 
-IdealWriter::IdealWriter() {
-}
+	_handler->writeIdealHeader(_translator->getNames(), _out);
+  }
 
-IdealWriter::IdealWriter(FILE* file, const VarNames& names):
-  _file(file),
-  _names(names),
-  _translator(0) {
-}
+  virtual ~IdealWriter() {
+	_handler->writeIdealFooter(_out);
+  }
 
-IdealWriter::IdealWriter(FILE* file,
-						 const TermTranslator* translator,
-						 bool includeVar):
-  _file(file),
-  _names(translator->getNames()),
-  _translator(translator) {
-}
+  virtual void consume(const Term& term) {
+	_handler->writeTermOfIdeal(term, _translator, _first, _out);
+	_first = false;
+  }
 
-IdealWriter::~IdealWriter() {
-}
+private:
+  IOHandler* _handler;
+  TermTranslator* _translator;
+  FILE* _out;
+  bool _first;
+};
+
+class DelayedIdealWriter : public TermConsumer {
+ public:
+  DelayedIdealWriter(IOHandler* handler,
+					 TermTranslator* translator,
+					 FILE* out):
+	_handler(handler),
+	_translator(translator),
+	_out(out),
+	_ideal(translator->getNames().getVarCount()) {
+	ASSERT(handler != 0);
+	ASSERT(translator != 0);
+	ASSERT(out != 0);
+  }
+
+  virtual ~DelayedIdealWriter() {
+	IdealWriter writer(_handler, _translator, _out);
+
+	Term tmp(_ideal.getVarCount());
+	Ideal::const_iterator stop = _ideal.end();
+	for (Ideal::const_iterator it = _ideal.begin(); it != stop; ++it) {
+	  tmp = *it;
+	  writer.consume(tmp);
+	}
+  }
+
+  virtual void consume(const Term& term) {
+	ASSERT(term == _ideal.getVarCount());
+	_ideal.insert(term);
+  }
+
+private:
+  IOHandler* _handler;
+  TermTranslator* _translator;
+  FILE* _out;
+  Ideal _ideal;
+};
 
 void IOHandler::readTerm(Scanner& in,
 						 const VarNames& names,
@@ -59,90 +106,93 @@ void IOHandler::readTerm(Scanner& in,
   term = tmp.getTerm(0);
 }
 
-void IdealWriter::writeJustATerm(const Term& term) {
-  writeTerm(term, _translator, _file);
-}
-
-void IdealWriter::writeTerm(const vector<const char*>& term, FILE* file) {
-  char separator = ' ';
-  size_t varCount = term.size();
-  for (size_t j = 0; j < varCount; ++j) {
-    const char* exp = term[j];
-    if (exp == 0)
-      continue;
-
-    putc(separator, file);
-    separator = '*';
-
-    fputs(exp, file);
-  }
-
-  if (separator == ' ')
-    fputs(" 1", file);
-}
-
-void IdealWriter::writeTerm(const Term& term,
-							const TermTranslator* translator,
-							FILE* file) {
-  char separator = ' ';
-  size_t varCount = term.getVarCount();
-  for (size_t j = 0; j < varCount; ++j) {
-	const char* exp = translator->getVarExponentString(j, term[j]);
-	if (exp == 0)
-	  continue;
-
-	putc(separator, file);
-	separator = '*';
-
-	fputs(exp, file);
-  }
-
-  if (separator == ' ')
-	fputs(" 1", file);
-}
-
-void IdealWriter::writeTerm(const vector<mpz_class>& term,
-							const VarNames& names,
-							FILE* file) {
-  char separator = ' ';
-  size_t varCount = term.size();
-  for (size_t j = 0; j < varCount; ++j) {
-    if ((term[j]) == 0)
-      continue;
-
-    putc(separator, file);
-    separator = '*';
-
-    fputs(names.getName(j).c_str(), file);
-    if ((term[j]) != 1)
-      gmp_printf("^%Zd", term[j].get_mpz_t());
-  }
-
-  if (separator == ' ')
-    fputs(" 1", file);
-}
-
 IOHandler::~IOHandler() {
 }
 
 void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
-  IdealWriter* writer = createWriter(out, ideal.getNames());
-  for (size_t i = 0; i < ideal.getGeneratorCount(); ++i)
-    writer->consume(ideal[i]);
-  delete writer;
-}
-
-void IOHandler::writeIdeal(FILE* out, const Ideal& ideal,
-						   const TermTranslator* translator) {
-  IdealWriter* writer = createWriter(out, translator);
-  Ideal::const_iterator stop = ideal.end();
-  for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it)
-    writer->consume(Term(*it, ideal.getVarCount()));
-  delete writer;
+  size_t generatorCount = ideal.getGeneratorCount();
+  writeIdealHeader(ideal.getNames(), generatorCount, out);
+  for (size_t i = 0; i < generatorCount; ++i)
+	writeTermOfIdeal(ideal[i], ideal.getNames(), i == 0, out);
+  writeIdealFooter(out);
 }
 
 bool IOHandler::hasMoreInput(Scanner& scanner) const {
   return !scanner.matchEOF();
+}
+
+CoefTermConsumer* IOHandler::createCoefTermWriter
+(FILE* out, const TermTranslator* translator) {
+  fprintf(stderr, "The format %s does not support polynomials.\n",
+		  getFormatName());
+  ASSERT(false);
+  exit(1);
+  return 0;
+}
+
+IOHandler::IOHandler(bool requiresSizeForIdealOutput):
+  _requiresSizeForIdealOutput(requiresSizeForIdealOutput) {
+}
+
+TermConsumer* IOHandler::createIdealWriter(TermTranslator* translator,
+										   FILE* out) {
+  if (_requiresSizeForIdealOutput) {
+	fprintf(stderr,
+			"NOTE: Using the format %s makes it necessary to store all of\n"
+			"the output in memory before writing it out. This increases\n"
+			"memory consumption and decreases performance.\n",
+			getFormatName());
+	return new DelayedIdealWriter(this, translator, out);
+  }
+  else
+	return new IdealWriter(this, translator, out);
+}
+
+void IOHandler::writeTermProduct(const Term& term,
+								 const TermTranslator* translator,
+								 FILE* out) {
+  bool seenNonZero = false;
+  size_t varCount = term.getVarCount();
+  for (size_t var = 0; var < varCount; ++var) {
+	const char* exp = translator->getVarExponentString(var, term[var]);
+	if (exp == 0)
+	  continue;
+
+	if (seenNonZero)
+	  putc('*', out);
+	else
+	  seenNonZero = true;
+
+	fputs(exp, out);
+  }
+
+  if (!seenNonZero)
+	fputc('1', out);
+}
+
+void IOHandler::writeTermProduct(const vector<mpz_class>& term,
+								 const VarNames& names,
+								 FILE* out) {
+  bool seenNonZero = false;
+  size_t varCount = term.size();
+  for (size_t var = 0; var < varCount; ++var) {
+    if (term[var] == 0)
+      continue;
+
+	if (seenNonZero)
+	  fputc('*', out);
+	else
+	  seenNonZero = true;
+
+    fputs(names.getName(var).c_str(), out);
+    if ((term[var]) != 1) {
+	  fputc('^', out);
+	  mpz_out_str(out, 10, term[var].get_mpz_t());
+	}
+  }
+
+  if (!seenNonZero)
+    fputc('1', out);
 }
 
 void IOHandler::readTerm(BigIdeal& ideal, Scanner& scanner) {
@@ -158,15 +208,6 @@ void IOHandler::readTerm(BigIdeal& ideal, Scanner& scanner) {
 
 void IOHandler::readVarPower(vector<mpz_class>& term,
 							 const VarNames& names, Scanner& scanner) {
-  /*  static string varName;
-  scanner.readIdentifier(varName);
-  size_t var = names.getIndex(varName);
-  if (var == VarNames::UNKNOWN) {
-	scanner.printError();
-    fprintf(stderr, "Unknown variable \"%s\". Maybe you forgot a *.\n",
-			varName.c_str());
-    exit(1);
-	}*/
   size_t var = scanner.readVariable(names);
 
   if (term[var] != 0) {

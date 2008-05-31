@@ -19,15 +19,18 @@
 
 #include "Facade.h"
 #include <vector>
+#include <cstdio>
 #include <string> // TODO: get rid of this
 
 class BigIdeal;
 class BigTermConsumer;
 class CoefBigTermConsumer;
 class TermTranslator;
+class CoefTermConsumer;
 class Ideal;
 class SliceStrategy;
 class TermConsumer;
+class IOHandler;
 
 // This class acts as a simple interface to the slice-like
 // algorithms. The intended (but not required) use is to construct a
@@ -53,6 +56,11 @@ class SliceFacade : public Facade {
   // Enable algorithms that produce a polynomial as output.
   SliceFacade(const BigIdeal& ideal,
 			  CoefBigTermConsumer* consumer,
+			  bool printActions = false);
+
+  SliceFacade(const BigIdeal& ideal,
+			  IOHandler* handler,
+			  FILE* out,
 			  bool printActions = false);
 
   ~SliceFacade();
@@ -88,9 +96,11 @@ class SliceFacade : public Facade {
 						bool allowLabelSplits = false);
 
   // Compute the numerator of the multigraded Hilbert-Poincare series
-  // expessed as a rational function. The terms of the output
-  // polynomial are provided in arbitrary order.
-  void computeMultigradedHilbertSeries();
+  // expessed as a rational function. If canonical is true, then the
+  // terms of the output polynomial are provided in lexicographical
+  // order according to exponent vectors. Otherwise the terms are
+  // provided in arbitrary order.
+  void computeMultigradedHilbertSeries(bool canonical);
 
   // Compute the numerator of the univariate (i.e. the grading is the
   // total degree) Hilbert-Poincare series expessed as a rational
@@ -164,16 +174,21 @@ class SliceFacade : public Facade {
   void runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy);
 
   TermConsumer* getTermConsumer();
+  CoefTermConsumer* getCoefTermConsumer(bool canonical);
 
   bool _printDebug;
   bool _printStatistics;
   bool _useIndependence;
   bool _isMinimallyGenerated;
 
+  FILE* _out;
+  IOHandler* _ioHandler;
+
   BigTermConsumer* _termConsumer;
   CoefBigTermConsumer* _coefTermConsumer;
 
   TermConsumer* _generatedTermConsumer;
+  CoefTermConsumer* _generatedCoefTermConsumer;
 
   string _strategy;
 

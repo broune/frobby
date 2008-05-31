@@ -22,71 +22,35 @@
 #include <cstdio>
 #include <sstream>
 
-class MonosIdealWriter : public IdealWriter {
-public:
-  MonosIdealWriter(FILE* file, const VarNames& names):
-    IdealWriter(file, names),
-    _justStartedWritingIdeal(true) {
-    writeHeader();
+void MonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+  fputs("vars ", out);
+  const char* pre = "";
+  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+	fputs(pre, out);
+	fputs(names.getName(i).c_str(), out);
+	pre = ", ";
   }
-
-  MonosIdealWriter(FILE* file, const TermTranslator* translator):
-    IdealWriter(file, translator, true),
-    _justStartedWritingIdeal(true) {
-    writeHeader();
-  }
-
-  virtual ~MonosIdealWriter() {
-    fputs("\n];\n", _file);
-  }
-
-  virtual void consume(const vector<const char*>& term) {
-    writeSeparator();
-    writeTerm(term, _file);
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-    writeSeparator();
-    writeTerm(term, _names, _file);
-  }
-
-  virtual void consume(const Term& term) {
-    writeSeparator();
-    writeTerm(term, _translator, _file);
-  }
-
-private:
-  void writeHeader() {
-    fputs("vars ", _file);
-    const char* pre = "";
-    for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
-      fputs(pre, _file);
-      fputs(_names.getName(i).c_str(), _file);
-      pre = ", ";
-    }
-    fputs(";\n[", _file);
-  }
-
-  void writeSeparator() {
-    if (_justStartedWritingIdeal) {
-      _justStartedWritingIdeal = false;
-      fputs("\n", _file);
-    }
-    else
-      fputs(",\n", _file);
-  }
-
-  bool _justStartedWritingIdeal;
-};
-
-IdealWriter* MonosIOHandler::
-createWriter(FILE* file, const VarNames& names) const {
-  return new MonosIdealWriter(file, names);
+  fputs(";\n[", out);
 }
 
-IdealWriter* MonosIOHandler::
-createWriter(FILE* file, const TermTranslator* translator) const {
-  return new MonosIdealWriter(file, translator);
+void MonosIOHandler::writeTermOfIdeal(const Term& term,
+									  const TermTranslator* translator,
+									  bool isFirst,
+									  FILE* out) {
+  fputs(isFirst ? "\n " : ",\n ", out);
+  IOHandler::writeTermProduct(term, translator, out);
+}
+
+void MonosIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+									  const VarNames& names,
+									  bool isFirst,
+									  FILE* out) {
+  fputs(isFirst ? "\n " : ",\n ", out);
+  IOHandler::writeTermProduct(term, names, out);
+}
+
+void MonosIOHandler::writeIdealFooter(FILE* out) {
+  fputs("\n];\n", out);
 }
 
 void MonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {

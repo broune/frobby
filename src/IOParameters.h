@@ -20,6 +20,7 @@
 #include "ParameterGroup.h"
 #include "StringParameter.h"
 
+class IOHandler;
 class Scanner;
 
 class IOParameters : public ParameterGroup {
@@ -32,8 +33,13 @@ class IOParameters : public ParameterGroup {
 
   IOParameters(Type type = InputAndOutput);
 
+  void setOutputFormat(const string& format);
+
   const string& getInputFormat() const;
   const string& getOutputFormat() const;
+
+  IOHandler* getInputHandler() const;
+  IOHandler* getOutputHandler() const;
 
   // If using the input format, this must be called before validating
   // the ideals, since "autodetect" is not a valid format other than

@@ -45,6 +45,10 @@ IOParameters::IOParameters(Type type):
 	addParameter(&_outputFormat);
 }
 
+void IOParameters::setOutputFormat(const string& format) {
+  _outputFormat = format;
+}
+
 const string& IOParameters::getInputFormat() const {
   ASSERT(_type != OutputOnly);
   return _inputFormat;
@@ -57,6 +61,18 @@ const string& IOParameters::getOutputFormat() const {
 	return _inputFormat;
   else
 	return _outputFormat;
+}
+
+IOHandler* IOParameters::getInputHandler() const {
+  IOHandler* handler = IOHandler::getIOHandler(getInputFormat());
+  ASSERT(handler != 0);
+  return handler;
+}
+
+IOHandler* IOParameters::getOutputHandler() const {
+  IOHandler* handler = IOHandler::getIOHandler(getOutputFormat());
+  ASSERT(handler != 0);
+  return handler;
 }
 
 void IOParameters::autoDetectInputFormat(Scanner& in) {

@@ -26,4 +26,12 @@ class TermConsumer {
   virtual void consume(const Term& term) = 0;
 };
 
+// TODO: move elsewhere
+class NullTermConsumer : public TermConsumer {
+ public:
+  virtual ~NullTermConsumer() {}
+
+  virtual void consume(const Term& term) {};
+};
+
 #endif

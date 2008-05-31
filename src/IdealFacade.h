@@ -34,9 +34,6 @@ class IdealFacade : private Facade {
   // Removes redundant generators from ideal.
   void sortAllAndMinimize(BigIdeal& bigIdeal);
 
-  // Clears the input ideal and writes to file.
-  void sortAllAndMinimize(BigIdeal& bigIdeal, FILE* out, const string& format);
-
   // Sorts the generators of ideal and removes duplicates.
   void sortGeneratorsUnique(BigIdeal& ideal);
 
@@ -45,8 +42,6 @@ class IdealFacade : private Facade {
 
   // Sorts the variables of ideal.
   void sortVariables(BigIdeal& ideal);
-
-  void printHilbertSeries(const BigIdeal& ideal, bool canonicalize, FILE* out);
 
   void printAnalysis(FILE* out, BigIdeal& ideal);
   void printLcm(FILE* out, BigIdeal& ideal);

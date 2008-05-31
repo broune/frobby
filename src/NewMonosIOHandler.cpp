@@ -21,47 +21,34 @@
 #include "BigIdeal.h"
 #include "VarNames.h"
 
-class NewMonosIdealWriter : public IdealWriter {
-public:
-  NewMonosIdealWriter(FILE* file, const VarNames& names):
-    IdealWriter(file, names) {
-    writeHeader();
+void NewMonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+  fputs("(monomial-ideal-with-order\n (lex-order", out);
+  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+	putc(' ', out);
+	fputs(names.getName(i).c_str(), out);
   }
+  fputc(')', out);
+}
 
-  NewMonosIdealWriter(FILE* file, const TermTranslator* translator):
-    IdealWriter(file, translator, true) {
-    writeHeader();
-  }
+void NewMonosIOHandler::writeTermOfIdeal(const Term& term,
+										 const TermTranslator* translator,
+										 bool isFirst,
+										 FILE* out) {
+  fputs("\n ", out);
+  IOHandler::writeTermProduct(term, translator, out);
+}
 
-  virtual ~NewMonosIdealWriter() {
-    fputs(")\n", _file);
-  }
+void NewMonosIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+										 const VarNames& names,
+										 bool isFirst,
+										 FILE* out) {
+  fputs("\n ", out);
+  IOHandler::writeTermProduct(term, names, out);
+}
 
-  virtual void consume(const vector<const char*>& term) {
-    writeTerm(term, _file);
-    putc('\n', _file);
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-    writeTerm(term, _names, _file);
-    putc('\n', _file);
-  }
-
-  virtual void consume(const Term& term) {
-    writeTerm(term, _translator, _file);
-    putc('\n', _file);
-  }
-
-private:
-  void writeHeader() {
-    fputs("(monomial-ideal-with-order\n (lex-order", _file);
-    for (unsigned int i = 0; i < _names.getVarCount(); ++i) {
-      putc(' ', _file);
-      fputs(_names.getName(i).c_str(), _file);
-    }
-    fputs(")\n", _file);
-  }
-};
+void NewMonosIOHandler::writeIdealFooter(FILE* out) {
+  fputs("\n)\n", out);
+}
 
 void NewMonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   scanner.expect('(');
@@ -70,16 +57,6 @@ void NewMonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 
   while (!scanner.match(')'))
     readTerm(ideal, scanner);
-}
-
-IdealWriter* NewMonosIOHandler::
-createWriter(FILE* file, const VarNames& names) const {
-  return new NewMonosIdealWriter(file, names);
-}
-
-IdealWriter* NewMonosIOHandler::
-createWriter(FILE* file, const TermTranslator* translator) const {
-  return new NewMonosIdealWriter(file, translator);
 }
 
 void NewMonosIOHandler::readIrreducibleDecomposition(Scanner& scanner,

@@ -22,6 +22,7 @@
 
 class BigIdeal;
 class Scanner;
+class IOHandler;
 
 class IOFacade : private Facade {
  public:
@@ -31,7 +32,7 @@ class IOFacade : private Facade {
   void readIdeal(Scanner& in, BigIdeal& ideal);
   void readIdeals(Scanner& in,
 				  vector<BigIdeal*>& ideal); // inserts the read ideals
-  void writeIdeal(FILE* out, BigIdeal& ideal, const string& format);
+  void writeIdeal(BigIdeal& ideal, IOHandler* handler, FILE* out);
 
   void readFrobeniusInstance(Scanner& in, vector<mpz_class>& instance);
   void readFrobeniusInstanceWithGrobnerBasis
