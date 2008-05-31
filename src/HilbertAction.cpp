@@ -23,6 +23,8 @@
 #include "Scanner.h"
 
 HilbertAction::HilbertAction():
+  _io(IOHandler::MonomialIdeal, IOHandler::Polynomial),
+
   _canonical
   ("canon",
    "Collect and sort terms to get a canonical representation.",

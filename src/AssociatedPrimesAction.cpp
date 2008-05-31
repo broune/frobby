@@ -24,7 +24,8 @@
 #include "Scanner.h"
 #include "BigTermConsumer.h"
 
-AssociatedPrimesAction::AssociatedPrimesAction() {
+AssociatedPrimesAction::AssociatedPrimesAction():
+  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
 }
 
 const char* AssociatedPrimesAction::getName() const {

@@ -18,10 +18,7 @@
 #include "HelpAction.h"
 
 #include "Parameter.h"
-
-HelpAction::HelpAction():
-  _topic(0) {
-}
+#include "IOHandler.h"
 
 const char* HelpAction::getName() const {
   return "help";
@@ -52,27 +49,33 @@ bool HelpAction::acceptsNonParameter() const {
 }
 
 bool HelpAction::processNonParameter(const char* str) {
-  ASSERT(_topic == 0);
+  ASSERT(_topic == "");
 
-  _topic = Action::createAction(str);
-  if (_topic == 0) {
+  _topic = str;
+
+  if (_topic == "io")
+	return true;
+
+  Action* action = Action::createAction(str);
+  if (action == 0) {
     fprintf(stderr, "ERROR: Unknown help topic \"%s\".\n", str);
     return false;
   }
+  delete action;
 
   return true;
 }
 
-void HelpAction::displayTopic() {
-  fprintf(stdout, "Displaying information on action: %s\n\n%s\n",
-		  _topic->getName(), _topic->getDescription());
+void HelpAction::displayActionHelp(Action* action) {
+  fprintf(stderr, "Displaying information on action: %s\n\n%s\n",
+		  action->getName(), action->getDescription());
 
   vector<Parameter*> parameters;
-  _topic->obtainParameters(parameters);
+  action->obtainParameters(parameters);
 
   if (!parameters.empty()) {
-    fprintf(stdout, "\nThe parameters accepted by %s are as follows.\n",
-			_topic->getName());
+    fprintf(stderr, "\nThe parameters accepted by %s are as follows.\n",
+			action->getName());
 
     for (vector<Parameter*>::const_iterator it = parameters.begin();
 		 it != parameters.end(); ++it) {
@@ -88,25 +91,85 @@ void HelpAction::displayTopic() {
 		  desc += "   "; // do proper indentation.";
 	  }
 
-      fprintf(stdout, "\n -%s %s   (default is %s)\n   %s\n",
+      fprintf(stderr, "\n -%s %s   (default is %s)\n   %s\n",
 			  (*it)->getName(), (*it)->getParameterName(),
 			  defaultValue.c_str(), desc.c_str());
     }
   }
 }
 
+void HelpAction::displayIOHelp() {
+  fputs("Displaying information on topic: io\n"
+		"\n"
+		"Frobby understands several file formats. These are not documented,\n"
+		"but they are simple enough that seeing an example should be enough\n"
+		"to figure them out. Getting an example is as simple as making\n"
+		"Frobby produce output in that format.\n"
+		"\n"
+		"It is true of all the formats that white-space is insignificant,\n"
+		"but other than that Frobby is quite fuzzy about how the input\n"
+		"must look. E.g. a Macaulay 2 file containing a monomial ideal\n"
+		"must start with \"R = \", so writing \"r = \" with a lower-case r\n"
+		"is an error. To help with this, Frobby tries to say what is wrong\n"
+		"if there is an error.\n"
+		"\n"
+		"If no input format is specified, Frobby will guess at the format,\n"
+		"and it will guess correctly if there are no errors in the input.\n"
+		"If no output format is specified, Frobby will use the same format\n"
+		"for output as for input. If you want to force Frobby to use a\n"
+		"specific format, use the -iformat and -oformat options. Using\n"
+		"these with the transform action allows translation between formats.\n"
+		"\n"
+		"The formats available in Frobby and the types of data they\n"
+		"support are as follows.\n\n", stderr);
+
+  const vector<IOHandler*> handlers = IOHandler::getIOHandlers();
+  for (vector<IOHandler*>::const_iterator handlerIt = handlers.begin();
+	   handlerIt != handlers.end(); ++handlerIt) {
+	IOHandler* handler = *handlerIt;
+
+	fprintf(stderr, "* The format %s: %s\n",
+			handler->getName(),
+			handler->getDescription());
+
+	const vector<IOHandler::DataType> types = IOHandler::getDataTypes();
+	for (vector<IOHandler::DataType>::const_iterator typeIt = types.begin();
+		 typeIt != types.end(); ++typeIt) {
+	  IOHandler::DataType type = *typeIt;
+
+	  bool input = handler->supportsInput(type);
+	  bool output = handler->supportsOutput(type);
+
+	  const char* formatStr = "";
+	  if (input && output)
+		formatStr = "  - supports input and output of %s.\n";
+	  else if (input)
+		formatStr = "  - supports input of %s.\n";
+	  else if (output)
+		formatStr = "  - supports output of %s.\n";
+
+	  fprintf(stderr, formatStr, IOHandler::getDataTypeName(type));
+	}
+
+	fputc('\n', stderr);
+  }
+}
+
 void HelpAction::perform() {
-  if (_topic != 0) {
-    displayTopic();
+  if (_topic != "") {
+	if (_topic == "io")
+	  displayIOHelp();
+	else {
+	  Action* action = Action::createAction(_topic);
+	  displayActionHelp(action);
+	  delete action;
+	}
+
     return;
   }
 
-  fprintf(stdout,
-"Frobby version %s Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)\n"
-"Frobby is free software and you are welcome to redistribute it under certain\n"
-"conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General\n"
-"Public License version 2.0 in the file COPYING for details.\n"
-"\n"
+  fprintf(stderr,
+"Frobby version %s Copyright (C) 2007 Bjarke Hammersholt Roune\n"
 "Frobby performs a number of computations related to monomial ideals. You\n"
 "run it by typing `frobby ACTION', where ACTION is one of the following.\n\n",
 	  constants::version);
@@ -128,18 +191,21 @@ void HelpAction::perform() {
       continue;
 
     size_t length = (string((*it)->getName())).size();
-    fputc(' ', stdout);
-    fputs((*it)->getName(), stdout);
+    fputc(' ', stderr);
+    fputs((*it)->getName(), stderr);
     for (size_t i = length; i < maxNameLength; ++i)
-      fputc(' ', stdout);
-    fprintf(stdout, " - %s\n", (*it)->getShortDescription());
+      fputc(' ', stderr);
+    fprintf(stderr, " - %s\n", (*it)->getShortDescription());
   }
 
   fputs(
 "\n"
 "Type 'frobby help ACTION' to get more details on a specific action.\n"
 "Note that all input and output is done via the standard streams.\n"
-"See www.broune.com for further information and new versions of Frobby.\n",
-stdout);
-  fflush(stdout);
+"Type 'frobby help io' for more information on input and output formats.\n"
+"See www.broune.com for further information and new versions of Frobby.\n"
+"\n"
+"Frobby is free software and you are welcome to redistribute it under certain\n"
+"conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General\n"
+"Public License version 2.0 in the file COPYING for details.\n", stderr);
 }

@@ -124,7 +124,7 @@ size_t Scanner::readIntegerString() {
   }
   _tmpString[size] = '\0';
 
-  if (size == 0)
+  if (size == 1)
 	error("an integer");
 
   return size;

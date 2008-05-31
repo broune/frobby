@@ -22,7 +22,7 @@
 
 class ParameterGroup : public Parameter {
  public:
-  ParameterGroup(const char* name, const char* description);
+  ParameterGroup();
   virtual ~ParameterGroup();
 
   virtual bool process(const char** params, unsigned int paramCount);

@@ -18,7 +18,7 @@
 #include "Parameter.h"
 
 Parameter::Parameter(const char* name,
-		     const char* description):
+					 const char* description):
   _name(name),
   _description(description) {
 }
@@ -27,11 +27,11 @@ Parameter::~Parameter() {
 }
 
 const char* Parameter::getName() const {
-  return _name;
+  return _name.c_str();
 }
 
 const char* Parameter::getDescription() const {
-  return _description;
+  return _description.c_str();
 }
 
 const char* Parameter::getParameterName() const {
@@ -41,18 +41,18 @@ const char* Parameter::getParameterName() const {
 bool Parameter::process(const char** params, unsigned int paramCount) {
   if (string(_name) != params[0])
     return false;
-
+  
   processParameters(params + 1, paramCount - 1);
   return true;
 }
 
 void Parameter::checkCorrectParameterCount(unsigned int from,
-					   unsigned int to,
-					   const char** params,
-					   unsigned int paramCount) {
+										   unsigned int to,
+										   const char** params,
+										   unsigned int paramCount) {
   if (from <= paramCount && paramCount <= to)
     return;
-
+  
   fprintf(stderr, "ERROR: Option -%s takes ", getName());
   if (from == to) {
     if (from == 1)
@@ -61,7 +61,7 @@ void Parameter::checkCorrectParameterCount(unsigned int from,
       fprintf(stderr, "%u parameters, ", from);
   } else
     fprintf(stderr, "from %u to %u parameters, ", from, to);
-
+  
   if (paramCount == 0)
     fputs("but no parameters were provided.\n", stderr);
   else {
@@ -69,7 +69,7 @@ void Parameter::checkCorrectParameterCount(unsigned int from,
       fputs("but one parameter was provided.\n", stderr);
     else
       fprintf(stderr, "but %u parameters were provided.\n", paramCount);
-
+	
     fputs("The provided parameters were: ", stderr);
     const char* prefix = "\"";
     for (unsigned int i = 0; i < paramCount; ++i) {
@@ -77,13 +77,13 @@ void Parameter::checkCorrectParameterCount(unsigned int from,
       prefix = ", \"";
     }
     fputc('\n', stderr);
-
+	
     if (paramCount > to)
       fputs("(Did you forget to put a - in front of one of the options?)\n",
-	    stderr);
+			stderr);
   }
-    
+  
   fprintf(stderr, "\nThe option -%s has the following description:\n%s\n",
-	  getName(), _description);
+		  getName(), getDescription());
   exit(1);
 }

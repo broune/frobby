@@ -23,6 +23,8 @@
 
 class AlexanderDualAction : public Action {
  public:
+  AlexanderDualAction();
+
   virtual const char* getName() const;
   virtual const char* getShortDescription() const;
   virtual const char* getDescription() const;

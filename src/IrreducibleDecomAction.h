@@ -23,6 +23,8 @@
 
 class IrreducibleDecomAction : public Action {
  public:
+  IrreducibleDecomAction();
+
   virtual const char* getName() const;
   virtual const char* getShortDescription() const;
   virtual const char* getDescription() const;

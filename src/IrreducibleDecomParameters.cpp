@@ -20,8 +20,6 @@
 #include "SliceFacade.h"
 
 IrreducibleDecomParameters::IrreducibleDecomParameters(bool exposeBoundParam):
-  ParameterGroup("", ""),
-
   _exposeBoundParam(exposeBoundParam),
 
   _printDebug

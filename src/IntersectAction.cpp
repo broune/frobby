@@ -22,6 +22,10 @@
 #include "IntersectFacade.h"
 #include "Scanner.h"
 
+IntersectAction::IntersectAction():
+  _io(IOHandler::MonomialIdealList, IOHandler::MonomialIdeal) {
+}
+
 const char* IntersectAction::getName() const {
   return "intersect";
 }

@@ -31,6 +31,61 @@
 #include "Fourti2IOHandler.h"
 #include "NullIOHandler.h"
 
+bool IOHandler::supportsInput(DataType type) const {
+  return std::find(_supportedInputs.begin(), _supportedInputs.end(),
+				   type) != _supportedInputs.end();
+}
+
+bool IOHandler::supportsOutput(DataType type) const {
+  return std::find(_supportedOutputs.begin(), _supportedOutputs.end(),
+				   type) != _supportedOutputs.end();
+}
+
+const char* IOHandler::getDataTypeName(DataType type) {
+  switch (type) {
+  case None:
+	return "nothing";
+
+  case MonomialIdeal:
+	return "a monomial ideal";
+
+  case Polynomial:
+	return "a polynomial";
+
+  case MonomialIdealList:
+	return "a list of monomial ideals";
+
+  default:
+	fputs("INTERNAL ERROR: Unknown DataType enum in getDataTypeName.\n",
+		  stderr);
+	ASSERT(false);
+	exit(1);
+	return 0;
+  }
+}
+
+const vector<IOHandler::DataType>& IOHandler::getDataTypes() {
+  static vector<DataType> types;
+  if (types.empty()) {
+	types.push_back(MonomialIdeal);
+	types.push_back(MonomialIdealList);
+	types.push_back(Polynomial);
+  }
+  return types;
+}
+
+void IOHandler::registerInput(DataType type) {
+  ASSERT(type != None);
+  ASSERT(!supportsInput(type));
+  _supportedInputs.push_back(type);
+}
+
+void IOHandler::registerOutput(DataType type) {
+  ASSERT(type != None);
+  ASSERT(!supportsOutput(type));
+  _supportedOutputs.push_back(type);
+}
+
 class IdealWriter : public TermConsumer {
 public:
   IdealWriter(IOHandler* handler, TermTranslator* translator, FILE* out):
@@ -98,6 +153,16 @@ private:
   Ideal _ideal;
 };
 
+void IOHandler::readIdeals(Scanner& in, vector<BigIdeal*> ideals) {
+  ASSERT(supportsInput(MonomialIdealList));
+
+  while (hasMoreInput(in)) {
+	BigIdeal* ideal = new BigIdeal();
+	readIdeal(in, *ideal);
+	ideals.push_back(ideal);
+  }
+}
+
 void IOHandler::readTerm(Scanner& in,
 						 const VarNames& names,
 						 vector<mpz_class>& term) {
@@ -121,17 +186,31 @@ bool IOHandler::hasMoreInput(Scanner& scanner) const {
   return !scanner.matchEOF();
 }
 
+const char* IOHandler::getName() const {
+  return _formatName;
+}
+
+const char* IOHandler::getDescription() const {
+  return _formatDescription;
+}
+
 CoefTermConsumer* IOHandler::createCoefTermWriter
 (FILE* out, const TermTranslator* translator) {
   fprintf(stderr, "The format %s does not support polynomials.\n",
-		  getFormatName());
+		  getName());
   ASSERT(false);
   exit(1);
   return 0;
 }
 
-IOHandler::IOHandler(bool requiresSizeForIdealOutput):
+IOHandler::IOHandler(const char* formatName,
+					 const char* formatDescription,
+					 bool requiresSizeForIdealOutput):
+  _formatName(formatName),
+  _formatDescription(formatDescription),
   _requiresSizeForIdealOutput(requiresSizeForIdealOutput) {
+  ASSERT(formatName != 0);
+  ASSERT(formatDescription != 0);
 }
 
 TermConsumer* IOHandler::createIdealWriter(TermTranslator* translator,
@@ -141,7 +220,7 @@ TermConsumer* IOHandler::createIdealWriter(TermTranslator* translator,
 			"NOTE: Using the format %s makes it necessary to store all of\n"
 			"the output in memory before writing it out. This increases\n"
 			"memory consumption and decreases performance.\n",
-			getFormatName());
+			getName());
 	return new DelayedIdealWriter(this, translator, out);
   }
   else
@@ -230,28 +309,36 @@ void IOHandler::readVarPower(vector<mpz_class>& term,
 }
 
 IOHandler* IOHandler::getIOHandler(const string& name) {
-  static MonosIOHandler monos;
-  if (name == monos.getFormatName())
-	return &monos;
-
-  static Fourti2IOHandler fourti2;
-  if (name == fourti2.getFormatName())
-	return &fourti2;
-
-  static NewMonosIOHandler newMonos;
-  if (name == newMonos.getFormatName())
-	return &newMonos;
-
-  static Macaulay2IOHandler m2;
-  if (name == m2.getFormatName())
-	return &m2;
-
-  static NullIOHandler nullHandler;
-  if (name == nullHandler.getFormatName())
-	return &nullHandler;
-
+  const vector<IOHandler*>& handlers = getIOHandlers();
+  for (vector<IOHandler*>::const_iterator it = handlers.begin();
+	   it != handlers.end(); ++it) {
+	if (name == (*it)->getName())
+	  return *it;
+  }
   return 0;
 }
+
+const vector<IOHandler*>& IOHandler::getIOHandlers() {
+  static vector<IOHandler*> handlers;
+  if (handlers.empty()) {
+	static Macaulay2IOHandler m2;
+	handlers.push_back(&m2);
+
+	static MonosIOHandler monos;
+	handlers.push_back(&monos);
+
+	static NewMonosIOHandler newMonos;
+	handlers.push_back(&newMonos);
+
+	static Fourti2IOHandler fourti2;
+	handlers.push_back(&fourti2);
+
+	static NullIOHandler nullHandler;
+	handlers.push_back(&nullHandler);
+  }
+  return handlers;
+}
+
 
 void readFrobeniusInstance(Scanner& scanner, vector<mpz_class>& numbers) {
   numbers.clear();

@@ -22,6 +22,10 @@
 #include "IOFacade.h"
 #include "Scanner.h"
 
+IrreducibleDecomAction::IrreducibleDecomAction():
+  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
+}
+
 const char* IrreducibleDecomAction::getName() const {
   return "irrdecom";
 }

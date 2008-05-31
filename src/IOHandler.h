@@ -32,6 +32,7 @@ class IOHandler {
   virtual ~IOHandler();
 
   virtual void readIdeal(Scanner& in, BigIdeal& ideal) = 0;
+  virtual void readIdeals(Scanner& in, vector<BigIdeal*> ideals);
   virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom) = 0;
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
@@ -40,7 +41,8 @@ class IOHandler {
 
   virtual bool hasMoreInput(Scanner& scanner) const;
 
-  virtual const char* getFormatName() const = 0;
+  const char* getName() const;
+  const char* getDescription() const;
 
   virtual CoefTermConsumer* createCoefTermWriter
 	(FILE* out, const TermTranslator* translator);
@@ -50,6 +52,7 @@ class IOHandler {
 
   // Returns null if name is unknown.
   static IOHandler* getIOHandler(const string& name);
+  static const vector<IOHandler*>& getIOHandlers();
 
   // TODO: in development. E.g. should be protected and pure virtual.
   virtual void writeIdealHeader(const VarNames& names, FILE* out) {ASSERT(false);}
@@ -71,13 +74,25 @@ class IOHandler {
   virtual void writeIdealFooter(FILE* out) {ASSERT(false);}
 
   enum DataType {
+	None,
 	MonomialIdeal,
 	Polynomial,
 	MonomialIdealList
   };
 
+  bool supportsInput(DataType type) const;
+  bool supportsOutput(DataType type) const;
+
+  static const char* getDataTypeName(DataType type);
+  static const vector<DataType>& getDataTypes();
+
  protected:
-  IOHandler(bool requiresSizeForIdealOutput = false);
+  void registerInput(DataType type);
+  void registerOutput(DataType type);
+
+  IOHandler(const char* formatName,
+			const char* formatDescription,
+			bool requiresSizeForIdealOutput);
 
   static void writeTermProduct(const Term& term,
 							   const TermTranslator* translator,
@@ -92,6 +107,11 @@ class IOHandler {
 					const VarNames& names, Scanner& scanner);
 
  private:
+  vector<DataType> _supportedInputs;
+  vector<DataType> _supportedOutputs;
+
+  const char* _formatName;
+  const char* _formatDescription;
   bool _requiresSizeForIdealOutput;
 };
 

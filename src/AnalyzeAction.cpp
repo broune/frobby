@@ -26,6 +26,8 @@
 #include <algorithm>
 
 AnalyzeAction::AnalyzeAction():
+  _io(IOHandler::MonomialIdeal, IOHandler::None),
+
   _printLcm
   ("lcm",
    "Print the least common multiple of the generators.",

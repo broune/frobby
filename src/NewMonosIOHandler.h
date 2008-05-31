@@ -25,10 +25,10 @@ class BigIdeal;
 
 class NewMonosIOHandler : public IOHandler {
 public:
+  NewMonosIOHandler();
+
   virtual void readIdeal(Scanner& in, BigIdeal& ideal);
   virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom);
-
-  virtual const char* getFormatName() const;
 
   virtual void writeIdealHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfIdeal(const Term& term,

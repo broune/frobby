@@ -24,14 +24,15 @@
 GenerateIdealAction::GenerateIdealAction():
   _type
 ("type",
- "The supported type of ideals are random, list, knight and king.",
+ "The supported types of ideals are random, list, king and knight.",
  "random"),
   _variableCount("varCount", "The number of variables.", 3),
   _generatorCount("genCount", "The number of minimal generators.", 5),
   _exponentRange
   ("expRange",
    "Exponents are chosen uniformly in the range [0,INTEGER].", 9),
-  _io(IOParameters::OutputOnly) {
+
+  _io(IOHandler::None, IOHandler::MonomialIdeal) {
 }
 
 const char* GenerateIdealAction::getName() const {

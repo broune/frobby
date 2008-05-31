@@ -32,8 +32,6 @@ public:
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
 
-  virtual const char* getFormatName() const;
-
   virtual void writeIdealHeader(const VarNames& names,
 								size_t generatorCount,
 								FILE* out);

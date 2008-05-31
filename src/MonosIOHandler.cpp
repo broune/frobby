@@ -22,6 +22,13 @@
 #include <cstdio>
 #include <sstream>
 
+MonosIOHandler::MonosIOHandler():
+  IOHandler("monos", "Older format used by the program Monos.", false) {
+  registerInput(MonomialIdeal);
+  registerInput(MonomialIdealList);
+  registerOutput(MonomialIdeal);
+}
+
 void MonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
   fputs("vars ", out);
   const char* pre = "";
@@ -75,10 +82,6 @@ void MonosIOHandler::readIrreducibleDecomposition(Scanner& scanner,
 												  BigIdeal& decom) {
   readVarsAndClearIdeal(decom, scanner);
   readIrreducibleIdealList(decom, scanner);
-}
-
-const char* MonosIOHandler::getFormatName() const {
-  return "monos";
 }
 
 void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
