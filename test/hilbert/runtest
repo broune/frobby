@@ -1,6 +1,6 @@
 #!/bin/bash
 
-../../$frobby hilbert -canon $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.ref
+../../$frobby hilbert -oformat m2 -canon $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.ref
 
 if [ $? != 0 ]
 then

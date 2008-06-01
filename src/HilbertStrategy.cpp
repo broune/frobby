@@ -201,7 +201,7 @@ split(Slice* sliceParam,
 	  independenceSplit(slice, leftEvent, leftSlice, rightSlice))
 	return;
 
-  Term _term(slice->getVarCount());
+  _term.reset(slice->getVarCount());
   getPivot(_term, *slice);
 
   ASSERT(_term.getVarCount() == slice->getVarCount());
