@@ -48,7 +48,7 @@ $(outdir)NewMonosIOHandler.o: src/NewMonosIOHandler.cpp src/stdinc.h \
   src/NewMonosIOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
   src/VarNames.h
 $(outdir)HelpAction.o: src/HelpAction.cpp src/stdinc.h src/HelpAction.h \
-  src/Action.h src/BoolParameter.h src/Parameter.h
+  src/Action.h src/BoolParameter.h src/Parameter.h src/IOHandler.h
 $(outdir)stdinc.o: src/stdinc.cpp src/stdinc.h
 $(outdir)DynamicFrobeniusAction.o: src/DynamicFrobeniusAction.cpp src/stdinc.h \
   src/DynamicFrobeniusAction.h src/Action.h src/BoolParameter.h \
@@ -232,3 +232,6 @@ $(outdir)SliceFacade.o: src/SliceFacade.cpp src/stdinc.h src/SliceFacade.h \
 $(outdir)BigTermRecorder.o: src/BigTermRecorder.cpp src/stdinc.h \
   src/BigTermRecorder.h src/BigTermConsumer.h src/BigIdeal.h \
   src/VarNames.h src/Term.h src/TermTranslator.h
+$(outdir)CoCoA4IOHandler.o: src/CoCoA4IOHandler.cpp src/stdinc.h \
+  src/CoCoA4IOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
+  src/VarNames.h src/CoefTermConsumer.h src/TermTranslator.h src/Term.h

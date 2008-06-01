@@ -106,12 +106,6 @@ void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   }
 }
 
-void Fourti2IOHandler::readIrreducibleDecomposition(Scanner& scanner,
-													BigIdeal& decom) {
-  fputs("ERROR: The 4ti2 format does not support decompositions.\n", stderr);
-  exit(1);
-}
-
 void Fourti2IOHandler::readTerm(Scanner& in, const VarNames& names,
 								vector<mpz_class>& term) {
   term.resize(names.getVarCount());

@@ -66,29 +66,6 @@ void NewMonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
     readTerm(ideal, scanner);
 }
 
-void NewMonosIOHandler::readIrreducibleDecomposition(Scanner& scanner,
-													 BigIdeal& decom) {
-  scanner.expect('(');
-  scanner.expect("lexed-list-with-order");
-  readVarsAndClearIdeal(decom, scanner);
-
-  while (!scanner.match(')'))
-    readIrreducibleIdeal(decom, scanner);
-}
-
-void NewMonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
-  ideal.newLastTerm();
-
-  scanner.expect('(');
-  scanner.expect("monomial-ideal");
-
-  if (scanner.match('1'))
-	return;
-
-  while (!scanner.match(')'))
-	readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
-}
-
 void NewMonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
   scanner.expect('(');
   scanner.expect("lex-order");

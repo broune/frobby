@@ -28,7 +28,6 @@ public:
   NewMonosIOHandler();
 
   virtual void readIdeal(Scanner& in, BigIdeal& ideal);
-  virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom);
 
   virtual void writeIdealHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
@@ -42,7 +41,6 @@ public:
   virtual void writeIdealFooter(FILE* out);
 
 private:
-  void readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner);
   void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
 };
 

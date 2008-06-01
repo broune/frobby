@@ -81,40 +81,6 @@ void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   scanner.expectEOF();
 }
 
-void Macaulay2IOHandler::readIrreducibleDecomposition(Scanner& scanner,
-													  BigIdeal& decom) {
-  readVarsAndClearIdeal(decom, scanner);
-  readIrreducibleIdealList(decom, scanner);
-  scanner.expectEOF();
-}
-
-void Macaulay2IOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
-  ideal.newLastTerm();
-
-  scanner.expect("monomialIdeal");
-  scanner.expect('(');
-
-  do
-    readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
-  while (scanner.match(','));
-
-  scanner.expect(')');
-}
-
-void Macaulay2IOHandler::readIrreducibleIdealList(BigIdeal& ideals,
-						  Scanner& scanner) {
-  scanner.expect('{');
-  if (scanner.match('}'))
-    return;
-
-  do {
-    readIrreducibleIdeal(ideals, scanner);
-  } while (scanner.match(','));
-
-  scanner.expect('}');
-  scanner.match(';');
-}
-
 void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
   scanner.expect('R');
   scanner.expect('=');
