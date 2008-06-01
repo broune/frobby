@@ -30,7 +30,6 @@ public:
   NullIOHandler();
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
-  virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
 
   virtual TermConsumer* createIdealWriter(TermTranslator* translator,
 										  FILE* out);

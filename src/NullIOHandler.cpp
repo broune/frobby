@@ -64,10 +64,6 @@ void NullIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   ideal.clearAndSetNames(VarNames());
 }
 
-void NullIOHandler::readIrreducibleDecomposition(Scanner& scanner,
-												 BigIdeal& decom) {
-}
-
 bool NullIOHandler::hasMoreInput(Scanner& scanner) const {
   return false;
 }

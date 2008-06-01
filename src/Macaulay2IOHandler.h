@@ -14,8 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef MACAULAY2_IO_HANDLER_GUARD
-#define MACAULAY2_IO_HANDLER_GUARD
+#ifndef MACAULAY_2_IO_HANDLER_GUARD
+#define MACAULAY_2_IO_HANDLER_GUARD
 
 #include "IOHandler.h"
 
@@ -29,7 +29,6 @@ public:
   Macaulay2IOHandler();
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
-  virtual void readIrreducibleDecomposition(Scanner& scanner, BigIdeal& decom);
 
   virtual void writeIdealHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
@@ -42,13 +41,10 @@ public:
 								FILE* out);
   virtual void writeIdealFooter(FILE* out);
 
-  // TODO: integrate this better
   virtual CoefTermConsumer* createCoefTermWriter
 	(FILE* file, const TermTranslator* translator);
 
 private:
-  void readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner);
-  void readIrreducibleIdealList(BigIdeal& ideals, Scanner& scanner);
   void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
 };
 

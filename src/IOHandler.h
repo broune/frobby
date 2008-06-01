@@ -33,7 +33,6 @@ class IOHandler {
 
   virtual void readIdeal(Scanner& in, BigIdeal& ideal) = 0;
   virtual void readIdeals(Scanner& in, vector<BigIdeal*> ideals);
-  virtual void readIrreducibleDecomposition(Scanner& in, BigIdeal& decom) = 0;
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
 

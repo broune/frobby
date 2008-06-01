@@ -29,7 +29,6 @@ HilbertAction::HilbertAction():
   ("canon",
    "Collect and sort terms to get a canonical representation.",
    false) {
-  _io.setOutputFormat("m2");
 }
 
 const char* HilbertAction::getName() const {

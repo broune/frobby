@@ -30,6 +30,7 @@
 #include "Macaulay2IOHandler.h"
 #include "Fourti2IOHandler.h"
 #include "NullIOHandler.h"
+#include "CoCoA4IOHandler.h"
 
 bool IOHandler::supportsInput(DataType type) const {
   return std::find(_supportedInputs.begin(), _supportedInputs.end(),
@@ -323,6 +324,9 @@ const vector<IOHandler*>& IOHandler::getIOHandlers() {
   if (handlers.empty()) {
 	static Macaulay2IOHandler m2;
 	handlers.push_back(&m2);
+
+	static CoCoA4IOHandler cocoa4;
+	handlers.push_back(&cocoa4);
 
 	static MonosIOHandler monos;
 	handlers.push_back(&monos);

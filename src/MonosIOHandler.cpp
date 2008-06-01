@@ -78,39 +78,6 @@ void MonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   scanner.expect(';');
 }
 
-void MonosIOHandler::readIrreducibleDecomposition(Scanner& scanner,
-												  BigIdeal& decom) {
-  readVarsAndClearIdeal(decom, scanner);
-  readIrreducibleIdealList(decom, scanner);
-}
-
-void MonosIOHandler::readIrreducibleIdeal(BigIdeal& ideal, Scanner& scanner) {
-  ideal.newLastTerm();
-
-  scanner.expect('[');
-  if (scanner.match(']'))
-    return;
-
-  do
-    readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
-  while (scanner.match(','));
-
-  scanner.expect(']');
-}
-
-void MonosIOHandler::readIrreducibleIdealList(BigIdeal& ideals, Scanner& scanner) {
-  scanner.expect('[');
-  if (scanner.match(']'))
-    return;
-  
-  do {
-    readIrreducibleIdeal(ideals, scanner);
-  } while (scanner.match(',')); 
-
-  scanner.expect(']');
-  scanner.expect(';');
-}
-
 void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
   scanner.expect("vars");
 
