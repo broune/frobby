@@ -60,10 +60,13 @@ public:
 
   bool contains(const string& name) const;
 
+  // Returns true if the names are x1, x2 and so on.
+  bool namesAreDefault() const;
+
   // The returned reference can become invalid next time addVar is
   // called.
   const string& getName(size_t index) const;
-
+  
   size_t getVarCount() const;
 
   void clear();

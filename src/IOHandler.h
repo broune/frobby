@@ -70,7 +70,8 @@ class IOHandler {
 								bool isFirst,
 								FILE* out) {ASSERT(false);}
 
-  virtual void writeIdealFooter(FILE* out) {ASSERT(false);}
+  virtual void writeIdealFooter(const VarNames& names,
+								FILE* out) {ASSERT(false);}
 
   enum DataType {
 	None,
@@ -101,9 +102,9 @@ class IOHandler {
 							   const VarNames& names,
 							   FILE* out);
 
-  void readTerm(BigIdeal& ideal, Scanner& scanner);
-  void readVarPower(vector<mpz_class>& term,
-					const VarNames& names, Scanner& scanner);
+  static void readTerm(BigIdeal& ideal, Scanner& scanner);
+  static void readVarPower(vector<mpz_class>& term,
+						   const VarNames& names, Scanner& scanner);
 
  private:
   vector<DataType> _supportedInputs;

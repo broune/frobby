@@ -75,7 +75,17 @@ void Fourti2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
   fputc('\n', out);
 }
 
-void Fourti2IOHandler::writeIdealFooter(FILE* out) {
+void Fourti2IOHandler::writeIdealFooter(const VarNames& names,
+										FILE* out) {
+  if (names.namesAreDefault())
+	return;
+
+  for (size_t var = 0; var < names.getVarCount(); ++var) {
+	if (var > 0)
+	  fputc(' ', out);
+	fputs(names.getName(var).c_str(), out);
+  }
+  fputc('\n', out);
 }
 
 void Fourti2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
@@ -93,8 +103,7 @@ void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   scanner.readSizeT(termCount);
   scanner.readSizeT(varCount);
 
-  VarNames names(varCount);
-  ideal.clearAndSetNames(names);
+  ideal.clearAndSetNames(VarNames(varCount));
 
   ideal.reserve(termCount);
   for (size_t t = 0; t < termCount; ++t) {
@@ -103,6 +112,13 @@ void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 	vector<mpz_class>& term = ideal.getLastTermRef();
 	for (size_t var = 0; var < varCount; ++var)
 	  scanner.readIntegerAndNegativeAsZero(term[var]);
+  }
+
+  if (scanner.peekIdentifier()) {
+	VarNames names;
+	for (size_t var = 0; var < varCount; ++var)
+	  names.addVar(scanner.readIdentifier());
+	ideal.renameVars(names);
   }
 }
 

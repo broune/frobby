@@ -261,6 +261,10 @@ bool Scanner::peekIdentifier() {
   return isalpha(peek());
 }
 
+bool Scanner::peekWhite() {
+  return isspace(peek());
+}
+
 int Scanner::getChar() {
   if (_char == '\n')
     ++_lineNumber;

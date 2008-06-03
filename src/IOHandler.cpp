@@ -102,7 +102,7 @@ public:
   }
 
   virtual ~IdealWriter() {
-	_handler->writeIdealFooter(_out);
+	_handler->writeIdealFooter(_translator->getNames(), _out);
   }
 
   virtual void consume(const Term& term) {
@@ -180,7 +180,7 @@ void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
   writeIdealHeader(ideal.getNames(), generatorCount, out);
   for (size_t i = 0; i < generatorCount; ++i)
 	writeTermOfIdeal(ideal[i], ideal.getNames(), i == 0, out);
-  writeIdealFooter(out);
+  writeIdealFooter(ideal.getNames(), out);
 }
 
 bool IOHandler::hasMoreInput(Scanner& scanner) const {

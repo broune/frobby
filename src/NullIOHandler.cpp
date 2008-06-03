@@ -52,7 +52,8 @@ void NullIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 									 FILE* out) {
 }
 
-void NullIOHandler::writeIdealFooter(FILE* out) {
+void NullIOHandler::writeIdealFooter(const VarNames& names,
+									 FILE* out) {
 }
 
 CoefTermConsumer* NullIOHandler::createCoefTermWriter

@@ -53,7 +53,7 @@ then
 fi
 
 
-../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat monos < $1.4ti2 2> /dev/null| diff - $1.4ti2.monos
+../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat monos < $1.4ti2 2> /dev/null| diff - $1
 
 if [ $? != 0 ]
 then

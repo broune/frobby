@@ -56,7 +56,8 @@ void MonosIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
   IOHandler::writeTermProduct(term, names, out);
 }
 
-void MonosIOHandler::writeIdealFooter(FILE* out) {
+void MonosIOHandler::writeIdealFooter(const VarNames& names,
+									  FILE* out) {
   fputs("\n];\n", out);
 }
 

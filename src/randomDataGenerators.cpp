@@ -56,8 +56,7 @@ void generateChessIdeal(BigIdeal& bigIdeal,
 	  names.addVar(name.str());
 	}
   }
-  bigIdeal.clear();
-  bigIdeal.setNames(names);
+  bigIdeal.clearAndSetNames(names);
   Ideal ideal(bigIdeal.getVarCount());
 
   // Generate ideal
