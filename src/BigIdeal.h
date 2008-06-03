@@ -31,7 +31,7 @@ public:
   void insert(const Ideal& ideal);
   void insert(const Ideal& ideal, const TermTranslator& translator);
 
-  void setNames(const VarNames& names);
+  void renameVars(const VarNames& names);
 
   void newLastTerm();
   void reserve(size_t capacity);

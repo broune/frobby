@@ -59,7 +59,8 @@ void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
   IOHandler::writeTermProduct(term, names, out);
 }
 
-void Macaulay2IOHandler::writeIdealFooter(FILE* out) {
+void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
+										  FILE* out) {
   fputs("\n);\n", out);  
 }
 

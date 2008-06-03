@@ -47,6 +47,7 @@ public:
   size_t readVariable(const VarNames& names);
 
   bool peekIdentifier();
+  bool peekWhite();
 
   unsigned int getLineNumber() const;
 

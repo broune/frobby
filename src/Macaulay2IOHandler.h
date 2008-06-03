@@ -31,15 +31,19 @@ public:
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
 
   virtual void writeIdealHeader(const VarNames& names, FILE* out);
+
   virtual void writeTermOfIdeal(const Term& term,
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
+
   virtual void writeTermOfIdeal(const vector<mpz_class> term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);
-  virtual void writeIdealFooter(FILE* out);
+
+  virtual void writeIdealFooter(const VarNames& names,
+								FILE* out);
 
   virtual CoefTermConsumer* createCoefTermWriter
 	(FILE* file, const TermTranslator* translator);

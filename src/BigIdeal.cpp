@@ -76,7 +76,8 @@ void BigIdeal::insert(const Ideal& ideal,
   }
 }
 
-void BigIdeal::setNames(const VarNames& names) {
+void BigIdeal::renameVars(const VarNames& names) {
+  ASSERT(names.getVarCount() == _names.getVarCount());
   _names = names;
 }
 

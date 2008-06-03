@@ -45,7 +45,7 @@ void VarNames::addVar(const string& name) {
   ASSERT(name != "");
   ASSERT(!contains(name));
 
-  _indexToName.push_back(new string(name)); // TODO: fix leak
+  _indexToName.push_back(new string(name));
   char* str = new char[name.size() + 1];
   strcpy(str, name.c_str());
   _nameToIndex[str] = _indexToName.size() - 1;
@@ -70,6 +70,11 @@ size_t VarNames::getIndex(const char* name) const {
 
 bool VarNames::contains(const string& name) const {
   return getIndex(name) != UNKNOWN;
+}
+
+bool VarNames::namesAreDefault() const {
+  VarNames names(getVarCount());
+  return *this == names;
 }
 
 const string& VarNames::getName(size_t index) const {
