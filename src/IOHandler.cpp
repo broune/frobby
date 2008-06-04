@@ -251,7 +251,7 @@ void IOHandler::readTerm(Scanner& in,
 IOHandler::~IOHandler() {
 }
 
-void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
+void IOHandler::writeIdeal(const BigIdeal& ideal, FILE* out) {
   size_t generatorCount = ideal.getGeneratorCount();
   writeIdealHeader(ideal.getNames(), generatorCount, out);
   for (size_t i = 0; i < generatorCount; ++i)
@@ -477,6 +477,48 @@ const vector<IOHandler*>& IOHandler::getIOHandlers() {
 	handlers.push_back(&nullHandler);
   }
   return handlers;
+}
+
+void IOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
+  fputs("INTERNAL ERROR: Called IOHandler::writePolynomialHeader.\n", stderr);
+  ASSERT(false);
+  exit(1);
+}
+
+void IOHandler::writePolynomialHeader(const VarNames& names,
+									  size_t termCount,
+									  FILE* out) {
+  writePolynomialHeader(names, out);
+}
+
+void IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+									  const Term& term,
+									  const TermTranslator* translator,
+									  bool isFirst,
+									  FILE* out) {
+  fputs("INTERNAL ERROR: Called IOHandler::writeTermOfPolynomial (small).\n",
+		stderr);
+  ASSERT(false);
+  exit(1);
+}
+
+void IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+									  const vector<mpz_class>& term,
+									  const VarNames& names,
+									  bool isFirst,
+									  FILE* out) {
+  fputs("INTERNAL ERROR: Called IOHandler::writeTermOfPolynomial (big).\n",
+		stderr);
+  ASSERT(false);
+  exit(1);
+}
+
+void IOHandler::writePolynomialFooter(const VarNames& names,
+									  bool wroteAnyGenerators,
+									  FILE* out) {
+  fputs("INTERNAL ERROR: Called IOHandler::writePolynomialFooter.\n", stderr);
+  ASSERT(false);
+  exit(1);
 }
 
 void IOHandler::writeIdealHeader(const VarNames& names,

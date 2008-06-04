@@ -37,7 +37,7 @@ class IOHandler {
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
 
-  virtual void writeIdeal(FILE* out, const BigIdeal& ideal);
+  virtual void writeIdeal(const BigIdeal& ideal, FILE* out);
   virtual void writePolynomial(BigPolynomial& polynomial, FILE* out);
 
   virtual bool hasMoreInput(Scanner& scanner) const;
@@ -73,37 +73,23 @@ class IOHandler {
 
  protected:
   // Output of polynomials.
-  virtual void writePolynomialHeader(const VarNames& names, FILE* out) {
-	ASSERT(false); // TODO
-  }
-
+  virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writePolynomialHeader(const VarNames& names,
 									 size_t termCount,
-									 FILE* out) {
-	writePolynomialHeader(names, out);
-  }
-
+									 FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,
 									 const Term& term,
 									 const TermTranslator* translator,
 									 bool isFirst,
-									 FILE* out) {
-	ASSERT(false); // TODO
-  }
-
+									 FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,
 									 const vector<mpz_class>& term,
 									 const VarNames& names,
 									 bool isFirst,
-									 FILE* out) {
-	ASSERT(false); // TODO
-  }
-
+									 FILE* out);
   virtual void writePolynomialFooter(const VarNames& names,
 									 bool wroteAnyGenerators,
-									 FILE* out) {
-	ASSERT(false); // TODO
-  }
+									 FILE* out);
 
   // Output of monomial ideals.
   virtual void writeIdealHeader(const VarNames& names, FILE* out) = 0;
