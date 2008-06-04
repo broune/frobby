@@ -44,6 +44,12 @@ void Macaulay2IOHandler::writeTermOfIdeal(const Term& term,
 										  FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
   IOHandler::writeTermProduct(term, translator, out);
+
+  size_t varCount = term.getVarCount();
+  for (size_t var = 0; var < varCount; ++var)
+	if (translator->getExponent(var, term) != 0)
+	  return;
+  fputs("_R", out);
 }
 
 void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
@@ -52,6 +58,12 @@ void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 										  FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
   IOHandler::writeTermProduct(term, names, out);
+
+  size_t varCount = term.size();
+  for (size_t var = 0; var < varCount; ++var)
+	if (term[var] != 0)
+	  return;
+  fputs("_R", out);
 }
 
 void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
@@ -76,9 +88,23 @@ void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 	scanner.expect('_');
 	scanner.expect('R');
   } else {
-	do
+	do {
 	  readTerm(ideal, scanner);
-	while (scanner.match(','));
+	  
+	  vector<mpz_class>& term = ideal.getLastTermRef();
+	  bool isIdentity = true;
+	  size_t varCount = term.size();
+	  for (size_t var = 0; var < varCount; ++var) {
+		if (term[var] != 0) {
+		  isIdentity = false;
+		  break;
+		}
+	  }
+	  if (isIdentity) {
+		scanner.match('_');
+		scanner.match('R');
+	  }
+	} while (scanner.match(','));
   }
   scanner.expect(')');
   scanner.expect(';');
@@ -131,6 +157,9 @@ void Macaulay2IOHandler::writeTermOfPolynomial
  const TermTranslator* translator,
  bool isFirst,
  FILE* out) {
+  ASSERT(translator != 0);
+  ASSERT(out != 0);
+
   fputs("\n ", out);
   writeCoefTermProduct(coef, term, translator, isFirst, out);
 }

@@ -2,13 +2,13 @@ R = QQ[];
 I = monomialIdeal(0_R);
 R = QQ[];
 I = monomialIdeal(
- 1
+ 1_R
 );
 R = QQ[a];
 I = monomialIdeal(0_R);
 R = QQ[a];
 I = monomialIdeal(
- 1
+ 1_R
 );
 R = QQ[a];
 I = monomialIdeal(
@@ -24,11 +24,11 @@ R = QQ[a, b];
 I = monomialIdeal(0_R);
 R = QQ[a, b];
 I = monomialIdeal(
- 1
+ 1_R
 );
 R = QQ[b, c];
 I = monomialIdeal(
- 1
+ 1_R
 );
 R = QQ[a, b];
 I = monomialIdeal(
@@ -47,11 +47,11 @@ I = monomialIdeal(
 );
 R = QQ[long, longer, longestlongest];
 I = monomialIdeal(
- 1,
+ 1_R,
  long^100000000000000000000001
 );
 R = QQ[long, longer, longestlongest];
 I = monomialIdeal(
  long^100000000000000000000000,
- 1
+ 1_R
 );
