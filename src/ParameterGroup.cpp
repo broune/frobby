@@ -51,7 +51,7 @@ void ParameterGroup::addParameter(Parameter* parameter) {
 }
 
 void ParameterGroup::obtainParameters(vector<Parameter*>& parameters) {
-  parameters.insert(parameters.begin(),
-		    _parameters.begin(),
-		    _parameters.end());
+  parameters.insert(parameters.end(),
+					_parameters.begin(),
+					_parameters.end());
 }

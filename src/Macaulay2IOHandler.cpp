@@ -59,6 +59,8 @@ void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
 										  FILE* out) {
   if (wroteAnyGenerators)
 	fputc('\n', out);
+  else
+	fputs("0_R", out); // monomialIdeal reports an error otherwise.
   fputs(");\n", out);  
 }
 
@@ -70,13 +72,16 @@ void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   scanner.expect("monomialIdeal");
   scanner.expect('(');
 
-  if (!scanner.match(')')) {
+  if (scanner.match('0')) {
+	scanner.expect('_');
+	scanner.expect('R');
+  } else {
 	do
 	  readTerm(ideal, scanner);
 	while (scanner.match(','));
-	scanner.expect(')');
   }
-  scanner.match(';');
+  scanner.expect(')');
+  scanner.expect(';');
 }
 
 void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
@@ -109,13 +114,10 @@ void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner
   if (readBrace)
 	scanner.expect('}');
   scanner.expect(']');
-  scanner.match(';');
+  scanner.expect(';');
 
   ideal.clearAndSetNames(names);
 }
-
-
-
 
 void Macaulay2IOHandler::writePolynomialHeader(const VarNames& names,
 											   FILE* out) {

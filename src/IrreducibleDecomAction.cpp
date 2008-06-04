@@ -23,6 +23,10 @@
 #include "Scanner.h"
 
 IrreducibleDecomAction::IrreducibleDecomAction():
+  _encode("encode",
+		  "Encode the decomposition as monomials generating an ideal.",
+		  false),
+
   _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
 }
 
@@ -47,9 +51,10 @@ Action* IrreducibleDecomAction::createNew() const {
 }
 
 void IrreducibleDecomAction::obtainParameters(vector<Parameter*>& parameters) {
-  Action::obtainParameters(parameters);
-  _decomParameters.obtainParameters(parameters);
   _io.obtainParameters(parameters);
+  parameters.push_back(&_encode);
+  _decomParameters.obtainParameters(parameters);
+  Action::obtainParameters(parameters);
 }
 
 void IrreducibleDecomAction::perform() {
@@ -66,5 +71,5 @@ void IrreducibleDecomAction::perform() {
 
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
   _decomParameters.apply(facade);
-  facade.computeIrreducibleDecomposition();
+  facade.computeIrreducibleDecomposition(_encode);
 }
