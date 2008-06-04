@@ -109,11 +109,13 @@ class SliceFacade : public Facade {
   void computeUnivariateHilbertSeries();
 
   // Compute the unique irredundant set of irreducible ideals whose
-  // intersection equals ideal. Each irreducible ideal is provided as
-  // a term, and the terms are provided in arbitrary order. Minimal
-  // generators that are not present in the ideal is represented by a
-  // zero exponent.
-  void computeIrreducibleDecomposition();
+  // intersection equals ideal. If encode is false, then each
+  // irreducible component is output as a separate ideal, which is
+  // only supported when writing to a file. If encode is true, then
+  // each irreducible component is provided as a term, where missing
+  // pure powers are encoded as a zero exponent. The irreducible
+  // components are provided in arbitrary order.
+  void computeIrreducibleDecomposition(bool encode);
 
   // Compute each maximal staircase monomial. A monomial m is a
   // staircase monomial if it belongs to the ideal, while the monomial
@@ -172,6 +174,11 @@ class SliceFacade : public Facade {
   void getLcmOfIdeal(vector<mpz_class>& lcm);
 
   void runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy);
+
+  // Output each term as an irreducible ideal. Cannot be called after
+  // getTermConsumer has been called. Can only be called when writing
+  // terms without coefficient to a file.
+  void doIrreducibleIdealOutput();
 
   TermConsumer* getTermConsumer();
   CoefTermConsumer* getCoefTermConsumer(bool canonical);

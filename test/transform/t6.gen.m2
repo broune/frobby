@@ -1,11 +1,11 @@
 R = QQ[];
-I = monomialIdeal();
+I = monomialIdeal(0_R);
 R = QQ[];
 I = monomialIdeal(
  1
 );
 R = QQ[a];
-I = monomialIdeal();
+I = monomialIdeal(0_R);
 R = QQ[a];
 I = monomialIdeal(
  1
@@ -19,9 +19,9 @@ I = monomialIdeal(
  a
 );
 R = QQ[b, a];
-I = monomialIdeal();
+I = monomialIdeal(0_R);
 R = QQ[a, b];
-I = monomialIdeal();
+I = monomialIdeal(0_R);
 R = QQ[a, b];
 I = monomialIdeal(
  1

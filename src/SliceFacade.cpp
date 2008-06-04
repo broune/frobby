@@ -154,20 +154,24 @@ void SliceFacade::computeUnivariateHilbertSeries() {
   endAction();
 }
 
-void SliceFacade::computeIrreducibleDecomposition() {
+void SliceFacade::computeIrreducibleDecomposition(bool encode) {
   ASSERT(_ideal != 0);
   ASSERT(_translator != 0);
-
-  if (_ideal->containsIdentity()) {
-	getTermConsumer()->consume(Term(_ideal->getVarCount()));
-	return;
-  }
 
   if (_ideal->isZeroIdeal()) {
 	// This creates an output writer if doing file IO. This is
 	// necessary to actually write an empty ideal as opposed to
-	// writing nothing.
+	// writing nothing. This will not work after the encode parameter
+	// is done, so do that after.
 	getTermConsumer();
+	return;
+  }
+  
+  if (!encode)
+	doIrreducibleIdealOutput();
+
+  if (_ideal->containsIdentity()) {
+	getTermConsumer()->consume(Term(_ideal->getVarCount()));
 	return;
   }
 
@@ -237,7 +241,7 @@ void SliceFacade::computeAlexanderDual(const vector<mpz_class>& point) {
 
   endAction();
 
-  computeIrreducibleDecomposition();
+  computeIrreducibleDecomposition(true);
 }
 
 void SliceFacade::computeAlexanderDual() {
@@ -265,7 +269,7 @@ void SliceFacade::computeAssociatedPrimes() {
   {
 	Ideal decom(varCount);
 	_generatedTermConsumer = new DecomRecorder(&decom);
-	computeIrreducibleDecomposition();
+	computeIrreducibleDecomposition(true);
 	delete _generatedTermConsumer;
 	_generatedTermConsumer = 0;
 
@@ -381,6 +385,19 @@ void SliceFacade::runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy) {
 
   ::runSliceAlgorithm(*_ideal, strategy);
   delete strategy;
+}
+
+void SliceFacade::doIrreducibleIdealOutput() {
+  ASSERT(_translator != 0);
+  ASSERT(_out != 0);
+  ASSERT(_generatedTermConsumer == 0);
+  ASSERT(_ioHandler != 0);
+  ASSERT(_termConsumer == 0);
+
+  _generatedTermConsumer =
+	_ioHandler->createIrreducibleIdealWriter(_translator, _out);
+
+  ASSERT(_generatedTermConsumer != 0);
 }
 
 TermConsumer* SliceFacade::getTermConsumer() {

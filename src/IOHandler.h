@@ -46,6 +46,9 @@ class IOHandler {
   virtual TermConsumer* createIdealWriter
 	(const TermTranslator* translator, FILE* out);
 
+  virtual TermConsumer* createIrreducibleIdealWriter
+	(const TermTranslator* translator, FILE* out);
+
   virtual CoefTermConsumer* createPolynomialWriter
 	(const TermTranslator* translator, FILE* out);
 
@@ -142,6 +145,7 @@ class IOHandler {
   bool _requiresSizeForIdealOutput;
 
   friend class IdealWriter;
+  friend class IrreducibleIdealWriter;
   friend class PolynomialWriter;
 };
 

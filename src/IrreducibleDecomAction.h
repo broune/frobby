@@ -20,6 +20,7 @@
 #include "Action.h"
 #include "IOParameters.h"
 #include "IrreducibleDecomParameters.h"
+#include "BoolParameter.h"
 
 class IrreducibleDecomAction : public Action {
  public:
@@ -36,6 +37,7 @@ class IrreducibleDecomAction : public Action {
   virtual void perform();
 
  private:
+  BoolParameter _encode;
   IrreducibleDecomParameters _decomParameters;
   IOParameters _io;
 };

@@ -1,2 +1,2 @@
 R = QQ[];
-I = monomialIdeal();
+I = monomialIdeal(0_R);

@@ -137,6 +137,59 @@ private:
   bool _first;
 };
 
+class IrreducibleIdealWriter : public TermConsumer {
+public:
+  IrreducibleIdealWriter(IOHandler* handler,
+						 const TermTranslator* translator,
+						 FILE* out):
+	_varCount(translator->getNames().getVarCount()),
+	_handler(handler),
+	_translator(translator),
+	_out(out),
+	_tmp(translator->getNames().getVarCount()) {
+	ASSERT(handler != 0);
+	ASSERT(translator != 0);
+	ASSERT(out != 0);
+	ASSERT(_tmp.isIdentity());
+  }
+
+  virtual void consume(const Term& term) {
+	ASSERT(term.getVarCount() == _varCount);
+	ASSERT(_tmp.isIdentity());
+
+	size_t support = 0;
+	for (size_t var = 0; var < _varCount; ++var)
+	  if (_translator->getExponent(var, term) != 0)
+		++support;
+
+	if (support == 0) {
+	  _handler->writeIdealHeader(_translator->getNames(), 1, _out);
+	  _handler->writeTermOfIdeal(_tmp, _translator, true, _out);
+	  _handler->writeIdealFooter(_translator->getNames(), true, _out);
+	} else {
+	  _handler->writeIdealHeader(_translator->getNames(), support, _out);
+	  bool first = true;
+	  for (size_t var = 0; var < _varCount; ++var) {
+		if (_translator->getExponent(var, term) != 0) {
+		  _tmp[var] = term[var];
+		  _handler->writeTermOfIdeal(_tmp, _translator, first, _out);
+		  first = false;
+		  _tmp[var] = 0;
+		}
+	  }
+	  _handler->writeIdealFooter(_translator->getNames(), true, _out);
+	}
+	ASSERT(_tmp.isIdentity());
+  }
+
+private:
+  size_t _varCount;
+  IOHandler* _handler;
+  const TermTranslator* _translator;
+  FILE* _out;
+  Term _tmp;
+};
+
 class DelayedIdealWriter : public TermConsumer {
  public:
   DelayedIdealWriter(IOHandler* handler,
@@ -242,6 +295,13 @@ TermConsumer* IOHandler::createIdealWriter(const TermTranslator* translator,
   else
 	return new IdealWriter(this, translator, out);
 }
+
+TermConsumer* IOHandler::createIrreducibleIdealWriter
+(const TermTranslator* translator,
+ FILE* out) {
+  return new IrreducibleIdealWriter(this, translator, out);
+}
+
 
 void IOHandler::writeCoefTermProduct(const mpz_class& coef,
 									 const Term& term,
