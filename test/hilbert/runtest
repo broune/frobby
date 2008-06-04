@@ -1,6 +1,6 @@
 #!/bin/bash
 
-../../$frobby hilbert -oformat m2 -canon $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.ref
+../../$frobby hilbert -oformat m2 -canon -univariate off $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.ref
 
 if [ $? != 0 ]
 then
@@ -9,7 +9,7 @@ then
   exit 1
 fi
 
-../../$frobby hilbert -multigraded off -oformat m2 $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.uni
+../../$frobby hilbert -oformat m2 -univariate on $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.uni
 
 if [ $? != 0 ]
 then
