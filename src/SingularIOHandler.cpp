@@ -96,7 +96,6 @@ void SingularIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 	while (scanner.match(','));
   }
   scanner.expect(';');
-  scanner.expectEOF();
 }
 
 void SingularIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
