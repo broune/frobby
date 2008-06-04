@@ -25,10 +25,10 @@
 HilbertAction::HilbertAction():
   _io(IOHandler::MonomialIdeal, IOHandler::Polynomial),
 
-  _multigraded
-  ("multigraded",
-   "Use the trivial multi-grading. Otherwise substitute t for each variable.",
-   true),
+  _univariate
+  ("univariate",
+   "Substitute t for each variable. Otherwise use the trivial multi-grading.",
+   false),
 
   _canonical
   ("canon",
@@ -54,7 +54,7 @@ Action* HilbertAction::createNew() const {
 
 void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
-  parameters.push_back(&_multigraded);
+  parameters.push_back(&_univariate);
   parameters.push_back(&_canonical);
   Action::obtainParameters(parameters);
 }
@@ -72,8 +72,8 @@ void HilbertAction::perform() {
   }
 
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
-  if (_multigraded)
-	facade.computeMultigradedHilbertSeries(_canonical);
-  else
+  if (_univariate)
 	facade.computeUnivariateHilbertSeries();
+  else
+	facade.computeMultigradedHilbertSeries(_canonical);
 }
