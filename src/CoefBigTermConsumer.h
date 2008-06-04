@@ -18,6 +18,7 @@
 #define COEF_BIG_TERM_CONSUMER_GUARD
 
 class Term;
+class TermTranslator;
 
 class CoefBigTermConsumer {
  public:

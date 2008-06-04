@@ -26,6 +26,7 @@
 #include "VarNames.h"
 #include "CoefTermConsumer.h"
 #include "Polynomial.h"
+#include "BigPolynomial.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -258,6 +259,16 @@ void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
   writeIdealFooter(ideal.getNames(), generatorCount > 0, out);
 }
 
+void IOHandler::writePolynomial(BigPolynomial& polynomial, FILE* out) {
+  size_t termCount = polynomial.getTermCount();
+  writePolynomialHeader(polynomial.getNames(), termCount, out);
+  for (size_t i = 0; i < termCount; ++i) {
+	writeTermOfPolynomial(polynomial.getCoef(i), polynomial.getTerm(i),
+						  polynomial.getNames(), i == 0, out);
+  }
+  writePolynomialFooter(polynomial.getNames(), termCount > 0, out);
+}
+
 bool IOHandler::hasMoreInput(Scanner& scanner) const {
   return !scanner.matchEOF();
 }
@@ -322,6 +333,32 @@ void IOHandler::writeCoefTermProduct(const mpz_class& coef,
 	gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
 
   writeTermProduct(term, translator, out);
+}
+
+void IOHandler::writeCoefTermProduct(const mpz_class& coef,
+									 const vector<mpz_class>& term,
+									 const VarNames& names,
+									 bool hidePlus,
+									 FILE* out) {
+  if (coef >= 0 && !hidePlus)
+	fputc('+', out);
+
+  bool isIdentity = true;
+  for (size_t var = 0; var < term.size(); ++var)
+	if (term[var] != 0)
+	  isIdentity = false;
+
+  if (isIdentity) {
+	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+	return;
+  }
+
+  if (coef == -1)
+	fputc('-', out);
+  else if (coef != 1)
+	gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
+
+  writeTermProduct(term, names, out);
 }
 
 void IOHandler::writeTermProduct(const Term& term,

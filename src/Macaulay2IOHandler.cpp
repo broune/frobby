@@ -135,6 +135,15 @@ void Macaulay2IOHandler::writeTermOfPolynomial
   writeCoefTermProduct(coef, term, translator, isFirst, out);
 }
 
+void Macaulay2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+											   const vector<mpz_class>& term,
+											   const VarNames& names,
+											   bool isFirst,
+											   FILE* out) {
+  fputs("\n ", out);
+  writeCoefTermProduct(coef, term, names, isFirst, out);
+}
+
 void Macaulay2IOHandler::writePolynomialFooter(const VarNames& names,
 											   bool wroteAnyGenerators,
 											   FILE* out) {

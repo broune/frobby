@@ -5,7 +5,16 @@
 if [ $? != 0 ]
 then
   echo
-  echo Test $1 failed
+  echo Test $1 failed \(Multigraded Hilbert-Poincare series\)
+  exit 1
+fi
+
+../../$frobby hilbert -multigraded off -oformat m2 $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.uni
+
+if [ $? != 0 ]
+then
+  echo
+  echo Test $1 failed \(Univariate Hilbert-Poincare series\)
   exit 1
 fi
 

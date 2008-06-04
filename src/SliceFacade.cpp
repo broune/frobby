@@ -33,6 +33,9 @@
 #include "CanonicalCoefTermConsumer.h"
 #include "HilbertStrategy.h"
 #include "IOHandler.h"
+#include "BigPolynomial.h"
+#include "TotalDegreeCoefTermConsumer.h"
+#include "CoefBigTermRecorder.h"
 
 SliceFacade::SliceFacade(const BigIdeal& ideal,
 						 BigTermConsumer* consumer,
@@ -147,11 +150,28 @@ void SliceFacade::computeMultigradedHilbertSeries(bool canonical) {
 void SliceFacade::computeUnivariateHilbertSeries() {
   minimize();
 
-  beginAction("Computing univariate Hilbert-Poincare series.");
-  fputs("Not implemented yet.", stderr);
-  exit(1);
-  // TODO
+  ASSERT(_translator != 0);
+
+  ASSERT(_out != 0); // TODO: lift this restriction
+  ASSERT(_ioHandler != 0);
+
+  beginAction("Preparing to compute univariate Hilbert-Poincare series.");
+
+  VarNames names;
+  names.addVar("t");
+
+  BigPolynomial polynomial(names);
+  _generatedCoefTermConsumer = new TotalDegreeCoefTermConsumer
+	(new CoefBigTermRecorder(&polynomial), _translator);
+
   endAction();
+
+  computeMultigradedHilbertSeries(false);
+
+  delete _generatedCoefTermConsumer;
+  _generatedCoefTermConsumer = 0;
+
+  _ioHandler->writePolynomial(polynomial, _out);
 }
 
 void SliceFacade::computeIrreducibleDecomposition(bool encode) {

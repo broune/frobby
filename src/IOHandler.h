@@ -26,6 +26,7 @@ class TermTranslator;
 class CoefTermConsumer;
 class TermConsumer;
 class VarNames;
+class BigPolynomial;
 
 class IOHandler {
  public:
@@ -37,6 +38,7 @@ class IOHandler {
 						vector<mpz_class>& term);
 
   virtual void writeIdeal(FILE* out, const BigIdeal& ideal);
+  virtual void writePolynomial(BigPolynomial& polynomial, FILE* out);
 
   virtual bool hasMoreInput(Scanner& scanner) const;
 
@@ -89,6 +91,14 @@ class IOHandler {
 	ASSERT(false); // TODO
   }
 
+  virtual void writeTermOfPolynomial(const mpz_class& coef,
+									 const vector<mpz_class>& term,
+									 const VarNames& names,
+									 bool isFirst,
+									 FILE* out) {
+	ASSERT(false); // TODO
+  }
+
   virtual void writePolynomialFooter(const VarNames& names,
 									 bool wroteAnyGenerators,
 									 FILE* out) {
@@ -122,6 +132,12 @@ class IOHandler {
   static void writeCoefTermProduct(const mpz_class& coef,
 								   const Term& term,
 								   const TermTranslator* translator,
+								   bool hidePlus,
+								   FILE* out);
+
+  static void writeCoefTermProduct(const mpz_class& coef,
+								   const vector<mpz_class>& term,
+								   const VarNames& names,
 								   bool hidePlus,
 								   FILE* out);
 
