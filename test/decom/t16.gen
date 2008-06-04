@@ -7,4 +7,3 @@ x3*x10*x12,
 x6*x12,
 x1*x12
 ];
-This input revealed a bug in the redundancy elimination of Frobby.

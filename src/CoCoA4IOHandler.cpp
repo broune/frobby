@@ -147,7 +147,6 @@ void CoCoA4IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 	scanner.expect(')');
   }
   scanner.match(';');
-  scanner.expectEOF();
 }
 
 void CoCoA4IOHandler::writePolynomialHeader(const VarNames& names,

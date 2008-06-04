@@ -47,6 +47,7 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   ASSERT(handler != 0);
 
   handler->readIdeal(in, ideal);
+  in.expectEOF();
 
   endAction();
 }
@@ -62,6 +63,7 @@ void IOFacade::readIdeals(Scanner& in, vector<BigIdeal*>& ideals) {
 	handler->readIdeal(in, *ideal);
     ideals.push_back(ideal);
   }
+  in.expectEOF();
 
   endAction();
 }

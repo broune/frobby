@@ -75,7 +75,6 @@ void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 	scanner.expect(')');
   }
   scanner.match(';');
-  scanner.expectEOF();
 }
 
 void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
