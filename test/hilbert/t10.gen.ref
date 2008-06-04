@@ -1,2 +1,2 @@
-R = ZZ[{a, b, c, d, e, f, g}];
+R = QQ[a, b, c, d, e, f, g];
 p = 0;

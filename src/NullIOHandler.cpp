@@ -53,11 +53,12 @@ void NullIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 }
 
 void NullIOHandler::writeIdealFooter(const VarNames& names,
+									 bool wroteAnyGenerators,
 									 FILE* out) {
 }
 
-CoefTermConsumer* NullIOHandler::createCoefTermWriter
-(FILE* file, const TermTranslator* translator) {
+CoefTermConsumer* NullIOHandler::createPolynomialWriter
+(const TermTranslator* translator, FILE* out) {
   return new NullCoefTermConsumer();
 }
 

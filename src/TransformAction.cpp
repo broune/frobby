@@ -49,7 +49,7 @@ TransformAction::TransformAction():
   ("deform",
    "Apply a generic deformation to the input ideal.",
    false),
-  
+
   _radical
   ("radical",
    "Take the radical of the input ideal.",
@@ -92,26 +92,33 @@ void TransformAction::perform() {
 
   IOFacade facade(_printActions);
 
-  BigIdeal ideal;
-  facade.readIdeal(in, ideal);
+  void readIdeals(Scanner& in,
+				  vector<BigIdeal*>& ideal); // inserts the read ideals
 
-  IdealFacade idealFacade(_printActions);
+  vector<BigIdeal*> ideals;
+  facade.readIdeals(in, ideals);
 
-  if (_radical)
-	idealFacade.takeRadical(ideal);
+  for (size_t i = 0; i < ideals.size(); ++i) {
+	BigIdeal& ideal = *(ideals[i]);
 
-  if (_minimize || _radical)
-	idealFacade.sortAllAndMinimize(ideal);
+	IdealFacade idealFacade(_printActions);
 
-  if (_deform)
-	idealFacade.deform(ideal);
+	if (_radical)
+	  idealFacade.takeRadical(ideal);
 
-  if (_canonicalize)
-	idealFacade.sortVariables(ideal);
-  if (_unique )
-	idealFacade.sortGeneratorsUnique(ideal);
-  else if (_sort || _canonicalize)
-	idealFacade.sortGenerators(ideal);
+	if (_minimize || _radical)
+	  idealFacade.sortAllAndMinimize(ideal);
 
-  facade.writeIdeal(ideal, _io.getOutputHandler(), stdout);
+	if (_deform)
+	  idealFacade.deform(ideal);
+
+	if (_canonicalize)
+	  idealFacade.sortVariables(ideal);
+	if (_unique )
+	  idealFacade.sortGeneratorsUnique(ideal);
+	else if (_sort || _canonicalize)
+	  idealFacade.sortGenerators(ideal);
+
+	facade.writeIdeal(ideal, _io.getOutputHandler(), stdout);
+  }
 }

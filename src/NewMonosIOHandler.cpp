@@ -54,6 +54,7 @@ void NewMonosIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 }
 
 void NewMonosIOHandler::writeIdealFooter(const VarNames& names,
+										 bool wroteAnyGenerators,
 										 FILE* out) {
   fputs("\n)\n", out);
 }

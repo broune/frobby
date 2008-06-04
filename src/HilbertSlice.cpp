@@ -203,7 +203,8 @@ bool HilbertSlice::baseCase() {
   coef = 0;
   getCoef(_ideal, coef, false, 0);
 
-  _consumer->consume(coef, getMultiply());
+  if (coef != 0)
+	_consumer->consume(coef, getMultiply());
   clear();
   return true;
 }

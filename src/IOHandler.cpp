@@ -22,15 +22,18 @@
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "Term.h"
-
 #include "TermConsumer.h"
 #include "VarNames.h"
+#include "CoefTermConsumer.h"
+#include "Polynomial.h"
+
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
 #include "Macaulay2IOHandler.h"
 #include "Fourti2IOHandler.h"
 #include "NullIOHandler.h"
 #include "CoCoA4IOHandler.h"
+#include "SingularIOHandler.h"
 
 bool IOHandler::supportsInput(DataType type) const {
   return std::find(_supportedInputs.begin(), _supportedInputs.end(),
@@ -89,7 +92,7 @@ void IOHandler::registerOutput(DataType type) {
 
 class IdealWriter : public TermConsumer {
 public:
-  IdealWriter(IOHandler* handler, TermTranslator* translator, FILE* out):
+  IdealWriter(IOHandler* handler, const TermTranslator* translator, FILE* out):
 	_handler(handler),
 	_translator(translator),
 	_out(out),
@@ -101,18 +104,35 @@ public:
 	_handler->writeIdealHeader(_translator->getNames(), _out);
   }
 
+  IdealWriter(IOHandler* handler,
+			  const TermTranslator* translator,
+			  size_t generatorCount,
+			  FILE* out):
+	_handler(handler),
+	_translator(translator),
+	_out(out),
+	_first(true) {
+	ASSERT(handler != 0);
+	ASSERT(translator != 0);
+	ASSERT(out != 0);
+
+	_handler->writeIdealHeader(_translator->getNames(), generatorCount, _out);
+  }
+
   virtual ~IdealWriter() {
-	_handler->writeIdealFooter(_translator->getNames(), _out);
+	_handler->writeIdealFooter(_translator->getNames(), !_first, _out);
   }
 
   virtual void consume(const Term& term) {
+	ASSERT(term.getVarCount() == _translator->getNames().getVarCount());
+
 	_handler->writeTermOfIdeal(term, _translator, _first, _out);
 	_first = false;
   }
 
 private:
   IOHandler* _handler;
-  TermTranslator* _translator;
+  const TermTranslator* _translator;
   FILE* _out;
   bool _first;
 };
@@ -120,7 +140,7 @@ private:
 class DelayedIdealWriter : public TermConsumer {
  public:
   DelayedIdealWriter(IOHandler* handler,
-					 TermTranslator* translator,
+					 const TermTranslator* translator,
 					 FILE* out):
 	_handler(handler),
 	_translator(translator),
@@ -132,7 +152,8 @@ class DelayedIdealWriter : public TermConsumer {
   }
 
   virtual ~DelayedIdealWriter() {
-	IdealWriter writer(_handler, _translator, _out);
+	IdealWriter writer(_handler, _translator,
+					   _ideal.getGeneratorCount(), _out);
 
 	Term tmp(_ideal.getVarCount());
 	Ideal::const_iterator stop = _ideal.end();
@@ -143,13 +164,14 @@ class DelayedIdealWriter : public TermConsumer {
   }
 
   virtual void consume(const Term& term) {
-	ASSERT(term == _ideal.getVarCount());
+	ASSERT(term.getVarCount() == _ideal.getVarCount());
+
 	_ideal.insert(term);
   }
 
 private:
   IOHandler* _handler;
-  TermTranslator* _translator;
+  const TermTranslator* _translator;
   FILE* _out;
   Ideal _ideal;
 };
@@ -180,7 +202,7 @@ void IOHandler::writeIdeal(FILE* out, const BigIdeal& ideal) {
   writeIdealHeader(ideal.getNames(), generatorCount, out);
   for (size_t i = 0; i < generatorCount; ++i)
 	writeTermOfIdeal(ideal[i], ideal.getNames(), i == 0, out);
-  writeIdealFooter(ideal.getNames(), out);
+  writeIdealFooter(ideal.getNames(), generatorCount > 0, out);
 }
 
 bool IOHandler::hasMoreInput(Scanner& scanner) const {
@@ -195,15 +217,6 @@ const char* IOHandler::getDescription() const {
   return _formatDescription;
 }
 
-CoefTermConsumer* IOHandler::createCoefTermWriter
-(FILE* out, const TermTranslator* translator) {
-  fprintf(stderr, "The format %s does not support polynomials.\n",
-		  getName());
-  ASSERT(false);
-  exit(1);
-  return 0;
-}
-
 IOHandler::IOHandler(const char* formatName,
 					 const char* formatDescription,
 					 bool requiresSizeForIdealOutput):
@@ -214,8 +227,10 @@ IOHandler::IOHandler(const char* formatName,
   ASSERT(formatDescription != 0);
 }
 
-TermConsumer* IOHandler::createIdealWriter(TermTranslator* translator,
+TermConsumer* IOHandler::createIdealWriter(const TermTranslator* translator,
 										   FILE* out) {
+  ASSERT(supportsOutput(MonomialIdeal));
+
   if (_requiresSizeForIdealOutput) {
 	fprintf(stderr,
 			"NOTE: Using the format %s makes it necessary to store all of\n"
@@ -226,6 +241,27 @@ TermConsumer* IOHandler::createIdealWriter(TermTranslator* translator,
   }
   else
 	return new IdealWriter(this, translator, out);
+}
+
+void IOHandler::writeCoefTermProduct(const mpz_class& coef,
+									 const Term& term,
+									 const TermTranslator* translator,
+									 bool hidePlus,
+									 FILE* out) {
+  if (coef >= 0 && !hidePlus)
+	fputc('+', out);
+
+  if (term.isIdentity()) {
+	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+	return;
+  }
+
+  if (coef == -1)
+	fputc('-', out);
+  else if (coef != 1)
+	gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
+
+  writeTermProduct(term, translator, out);
 }
 
 void IOHandler::writeTermProduct(const Term& term,
@@ -328,6 +364,9 @@ const vector<IOHandler*>& IOHandler::getIOHandlers() {
 	static CoCoA4IOHandler cocoa4;
 	handlers.push_back(&cocoa4);
 
+	static SingularIOHandler singular;
+	handlers.push_back(&singular);
+
 	static MonosIOHandler monos;
 	handlers.push_back(&monos);
 
@@ -343,6 +382,109 @@ const vector<IOHandler*>& IOHandler::getIOHandlers() {
   return handlers;
 }
 
+void IOHandler::writeIdealHeader(const VarNames& names,
+								 size_t generatorCount,
+								 FILE* out) {
+  writeIdealHeader(names, out);
+}
+
+class PolynomialWriter : public CoefTermConsumer {
+public:
+  PolynomialWriter(IOHandler* handler,
+				   const TermTranslator* translator,
+				   FILE* out):
+	_handler(handler),
+	_translator(translator),
+	_out(out),
+	_first(true) {
+	ASSERT(handler != 0);
+	ASSERT(translator != 0);
+	ASSERT(out != 0);
+
+	_handler->writePolynomialHeader(_translator->getNames(), _out);
+  }
+
+  PolynomialWriter(IOHandler* handler,
+				   const TermTranslator* translator,
+				   size_t termCount,
+				   FILE* out):
+	_handler(handler),
+	_translator(translator),
+	_out(out),
+	_first(true) {
+	ASSERT(handler != 0);
+	ASSERT(translator != 0);
+	ASSERT(out != 0);
+
+	_handler->writePolynomialHeader(_translator->getNames(), termCount, _out);
+  }
+
+  virtual ~PolynomialWriter() {
+	_handler->writePolynomialFooter(_translator->getNames(), !_first, _out);
+  }
+
+  virtual void consume(const mpz_class& coef, const Term& term) {
+	ASSERT(coef != 0);
+	_handler->writeTermOfPolynomial(coef, term, _translator, _first, _out);
+	_first = false;
+  }
+
+private:
+  IOHandler* _handler;
+  const TermTranslator* _translator;
+  FILE* _out;
+  bool _first;
+};
+
+class DelayedPolynomialWriter : public CoefTermConsumer {
+ public:
+  DelayedPolynomialWriter(IOHandler* handler,
+						  const TermTranslator* translator,
+						  FILE* out):
+	_handler(handler),
+	_translator(translator),
+	_out(out),
+	_polynomial(translator->getNames().getVarCount()) {
+	ASSERT(handler != 0);
+	ASSERT(translator != 0);
+	ASSERT(out != 0);
+  }
+
+  virtual ~DelayedPolynomialWriter() {
+	size_t termCount = _polynomial.getTermCount();
+	PolynomialWriter writer(_handler, _translator, termCount,_out);
+	for (size_t term = 0; term < termCount; ++term)
+	  writer.consume(_polynomial.getCoef(term), _polynomial.getTerm(term));
+  }
+
+  virtual void consume(const mpz_class& coef, const Term& term) {
+	ASSERT(term.getVarCount() == _polynomial.getVarCount());
+
+	_polynomial.add(coef, term);
+  }
+
+private:
+  IOHandler* _handler;
+  const TermTranslator* _translator;
+  FILE* _out;
+  Polynomial _polynomial;
+};
+
+CoefTermConsumer* IOHandler::createPolynomialWriter
+(const TermTranslator* translator, FILE* out) {
+  ASSERT(supportsOutput(Polynomial));
+
+  if (_requiresSizeForIdealOutput) {
+	fprintf(stderr,
+			"NOTE: Using the format %s makes it necessary to store all of\n"
+			"the output in memory before writing it out. This increases\n"
+			"memory consumption and decreases performance.\n",
+			getName());
+	return new DelayedPolynomialWriter(this, translator, out);
+  }
+  else
+	return new PolynomialWriter(this, translator, out);
+}
 
 void readFrobeniusInstance(Scanner& scanner, vector<mpz_class>& numbers) {
   numbers.clear();

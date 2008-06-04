@@ -34,11 +34,12 @@ public:
   virtual TermConsumer* createIdealWriter(TermTranslator* translator,
 										  FILE* out);
 
-  virtual CoefTermConsumer* createCoefTermWriter
-	(FILE* file,
-	 const TermTranslator* translator);
+  virtual CoefTermConsumer* createPolynomialWriter
+	(const TermTranslator* translator, FILE* out);
 
-  virtual void writeIdealHeader(const VarNames& names, FILE* out);
+ protected:
+  virtual void writeIdealHeader(const VarNames& names,
+								FILE* out);
 
   virtual void writeTermOfIdeal(const Term& term,
 								const TermTranslator* translator,
@@ -51,6 +52,7 @@ public:
 								FILE* out);
 
   virtual void writeIdealFooter(const VarNames& names,
+								bool wroteAnyGenerators,
 								FILE* out);
 
   virtual bool hasMoreInput(Scanner& scanner) const;

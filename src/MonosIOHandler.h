@@ -42,6 +42,7 @@ public:
 								FILE* out);
 
   virtual void writeIdealFooter(const VarNames& names,
+								bool wroteAnyGenerators,
 								FILE* out);
 
 private:

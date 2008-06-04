@@ -43,35 +43,15 @@ class IOHandler {
   const char* getName() const;
   const char* getDescription() const;
 
-  virtual CoefTermConsumer* createCoefTermWriter
-	(FILE* out, const TermTranslator* translator);
-
   virtual TermConsumer* createIdealWriter
-	(TermTranslator* translator, FILE* out);
+	(const TermTranslator* translator, FILE* out);
+
+  virtual CoefTermConsumer* createPolynomialWriter
+	(const TermTranslator* translator, FILE* out);
 
   // Returns null if name is unknown.
   static IOHandler* getIOHandler(const string& name);
   static const vector<IOHandler*>& getIOHandlers();
-
-  // TODO: in development. E.g. should be protected and pure virtual.
-  virtual void writeIdealHeader(const VarNames& names, FILE* out) {ASSERT(false);}
-  virtual void writeIdealHeader(const VarNames& names,
-								size_t generatorCount,
-								FILE* out)
-	{writeIdealHeader(names, out);}
-
-  virtual void writeTermOfIdeal(const Term& term,
-								const TermTranslator* translator,
-								bool isFirst,
-								FILE* out) {ASSERT(false);}
-
-  virtual void writeTermOfIdeal(const vector<mpz_class> term,
-								const VarNames& names,
-								bool isFirst,
-								FILE* out) {ASSERT(false);}
-
-  virtual void writeIdealFooter(const VarNames& names,
-								FILE* out) {ASSERT(false);}
 
   enum DataType {
 	None,
@@ -87,12 +67,60 @@ class IOHandler {
   static const vector<DataType>& getDataTypes();
 
  protected:
+  // Output of polynomials.
+  virtual void writePolynomialHeader(const VarNames& names, FILE* out) {
+	ASSERT(false); // TODO
+  }
+
+  virtual void writePolynomialHeader(const VarNames& names,
+									 size_t termCount,
+									 FILE* out) {
+	writePolynomialHeader(names, out);
+  }
+
+  virtual void writeTermOfPolynomial(const mpz_class& coef,
+									 const Term& term,
+									 const TermTranslator* translator,
+									 bool isFirst,
+									 FILE* out) {
+	ASSERT(false); // TODO
+  }
+
+  virtual void writePolynomialFooter(const VarNames& names,
+									 bool wroteAnyGenerators,
+									 FILE* out) {
+	ASSERT(false); // TODO
+  }
+
+  // Output of monomial ideals.
+  virtual void writeIdealHeader(const VarNames& names, FILE* out) = 0;
+  virtual void writeIdealHeader(const VarNames& names,
+								size_t generatorCount,
+								FILE* out);
+  virtual void writeTermOfIdeal(const Term& term,
+								const TermTranslator* translator,
+								bool isFirst,
+								FILE* out) = 0;
+  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+								const VarNames& names,
+								bool isFirst,
+								FILE* out) = 0;
+  virtual void writeIdealFooter(const VarNames& names,
+								bool wroteAnyGenerators,
+								FILE* out) = 0;
+
   void registerInput(DataType type);
   void registerOutput(DataType type);
 
   IOHandler(const char* formatName,
 			const char* formatDescription,
 			bool requiresSizeForIdealOutput);
+
+  static void writeCoefTermProduct(const mpz_class& coef,
+								   const Term& term,
+								   const TermTranslator* translator,
+								   bool hidePlus,
+								   FILE* out);
 
   static void writeTermProduct(const Term& term,
 							   const TermTranslator* translator,
@@ -106,13 +134,15 @@ class IOHandler {
   static void readVarPower(vector<mpz_class>& term,
 						   const VarNames& names, Scanner& scanner);
 
- private:
   vector<DataType> _supportedInputs;
   vector<DataType> _supportedOutputs;
 
   const char* _formatName;
   const char* _formatDescription;
   bool _requiresSizeForIdealOutput;
+
+  friend class IdealWriter;
+  friend class PolynomialWriter;
 };
 
 void readFrobeniusInstance(Scanner& scanner, vector<mpz_class>& numbers);

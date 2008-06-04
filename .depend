@@ -25,7 +25,7 @@ $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h src/Scanner
   src/BigIdeal.h src/VarNames.h src/TermTranslator.h src/Ideal.h \
   src/Term.h src/TermConsumer.h src/NewMonosIOHandler.h \
   src/MonosIOHandler.h src/Macaulay2IOHandler.h src/Fourti2IOHandler.h \
-  src/NullIOHandler.h
+  src/NullIOHandler.h src/CoCoA4IOHandler.h
 $(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
   src/VarNames.h src/Scanner.h src/IOHandler.h
 $(outdir)randomDataGenerators.o: src/randomDataGenerators.cpp src/stdinc.h \
@@ -234,4 +234,7 @@ $(outdir)BigTermRecorder.o: src/BigTermRecorder.cpp src/stdinc.h \
   src/VarNames.h src/Term.h src/TermTranslator.h
 $(outdir)CoCoA4IOHandler.o: src/CoCoA4IOHandler.cpp src/stdinc.h \
   src/CoCoA4IOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
+  src/VarNames.h src/CoefTermConsumer.h src/Term.h src/TermTranslator.h
+$(outdir)SingularIOHandler.o: src/SingularIOHandler.cpp src/stdinc.h \
+  src/SingularIOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
   src/VarNames.h src/CoefTermConsumer.h src/TermTranslator.h src/Term.h

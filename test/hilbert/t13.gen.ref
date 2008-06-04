@@ -1,2 +1,10 @@
-R = ZZ[{a, b, c, d, e}];
-p = -a*b*c*d*e+a*b*c*d+a*b*d*e-a*b+c*d*e-c*d-d*e+1;
+R = QQ[a, b, c, d, e];
+p =
+ -a*b*c*d*e
+ +a*b*c*d
+ +a*b*d*e
+ -a*b
+ +c*d*e
+ -c*d
+ -d*e
+ +1;

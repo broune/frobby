@@ -30,26 +30,32 @@ public:
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
 
-  virtual void writeIdealHeader(const VarNames& names, FILE* out);
+ private:
+  virtual void writePolynomialHeader(const VarNames& names, FILE* out);
+  virtual void writeTermOfPolynomial(const mpz_class& coef,
+									 const Term& term,
+									 const TermTranslator* translator,
+									 bool isFirst,
+									 FILE* out);
+  virtual void writePolynomialFooter(const VarNames& names,
+									 bool wroteAnyGenerators,
+									 FILE* out);
 
+  virtual void writeIdealHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
-
   virtual void writeTermOfIdeal(const vector<mpz_class> term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);
-
   virtual void writeIdealFooter(const VarNames& names,
+								bool wroteAnyGenerators,
 								FILE* out);
 
-  virtual CoefTermConsumer* createCoefTermWriter
-	(FILE* file, const TermTranslator* translator);
-
-private:
-  void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
+  static void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
+  static void writeRing(const VarNames& names, FILE* out);
 };
 
 #endif
