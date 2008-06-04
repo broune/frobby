@@ -27,6 +27,46 @@ Fourti2IOHandler::Fourti2IOHandler():
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerOutput(MonomialIdeal);
+  registerOutput(Polynomial);
+}
+
+void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,
+											 size_t termCount,
+											 FILE* out) {
+  ASSERT(out != 0);
+
+  fprintf(out, "%lu %lu\n",
+		  (unsigned long)termCount,
+		  (unsigned long)names.getVarCount() + 1);
+}
+
+void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+											 const Term& term,
+											 const TermTranslator* translator,
+											 bool isFirst,
+											 FILE* out) {
+  ASSERT(coef != 0);
+  ASSERT(translator != 0);
+  ASSERT(out != 0);
+  ASSERT(term.getVarCount() == translator->getNames().getVarCount());
+
+  mpz_out_str(out, 10, coef.get_mpz_t());
+  if (term.getVarCount() > 0)
+	fputc(' ', out);
+
+  writeTermOfIdeal(term, translator, isFirst, out);  
+}
+
+void Fourti2IOHandler::writePolynomialFooter(const VarNames& names,
+											 bool wroteAnyGenerators,
+											 FILE* out) {
+  fputs("(coefficient)", out);
+
+  for (size_t var = 0; var < names.getVarCount(); ++var) {
+	fputc(' ', out);
+	fputs(names.getName(var).c_str(), out);
+  }
+  fputc('\n', out);
 }
 
 void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
@@ -76,6 +116,7 @@ void Fourti2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 }
 
 void Fourti2IOHandler::writeIdealFooter(const VarNames& names,
+										bool wroteAnyGenerators,
 										FILE* out) {
   if (names.namesAreDefault())
 	return;
@@ -86,6 +127,15 @@ void Fourti2IOHandler::writeIdealFooter(const VarNames& names,
 	fputs(names.getName(var).c_str(), out);
   }
   fputc('\n', out);
+}
+
+void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,
+											 FILE* out) {
+  fputs("INTERNAL ERROR: writePolynomialHeader called on object of type\n"
+		"Fourti2IOHandler using the overload that does not specify size.\n",
+		stderr);
+  ASSERT(false);
+  exit(1);
 }
 
 void Fourti2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {

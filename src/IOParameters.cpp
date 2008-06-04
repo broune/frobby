@@ -124,6 +124,8 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
 	  *_inputFormat = "m2";
 	else if (c == 'U' || c == 'u')
 	  *_inputFormat = "cocoa4";
+	else if (c == 'r')
+	  *_inputFormat = "singular";
 	else if (c == '(' || c == 'l' || c == ')')
 	  *_inputFormat = "newmonos";
 	else if (isdigit(c) || c == '+' || c == '-')

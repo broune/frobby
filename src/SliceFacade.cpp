@@ -414,7 +414,7 @@ CoefTermConsumer* SliceFacade::getCoefTermConsumer(bool canonical) {
 	  ASSERT(_ioHandler != 0);
 	  ASSERT(_out != 0);
 	  _generatedCoefTermConsumer =
-		_ioHandler->createCoefTermWriter(_out, _translator);
+		_ioHandler->createPolynomialWriter(_translator, _out);
 
 	  if (canonical)
 		_generatedCoefTermConsumer = new CanonicalCoefTermConsumer

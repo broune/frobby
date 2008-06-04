@@ -33,23 +33,8 @@ CoCoA4IOHandler::CoCoA4IOHandler():
 }
 
 void CoCoA4IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
-  if (names.getVarCount() ==  0) {
-	fputs("Use R ::= Q[x];\nNames := [];\nI := Ideal(", out);
-	return;
-  }
-
-  fprintf(out, "Use R ::= Q[x[1..%lu]];\n",
-		  (unsigned long)names.getVarCount());
-  
-  fputs("Names := [", out);
-
-  const char* pre = "\"";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-	fputs(pre, out);
-	fputs(names.getName(i).c_str(), out);
-	pre = "\", \"";
-  }
-  fputs("\"];\nI := Ideal(", out);
+  writeRing(names, out);
+  fputs("I := Ideal(", out);
 }
 
 void CoCoA4IOHandler::writeTermOfIdeal(const Term& term,
@@ -102,6 +87,7 @@ void CoCoA4IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 }
 
 void CoCoA4IOHandler::writeIdealFooter(const VarNames& names,
+									   bool wroteAnyGenerators,
 									   FILE* out) {
   fputs("\n);\n", out);  
 }
@@ -164,6 +150,29 @@ void CoCoA4IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   scanner.expectEOF();
 }
 
+void CoCoA4IOHandler::writePolynomialHeader(const VarNames& names,
+											FILE* out) {
+  writeRing(names, out);
+  fputs("p :=", out);
+}
+
+void CoCoA4IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+											const Term& term,
+											const TermTranslator* translator,
+											bool isFirst,
+											FILE* out) {
+  fputs("\n ", out);
+  writeCoefTermProduct(coef, term, translator, isFirst, out);
+}
+
+void CoCoA4IOHandler::writePolynomialFooter(const VarNames& names,
+											bool wroteAnyGenerators,
+											FILE* out) {
+  if (!wroteAnyGenerators)
+	fputs(" 0", out);
+  fputs(";\n", out);
+}
+
 void CoCoA4IOHandler::readVarsAndClearIdeal(BigIdeal& ideal,
 											Scanner& scanner) {
   scanner.expect("Use");
@@ -218,88 +227,22 @@ void CoCoA4IOHandler::readVarsAndClearIdeal(BigIdeal& ideal,
   ideal.clearAndSetNames(names);
 }
 
-// TODO: integrate this better and move some of it elsewhere
-#include "TermTranslator.h"
-#include "Term.h"
-class CoCoA4CoefTermWriter : public CoefTermConsumer {
- public:
-  CoCoA4CoefTermWriter(FILE* file, const TermTranslator* translator):
-	_file(file),
-	_translator(translator),
-	_justStartedWriting(true) {
-	const VarNames& names = _translator->getNames();
-
-	fprintf(_file, "Use R ::= Q[x[1..%lu]];",
-			(unsigned long)names.getVarCount());
-
-	fputs("Names = [", _file);
-    const char* pre = "";
-    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-      fputs(pre, _file);
-      fputs(names.getName(i).c_str(), _file);
-      pre = ", ";
-    }
-    fputs("];\n", _file);
-    fputs("p :=\n", _file);
+void CoCoA4IOHandler::writeRing(const VarNames& names, FILE* out) {
+  if (names.getVarCount() ==  0) {
+	fputs("Use R ::= Q[x];\nNames := [];\n", out);
+	return;
   }
 
-  virtual ~CoCoA4CoefTermWriter() {
-	if (_justStartedWriting)
-	  fputc('0', _file);
-    fputs(";\n", _file);
-  };
+  fprintf(out, "Use R ::= Q[x[1..%lu]];\n",
+		  (unsigned long)names.getVarCount());
 
-  virtual void consume(const mpz_class& coef, const Term& term) {
-	fputc(' ', _file);
-    if (_justStartedWriting)
-      _justStartedWriting = false;
-	else if (coef >= 0)
-	  fputc('+', _file);
+  fputs("Names := [", out);
 
-	bool needsSeperator = true;
-	if (coef == 1) {
-	  if (term.isIdentity()) {
-		fputc('1', _file);
-		return;
-	  }
-	  needsSeperator = false;
-	}
-	if (coef != 1) {
-	  if (coef == -1) {
-		fputc('-', _file);
-		if (term.isIdentity()) {
-		  fputc('1', _file);
-		  return;
-		}
-		needsSeperator = false;
-	  }
-	  else
-		gmp_fprintf(_file, "%Zd", coef.get_mpz_t());
-	}
-
-	size_t varCount = term.getVarCount();
-	for (size_t j = 0; j < varCount; ++j) {
-	  const char* exp = _translator->getVarExponentString(j, term[j]);
-	  if (exp == 0)
-		continue;
-
-	  if (needsSeperator)
-		putc('*', _file);
-	  else
-		needsSeperator = true;
-
-	  fputs(exp, _file);
-	}
-	fputc('\n', _file);
+  const char* pre = "\"";
+  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+	fputs(pre, out);
+	fputs(names.getName(i).c_str(), out);
+	pre = "\", \"";
   }
-
-private:
-  FILE* _file;
-  const TermTranslator* _translator;
-  bool _justStartedWriting;
-};
-
-CoefTermConsumer* CoCoA4IOHandler::createCoefTermWriter
-(FILE* file, const TermTranslator* translator) {
-  return new CoCoA4CoefTermWriter(file, translator);
+  fputs("\"];\n", out);
 }

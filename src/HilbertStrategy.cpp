@@ -121,9 +121,11 @@ private:
 	for (size_t right = 0; right < rightSize; ++right) {
 	  _rightProjection.inverseProject(_tmpTerm,
 									  *(_rightTerms.begin() + right));
-	  // _rightTerms[right]);
+	  ASSERT(leftCoef != 0);
+	  ASSERT(_rightCoefs[right] != 0);
 	  _tmpCoef = leftCoef * _rightCoefs[right];
 
+	  ASSERT(_tmpCoef != 0);
 	  _parent->consume(_tmpCoef, _tmpTerm);
 	}
   }
@@ -131,7 +133,8 @@ private:
   virtual void consumeRight(const mpz_class& coef, const Term& term) {
 	ASSERT(term.getVarCount() == _rightProjection.getRangeVarCount());
 	ASSERT(_rightTerms.getVarCount() == term.getVarCount());
-
+	ASSERT(coef != 0);
+	
 	_rightTerms.insert(term);
 	_rightCoefs.push_back(coef);
   }
