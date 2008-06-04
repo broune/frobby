@@ -163,6 +163,15 @@ const vector<mpz_class>& BigIdeal::operator[](size_t index) const {
   return _terms[index];
 }
 
+bool BigIdeal::operator<(const BigIdeal& ideal) const {
+  if (getNames() < ideal.getNames())
+	return true;
+  if (ideal.getNames() < getNames())
+	return false;
+
+  return _terms < ideal._terms;
+}
+
 bool BigIdeal::empty() const {
   return _terms.empty();
 }

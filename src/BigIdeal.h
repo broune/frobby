@@ -51,6 +51,9 @@ public:
   vector<mpz_class>& operator[](size_t index);
   const vector<mpz_class>& operator[](size_t index) const;
 
+  // This also depends on the order of the variables.
+  bool operator<(const BigIdeal& ideal) const;
+
   bool empty() const;
 
   void clear();

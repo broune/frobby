@@ -1,0 +1,10 @@
+vars A, a, abe, b;
+[
+ A*a*abe*b,
+ A*a,
+ A,
+ a^12345678901234567890,
+ abe*b,
+ abe,
+ b
+];

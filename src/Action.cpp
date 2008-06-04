@@ -46,6 +46,9 @@ const Action::ActionContainer& Action::getActions() {
     // This method uses static variables instead of new to avoid
     // spurious reports from memory leak detectors.
 
+	static HilbertAction hilbert;
+	_actions.push_back(&hilbert);
+
     static IrreducibleDecomAction irreducibleDecom;
     _actions.push_back(&irreducibleDecom);
 
@@ -81,9 +84,6 @@ const Action::ActionContainer& Action::getActions() {
 
     static HelpAction help;
     _actions.push_back(&help);
-
-	static HilbertAction hilbert;
-	_actions.push_back(&hilbert);
 
     //static PrimaryDecomAction primaryDecom;
     //_actions.push_back(&primaryDecom);

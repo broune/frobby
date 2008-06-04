@@ -27,7 +27,7 @@ TransformAction::TransformAction():
 
   _canonicalize
   ("canon",
-   "Sort generators and variables to get canonical representation.",
+   "Sort variables, generators and ideals to get canonical representation.",
    false),
 
   _sort
@@ -66,8 +66,8 @@ const char* TransformAction::getShortDescription() const {
 
 const char* TransformAction::getDescription() const {
   return
-    "By default, transform simply writes the input ideal to output. A number\n"
-    "of parameters allows to transform the input ideal in varous ways.";
+    "By default, transform simply writes the input ideals to output. A\n"
+	"number of parameters allows to transform the input ideal in various ways.";
 }
 
 Action* TransformAction::createNew() const {
@@ -118,7 +118,15 @@ void TransformAction::perform() {
 	  idealFacade.sortGeneratorsUnique(ideal);
 	else if (_sort || _canonicalize)
 	  idealFacade.sortGenerators(ideal);
-
-	facade.writeIdeal(ideal, _io.getOutputHandler(), stdout);
   }
+
+  if (_canonicalize)
+	sort(ideals.begin(), ideals.end(), compareIdeals);
+
+  for (size_t i = 0; i < ideals.size(); ++i)
+	facade.writeIdeal(*(ideals[i]), _io.getOutputHandler(), stdout);
+}
+
+bool TransformAction::compareIdeals(const BigIdeal* a, const BigIdeal* b) {
+  return *a < *b;
 }

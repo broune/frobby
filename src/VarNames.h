@@ -54,6 +54,9 @@ public:
 
   void addVar(const string& name);
 
+  // This also depends on the order of the names.
+  bool operator<(const VarNames& names) const;
+
   // Returns VarNames::UNKNOWN if name is not known.
   size_t getIndex(const string& name) const;
   size_t getIndex(const char* name) const;
@@ -81,6 +84,8 @@ public:
   void print(FILE* file) const;
 
 private:
+  static bool compareNames(const string* a, const string* b);
+
   VarNameMap _nameToIndex;
   vector<string*> _indexToName;
 };
