@@ -72,6 +72,7 @@ public:
   void addArtinianPowers(Ideal& ideal) const;
 
   const VarNames& getNames() const;
+  size_t getVarCount() const;
 
   // Replaces var^v by var^(a[i] - v) except that var^0 is left
   // alone.

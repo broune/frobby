@@ -37,6 +37,7 @@ class HilbertAction : public Action {
 
  private:
   IOParameters _io;
+  BoolParameter _multigraded;
   BoolParameter _canonical;
 };
 

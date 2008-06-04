@@ -324,3 +324,7 @@ Exponent TermTranslator::shrinkExponent(size_t var,
 const VarNames& TermTranslator::getNames() const {
   return _names;
 }
+
+size_t TermTranslator::getVarCount() const {
+  return _names.getVarCount();
+}
