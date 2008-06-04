@@ -48,7 +48,7 @@ void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
   ASSERT(coef != 0);
   ASSERT(translator != 0);
   ASSERT(out != 0);
-  ASSERT(term.getVarCount() == translator->getNames().getVarCount());
+  ASSERT(term.getVarCount() == translator->getVarCount());
 
   mpz_out_str(out, 10, coef.get_mpz_t());
   if (term.getVarCount() > 0)
@@ -85,7 +85,7 @@ void Fourti2IOHandler::writeTermOfIdeal(const Term& term,
 										FILE* out) {
   ASSERT(translator != 0);
   ASSERT(out != 0);
-  ASSERT(term.getVarCount() == translator->getNames().getVarCount());
+  ASSERT(term.getVarCount() == translator->getVarCount());
 
   size_t varCount = term.getVarCount();
   for (size_t var = 0; var < varCount; ++var) {
