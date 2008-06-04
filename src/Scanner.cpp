@@ -99,6 +99,9 @@ void Scanner::expect(const string& str) {
 }
 
 void Scanner::expectEOF() {
+  if (_formatName == "null") // get this moved into the null format itself
+	return;
+
   eatWhite();
   if (getChar() != EOF)
     error("end of input");

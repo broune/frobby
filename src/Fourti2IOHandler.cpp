@@ -57,6 +57,22 @@ void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
   writeTermOfIdeal(term, translator, isFirst, out);  
 }
 
+void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+											 const vector<mpz_class>& term,
+											 const VarNames& names,
+											 bool isFirst,
+											 FILE* out) {
+  ASSERT(coef != 0);
+  ASSERT(out != 0);
+  ASSERT(term.size() == names.getVarCount());
+
+  mpz_out_str(out, 10, coef.get_mpz_t());
+  if (!term.empty())
+	fputc(' ', out);
+
+  writeTermOfIdeal(term, names, isFirst, out);  
+}
+
 void Fourti2IOHandler::writePolynomialFooter(const VarNames& names,
 											 bool wroteAnyGenerators,
 											 FILE* out) {

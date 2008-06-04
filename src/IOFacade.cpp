@@ -73,7 +73,7 @@ void IOFacade::writeIdeal(BigIdeal& ideal, IOHandler* handler, FILE* out) {
 
   beginAction("Writing monomial ideal.");
 
-  handler->writeIdeal(out, ideal);
+  handler->writeIdeal(ideal, out);
 
   endAction();
 }

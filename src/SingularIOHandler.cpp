@@ -46,6 +46,15 @@ void SingularIOHandler::writeTermOfPolynomial(const mpz_class& coef,
   writeCoefTermProduct(coef, term, translator, isFirst, out);
 }
 
+void SingularIOHandler::writeTermOfPolynomial(const mpz_class& coef,
+											  const vector<mpz_class>& term,
+											  const VarNames& names,
+											  bool isFirst,
+											  FILE* out) {
+  fputs("\n ", out);
+  writeCoefTermProduct(coef, term, names, isFirst, out);
+}
+
 void SingularIOHandler::writePolynomialFooter(const VarNames& names,
 											  bool wroteAnyGenerators,
 											  FILE* out) {

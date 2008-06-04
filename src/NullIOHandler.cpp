@@ -37,6 +37,27 @@ TermConsumer* NullIOHandler::createIdealWriter(TermTranslator* translator,
   return new NullTermConsumer();
 }
 
+void NullIOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
+}
+
+void NullIOHandler::writeTermOfPolynomial(const mpz_class& coef,
+										  const Term& term,
+										  const TermTranslator* translator,
+										  bool isFirst,
+										  FILE* out) {
+}
+void NullIOHandler::writeTermOfPolynomial(const mpz_class& coef,
+										  const vector<mpz_class>& term,
+										  const VarNames& names,
+										  bool isFirst,
+										  FILE* out) {
+}
+
+void NullIOHandler::writePolynomialFooter(const VarNames& names,
+										  bool wroteAnyGenerators,
+										  FILE* out) {
+}
+
 void NullIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
 }
 

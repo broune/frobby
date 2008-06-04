@@ -40,6 +40,11 @@ public:
 									 const TermTranslator* translator,
 									 bool isFirst,
 									 FILE* out);
+  virtual void writeTermOfPolynomial(const mpz_class& coef,
+									 const vector<mpz_class>& term,
+									 const VarNames& names,
+									 bool isFirst,
+									 FILE* out);
   virtual void writePolynomialFooter(const VarNames& names,
 									 bool wroteAnyGenerators,
 									 FILE* out);
