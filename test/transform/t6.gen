@@ -1,0 +1,61 @@
+vars ;
+[
+];
+vars ;
+[
+ 1
+];
+vars a;
+[
+];
+vars a;
+[
+ 1
+];
+vars a;
+[
+ a
+];
+vars a;
+[
+ a
+];
+vars b, a;
+[
+];
+vars a, b;
+[
+];
+vars a, b;
+[
+ 1
+];
+vars b, c;
+[
+ 1
+];
+vars a, b;
+[
+ a*b,
+ a^2
+];
+vars a, b;
+[
+ a*b,
+ a^3
+];
+vars a, b;
+[
+ a*b,
+ a
+];
+vars long, longer, longestlongest;
+[
+ 1,
+ long^100000000000000000000001
+];
+vars long, longer, longestlongest;
+[
+ long^100000000000000000000000,
+ 1
+];

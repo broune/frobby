@@ -57,7 +57,9 @@ void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
 										  bool wroteAnyGenerators,
 										  FILE* out) {
-  fputs("\n);\n", out);  
+  if (wroteAnyGenerators)
+	fputc('\n', out);
+  fputs(");\n", out);  
 }
 
 void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {

@@ -1,0 +1,61 @@
+(monomial-ideal-with-order
+ (lex-order)
+)
+(monomial-ideal-with-order
+ (lex-order)
+ 1
+)
+(monomial-ideal-with-order
+ (lex-order a)
+)
+(monomial-ideal-with-order
+ (lex-order a)
+ 1
+)
+(monomial-ideal-with-order
+ (lex-order a)
+ a
+)
+(monomial-ideal-with-order
+ (lex-order a)
+ a
+)
+(monomial-ideal-with-order
+ (lex-order b a)
+)
+(monomial-ideal-with-order
+ (lex-order a b)
+)
+(monomial-ideal-with-order
+ (lex-order a b)
+ 1
+)
+(monomial-ideal-with-order
+ (lex-order b c)
+ 1
+)
+(monomial-ideal-with-order
+ (lex-order a b)
+ a*b
+ a^2
+)
+(monomial-ideal-with-order
+ (lex-order a b)
+ a*b
+ a^3
+)
+(monomial-ideal-with-order
+ (lex-order a b)
+ a*b
+ a
+)
+(monomial-ideal-with-order
+ (lex-order long longer longestlongest)
+ 1
+ long^100000000000000000000001
+)
+(monomial-ideal-with-order
+ (lex-order long longer longestlongest)
+ long^100000000000000000000000
+ 1
+)

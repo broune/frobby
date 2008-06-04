@@ -62,5 +62,14 @@ then
   exit 1
 fi
 
+../../$frobby transform $2 $3 $4 $5 $6 $7 -canon < $1 2> /dev/null| diff - $1.canon
+
+if [ $? != 0 ]
+then
+  echo
+  echo "Test $1 failed (monos to canonical monos)"
+  exit 1
+fi
+
 
 echo -n .
