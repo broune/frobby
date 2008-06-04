@@ -125,7 +125,7 @@ public:
   }
 
   virtual void consume(const Term& term) {
-	ASSERT(term.getVarCount() == _translator->getNames().getVarCount());
+	ASSERT(term.getVarCount() == _translator->getVarCount());
 
 	_handler->writeTermOfIdeal(term, _translator, _first, _out);
 	_first = false;
@@ -143,11 +143,11 @@ public:
   IrreducibleIdealWriter(IOHandler* handler,
 						 const TermTranslator* translator,
 						 FILE* out):
-	_varCount(translator->getNames().getVarCount()),
+	_varCount(translator->getVarCount()),
 	_handler(handler),
 	_translator(translator),
 	_out(out),
-	_tmp(translator->getNames().getVarCount()) {
+	_tmp(translator->getVarCount()) {
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
@@ -199,7 +199,7 @@ class DelayedIdealWriter : public TermConsumer {
 	_handler(handler),
 	_translator(translator),
 	_out(out),
-	_ideal(translator->getNames().getVarCount()) {
+	_ideal(translator->getVarCount()) {
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
@@ -541,7 +541,7 @@ class DelayedPolynomialWriter : public CoefTermConsumer {
 	_handler(handler),
 	_translator(translator),
 	_out(out),
-	_polynomial(translator->getNames().getVarCount()) {
+	_polynomial(translator->getVarCount()) {
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);

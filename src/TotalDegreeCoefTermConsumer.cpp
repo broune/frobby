@@ -45,7 +45,7 @@ TotalDegreeCoefTermConsumer::~TotalDegreeCoefTermConsumer() {
 
 void TotalDegreeCoefTermConsumer::consume(const mpz_class& coef,
 										  const Term& term) {
-  ASSERT(term.getVarCount() == _translator->getNames().getVarCount());
+  ASSERT(term.getVarCount() == _translator->getVarCount());
   ASSERT(coef != 0);
   ASSERT(_tmp == 0);
 

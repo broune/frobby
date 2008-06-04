@@ -31,7 +31,7 @@ BigTermRecorder::~BigTermRecorder() {
 
 void BigTermRecorder::consume(const Term& term, TermTranslator* translator) {
   ASSERT(term.getVarCount() == _recordInto->getVarCount());
-  ASSERT(translator->getNames().getVarCount() == _recordInto->getVarCount());
+  ASSERT(translator->getVarCount() == _recordInto->getVarCount());
 
   size_t varCount = _recordInto->getVarCount();
   _recordInto->newLastTerm();

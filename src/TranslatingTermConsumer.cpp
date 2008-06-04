@@ -33,7 +33,7 @@ TranslatingTermConsumer::~TranslatingTermConsumer() {
 }
 
 void TranslatingTermConsumer::consume(const Term& term) {
-  ASSERT(term.getVarCount() == _translator->getNames().getVarCount());
+  ASSERT(term.getVarCount() == _translator->getVarCount());
 
   _consumer->consume(term, _translator);
 }
@@ -54,7 +54,7 @@ TranslatingCoefTermConsumer::~TranslatingCoefTermConsumer() {
 
 void TranslatingCoefTermConsumer::
 consume(const mpz_class& coef, const Term& term) {
-  ASSERT(term.getVarCount() == _translator->getNames().getVarCount());
+  ASSERT(term.getVarCount() == _translator->getVarCount());
 
   _consumer->consume(coef, term, _translator);
 }
