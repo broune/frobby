@@ -23,27 +23,16 @@
 #include "Scanner.h"
 
 IntersectAction::IntersectAction():
+  Action
+(staticGetName(),
+ "Intersect the input ideals.",
+ "Computes the intersection of the input ideals. Simply concatenate "
+ "the textual\n"
+ "representations of the ideals in order to intersect them.\n\n"
+ "Note that this operation is currently implemented in a rather slow way.",
+ false),
+
   _io(IOHandler::MonomialIdealList, IOHandler::MonomialIdeal) {
-}
-
-const char* IntersectAction::getName() const {
-  return "intersect";
-}
-
-const char* IntersectAction::getShortDescription() const {
-  return "Intersect the input ideals.";
-}
-
-const char* IntersectAction::getDescription() const {
-  return
-"Computes the intersection of the input ideals. Simply concatenate the textual\n"
-"representations of the ideals in order to intersect them.\n"
-    "\n"
-    "Note that this operation is currently implemented in a rather slow way.";
-}
-
-Action* IntersectAction::createNew() const {
-  return new IntersectAction();
 }
 
 void IntersectAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -69,4 +58,8 @@ void IntersectAction::perform() {
   delete intersection;
   for (size_t i = 0; i < ideals.size(); ++i)
     delete ideals[i];
+}
+
+const char* IntersectAction::staticGetName() {
+  return "intersect";
 }

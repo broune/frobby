@@ -23,12 +23,14 @@ class VarNames;
 class Scanner;
 class BigIdeal;
 class CoefTermConsumer;
+class BigPolynomial;
 
 class CoCoA4IOHandler : public IOHandler {
 public:
   CoCoA4IOHandler();
 
-  virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
+  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
+  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
  private:
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
@@ -59,8 +61,23 @@ public:
 								bool wroteAnyGenerators,
 								FILE* out);
 
-  static void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
+  static void readVars(VarNames& ideal, Scanner& in);
   static void writeRing(const VarNames& names, FILE* out);
+
+  static void writeCoCoA4TermProduct(const Term& term,
+									 const TermTranslator* translator,
+									 FILE* out);
+
+  static void writeCoCoA4TermProduct(const vector<mpz_class>& term,
+									 const VarNames& names,
+									 FILE* out);
+
+  static void readCoCoA4Term(vector<mpz_class>& term, Scanner& in);
+  static void readCoCoA4VarPower(vector<mpz_class>& term, Scanner& in);
+
+  static void readCoCoA4CoefTerm(BigPolynomial& polynomial,
+								 bool firstTerm,
+								 Scanner& in);
 };
 
 #endif

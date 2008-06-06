@@ -21,12 +21,14 @@
 #include "BigIdeal.h"
 #include "VarNames.h"
 #include "CoefTermConsumer.h"
+#include "BigPolynomial.h"
 
 SingularIOHandler::SingularIOHandler():
   IOHandler("singular",
 			"Format understandable by the program Singular.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
+  registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
 }
@@ -59,7 +61,7 @@ void SingularIOHandler::writePolynomialFooter(const VarNames& names,
 											  bool wroteAnyGenerators,
 											  FILE* out) {
   if (!wroteAnyGenerators)
-	fputs(" 0", out);
+	fputs("\n 0", out);
   fputs(";\n", out);
 }
 
@@ -88,53 +90,76 @@ void SingularIOHandler::writeIdealFooter(const VarNames& names,
 										 bool wroteAnyGenerators,
 										 FILE* out) {
   if (!wroteAnyGenerators)
-	fputs(" 0", out);
+	fputs("\n 0", out);
   fputs(";\n", out);  
 }
 
-void SingularIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-  readVarsAndClearIdeal(ideal, scanner);
-
-  scanner.expect("ideal");
-  scanner.expect('I');
-  scanner.expect('=');
-
-  if (!scanner.match('0')) {
-	do
-	  readTerm(ideal, scanner);
-	while (scanner.match(','));
+void SingularIOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
+  {
+	VarNames names;
+	readVars(names, in);
+	ideal.clearAndSetNames(names);
   }
-  scanner.expect(';');
+
+  in.expect("ideal");
+  in.expect('I');
+  in.expect('=');
+
+  if (!in.match('0')) {
+	do
+	  readTerm(ideal, in);
+	while (in.match(','));
+  }
+  in.expect(';');
 }
 
-void SingularIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
-  scanner.expect("ring");
-  scanner.expect('R');
-  scanner.expect('=');
-  scanner.expect('0');
-  scanner.expect(',');
-  scanner.expect('(');
+void SingularIOHandler::readPolynomial(Scanner& in,
+									   BigPolynomial& polynomial) {
+  {
+	VarNames names;
+	readVars(names, in);
+	polynomial.clearAndSetNames(names);
+  }
 
-  VarNames names;
+  in.expect("poly");
+  in.expect('p');
+  in.expect('=');
+
+  bool first = true;
   do {
-	const char* varName = scanner.readIdentifier();
+	readCoefTerm(polynomial, first, in);
+	first = false;
+  } while (!in.match(';'));
+}
+
+void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
+  in.expect("ring");
+  in.expect('R');
+  in.expect('=');
+  in.expect('0');
+  in.expect(',');
+  in.expect('(');
+
+  names.clear();
+  do {
+	const char* varName = in.readIdentifier();
 	if (names.contains(varName)) {
-	  scanner.printError();
+	  in.printError();
 	  fprintf(stderr, "The variable %s is declared twice.\n", varName);
 	  exit(1);
 	}
 	names.addVar(varName);
-  } while (scanner.match(','));
+  } while (in.match(','));
 
-  scanner.expect(')');
-  scanner.expect(',');
-  scanner.expect("lp");
-  scanner.expect(';');
+  in.expect(')');
+  in.expect(',');
+  in.expect("lp");
+  in.expect(';');
 
-  scanner.expect("int");
-  scanner.expect("noVars");
-  scanner.expect("=");
-  if (scanner.match('1')) {
+  in.expect("int");
+  in.expect("noVars");
+  in.expect("=");
+  if (in.match('1')) {
 	if (names.getVarCount() != 1 ||
 		names.getName(0) != string("dummy")) {
 	  fputs("ERROR: Encountered variable name other than \"dummy\" in\n"
@@ -143,13 +168,11 @@ void SingularIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner)
 	}
 	names.clear();
   }
-  else if (!scanner.match('0')) {
-	scanner.printError("Expected 0 or 1.\n");
+  else if (!in.match('0')) {
+	in.printError("Expected 0 or 1.\n");
 	exit(1);
   }
-  scanner.expect(';');
-
-  ideal.clearAndSetNames(names);
+  in.expect(';');
 }
 
 void SingularIOHandler::writeRing(const VarNames& names, FILE* out) {

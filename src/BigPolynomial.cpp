@@ -19,6 +19,10 @@
 
 #include "Term.h"
 #include "TermTranslator.h"
+#include "VarSorter.h"
+
+BigPolynomial::BigPolynomial() {
+}
 
 BigPolynomial::BigPolynomial(const VarNames& names):
   _names(names) {
@@ -36,6 +40,27 @@ const VarNames& BigPolynomial::getNames() const {
   return _names;
 }
 
+void BigPolynomial::clearAndSetNames(const VarNames& names) {
+  clear();
+  _names = names;
+}
+
+void BigPolynomial::sortTerms() {
+  sort(_coefTerms.begin(), _coefTerms.end(), compareCoefTerms);
+}
+
+void BigPolynomial::sortVariables() {
+  VarSorter sorter(_names);
+  sorter.getOrderedNames(_names);
+  for (size_t i = 0; i < _coefTerms.size(); ++i)
+    sorter.permute(_coefTerms[i].term);
+}
+
+void BigPolynomial::clear() {
+  _coefTerms.clear();
+  _names.clear();
+}
+
 const mpz_class& BigPolynomial::getCoef(size_t index) const {
   ASSERT(index < getTermCount());
 
@@ -46,6 +71,28 @@ const vector<mpz_class>& BigPolynomial::getTerm(size_t index) const {
   ASSERT(index < getTermCount());
 
   return _coefTerms[index].term;
+}
+
+void BigPolynomial::newLastTerm() {
+  _coefTerms.resize(_coefTerms.size() + 1);
+  _coefTerms.back().term.resize(getVarCount());
+}
+
+vector<mpz_class>& BigPolynomial::getLastTerm() {
+  ASSERT(getTermCount() > 0);
+
+  return _coefTerms.back().term;
+}
+
+mpz_class& BigPolynomial::getLastCoef() {
+  ASSERT(getTermCount() > 0);
+
+  return _coefTerms.back().coef;
+}
+
+void BigPolynomial::renameVars(const VarNames& names) {
+  ASSERT(names.getVarCount() == _names.getVarCount());
+  _names = names;  
 }
 
 void BigPolynomial::add(const mpz_class& coef,
@@ -78,4 +125,13 @@ void BigPolynomial::add(const mpz_class& coef,
   bigTerm.reserve(term.getVarCount());
   for (size_t var = 0; var < term.getVarCount(); ++var)
 	bigTerm.push_back(translator->getExponent(var, term));
+}
+
+bool BigPolynomial::compareCoefTerms(const BigCoefTerm& a,
+									 const BigCoefTerm& b) {
+  if (a.term < b.term)
+	return true;
+  if (a.term > b.term)
+	return false;
+  return a.coef < b.coef;
 }

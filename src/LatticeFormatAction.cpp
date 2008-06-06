@@ -24,10 +24,17 @@
 #include "Scanner.h"
 
 LatticeFormatAction::LatticeFormatAction():
-  _inputFormat
-("iformat",
- "The input format. The available formats are 4ti2 and fplll.",
- "4ti2"),
+Action
+(staticGetName(),
+ "Change the representation of the input lattice.",
+ "By default, latformat simply writes the input lattice to output.\n"
+ "The main functionality is to change the format.",
+ false),
+
+_inputFormat
+  ("iformat",
+   "The input format. The available formats are 4ti2 and fplll.",
+   "4ti2"),
   
   _outputFormat
   ("oformat",
@@ -38,24 +45,6 @@ LatticeFormatAction::LatticeFormatAction():
   ("zero",
    "Adjust lattice basis to increase the number of zero entries.",
    false) {
-}
-
-const char* LatticeFormatAction::getName() const {
-  return "latformat";
-}
-
-const char* LatticeFormatAction::getShortDescription() const {
-  return "Change the representation of the input lattice.";
-}
-
-const char* LatticeFormatAction::getDescription() const {
-  return
-    "By default, latformat simply writes the input lattice to output.\n"
-    "The main functionality is to change the format.";
-}
-
-Action* LatticeFormatAction::createNew() const {
-  return new LatticeFormatAction();
 }
 
 void LatticeFormatAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -94,4 +83,8 @@ void LatticeFormatAction::perform() {
   }
 
   facade.writeLattice(stdout, basis, oformat);
+}
+
+const char* LatticeFormatAction::staticGetName() {
+  return "latformat";
 }

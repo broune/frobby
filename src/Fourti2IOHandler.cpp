@@ -21,11 +21,13 @@
 #include "BigIdeal.h"
 #include "Term.h"
 #include "TermTranslator.h"
+#include "BigPolynomial.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
   IOHandler("4ti2", "Format used by the software package 4ti2.", true) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
+  registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
 }
@@ -45,7 +47,6 @@ void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
 											 const TermTranslator* translator,
 											 bool isFirst,
 											 FILE* out) {
-  ASSERT(coef != 0);
   ASSERT(translator != 0);
   ASSERT(out != 0);
   ASSERT(term.getVarCount() == translator->getVarCount());
@@ -62,7 +63,6 @@ void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
 											 const VarNames& names,
 											 bool isFirst,
 											 FILE* out) {
-  ASSERT(coef != 0);
   ASSERT(out != 0);
   ASSERT(term.size() == names.getVarCount());
 
@@ -78,9 +78,11 @@ void Fourti2IOHandler::writePolynomialFooter(const VarNames& names,
 											 FILE* out) {
   fputs("(coefficient)", out);
 
-  for (size_t var = 0; var < names.getVarCount(); ++var) {
-	fputc(' ', out);
-	fputs(names.getName(var).c_str(), out);
+  if (!names.namesAreDefault()) {
+	for (size_t var = 0; var < names.getVarCount(); ++var) {
+	  fputc(' ', out);
+	  fputs(names.getName(var).c_str(), out);
+	}
   }
   fputc('\n', out);
 }
@@ -162,12 +164,12 @@ void Fourti2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
   exit(1);
 }
 
-void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
+void Fourti2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
   size_t termCount;
   size_t varCount;
 
-  scanner.readSizeT(termCount);
-  scanner.readSizeT(varCount);
+  in.readSizeT(termCount);
+  in.readSizeT(varCount);
 
   ideal.clearAndSetNames(VarNames(varCount));
 
@@ -177,13 +179,13 @@ void Fourti2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 	ideal.newLastTerm();
 	vector<mpz_class>& term = ideal.getLastTermRef();
 	for (size_t var = 0; var < varCount; ++var)
-	  scanner.readIntegerAndNegativeAsZero(term[var]);
+	  in.readIntegerAndNegativeAsZero(term[var]);
   }
 
-  if (scanner.peekIdentifier()) {
+  if (in.peekIdentifier()) {
 	VarNames names;
 	for (size_t var = 0; var < varCount; ++var)
-	  names.addVar(scanner.readIdentifier());
+	  names.addVar(in.readIdentifier());
 	ideal.renameVars(names);
   }
 }
@@ -193,4 +195,46 @@ void Fourti2IOHandler::readTerm(Scanner& in, const VarNames& names,
   term.resize(names.getVarCount());
   for (size_t var = 0; var < names.getVarCount(); ++var)
 	in.readIntegerAndNegativeAsZero(term[var]);
+}
+
+void Fourti2IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
+  size_t termCount;
+  size_t varCount;
+
+  in.readSizeT(termCount);
+  in.readSizeT(varCount);
+
+  if (varCount == 0) {
+	fputs("ERROR: A polynomial has at least one column in the matrix.\n",
+		  stderr);
+	exit(1);
+	return;
+  }
+  --varCount; // One of columns is the coefficient.
+
+  polynomial.clearAndSetNames(VarNames(varCount));
+
+  for (size_t t = 0; t < termCount; ++t) {
+	// Read a term
+	polynomial.newLastTerm();
+	in.readInteger(polynomial.getLastCoef());
+
+	vector<mpz_class>& term = polynomial.getLastTerm();
+	for (size_t var = 0; var < varCount; ++var) {
+	  ASSERT(var < term.size());
+	  in.readIntegerAndNegativeAsZero(term[var]);
+	}
+  }
+
+  if (!in.match('('))
+	in.expect("(coefficient)"); // This improves the error message.
+  in.expect("coefficient");
+  in.expect(')');
+
+  if (in.peekIdentifier()) {
+	VarNames names;
+	for (size_t var = 0; var < varCount; ++var)
+	  names.addVar(in.readIdentifier());
+	polynomial.renameVars(names);
+  }  
 }

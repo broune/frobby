@@ -26,14 +26,27 @@ class TermTranslator;
 
 class BigPolynomial {
  public:
+  BigPolynomial();
   BigPolynomial(const VarNames& names);
 
   size_t getTermCount() const;
   size_t getVarCount() const;
   const VarNames& getNames() const;
+  void clearAndSetNames(const VarNames& names);
+
+  void clear();
+
+  void sortTerms();
+  void sortVariables();
 
   const mpz_class& getCoef(size_t index) const;
   const vector<mpz_class>& getTerm(size_t index) const;
+
+  void newLastTerm();
+  vector<mpz_class>& getLastTerm();
+  mpz_class& getLastCoef();
+
+  void renameVars(const VarNames& names);
 
   void add(const mpz_class& coef, const vector<mpz_class> term);
   void add(const mpz_class& coef, mpz_ptr* term);
@@ -48,6 +61,8 @@ class BigPolynomial {
   };
   typedef vector<BigCoefTerm>::iterator iterator;
   typedef vector<BigCoefTerm>::const_iterator const_iterator;
+
+  static bool compareCoefTerms(const BigCoefTerm& a, const BigCoefTerm& b);
 
   VarNames _names;
   vector<BigCoefTerm> _coefTerms;

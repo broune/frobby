@@ -22,6 +22,19 @@
 #include "IOFacade.h"
 
 GenerateIdealAction::GenerateIdealAction():
+  Action
+(staticGetName(),
+ "Generate a random monomial ideal.",
+ "Generate a monomial ideal. The default is to generate a random one,\n"
+ "and in certain rare cases the generated ideal may have less than the "
+ "requested\n"
+ "number of minimial generators. This can be alleviated by increasing the\n"
+ "exponent range or the number of variables.\n\n"
+ "The other types of ideals are not random, and they use the number of "
+ "variables\n"
+ "as a parameter and may thus have more generators, depending on the type.",
+ false),
+
   _type
 ("type",
  "The supported types of ideals are random, list, king and knight.",
@@ -33,29 +46,6 @@ GenerateIdealAction::GenerateIdealAction():
    "Exponents are chosen uniformly in the range [0,INTEGER].", 9),
 
   _io(IOHandler::None, IOHandler::MonomialIdeal) {
-}
-
-const char* GenerateIdealAction::getName() const {
-  return "genideal";
-}
-
-const char* GenerateIdealAction::getShortDescription() const {
-  return "Generate a random monomial ideal.";
-}
-
-const char* GenerateIdealAction::getDescription() const {
-  return
-"Generate a monomial ideal. The default is to generate a random one,\n"
-"and in certain rare cases the generated ideal may have less than the requested\n"
-"number of minimial generators. This can be alleviated by increasing the\n"
-"exponent range or the number of variables.\n"
-"\n"
-"The other types of ideals are not random, and they use the number of variables\n"
-"as a parameter and may thus have more generators, depending on the type.";
-}
-
-Action* GenerateIdealAction::createNew() const {
-  return new GenerateIdealAction();
 }
 
 void GenerateIdealAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -93,4 +83,8 @@ void GenerateIdealAction::perform() {
 
   IOFacade ioFacade(_printActions);
   ioFacade.writeIdeal(ideal, _io.getOutputHandler(), stdout);
+}
+
+const char* GenerateIdealAction::staticGetName() {
+  return "genideal";
 }

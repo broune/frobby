@@ -31,80 +31,91 @@
 #include "PrimaryDecomAction.h"
 #include "AlexanderDualAction.h"
 #include "HilbertAction.h"
+#include "PolyTransformAction.h"
 
-Action::ActionContainer Action::_actions;
-
-Action::Action():
+Action::Action(const char* name,
+			   const char* shortDescription,
+			   const char* description,
+			   bool acceptsNonParameter):
+  _name(name),
+  _shortDescription(shortDescription),
+  _description(description),
+  _acceptsNonParameter(acceptsNonParameter),
   _printActions("time", "Display and time each subcomputation.", false) {
 }
 
 Action::~Action() {
 }
 
-const Action::ActionContainer& Action::getActions() {
-  if (_actions.empty()) {
-    // This method uses static variables instead of new to avoid
-    // spurious reports from memory leak detectors.
-
-	static HilbertAction hilbert;
-	_actions.push_back(&hilbert);
-
-    static IrreducibleDecomAction irreducibleDecom;
-    _actions.push_back(&irreducibleDecom);
-
-	static AlexanderDualAction alexanderDual;
-	_actions.push_back(&alexanderDual);
-
-    static AssociatedPrimesAction associatedPrimes;
-    _actions.push_back(&associatedPrimes);
-
-    static IntersectAction intersect;
-    _actions.push_back(&intersect);
-
-    static GenerateIdealAction generateIdeal; 
-    _actions.push_back(&generateIdeal);
-
-    static TransformAction transform;
-    _actions.push_back(&transform);
-
-    static FrobeniusAction frobenius;
-    _actions.push_back(&frobenius);
-
-    static DynamicFrobeniusAction dynamicFrobenius;
-    _actions.push_back(&dynamicFrobenius);
-
-    static GenerateFrobeniusAction generateFrobenius;
-    _actions.push_back(&generateFrobenius);
-
-    static AnalyzeAction analyze;
-    _actions.push_back(&analyze);
-
-    static LatticeFormatAction latticeFormat;
-    _actions.push_back(&latticeFormat);
-
-    static HelpAction help;
-    _actions.push_back(&help);
-
-    //static PrimaryDecomAction primaryDecom;
-    //_actions.push_back(&primaryDecom);
+// The point of doing it this way is that only actions that are
+// actually used get constructed and deallocation is automatic.
+template<class ActionType>
+void addIfPrefix(const string& str,
+				 Action::ActionContainer& actions) {
+  if (string(ActionType::staticGetName()).compare(0, str.size(), str) == 0) {
+	static ActionType action;
+	actions.push_back(&action);
   }
-
-  return _actions;
 }
 
-Action* Action::createAction(const string& name) {
-  getActions();
-  for (ActionContainer::const_iterator it = _actions.begin();
-       it != _actions.end(); ++it) {
-    if (name == (*it)->getName())
-      return (*it)->createNew();
+Action* Action::getAction(const string& prefix) {
+  ActionContainer actions;
+  getActions(prefix, actions);
+
+  if (actions.empty()) {
+    fprintf(stderr, "ERROR: No action has the prefix \"%s\".\n",
+			prefix.c_str());
+	exit(1);
   }
 
-  return 0;
+  if (actions.size() >= 2) {
+    fprintf(stderr, "ERROR: Prefix \"%s\" is ambigous.\nPossibilities are:",
+			prefix.c_str());
+	for (size_t i = 0; i < actions.size(); ++i) {
+	  fputc(' ', stderr);
+	  fputs(actions[i]->getName(), stderr);
+	}
+	fputc('\n', stderr);
+    exit(1);
+  }
+
+  ASSERT(actions.size() == 1);
+  return actions.back();
+}
+
+void Action::getActions(const string& prefix, ActionContainer& actions) {
+  addIfPrefix<HelpAction>(prefix, actions);
+  addIfPrefix<TransformAction>(prefix, actions);
+  addIfPrefix<PolyTransformAction>(prefix, actions);
+  addIfPrefix<HilbertAction>(prefix, actions);
+  addIfPrefix<IrreducibleDecomAction>(prefix, actions);
+  addIfPrefix<AlexanderDualAction>(prefix, actions);
+  addIfPrefix<AssociatedPrimesAction>(prefix, actions);
+  addIfPrefix<IntersectAction>(prefix, actions);
+  addIfPrefix<GenerateIdealAction>(prefix, actions);
+  addIfPrefix<FrobeniusAction>(prefix, actions);
+  addIfPrefix<DynamicFrobeniusAction>(prefix, actions);
+  addIfPrefix<GenerateFrobeniusAction>(prefix, actions);
+  addIfPrefix<AnalyzeAction>(prefix, actions);
+  addIfPrefix<LatticeFormatAction>(prefix, actions);
+
+  // PrimaryDecomAction primaryDecom;
+}
+
+const char* Action::getName() const {
+  return _name;
+}
+
+const char* Action::getShortDescription() const {
+  return _shortDescription;
+}
+
+const char* Action::getDescription() const {
+  return _description;
 }
 
 bool Action::acceptsNonParameter() const {
-  return false;
+  return _acceptsNonParameter;
 }
 
 bool Action::processNonParameter(const char* str) {

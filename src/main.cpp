@@ -31,23 +31,17 @@ int main(int argc, const char** argv) {
 		(unsigned int)getpid() +
 		(unsigned int)clock());
 
-  string actionName = "help";
+  string prefix;
   if (argc > 1) {
-    actionName = argv[1];
+    prefix = argv[1];
     --argc;
     ++argv;
-  }
+  } else
+	prefix = "help";
 
-  Action* action = Action::createAction(actionName);
-
-  if (action == 0) {
-    fprintf(stderr, "ERROR: Unknown action \"%s\".\n", actionName.c_str());
-    return 1;
-  }
-
+  Action* action = Action::getAction(prefix);
   action->parseCommandLine(argc - 1, argv + 1);
   action->perform();
-  delete action;
 
   return 0;
 }

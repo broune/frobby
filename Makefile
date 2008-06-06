@@ -26,7 +26,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   SliceStrategyCommon.cpp DebugStrategy.cpp FrobeniusStrategy.cpp		\
   SliceFacade.cpp BigTermRecorder.cpp CoCoA4IOHandler.cpp				\
   SingularIOHandler.cpp TotalDegreeCoefTermConsumer.cpp					\
-  BigPolynomial.cpp CoefBigTermRecorder.cpp
+  BigPolynomial.cpp CoefBigTermRecorder.cpp PolyTransformAction.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

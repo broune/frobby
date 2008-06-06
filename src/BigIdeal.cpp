@@ -20,6 +20,7 @@
 #include "VarNames.h"
 #include "TermTranslator.h"
 #include "Ideal.h"
+#include "VarSorter.h"
 
 class OffsetTermCompare {
 public:
@@ -237,41 +238,6 @@ void BigIdeal::sortGenerators() {
 
   _terms.swap(sorted);
 }
-
-struct VarSorter {
-  VarSorter(VarNames& names):
-    _names(names),
-	_tmp(names.getVarCount()) {
-	_permutation.reserve(names.getVarCount());
-    for (size_t i = 0; i < names.getVarCount(); ++i)
-      _permutation.push_back(i);
-    sort(_permutation.begin(), _permutation.end(), *this);
-  }
-
-  bool operator()(size_t a, size_t b) const {
-    return
-      _names.getName(_permutation[a]) <
-      _names.getName(_permutation[b]);
-  }
-
-  void getOrderedNames(VarNames& names) {
-    names.clear();
-    for (size_t i = 0; i < _permutation.size(); ++i)
-      names.addVar(_names.getName(_permutation[i]));
-  }
-
-  void permute(vector<mpz_class>& term) {
-	ASSERT(term.size() == _tmp.size());
-    _tmp.swap(term);
-    for (size_t i = 0; i < _permutation.size(); ++i)
-	  mpz_swap(term[i].get_mpz_t(), _tmp[_permutation[i]].get_mpz_t());
-  }
-
-private:
-  vector<size_t> _permutation;
-  VarNames _names;
-  vector<mpz_class> _tmp;
-};
 
 void BigIdeal::sortVariables() {
   VarSorter sorter(_names);

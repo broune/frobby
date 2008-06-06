@@ -22,6 +22,7 @@
 class VarNames;
 class Scanner;
 class BigIdeal;
+class BigPolynomial;
 
 // Reads the empty ideal without actually consulting the input, and
 // never writes anything to the output.
@@ -30,6 +31,7 @@ public:
   NullIOHandler();
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
+  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
   virtual TermConsumer* createIdealWriter(TermTranslator* translator,
 										  FILE* out);

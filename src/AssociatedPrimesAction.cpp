@@ -25,27 +25,18 @@
 #include "BigTermConsumer.h"
 
 AssociatedPrimesAction::AssociatedPrimesAction():
+  Action
+(staticGetName(),
+ "Compute the associated primes of the input ideal.",
+ "Computes the associated prime ideals of the input monomial ideal. The\n"
+ "computation is accomplished using irreducible decomposition. The quality "
+ "of the\n"
+ "algorithm for computing associated primes is expected to be much improved "
+ "in a\n"
+ "future version of Frobby.",
+ false),
+
   _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
-}
-
-const char* AssociatedPrimesAction::getName() const {
-  return "assoprimes";
-}
-
-const char* AssociatedPrimesAction::getShortDescription() const {
-  return "Compute the associated primes of the input ideal.";
-}
-
-const char* AssociatedPrimesAction::getDescription() const {
-  return
-"Computes the associated prime ideals of the input monomial ideal. The\n"
-"computation is accomplished using irreducible decomposition. The quality of the\n"
-"algorithm for computing associated primes is expected to be much improved in a\n"
-"future version of Frobby.";
-}
-
-Action* AssociatedPrimesAction::createNew() const {
-  return new AssociatedPrimesAction();
 }
 
 void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -68,4 +59,8 @@ void AssociatedPrimesAction::perform() {
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
   _decomParameters.apply(facade);
   facade.computeAssociatedPrimes();
+}
+
+const char* AssociatedPrimesAction::staticGetName() {
+  return "assoprimes";
 }
