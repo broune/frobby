@@ -20,32 +20,20 @@
 #include "Parameter.h"
 #include "IOHandler.h"
 
-const char* HelpAction::getName() const {
-  return "help";
-}
-
-const char* HelpAction::getShortDescription() const {
-  return "Display this help screen.";
-}
-
-const char* HelpAction::getDescription() const {
-  return
-"Typing `frobby help' displays a list of the available actions.\n"
-"Typing `frobby help ACTION' displays a detailed description of that action.\n"
-"\n"
-"As an example, typing `frobby help irrdecom' will yield detailed information\n"
-  "about the irrdecom action.";
-}
-
-Action* HelpAction::createNew() const {
-  return new HelpAction();
+HelpAction::HelpAction():
+  Action
+(staticGetName(),
+ "Display this help screen.",
+ "Typing `frobby help' displays a list of the available actions.\n"
+ "Typing `frobby help ACTION' displays a detailed description of that "
+ "action.\n\n"
+ "As an example, typing `frobby help irrdecom' will yield detailed "
+ "information\n"
+ "about the irrdecom action.",
+ true) {
 }
 
 void HelpAction::obtainParameters(vector<Parameter*>& parameters) {
-}
-
-bool HelpAction::acceptsNonParameter() const {
-  return true;
 }
 
 bool HelpAction::processNonParameter(const char* str) {
@@ -56,12 +44,11 @@ bool HelpAction::processNonParameter(const char* str) {
   if (_topic == "io")
 	return true;
 
-  Action* action = Action::createAction(str);
+  Action* action = Action::getAction(str);
   if (action == 0) {
     fprintf(stderr, "ERROR: Unknown help topic \"%s\".\n", str);
     return false;
   }
-  delete action;
 
   return true;
 }
@@ -160,9 +147,8 @@ void HelpAction::perform() {
 	if (_topic == "io")
 	  displayIOHelp();
 	else {
-	  Action* action = Action::createAction(_topic);
+	  Action* action = Action::getAction(_topic);
 	  displayActionHelp(action);
-	  delete action;
 	}
 
     return;
@@ -174,7 +160,8 @@ void HelpAction::perform() {
 "run it by typing `frobby ACTION', where ACTION is one of the following.\n\n",
 	  constants::version);
 
-  const ActionContainer& actions = getActions();
+  ActionContainer actions;
+  Action::getActions("", actions);
 
   // Compute maximum name length to make descriptions line up.
   size_t maxNameLength = 0;
@@ -208,4 +195,8 @@ void HelpAction::perform() {
 "Frobby is free software and you are welcome to redistribute it under certain\n"
 "conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General\n"
 "Public License version 2.0 in the file COPYING for details.\n", stderr);
+}
+
+const char* HelpAction::staticGetName() {
+  return "help";
 }

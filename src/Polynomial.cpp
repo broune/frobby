@@ -39,3 +39,4 @@ void Polynomial::sortTermsLex() {
 bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {
   return coefTerm.term < term;
 }
+

@@ -27,9 +27,10 @@ class Fourti2IOHandler : public IOHandler {
 public:
   Fourti2IOHandler();
 
-  virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
+  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
+  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
  protected:
   virtual void writePolynomialHeader(const VarNames& names,

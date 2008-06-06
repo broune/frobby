@@ -21,20 +21,12 @@
 #include "GenerateDataFacade.h"
 #include "IOFacade.h"
 
-const char* GenerateFrobeniusAction::getName() const {
-  return "genfrob";
-}
-
-const char* GenerateFrobeniusAction::getShortDescription() const {
-  return "Generate a random Frobenius problem instance.";
-}
-
-const char* GenerateFrobeniusAction::getDescription() const {
-  return "Generate a random Frobenius problem instance.";
-}
-
-Action* GenerateFrobeniusAction::createNew() const {
-  return new GenerateFrobeniusAction();
+GenerateFrobeniusAction::GenerateFrobeniusAction():
+  Action
+(staticGetName(),
+ "Generate a random Frobenius problem instance.",
+ "Generate a random Frobenius problem instance.",
+ false) {
 }
 
 void GenerateFrobeniusAction::
@@ -50,4 +42,8 @@ void GenerateFrobeniusAction::perform() {
 
   IOFacade ioFacade(_printActions);
   ioFacade.writeFrobeniusInstance(stdout, instance);
+}
+
+const char* GenerateFrobeniusAction::staticGetName() {
+  return "genfrob";
 }

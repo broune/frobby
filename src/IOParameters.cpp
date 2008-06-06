@@ -130,8 +130,12 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
 	  *_inputFormat = "newmonos";
 	else if (isdigit(c) || c == '+' || c == '-')
 	  *_inputFormat = "4ti2";
-	else // c shold be 'v' here, but we use monos as a fall back
+	else if (c == 'v')
 	  *_inputFormat = "monos";
+	else if (in.matchEOF())
+	  *_inputFormat = "null";
+	else
+	  *_inputFormat = "m2"; // We use m2 as a fall-back
   }
 
   if (in.getFormat() == "autodetect")

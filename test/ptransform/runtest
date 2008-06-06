@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Note that not specifying the input format tests the format
+# autodetection. We first produce output in all formats with no other
+# transformation, and we end with producing canonical output without
+# specifying the output format.
+
+testName="$1"
+shift
+
+inputFile="$testName.test"
+oformats="m2 cocoa4 4ti2 singular"
+params="$*"
+
+for oformat in $oformats; do
+  # Test format conversion to $oformat
+  outputFile="$testName.$oformat";
+  ./testhelper ptransform $inputFile $outputFile $params -oformat $oformat;
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Test same-format transform
+  ./testhelper ptransform $outputFile $outputFile $params;
+  if [ $? != 0 ]; then exit 1; fi
+done
+
+# Test canonicalization of input
+outputFile="$testName.canon";
+./testhelper ptransform $inputFile $outputFile $params -canon
+
+# Test that canonical output is preserved under canonicalization
+outputFile="$testName.canon";
+./testhelper ptransform $outputFile $outputFile $params -canon

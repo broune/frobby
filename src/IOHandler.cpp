@@ -248,6 +248,12 @@ void IOHandler::readTerm(Scanner& in,
   term = tmp.getTerm(0);
 }
 
+void IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
+  fputs("INTERNAL ERROR: Called IOHandler::readPolynomial.\n", stderr);
+  ASSERT(false);
+  exit(1); 
+}
+
 IOHandler::~IOHandler() {
 }
 
@@ -259,7 +265,7 @@ void IOHandler::writeIdeal(const BigIdeal& ideal, FILE* out) {
   writeIdealFooter(ideal.getNames(), generatorCount > 0, out);
 }
 
-void IOHandler::writePolynomial(BigPolynomial& polynomial, FILE* out) {
+void IOHandler::writePolynomial(const BigPolynomial& polynomial, FILE* out) {
   size_t termCount = polynomial.getTermCount();
   writePolynomialHeader(polynomial.getNames(), termCount, out);
   for (size_t i = 0; i < termCount; ++i) {
@@ -269,8 +275,8 @@ void IOHandler::writePolynomial(BigPolynomial& polynomial, FILE* out) {
   writePolynomialFooter(polynomial.getNames(), termCount > 0, out);
 }
 
-bool IOHandler::hasMoreInput(Scanner& scanner) const {
-  return !scanner.matchEOF();
+bool IOHandler::hasMoreInput(Scanner& in) const {
+  return !in.matchEOF();
 }
 
 const char* IOHandler::getName() const {
@@ -408,31 +414,68 @@ void IOHandler::writeTermProduct(const vector<mpz_class>& term,
     fputc('1', out);
 }
 
-void IOHandler::readTerm(BigIdeal& ideal, Scanner& scanner) {
+void IOHandler::readTerm(BigIdeal& ideal, Scanner& in) {
   ideal.newLastTerm();
 
-  if (scanner.match('1'))
+  if (in.match('1'))
     return;
 
   do {
-    readVarPower(ideal.getLastTermRef(), ideal.getNames(), scanner);
-  } while (scanner.match('*'));
+    readVarPower(ideal.getLastTermRef(), ideal.getNames(), in);
+  } while (in.match('*'));
+}
+
+void IOHandler::readCoefTerm(BigPolynomial& polynomial,
+							 bool firstTerm,
+							 Scanner& in) {
+  // TODO: do something to avoid constructing these each time.
+  mpz_class coef;
+  vector<mpz_class> term;
+  term.resize(polynomial.getNames().getVarCount());
+
+  bool positive = true;
+  if (in.match('+'))
+	positive = !in.match('-');
+  else if (in.match('-'))
+	positive = false;
+  else if (!firstTerm) {
+	in.expect('+');
+	return;
+  }
+  if (in.match('+') || in.match('-')) {
+	fputs("ERROR: Too many signs.\n", stderr);
+	exit(1);
+  }
+	  
+  if (in.peekIdentifier()) {
+	coef = 1;
+	readVarPower(term, polynomial.getNames(), in);
+  } else
+	in.readInteger(coef);
+
+  while (in.match('*'))
+	readVarPower(term, polynomial.getNames(), in);
+
+  if (!positive)
+	coef = -coef;
+
+  polynomial.add(coef, term);
 }
 
 void IOHandler::readVarPower(vector<mpz_class>& term,
-							 const VarNames& names, Scanner& scanner) {
-  size_t var = scanner.readVariable(names);
+							 const VarNames& names, Scanner& in) {
+  size_t var = in.readVariable(names);
 
   if (term[var] != 0) {
-	scanner.printError();
+	in.printError();
 	fputs("A variable appears twice.\n", stderr);
 	exit(1);
   }
 
-  if (scanner.match('^')) {
-    scanner.readInteger(term[var]);
+  if (in.match('^')) {
+    in.readInteger(term[var]);
     if (term[var] <= 0) {
-	  scanner.printError();
+	  in.printError();
       gmp_fprintf
 		(stderr, "Expected positive integer as exponent but got %Zd.\n",
 		 term[var].get_mpz_t());
@@ -625,16 +668,16 @@ CoefTermConsumer* IOHandler::createPolynomialWriter
 	return new PolynomialWriter(this, translator, out);
 }
 
-void readFrobeniusInstance(Scanner& scanner, vector<mpz_class>& numbers) {
+void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
   numbers.clear();
 
   string number;
   mpz_class n;
-  while (!scanner.matchEOF()) {
-	scanner.readInteger(n);
+  while (!in.matchEOF()) {
+	in.readInteger(n);
 
     if (n <= 1) {
-	  scanner.printError();
+	  in.printError();
       gmp_fprintf(stderr,
 				  "Read the number %Zd while reading Frobenius instance.\n"
 				  "Only integers strictly larger than 1 are valid.\n",
@@ -646,7 +689,7 @@ void readFrobeniusInstance(Scanner& scanner, vector<mpz_class>& numbers) {
   }
 
   if (numbers.empty()) {
-	scanner.printError();
+	in.printError();
     fputs("Read empty Frobenius instance, which is not allowed.\n", stderr);
     exit(1);
   }

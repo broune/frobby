@@ -23,11 +23,13 @@
 #include "CoefTermConsumer.h"
 #include "Term.h"
 #include "TermTranslator.h"
+#include "BigPolynomial.h"
 
 CoCoA4IOHandler::CoCoA4IOHandler():
   IOHandler("cocoa4", "Format understandable by the program CoCoA 4.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
+  registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
 }
@@ -42,7 +44,201 @@ void CoCoA4IOHandler::writeTermOfIdeal(const Term& term,
 									   bool isFirst,
 									   FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
+  writeCoCoA4TermProduct(term, translator, out);
+}
 
+void CoCoA4IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+									   const VarNames& names,
+									   bool isFirst,
+									   FILE* out) {
+  fputs(isFirst ? "\n " : ",\n ", out);
+  writeCoCoA4TermProduct(term, names, out);
+}
+
+void CoCoA4IOHandler::writeIdealFooter(const VarNames& names,
+									   bool wroteAnyGenerators,
+									   FILE* out) {
+  fputs("\n);\n", out);  
+}
+
+void CoCoA4IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
+  {
+	VarNames names;
+	readVars(names, in);
+	ideal.clearAndSetNames(names);
+  }
+
+  in.expect('I');
+  in.expect(":=");
+  in.expect("Ideal");
+  in.expect('(');
+
+  if (!in.match(')')) {
+	do {
+	  ideal.newLastTerm();
+	  readCoCoA4Term(ideal.getLastTermRef(), in);
+	} while (in.match(','));
+	in.expect(')');
+  }
+  in.match(';');
+}
+
+void CoCoA4IOHandler::readPolynomial(Scanner& in,
+									 BigPolynomial& polynomial) {
+  {
+	VarNames names;
+	readVars(names, in);
+	polynomial.clearAndSetNames(names);
+  }
+
+  in.expect('p');
+  in.expect(":=");
+
+  bool first = true;
+  do {
+	readCoCoA4CoefTerm(polynomial, first, in);
+	first = false;
+  } while (!in.match(';'));
+}
+
+void CoCoA4IOHandler::writePolynomialHeader(const VarNames& names,
+											FILE* out) {
+  writeRing(names, out);
+  fputs("p :=", out);
+}
+
+void CoCoA4IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+											const Term& term,
+											const TermTranslator* translator,
+											bool isFirst,
+											FILE* out) {
+  fputs("\n ", out);
+
+  if (coef >= 0 && !isFirst)
+	fputc('+', out);
+
+  if (term.isIdentity()) {
+	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+	return;
+  }
+
+  if (coef == -1)
+	fputc('-', out);
+  else if (coef != 1)
+	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+
+  writeCoCoA4TermProduct(term, translator, out);
+}
+
+void CoCoA4IOHandler::writeTermOfPolynomial(const mpz_class& coef,
+											const vector<mpz_class>& term,
+											const VarNames& names,
+											bool isFirst,
+											FILE* out) {
+  fputs("\n ", out);
+  if (coef >= 0 && !isFirst)
+	fputc('+', out);
+
+  bool isIdentity = true;
+  for (size_t var = 0; var < term.size(); ++var)
+	if (term[var] != 0)
+	  isIdentity = false;
+
+  if (isIdentity) {
+	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+	return;
+  }
+
+  if (coef == -1)
+	fputc('-', out);
+  else if (coef != 1)
+	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+
+  writeCoCoA4TermProduct(term, names, out);
+}
+
+void CoCoA4IOHandler::writePolynomialFooter(const VarNames& names,
+											bool wroteAnyGenerators,
+											FILE* out) {
+  if (!wroteAnyGenerators)
+	fputs("\n 0", out);
+  fputs(";\n", out);
+}
+
+void CoCoA4IOHandler::readVars(VarNames& names, Scanner& in) {
+  in.expect("Use");
+  in.expect('R');
+  in.expect("::=");
+  in.expect('Q');
+  in.expect('[');
+  in.expect('x');
+
+  size_t varCount = 0;
+  if (in.match('[')) {
+	in.expect('1');
+	in.expect("..");
+	in.readSizeT(varCount);
+	in.expect(']');
+  }
+  in.expect(']');
+  in.expect(';');
+
+  in.expect("Names");
+  in.expect(":=");
+  in.expect('[');
+
+  names.clear();
+  for (size_t var = 0; var < varCount; ++var) {
+	in.expect('\"');
+	if (in.peekWhite()) {
+	  fputs("ERROR: Variable name contains space.", stderr);
+	  exit(1);
+	}
+
+	const char* varName = in.readIdentifier();
+	if (names.contains(varName)) {
+	  in.printError();
+		fprintf(stderr, "The variable %s is declared twice.\n", varName);
+		exit(1);
+	}
+	names.addVar(varName);
+
+	if (in.peekWhite()) {
+	  fputs("ERROR: Variable name contains space.", stderr);
+	  exit(1);
+	}
+	in.expect('\"');
+	if (var < varCount - 1)
+	  in.expect(',');
+  }
+
+  in.expect(']');
+  in.expect(';');
+}
+
+void CoCoA4IOHandler::writeRing(const VarNames& names, FILE* out) {
+  if (names.getVarCount() ==  0) {
+	fputs("Use R ::= Q[x];\nNames := [];\n", out);
+	return;
+  }
+
+  fprintf(out, "Use R ::= Q[x[1..%lu]];\n",
+		  (unsigned long)names.getVarCount());
+
+  fputs("Names := [", out);
+
+  const char* pre = "\"";
+  for (size_t i = 0; i < names.getVarCount(); ++i) {
+	fputs(pre, out);
+	fputs(names.getName(i).c_str(), out);
+	pre = "\", \"";
+  }
+  fputs("\"];\n", out);
+}
+
+void CoCoA4IOHandler::writeCoCoA4TermProduct(const Term& term,
+											 const TermTranslator* translator,
+											 FILE* out) {
   bool seenNonZero = false;
   size_t varCount = term.getVarCount();
   for (size_t var = 0; var < varCount; ++var) {
@@ -51,7 +247,7 @@ void CoCoA4IOHandler::writeTermOfIdeal(const Term& term,
 	  continue;
 	seenNonZero = true;
 
-	fprintf(out, "x[%lu]", (unsigned long)var);
+	fprintf(out, "x[%lu]", (unsigned long)(var + 1));
 	if (exp[0] != '1' || exp[1] != '\0') {
 	  fputc('^', out);
 	  fputs(exp, out);
@@ -62,12 +258,9 @@ void CoCoA4IOHandler::writeTermOfIdeal(const Term& term,
 	fputc('1', out);
 }
 
-void CoCoA4IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
-									   const VarNames& names,
-									   bool isFirst,
-									   FILE* out) {
-  fputs(isFirst ? "\n " : ",\n ", out);
-
+void CoCoA4IOHandler::writeCoCoA4TermProduct(const vector<mpz_class>& term,
+											 const VarNames& names,
+											 FILE* out) {
   bool seenNonZero = false;
   size_t varCount = term.size();
   for (size_t var = 0; var < varCount; ++var) {
@@ -86,172 +279,86 @@ void CoCoA4IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
 	fputc('1', out);
 }
 
-void CoCoA4IOHandler::writeIdealFooter(const VarNames& names,
-									   bool wroteAnyGenerators,
-									   FILE* out) {
-  fputs("\n);\n", out);  
+void CoCoA4IOHandler::readCoCoA4Term(vector<mpz_class>& term, Scanner& in) {
+  if (in.match('1'))
+	return;
+
+  do {
+	readCoCoA4VarPower(term, in);
+	in.eatWhite();
+  } while (in.peek() == 'x');
 }
 
-void CoCoA4IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-  readVarsAndClearIdeal(ideal, scanner);
+void CoCoA4IOHandler::readCoCoA4VarPower(vector<mpz_class>& term,
+										 Scanner& in) {
+  in.expect('x');
+  in.expect('[');
 
-  size_t varCount = ideal.getVarCount();
-
-  scanner.expect('I');
-  scanner.expect(":=");
-  scanner.expect("Ideal");
-  scanner.expect('(');
-
-  if (!scanner.match(')')) {
-	do {
-	  ideal.newLastTerm();
-
-	  if (scanner.match('1'))
-		continue;
-
-	  vector<mpz_class>& term = ideal.getLastTermRef();
-
-	  scanner.expect('x');
-	  do {
-		scanner.expect('[');
-
-		size_t var;
-		scanner.readSizeT(var);
-		if (var > varCount) {
-		  fprintf(stderr, "ERROR: No variable x[%lu].\n", (unsigned long)var);
-		  exit(1);
-		}
-		--var;
-
-		scanner.expect(']');
-
-		if (term[var] != 0) {
-		  scanner.printError();
-		  fputs("A variable appears twice.\n", stderr);
-		  exit(1);
-		}
-
-		if (scanner.match('^')) {
-		  scanner.readInteger(term[var]);
-		  if (term[var] <= 0) {
-			scanner.printError();
-			gmp_fprintf
-			  (stderr, "Expected positive integer as exponent but got %Zd.\n",
-			   term[var].get_mpz_t());
-			exit(1);
-		  }
-		} else
-		  term[var] = 1;
-	  } while (scanner.match('x'));
-	} while (scanner.match(','));
-	scanner.expect(')');
+  size_t var;
+  in.readSizeT(var);
+  if (var > term.size()) {
+	fprintf(stderr, "ERROR: No variable x[%lu].\n", (unsigned long)var);
+	exit(1);
   }
-  scanner.match(';');
-}
+  --var;
 
-void CoCoA4IOHandler::writePolynomialHeader(const VarNames& names,
-											FILE* out) {
-  writeRing(names, out);
-  fputs("p :=", out);
-}
+  in.expect(']');
 
-void CoCoA4IOHandler::writeTermOfPolynomial(const mpz_class& coef,
-											const Term& term,
-											const TermTranslator* translator,
-											bool isFirst,
-											FILE* out) {
-  fputs("\n ", out);
-  writeCoefTermProduct(coef, term, translator, isFirst, out);
-}
-
-void CoCoA4IOHandler::writeTermOfPolynomial(const mpz_class& coef,
-											const vector<mpz_class>& term,
-											const VarNames& names,
-											bool isFirst,
-											FILE* out) {
-  fputs("\n ", out);
-  writeCoefTermProduct(coef, term, names, isFirst, out);
-}
-
-
-void CoCoA4IOHandler::writePolynomialFooter(const VarNames& names,
-											bool wroteAnyGenerators,
-											FILE* out) {
-  if (!wroteAnyGenerators)
-	fputs(" 0", out);
-  fputs(";\n", out);
-}
-
-void CoCoA4IOHandler::readVarsAndClearIdeal(BigIdeal& ideal,
-											Scanner& scanner) {
-  scanner.expect("Use");
-  scanner.expect('R');
-  scanner.expect("::=");
-  scanner.expect('Q');
-  scanner.expect('[');
-  scanner.expect('x');
-
-  size_t varCount = 0;
-  if (scanner.match('[')) {
-	scanner.expect('1');
-	scanner.expect("..");
-	scanner.readSizeT(varCount);
-	scanner.expect(']');
+  if (term[var] != 0) {
+	in.printError();
+	fputs("A variable appears twice.\n", stderr);
+	exit(1);
   }
-  scanner.expect(']');
-  scanner.expect(';');
 
-  scanner.expect("Names");
-  scanner.expect(":=");
-  scanner.expect('[');
-
-  VarNames names;
-  for (size_t var = 0; var < varCount; ++var) {
-	scanner.expect('\"');
-	if (scanner.peekWhite()) {
-	  fputs("ERROR: Variable name contains white-space.", stderr);
+  if (in.match('^')) {
+	in.readInteger(term[var]);
+	if (term[var] <= 0) {
+	  in.printError();
+	  gmp_fprintf
+		(stderr, "Expected positive integer as exponent but got %Zd.\n",
+		 term[var].get_mpz_t());
 	  exit(1);
 	}
-
-	const char* varName = scanner.readIdentifier();
-	if (names.contains(varName)) {
-	  scanner.printError();
-		fprintf(stderr, "The variable %s is declared twice.\n", varName);
-		exit(1);
-	}
-	names.addVar(varName);
-
-	if (scanner.peekWhite()) {
-	  fputs("ERROR: Variable name contains white-space.", stderr);
-	  exit(1);
-	}
-	scanner.expect('\"');
-	if (var < varCount - 1)
-	  scanner.expect(',');
-  }
-
-  scanner.expect(']');
-  scanner.expect(';');
-
-  ideal.clearAndSetNames(names);
+  } else
+	term[var] = 1;
 }
 
-void CoCoA4IOHandler::writeRing(const VarNames& names, FILE* out) {
-  if (names.getVarCount() ==  0) {
-	fputs("Use R ::= Q[x];\nNames := [];\n", out);
+void CoCoA4IOHandler::readCoCoA4CoefTerm(BigPolynomial& polynomial,
+										 bool firstTerm,
+										 Scanner& in) {
+  // TODO: do something to avoid constructing these each time.
+  mpz_class coef;
+  vector<mpz_class> term;
+  term.resize(polynomial.getNames().getVarCount());
+
+  bool positive = true;
+  if (in.match('+'))
+	positive = !in.match('-');
+  else if (in.match('-'))
+	positive = false;
+  else if (!firstTerm) {
+	in.expect('+');
 	return;
   }
-
-  fprintf(out, "Use R ::= Q[x[1..%lu]];\n",
-		  (unsigned long)names.getVarCount());
-
-  fputs("Names := [", out);
-
-  const char* pre = "\"";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-	fputs(pre, out);
-	fputs(names.getName(i).c_str(), out);
-	pre = "\", \"";
+  if (in.match('+') || in.match('-')) {
+	fputs("ERROR: Too many signs.\n", stderr);
+	exit(1);
   }
-  fputs("\"];\n", out);
+
+  if (in.peekIdentifier()) {
+	coef = 1;
+	readCoCoA4VarPower(term, in);
+  } else
+	in.readInteger(coef);
+
+  in.eatWhite();
+  while (in.peek() == 'x') {
+	readCoCoA4VarPower(term, in);
+	in.eatWhite();
+  }
+
+  if (!positive)
+	coef = -coef;
+
+  polynomial.add(coef, term);
 }

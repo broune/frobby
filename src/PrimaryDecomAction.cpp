@@ -20,20 +20,12 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 
-const char* PrimaryDecomAction::getName() const {
-  return "primdecom";
-}
-
-const char* PrimaryDecomAction::getShortDescription() const {
-  return "Computes the primary decomposition of monomial ideals.";
-}
-
-const char* PrimaryDecomAction::getDescription() const {
-  return "TODO";
-}
-
-Action* PrimaryDecomAction::createNew() const {
-  return new PrimaryDecomAction();
+PrimaryDecomAction::PrimaryDecomAction():
+  Action
+(staticGetName(),
+ "Computes the primary decomposition of monomial ideals.",
+ "TODO",
+ false) {
 }
 
 void PrimaryDecomAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -42,4 +34,8 @@ void PrimaryDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 
 void PrimaryDecomAction::perform() {
   // TODO
+}
+
+const char* PrimaryDecomAction::staticGetName() {
+  return "primdecom";
 }

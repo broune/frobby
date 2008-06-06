@@ -20,6 +20,22 @@
 #include "VarNames.h"
 #include "IOHandler.h"
 
+//#define ENABLE_SCANNER_LOG
+
+// This enables logging of what the scanner is reading and what it is
+// being asked to do. This is very useful for debugging of code using
+// Scanner, but the overhead is too high to include this when reading
+// normally. Thus the inclusion of logging is controlled using the
+// preprocessor.
+#ifdef ENABLE_SCANNER_LOG
+#define SCANNER_LOG(MSG) gmp_fprintf(stderr, MSG);
+#define SCANNER_LOG1(MSG, PARAM) \
+  gmp_fprintf(stderr, MSG, PARAM);
+#else
+#define SCANNER_LOG(MSG) ;
+#define SCANNER_LOG1(MSG, PARAM) ;
+#endif
+
 Scanner::Scanner(const string& formatName, FILE* in):
   _in(in),
   _lineNumber(1),
@@ -46,20 +62,35 @@ IOHandler* Scanner::getIOHandler() const {
 }
 
 bool Scanner::match(char c) {
+  SCANNER_LOG1("Matching the character '%c'.", c);
+
   eatWhite();
   if (c == peek()) {
     getChar();
+	SCANNER_LOG(" Found match\n");
     return true;
-  } else
+  } else {
+	SCANNER_LOG(" No match.\n");
     return false;
+  }
 }
 
 bool Scanner::matchEOF() {
+  SCANNER_LOG("Matching End-Of-File.\n");
+
   eatWhite();
-  return peek() == EOF;
+  if (peek() == EOF) {
+	SCANNER_LOG(" Found match\n");
+	return true;
+  } else {
+	SCANNER_LOG(" No match.\n");
+	return false;
+  }
 }
 
 void Scanner::expect(char expected) {
+  SCANNER_LOG1("Expecting the character '%c'.\n", expected);
+
   eatWhite();
   if (getChar() != expected) {
     string str;
@@ -84,6 +115,9 @@ void Scanner::printError(const char* errorMsg) {
 }
 
 void Scanner::expect(const char* str) {
+  ASSERT(str != 0);
+  SCANNER_LOG1("Expecting the string \"%s\".\n", str);
+
   eatWhite();
 
   const char* it = str;
@@ -99,6 +133,8 @@ void Scanner::expect(const string& str) {
 }
 
 void Scanner::expectEOF() {
+  SCANNER_LOG("Expecting End-Of-File.\n");
+
   if (_formatName == "null") // get this moved into the null format itself
 	return;
 
@@ -155,16 +191,24 @@ void Scanner::parseInteger(mpz_class& integer, size_t size) {
 }
 
 void Scanner::readInteger(mpz_class& integer) {
+  SCANNER_LOG("Expecting arbitrary precision integer.");
+
   size_t size = readIntegerString();
   parseInteger(integer, size);
+
+  SCANNER_LOG1(" Read %Zd.\n", integer.get_mpz_t());
 }
 
 void Scanner::readIntegerAndNegativeAsZero(mpz_class& integer) {
+  SCANNER_LOG("Expecting arbitrary precision integer (negative to zero).");
+
   // Fast path for common case of reading a zero.
   if (peek() == '0') {
 	getChar();
 	if (!isdigit(peek())) {
 	  integer = 0;
+
+	  SCANNER_LOG(" Read 0.\n");
 	  return;
 	}
   }
@@ -174,9 +218,13 @@ void Scanner::readIntegerAndNegativeAsZero(mpz_class& integer) {
 	integer = 0;
   else
 	parseInteger(integer, size);
+
+  SCANNER_LOG1(" Read %Zd.\n", integer.get_mpz_t());
 }
 
 void Scanner::readSizeT(size_t& size) {
+  SCANNER_LOG("Reading size_t non-negative integer as arbitrary precision.\n");
+
   readInteger(_integer);
 
   // Deal with different possibilities for how large size_t is.
@@ -230,6 +278,8 @@ void Scanner::growTmpString() {
 }
 
 const char* Scanner::readIdentifier() {
+  SCANNER_LOG("Expecting identifier.");
+
   eatWhite();
   if (!isalpha(peek()))
 	error("an identifier");
@@ -245,10 +295,13 @@ const char* Scanner::readIdentifier() {
   }
   _tmpString[size] = '\0';
 
+  SCANNER_LOG1(" Read \"%s\".\n", _tmpString);
   return _tmpString;
 }
 
 size_t Scanner::readVariable(const VarNames& names) {
+  SCANNER_LOG("Reading variable name as identifier.\n");
+
   const char* name = readIdentifier();
   size_t var = names.getIndex(name);
   if (var == VarNames::UNKNOWN) {
@@ -261,10 +314,17 @@ size_t Scanner::readVariable(const VarNames& names) {
 
 bool Scanner::peekIdentifier() {
   eatWhite();
+
+  SCANNER_LOG1("Peeking for identifier. Identifier %s.\n",
+			   isalpha(peek()) ? "found" : "not found");
+
   return isalpha(peek());
 }
 
 bool Scanner::peekWhite() {
+  SCANNER_LOG1("Peeking for space. Space %s.\n",
+			   isspace(peek()) ? "found" : "not found");
+
   return isspace(peek());
 }
 

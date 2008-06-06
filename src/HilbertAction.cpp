@@ -23,6 +23,12 @@
 #include "Scanner.h"
 
 HilbertAction::HilbertAction():
+  Action
+(staticGetName(),
+ "Compute the Hilbert-Poincare series of the input ideal.",
+ "Compute the Hilbert-Poincare series of the input ideal.",
+ false),
+
   _io(IOHandler::MonomialIdeal, IOHandler::Polynomial),
 
   _univariate
@@ -34,22 +40,6 @@ HilbertAction::HilbertAction():
   ("canon",
    "Collect and sort terms to get a canonical representation.",
    false) {
-}
-
-const char* HilbertAction::getName() const {
-  return "hilbert";
-}
-
-const char* HilbertAction::getShortDescription() const {
-  return "Compute the Hilbert-Poincare series of the input ideal.";
-}
-
-const char* HilbertAction::getDescription() const {
-  return getShortDescription();
-}
-
-Action* HilbertAction::createNew() const {
-  return new HilbertAction();
 }
 
 void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -76,4 +66,8 @@ void HilbertAction::perform() {
 	facade.computeUnivariateHilbertSeries();
   else
 	facade.computeMultigradedHilbertSeries(_canonical);
+}
+
+const char* HilbertAction::staticGetName() {
+  return "hilbert";
 }

@@ -25,15 +25,11 @@ class AssociatedPrimesAction : public Action {
  public:
   AssociatedPrimesAction();
 
-  virtual const char* getName() const;
-  virtual const char* getShortDescription() const;
-  virtual const char* getDescription() const;
-
-  virtual Action* createNew() const;
-
   virtual void obtainParameters(vector<Parameter*>& parameters);
 
   virtual void perform();
+
+  static const char* staticGetName();
 
  protected:
   IrreducibleDecomParameters _decomParameters;

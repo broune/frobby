@@ -20,6 +20,7 @@
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "VarNames.h"
+#include "BigPolynomial.h"
 
 // TODO: are these necessary?
 #include "Term.h"
@@ -29,6 +30,7 @@ Macaulay2IOHandler::Macaulay2IOHandler():
   IOHandler("m2", "Format understandable by the program Macaulay 2.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
+  registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
 }
@@ -76,20 +78,24 @@ void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
   fputs(");\n", out);  
 }
 
-void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-  readVarsAndClearIdeal(ideal, scanner);
+void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
+  {
+	VarNames names;
+	readVars(names, in);
+	ideal.clearAndSetNames(names);
+  }
 
-  scanner.expect('I');
-  scanner.expect('=');
-  scanner.expect("monomialIdeal");
-  scanner.expect('(');
+  in.expect('I');
+  in.expect('=');
+  in.expect("monomialIdeal");
+  in.expect('(');
 
-  if (scanner.match('0')) {
-	scanner.expect('_');
-	scanner.expect('R');
+  if (in.match('0')) {
+	if (in.match('_'))
+	  in.expect('R');
   } else {
 	do {
-	  readTerm(ideal, scanner);
+	  readTerm(ideal, in);
 	  
 	  vector<mpz_class>& term = ideal.getLastTermRef();
 	  bool isIdentity = true;
@@ -100,49 +106,62 @@ void Macaulay2IOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 		  break;
 		}
 	  }
-	  if (isIdentity) {
-		scanner.match('_');
-		scanner.match('R');
-	  }
-	} while (scanner.match(','));
+	  if (in.match('_'))
+		in.expect('R');
+	} while (in.match(','));
   }
-  scanner.expect(')');
-  scanner.expect(';');
+  in.expect(')');
+  in.expect(';');
 }
 
-void Macaulay2IOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
-  scanner.expect('R');
-  scanner.expect('=');
-  scanner.eatWhite();
-  if (scanner.peek() == 'Z')
-	scanner.expect("ZZ");
+void Macaulay2IOHandler::readPolynomial(Scanner& in,
+										BigPolynomial& polynomial) {
+  {
+	VarNames names;
+	readVars(names, in);
+	polynomial.clearAndSetNames(names);
+  }
+
+  in.expect('p');
+  in.expect('=');
+
+  bool first = true;
+  do {
+	readCoefTerm(polynomial, first, in);
+	first = false;
+  } while (!in.match(';'));
+}
+
+void Macaulay2IOHandler::readVars(VarNames& names, Scanner& in) {
+  in.expect('R');
+  in.expect('=');
+  in.eatWhite();
+  if (in.peek() == 'Z')
+	in.expect("ZZ");
   else
-	scanner.expect("QQ");
-  scanner.expect('[');
+	in.expect("QQ");
+  in.expect('[');
 
   // The enclosing braces are optional, but if the start brace is
   // there, then the end brace should be there too.
-  bool readBrace = scanner.match('{'); 
+  bool readBrace = in.match('{'); 
 
-  VarNames names;
-  if (scanner.peekIdentifier()) {
+  if (in.peekIdentifier()) {
 	do {
-	  const char* varName = scanner.readIdentifier();
+	  const char* varName = in.readIdentifier();
 	  if (names.contains(varName)) {
-		scanner.printError();
+		in.printError();
 		fprintf(stderr, "The variable %s is declared twice.\n", varName);
 		exit(1);
 	  }
 	  names.addVar(varName);
-	} while (scanner.match(','));
+	} while (in.match(','));
   }
 
   if (readBrace)
-	scanner.expect('}');
-  scanner.expect(']');
-  scanner.expect(';');
-
-  ideal.clearAndSetNames(names);
+	in.expect('}');
+  in.expect(']');
+  in.expect(';');
 }
 
 void Macaulay2IOHandler::writePolynomialHeader(const VarNames& names,
@@ -177,7 +196,7 @@ void Macaulay2IOHandler::writePolynomialFooter(const VarNames& names,
 											   bool wroteAnyGenerators,
 											   FILE* out) {
   if (!wroteAnyGenerators)
-	fputs(" 0", out);
+	fputs("\n 0", out);
   fputs(";\n", out);
 }
 

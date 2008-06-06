@@ -68,12 +68,40 @@ void IOFacade::readIdeals(Scanner& in, vector<BigIdeal*>& ideals) {
   endAction();
 }
 
-void IOFacade::writeIdeal(BigIdeal& ideal, IOHandler* handler, FILE* out) {
+void IOFacade::writeIdeal(const BigIdeal& ideal,
+						  IOHandler* handler,
+						  FILE* out) {
   ASSERT(handler != 0);
 
   beginAction("Writing monomial ideal.");
 
   handler->writeIdeal(ideal, out);
+
+  endAction();
+}
+
+void IOFacade::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
+
+  beginAction("Reading polynomial.");
+
+  IOHandler* handler = in.getIOHandler();
+  ASSERT(handler != 0);
+
+  handler->readPolynomial(in, polynomial);
+  in.expectEOF();
+
+  endAction();
+}
+
+void IOFacade::writePolynomial(const BigPolynomial& polynomial,
+							   IOHandler* handler,
+							   FILE* out) {
+  ASSERT(handler != 0);
+  ASSERT(out != 0);
+
+  beginAction("Writing polynomial.");
+
+  handler->writePolynomial(polynomial, out);
 
   endAction();
 }

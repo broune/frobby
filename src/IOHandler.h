@@ -36,11 +36,12 @@ class IOHandler {
   virtual void readIdeals(Scanner& in, vector<BigIdeal*> ideals);
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
+  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
   virtual void writeIdeal(const BigIdeal& ideal, FILE* out);
-  virtual void writePolynomial(BigPolynomial& polynomial, FILE* out);
+  virtual void writePolynomial(const BigPolynomial& polynomial, FILE* out);
 
-  virtual bool hasMoreInput(Scanner& scanner) const;
+  virtual bool hasMoreInput(Scanner& in) const;
 
   const char* getName() const;
   const char* getDescription() const;
@@ -135,9 +136,12 @@ class IOHandler {
 							   const VarNames& names,
 							   FILE* out);
 
-  static void readTerm(BigIdeal& ideal, Scanner& scanner);
+  static void readTerm(BigIdeal& ideal, Scanner& in);
+  static void readCoefTerm(BigPolynomial& polynomial,
+						   bool firstTerm,
+						   Scanner& in);
   static void readVarPower(vector<mpz_class>& term,
-						   const VarNames& names, Scanner& scanner);
+						   const VarNames& names, Scanner& in);
 
   vector<DataType> _supportedInputs;
   vector<DataType> _supportedOutputs;
@@ -151,6 +155,6 @@ class IOHandler {
   friend class PolynomialWriter;
 };
 
-void readFrobeniusInstance(Scanner& scanner, vector<mpz_class>& numbers);
+void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers);
 
 #endif

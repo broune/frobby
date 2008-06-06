@@ -22,18 +22,14 @@
 
 class HelpAction : public Action {
  public:
-  virtual const char* getName() const;
-  virtual const char* getShortDescription() const;
-  virtual const char* getDescription() const;
-
+  HelpAction();
   virtual void obtainParameters(vector<Parameter*>& parameters);
 
-  virtual bool acceptsNonParameter() const;
   virtual bool processNonParameter(const char* str);
 
-  virtual Action* createNew() const;
-
   virtual void perform();
+
+  static const char* staticGetName();
 
  private:
   void displayActionHelp(Action* action);

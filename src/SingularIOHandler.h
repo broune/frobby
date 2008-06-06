@@ -7,12 +7,14 @@ class VarNames;
 class Scanner;
 class BigIdeal;
 class CoefTermConsumer;
+class BigPolynomial;
 
 class SingularIOHandler : public IOHandler {
 public:
   SingularIOHandler();
 
-  virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
+  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
+  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
  private:
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
@@ -43,7 +45,7 @@ public:
 								bool wroteAnyGenerators,
 								FILE* out);
 
-  void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
+  void readVars(VarNames& names, Scanner& in);
   void writeRing(const VarNames& names, FILE* out);
 };
 

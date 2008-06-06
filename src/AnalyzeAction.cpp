@@ -26,6 +26,14 @@
 #include <algorithm>
 
 AnalyzeAction::AnalyzeAction():
+  Action
+(staticGetName(),
+ "Display information about the input ideal.",
+ "Display information about input ideal. This is useful for getting a quick\n"
+ "impression of how the ideal looks like, and it can be used in scripts\n"
+ "that need information about the ideal.",
+ false),
+
   _io(IOHandler::MonomialIdeal, IOHandler::None),
 
   _printLcm
@@ -52,25 +60,6 @@ AnalyzeAction::AnalyzeAction():
   ("minimal",
    "Print 1 if the ideal has no non-minimal generators. Print 0 otherwise.",
    false) {
-}
-
-const char* AnalyzeAction::getName() const {
-  return "analyze";
-}
-
-const char* AnalyzeAction::getShortDescription() const {
-  return "Display information about the input ideal.";
-}
-
-const char* AnalyzeAction::getDescription() const {
-  return
-"Display information about input ideal. This is useful for getting a quick\n"
-"impression of how the ideal looks like, and it can be used in scripts\n"
-"that need information about the ideal.";
-}
-
-Action* AnalyzeAction::createNew() const {
-  return new AnalyzeAction();
 }
 
 void AnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -123,4 +112,8 @@ void AnalyzeAction::perform() {
   }
 
   idealFacade.printAnalysis(stderr, ideal);
+}
+
+const char* AnalyzeAction::staticGetName() {
+  return "analyze";
 }

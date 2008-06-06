@@ -23,6 +23,7 @@
 class BigIdeal;
 class Scanner;
 class IOHandler;
+class BigPolynomial;
 
 class IOFacade : private Facade {
  public:
@@ -32,7 +33,12 @@ class IOFacade : private Facade {
   void readIdeal(Scanner& in, BigIdeal& ideal);
   void readIdeals(Scanner& in,
 				  vector<BigIdeal*>& ideal); // inserts the read ideals
-  void writeIdeal(BigIdeal& ideal, IOHandler* handler, FILE* out);
+  void writeIdeal(const BigIdeal& ideal, IOHandler* handler, FILE* out);
+
+  void readPolynomial(Scanner& in, BigPolynomial& polynomial);
+  void writePolynomial(const BigPolynomial& polynomial,
+					   IOHandler* handler,
+					   FILE* out);
 
   void readFrobeniusInstance(Scanner& in, vector<mpz_class>& instance);
   void readFrobeniusInstanceWithGrobnerBasis

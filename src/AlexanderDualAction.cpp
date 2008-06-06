@@ -23,27 +23,17 @@
 #include "SliceFacade.h"
 
 AlexanderDualAction::AlexanderDualAction():
+  Action
+(staticGetName(),
+ "Compute the Alexander dual of the input ideal.",
+ "Compute the alexander dual of the input monomial ideal.\n\n"
+ "The computation is done using irreducible decomposition, which is why "
+ "there are\n"
+ "a number of options related to that. See the help topic on irrdecom for "
+ "details.",
+ false),
+
   _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
-}
-
-const char* AlexanderDualAction::getName() const {
-  return "alexdual";
-}
-
-const char* AlexanderDualAction::getShortDescription() const {
-  return "Compute the Alexander dual of the input ideal.";
-}
-
-const char* AlexanderDualAction::getDescription() const {
-  return
-"Compute the alexander dual of the input monomial ideal.\n"
-"\n"
-"The computation is done using irreducible decomposition, which is why there are\n"
-"a number of options related to that. See the help topic on irrdecom for details.";
-}
-
-Action* AlexanderDualAction::createNew() const {
-  return new AlexanderDualAction();
 }
 
 void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -73,4 +63,8 @@ void AlexanderDualAction::perform() {
 	facade.computeAlexanderDual(point);
   else
 	facade.computeAlexanderDual();
+}
+
+const char* AlexanderDualAction::staticGetName() {
+  return "alexdual";
 }

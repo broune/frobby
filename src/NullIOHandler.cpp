@@ -20,6 +20,8 @@
 #include "BigIdeal.h"
 #include "CoefTermConsumer.h"
 #include "TermConsumer.h"
+#include "BigPolynomial.h"
+#include "VarNames.h"
 
 NullIOHandler::NullIOHandler():
   IOHandler("null", "Ignores input and produces no output.", false) {
@@ -86,6 +88,11 @@ CoefTermConsumer* NullIOHandler::createPolynomialWriter
 void NullIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   ideal.clearAndSetNames(VarNames());
 }
+
+void NullIOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
+  polynomial.clearAndSetNames(VarNames());
+}
+
 
 bool NullIOHandler::hasMoreInput(Scanner& scanner) const {
   return false;

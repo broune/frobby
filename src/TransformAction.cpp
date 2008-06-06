@@ -23,6 +23,13 @@
 #include "Scanner.h"
 
 TransformAction::TransformAction():
+  Action
+(staticGetName(),
+ "Change the representation of the input ideal.",
+ "By default, transform simply writes the input ideals to output. A\n"
+ "number of parameters allows to transform the input ideal in various ways.",
+ false),
+
   _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal),
 
   _canonicalize
@@ -56,24 +63,6 @@ TransformAction::TransformAction():
    false) {
 }
 
-const char* TransformAction::getName() const {
-  return "transform";
-}
-
-const char* TransformAction::getShortDescription() const {
-  return "Change the representation of the input ideal.";
-}
-
-const char* TransformAction::getDescription() const {
-  return
-    "By default, transform simply writes the input ideals to output. A\n"
-	"number of parameters allows to transform the input ideal in various ways.";
-}
-
-Action* TransformAction::createNew() const {
-  return new TransformAction();
-}
-
 void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
   parameters.push_back(&_canonicalize);
@@ -91,9 +80,6 @@ void TransformAction::perform() {
   _io.validateFormats();
 
   IOFacade facade(_printActions);
-
-  void readIdeals(Scanner& in,
-				  vector<BigIdeal*>& ideal); // inserts the read ideals
 
   vector<BigIdeal*> ideals;
   facade.readIdeals(in, ideals);
@@ -125,6 +111,10 @@ void TransformAction::perform() {
 
   for (size_t i = 0; i < ideals.size(); ++i)
 	facade.writeIdeal(*(ideals[i]), _io.getOutputHandler(), stdout);
+}
+
+const char* TransformAction::staticGetName() {
+  return "transform";
 }
 
 bool TransformAction::compareIdeals(const BigIdeal* a, const BigIdeal* b) {
