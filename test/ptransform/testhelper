@@ -79,7 +79,8 @@ fi
 
 echo
 echo
-echo "***** Encountered failure on output $referenceOutputFile."
+echo "***** Encountered failure on output $referenceOutputFile. Input was:"
+cat $inputFile
 
 echo "***** Reference output:"
 cat $referenceOutputFile

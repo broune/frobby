@@ -20,24 +20,27 @@
 #include "Scanner.h"
 #include "IOFacade.h"
 #include "BigPolynomial.h"
+#include "PolynomialFacade.h"
 
 PolyTransformAction::PolyTransformAction():
   Action
 (staticGetName(),
- "Transform polynomials. TODO",
- "Transform polynomials. TODO",
+ "Change the representation of the input polynomial.",
+ "By default, transform simply writes the input polynomial to output. A\n"
+ "number of parameters allow to transform the input polynomial in "
+ "various ways.",
  false),
   
   _io(IOHandler::Polynomial, IOHandler::Polynomial),
 
   _canonicalize
   ("canon",
-   "make input canonical. TODO",
+   "Sort variables and generators to get a canonical representation.",
    false),
 
   _sortTerms
   ("sort",
-   "Sort terms. TODO",
+   "Sort the terms.",
    false) {
 }
 
@@ -58,11 +61,11 @@ void PolyTransformAction::perform() {
   BigPolynomial polynomial;
   facade.readPolynomial(in, polynomial);
 
-  // TODO: use facade
+  PolynomialFacade polyFacade(_printActions);
   if (_canonicalize)
-	polynomial.sortVariables();
+	polyFacade.sortVariables(polynomial);
   if (_sortTerms || _canonicalize)
-	polynomial.sortTerms();
+	polyFacade.sortTerms(polynomial);
 
   facade.writePolynomial(polynomial, _io.getOutputHandler(), stdout);
 }

@@ -28,11 +28,10 @@ class FrobeniusStrategy : public MsmStrategy, public TermConsumer {
 public:
   virtual ~FrobeniusStrategy();
 
-  // TODO: change return type to SliceStrategy*.
-  static MsmStrategy* newFrobeniusStrategy(const string& name,
-										   TermConsumer* consumer,
-										   TermGrader& grader,
-										   bool useBound);
+  static SliceStrategy* newFrobeniusStrategy(const string& name,
+											 TermConsumer* consumer,
+											 TermGrader& grader,
+											 bool useBound);
 
 private:
   FrobeniusStrategy(TermConsumer* consumer,

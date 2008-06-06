@@ -14,33 +14,26 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
+#ifndef TRANSLATING_COEF_TERM_CONSUMER_GUARD
+#define TRANSLATING_COEF_TERM_CONSUMER_GUARD
 
-#ifndef VAR_SORTER_GUARD
-#define VAR_SORTER_GUARD
+#include "CoefTermConsumer.h"
 
-#include "VarNames.h"
-#include <vector>
+class CoefBigTermConsumer;
+class Term;
+class TermTranslator;
 
-struct VarSorter {
-  // Makes this object represent a sorted permutation of names.
-  VarSorter(VarNames& names);
+class TranslatingCoefTermConsumer : public CoefTermConsumer {
+ public:
+  TranslatingCoefTermConsumer(CoefBigTermConsumer* consumer,
+							  TermTranslator* translator);
+  virtual ~TranslatingCoefTermConsumer();
 
-  // Permute the exponents of term according to the permutation
-  // generated at construction.
-  void permute(vector<mpz_class>& term);
+  virtual void consume(const mpz_class& coef, const Term& term);
 
-  // Set the parameter equal the names this object represents in
-  // sorted order.
-  void getOrderedNames(VarNames& names);
-
-  // Internal method that needs to be public for technical reasons
-  // (other std::sort cannot use it.
-  bool operator()(size_t a, size_t b) const;
-
-private:
-  vector<size_t> _permutation;
-  VarNames _names;
-  vector<mpz_class> _tmp;
+ private:
+  CoefBigTermConsumer* _consumer;
+  TermTranslator* _translator;
 };
 
 #endif

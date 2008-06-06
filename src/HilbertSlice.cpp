@@ -205,7 +205,7 @@ bool HilbertSlice::baseCase() {
 
   if (coef != 0)
 	_consumer->consume(coef, getMultiply());
-  clear();
+  clearIdealAndSubtract();
   return true;
 }
 

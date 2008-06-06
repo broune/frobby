@@ -36,7 +36,7 @@ class TermConsumer;
 class MsmStrategy : public SliceStrategyCommon {
  public:
   enum LabelStrategy {
-	Unknown2, // TODO: rename
+	UnknownLabelStrategy,
 	MaxLabel,
 	MinLabel,
     VarLabel
@@ -50,15 +50,18 @@ class MsmStrategy : public SliceStrategyCommon {
   void setPivotStrategy(PivotStrategy pivotStrategy);
   void setLabelStrategy(LabelStrategy labelStrategy);
 
-  // ************* new interface
-
   virtual Slice* setupInitialSlice(const Ideal& ideal);
 
   virtual void split(Slice* slice,
 					 SliceEvent*& leftEvent, Slice*& leftSlice,
 					 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  virtual void getPivot(Term& pivot, Slice& slice); // TODO: make this private
+  // These report an error and exit the program if the name is unknown.
+  static MsmStrategy* newDecomStrategy(const string& name,
+									   TermConsumer* consumer);
+
+ protected:
+  virtual void getPivot(Term& pivot, Slice& slice);
 
  private:
   MsmSlice* newMsmSlice();
@@ -75,17 +78,8 @@ class MsmStrategy : public SliceStrategyCommon {
   // Simplifies the slice prior to a split.
   virtual void simplify(Slice& slice);
 
- private:
   size_t getLabelSplitVariable(const Slice& slice);
 
-
-  // *** Static methods to create strategies.
- public:
-  // These report an error and exit the program if the name is unknown.
-  static MsmStrategy* newDecomStrategy(const string& name,
-									   TermConsumer* consumer);
-
- private:
   enum SplitStrategy {
     LabelSplit = 1,
     PivotSplit = 2

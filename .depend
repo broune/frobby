@@ -8,7 +8,8 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
   src/IntegerParameter.h src/GenerateFrobeniusAction.h \
   src/FrobeniusAction.h src/AnalyzeAction.h src/LatticeFormatAction.h \
   src/IntersectAction.h src/AssociatedPrimesAction.h \
-  src/PrimaryDecomAction.h src/AlexanderDualAction.h src/HilbertAction.h
+  src/PrimaryDecomAction.h src/AlexanderDualAction.h src/HilbertAction.h \
+  src/PolyTransformAction.h
 $(outdir)IOParameters.o: src/IOParameters.cpp src/stdinc.h src/IOParameters.h \
   src/ParameterGroup.h src/Parameter.h src/StringParameter.h \
   src/IOHandler.h src/IOFacade.h src/Facade.h src/Timer.h \
@@ -36,7 +37,7 @@ $(outdir)MonosIOHandler.o: src/MonosIOHandler.cpp src/stdinc.h \
   src/MonosIOHandler.h src/IOHandler.h src/BigIdeal.h src/VarNames.h \
   src/Scanner.h
 $(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
-  src/TermTranslator.h src/Ideal.h
+  src/TermTranslator.h src/Ideal.h src/VarSorter.h
 $(outdir)TransformAction.o: src/TransformAction.cpp src/stdinc.h \
   src/TransformAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IOParameters.h src/ParameterGroup.h src/StringParameter.h \
@@ -44,7 +45,7 @@ $(outdir)TransformAction.o: src/TransformAction.cpp src/stdinc.h \
   src/Facade.h src/Timer.h src/IdealFacade.h src/Scanner.h
 $(outdir)Macaulay2IOHandler.o: src/Macaulay2IOHandler.cpp src/stdinc.h \
   src/Macaulay2IOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
-  src/VarNames.h src/Term.h src/TermTranslator.h
+  src/VarNames.h src/BigPolynomial.h src/TermTranslator.h
 $(outdir)NewMonosIOHandler.o: src/NewMonosIOHandler.cpp src/stdinc.h \
   src/NewMonosIOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
   src/VarNames.h
@@ -170,10 +171,10 @@ $(outdir)TermGrader.o: src/TermGrader.cpp src/stdinc.h src/TermGrader.h \
   src/Projection.h src/TermTranslator.h src/VarNames.h src/Term.h
 $(outdir)Fourti2IOHandler.o: src/Fourti2IOHandler.cpp src/stdinc.h \
   src/Fourti2IOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
-  src/VarNames.h src/Term.h src/TermTranslator.h
+  src/VarNames.h src/Term.h src/TermTranslator.h src/BigPolynomial.h
 $(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h \
   src/IOHandler.h src/BigIdeal.h src/VarNames.h src/CoefTermConsumer.h \
-  src/TermConsumer.h
+  src/TermConsumer.h src/BigPolynomial.h
 $(outdir)Minimizer.o: src/Minimizer.cpp src/stdinc.h src/Minimizer.h src/Term.h
 $(outdir)AlexanderDualAction.o: src/AlexanderDualAction.cpp src/stdinc.h \
   src/AlexanderDualAction.h src/Action.h src/BoolParameter.h \
@@ -229,22 +230,31 @@ $(outdir)SliceFacade.o: src/SliceFacade.cpp src/stdinc.h src/SliceFacade.h \
   src/DebugStrategy.h src/SliceAlgorithm.h src/DecomRecorder.h \
   src/TermGrader.h src/FrobeniusStrategy.h \
   src/CanonicalCoefTermConsumer.h src/Polynomial.h src/HilbertStrategy.h \
-  src/IOHandler.h
+  src/IOHandler.h src/BigPolynomial.h src/TotalDegreeCoefTermConsumer.h \
+  src/CoefBigTermRecorder.h
 $(outdir)BigTermRecorder.o: src/BigTermRecorder.cpp src/stdinc.h \
   src/BigTermRecorder.h src/BigTermConsumer.h src/BigIdeal.h \
   src/VarNames.h src/Term.h src/TermTranslator.h
 $(outdir)CoCoA4IOHandler.o: src/CoCoA4IOHandler.cpp src/stdinc.h \
   src/CoCoA4IOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
-  src/VarNames.h src/CoefTermConsumer.h src/Term.h src/TermTranslator.h
+  src/VarNames.h src/CoefTermConsumer.h src/Term.h src/TermTranslator.h \
+  src/BigPolynomial.h
 $(outdir)SingularIOHandler.o: src/SingularIOHandler.cpp src/stdinc.h \
   src/SingularIOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
-  src/VarNames.h src/CoefTermConsumer.h
+  src/VarNames.h src/CoefTermConsumer.h src/BigPolynomial.h
 $(outdir)TotalDegreeCoefTermConsumer.o: src/TotalDegreeCoefTermConsumer.cpp \
   src/stdinc.h src/TotalDegreeCoefTermConsumer.h src/CoefTermConsumer.h \
   src/CoefBigTermConsumer.h src/TermTranslator.h src/VarNames.h \
   src/Term.h
 $(outdir)BigPolynomial.o: src/BigPolynomial.cpp src/stdinc.h src/BigPolynomial.h \
-  src/VarNames.h src/Term.h src/TermTranslator.h
+  src/VarNames.h src/Term.h src/TermTranslator.h src/VarSorter.h
 $(outdir)CoefBigTermRecorder.o: src/CoefBigTermRecorder.cpp src/stdinc.h \
   src/CoefBigTermRecorder.h src/CoefBigTermConsumer.h src/BigPolynomial.h \
+  src/VarNames.h
+$(outdir)PolyTransformAction.o: src/PolyTransformAction.cpp src/stdinc.h \
+  src/PolyTransformAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
+  src/StringParameter.h src/IOHandler.h src/Scanner.h src/IOFacade.h \
+  src/Facade.h src/Timer.h src/BigPolynomial.h src/VarNames.h
+$(outdir)VarSorter.o: src/VarSorter.cpp src/stdinc.h src/VarSorter.h \
   src/VarNames.h

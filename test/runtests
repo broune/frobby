@@ -72,6 +72,16 @@ fi
 echo
 cd ../..
 
+echo -n "ptransform "
+cd test/ptransform
+./runtests
+if [ $? != 0 ]
+then
+  exit 1
+fi
+echo
+cd ../..
+
 echo -n "latformat  "
 cd test/latformat
 ./runtests

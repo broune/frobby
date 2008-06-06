@@ -20,7 +20,7 @@
 #include "Facade.h"
 #include <vector>
 #include <cstdio>
-#include <string> // TODO: get rid of this
+#include <string>
 
 class BigIdeal;
 class BigTermConsumer;

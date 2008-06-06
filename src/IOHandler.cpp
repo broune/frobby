@@ -428,13 +428,12 @@ void IOHandler::readTerm(BigIdeal& ideal, Scanner& in) {
 void IOHandler::readCoefTerm(BigPolynomial& polynomial,
 							 bool firstTerm,
 							 Scanner& in) {
-  // TODO: do something to avoid constructing these each time.
-  mpz_class coef;
-  vector<mpz_class> term;
-  term.resize(polynomial.getNames().getVarCount());
+  polynomial.newLastTerm();
+  mpz_class& coef = polynomial.getLastCoef();
+  vector<mpz_class>& term = polynomial.getLastTerm();
 
   bool positive = true;
-  if (in.match('+'))
+  if (!firstTerm && in.match('+'))
 	positive = !in.match('-');
   else if (in.match('-'))
 	positive = false;
@@ -458,8 +457,6 @@ void IOHandler::readCoefTerm(BigPolynomial& polynomial,
 
   if (!positive)
 	coef = -coef;
-
-  polynomial.add(coef, term);
 }
 
 void IOHandler::readVarPower(vector<mpz_class>& term,
