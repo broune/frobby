@@ -326,13 +326,12 @@ void CoCoA4IOHandler::readCoCoA4VarPower(vector<mpz_class>& term,
 void CoCoA4IOHandler::readCoCoA4CoefTerm(BigPolynomial& polynomial,
 										 bool firstTerm,
 										 Scanner& in) {
-  // TODO: do something to avoid constructing these each time.
-  mpz_class coef;
-  vector<mpz_class> term;
-  term.resize(polynomial.getNames().getVarCount());
+  polynomial.newLastTerm();
+  mpz_class& coef = polynomial.getLastCoef();
+  vector<mpz_class>& term = polynomial.getLastTerm();
 
   bool positive = true;
-  if (in.match('+'))
+  if (!firstTerm && in.match('+'))
 	positive = !in.match('-');
   else if (in.match('-'))
 	positive = false;
@@ -359,6 +358,4 @@ void CoCoA4IOHandler::readCoCoA4CoefTerm(BigPolynomial& polynomial,
 
   if (!positive)
 	coef = -coef;
-
-  polynomial.add(coef, term);
 }

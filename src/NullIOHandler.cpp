@@ -18,8 +18,8 @@
 #include "NullIOHandler.h"
 
 #include "BigIdeal.h"
-#include "CoefTermConsumer.h"
-#include "TermConsumer.h"
+#include "NullCoefTermConsumer.h"
+#include "NullTermConsumer.h"
 #include "BigPolynomial.h"
 #include "VarNames.h"
 

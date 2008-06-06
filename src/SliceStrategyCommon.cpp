@@ -36,7 +36,7 @@ void SliceStrategyCommon::freeSlice(Slice* slice) {
   ASSERT(slice != 0);
   ASSERT(debugIsValidSlice(slice));
 
-  slice->clear(); // To preserve memory.
+  slice->clearIdealAndSubtract(); // To preserve memory.
   _sliceCache.push_back(slice);
 }
 
@@ -227,7 +227,7 @@ bool SliceStrategyCommon::getUseIndependence() const {
 
 void SliceStrategyCommon::getPivot
 (Term& pivot, Slice& slice, PivotStrategy ps) {
-  ASSERT(ps != Unknown);
+  ASSERT(ps != UnknownPivotStrategy);
   ASSERT(pivot.getVarCount() == slice.getVarCount());
   ASSERT(slice.getIdeal().isMinimallyGenerated());
 
@@ -287,5 +287,5 @@ SliceStrategyCommon::getPivotStrategy(const string& name) {
   else if (name == "gcd")
     return GCD;
   else
-	return Unknown;
+	return UnknownPivotStrategy;
 }

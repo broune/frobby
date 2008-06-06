@@ -36,11 +36,11 @@
 Action::Action(const char* name,
 			   const char* shortDescription,
 			   const char* description,
-			   bool acceptsNonParameter):
+			   bool acceptsNonParameterParam):
   _name(name),
   _shortDescription(shortDescription),
   _description(description),
-  _acceptsNonParameter(acceptsNonParameter),
+  _acceptsNonParameter(acceptsNonParameterParam),
   _printActions("time", "Display and time each subcomputation.", false) {
 }
 

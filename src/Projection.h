@@ -47,7 +47,6 @@ class Projection {
 
   void print(FILE* file) const;
 
-  // TODO: optimize this
   bool domainVarHasProjection(size_t var) const;
 
  private:

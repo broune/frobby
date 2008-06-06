@@ -25,6 +25,7 @@
 #include "Term.h"
 #include "MsmStrategy.h"
 #include "TranslatingTermConsumer.h"
+#include "TranslatingCoefTermConsumer.h"
 #include "DebugStrategy.h"
 #include "SliceAlgorithm.h"
 #include "DecomRecorder.h"
@@ -349,7 +350,7 @@ void SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 
   _translator->decrement();
   TermGrader grader(grading, _translator);
-  MsmStrategy* strategy = FrobeniusStrategy::newFrobeniusStrategy
+  SliceStrategy* strategy = FrobeniusStrategy::newFrobeniusStrategy
 	(_strategy, getTermConsumer(), grader, useBound);
   runSliceAlgorithmAndDeleteStrategy(strategy);
 

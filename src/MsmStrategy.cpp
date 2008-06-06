@@ -133,12 +133,12 @@ MsmStrategy::~MsmStrategy() {
 void MsmStrategy::setPivotStrategy(PivotStrategy pivotStrategy) {
   _splitStrategy = PivotSplit;
   _pivotStrategy = pivotStrategy;
-  _labelStrategy = Unknown2;
+  _labelStrategy = UnknownLabelStrategy;
 }
 
 void MsmStrategy::setLabelStrategy(LabelStrategy labelStrategy) {
   _splitStrategy = LabelSplit;
-  _pivotStrategy = Unknown;
+  _pivotStrategy = UnknownPivotStrategy;
   _labelStrategy = labelStrategy;
 }
 
@@ -348,7 +348,7 @@ bool MsmStrategy::setSplitStrategy(const string& name) {
 	setLabelStrategy(VarLabel);
   else {
 	PivotStrategy pivotStrategy = SliceStrategyCommon::getPivotStrategy(name);
-	if (pivotStrategy == Unknown)
+	if (pivotStrategy == UnknownPivotStrategy)
 	  return false;
 
 	setPivotStrategy(pivotStrategy);

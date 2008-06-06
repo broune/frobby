@@ -86,7 +86,7 @@ void Slice::resetAndSetVarCount(size_t varCount) {
   _lowerBoundHint = 0;
 }
 
-void Slice::clear() {
+void Slice::clearIdealAndSubtract() {
   _ideal.clear();
   _subtract.clear();
   _lcmUpdated = false;
@@ -250,7 +250,7 @@ bool Slice::applyLowerBound() {
   size_t var = _lowerBoundHint;
   while (stepsWithNoChange < _varCount) {
     if (!getLowerBound(bound, var)) {
-      clear();
+      clearIdealAndSubtract();
       return true;
     }
 

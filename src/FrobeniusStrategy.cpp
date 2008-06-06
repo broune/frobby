@@ -36,7 +36,7 @@ FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
 }
 
 void FrobeniusStrategy::setFrobPivotStrategy() {
-  setPivotStrategy(Unknown);
+  setPivotStrategy(UnknownPivotStrategy);
   _useFrobPivotStrategy = true;
 }
 
@@ -117,7 +117,7 @@ void FrobeniusStrategy::simplify(Slice& slice) {
 
 	// Check if improvement is possible
 	if (degree <= _maxValue) {
-	  slice.clear();
+	  slice.clearIdealAndSubtract();
 	  break;
 	}
 
@@ -207,7 +207,7 @@ void FrobeniusStrategy::getUpperBound(const Slice& slice, Term& bound) {
 	  --bound[var];
 }
 
-MsmStrategy* FrobeniusStrategy::
+SliceStrategy* FrobeniusStrategy::
 newFrobeniusStrategy(const string& name,
 					 TermConsumer* consumer,
 					 TermGrader& grader,

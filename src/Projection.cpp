@@ -83,6 +83,7 @@ size_t Projection::inverseProjectVar(size_t rangeVar) const {
   return _offsets[rangeVar];
 }
 
+// TODO: it might pay off to make this function O(1) time.
 bool Projection::domainVarHasProjection(size_t var) const {
   for (size_t rangeVar = 0; rangeVar < _offsets.size(); ++rangeVar)
 	if (var == inverseProjectVar(rangeVar))

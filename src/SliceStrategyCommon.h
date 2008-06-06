@@ -62,7 +62,7 @@ class SliceStrategyCommon : public SliceStrategy {
   bool getUseIndependence() const;
 
   enum PivotStrategy {
-	Unknown, // Cannot be used to obtain pivots.
+	UnknownPivotStrategy, // Cannot be used to obtain pivots.
     Minimum,
     Median,
     Maximum,

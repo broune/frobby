@@ -21,9 +21,6 @@
 #include "BigIdeal.h"
 #include "VarNames.h"
 #include "BigPolynomial.h"
-
-// TODO: are these necessary?
-#include "Term.h"
 #include "TermTranslator.h"
 
 Macaulay2IOHandler::Macaulay2IOHandler():
@@ -47,7 +44,7 @@ void Macaulay2IOHandler::writeTermOfIdeal(const Term& term,
   fputs(isFirst ? "\n " : ",\n ", out);
   IOHandler::writeTermProduct(term, translator, out);
 
-  size_t varCount = term.getVarCount();
+  size_t varCount = translator->getVarCount();
   for (size_t var = 0; var < varCount; ++var)
 	if (translator->getExponent(var, term) != 0)
 	  return;
@@ -145,6 +142,10 @@ void Macaulay2IOHandler::readVars(VarNames& names, Scanner& in) {
   // The enclosing braces are optional, but if the start brace is
   // there, then the end brace should be there too.
   bool readBrace = in.match('{'); 
+  if (readBrace) {
+	fputs("WARNING: Putting braces { } around the variables is deprecated.\n",
+		  stderr);
+  }
 
   if (in.peekIdentifier()) {
 	do {

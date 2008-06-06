@@ -59,8 +59,7 @@ class Slice {
   void resetAndSetVarCount(size_t varCount);
 
   // Clears getIdeal() and getSubtract(). Does not change getMultiply().
-  // TODO: rename to shallow clear or something like that.
-  void clear();
+  void clearIdealAndSubtract();
 
   // Calls singleDegreeSort on getIdeal().
   void singleDegreeSortIdeal(size_t var);
