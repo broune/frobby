@@ -198,7 +198,7 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 
   beginAction("Preparing to compute irreducible decomposition.");
 
-  _translator->addArtinianPowers(*_ideal); // TODO: rename to addFakePurePowers
+  _translator->addPurePowersAtInfinity(*_ideal);
 
   endAction();
 

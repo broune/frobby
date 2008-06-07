@@ -173,8 +173,9 @@ $(outdir)Fourti2IOHandler.o: src/Fourti2IOHandler.cpp src/stdinc.h \
   src/Fourti2IOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
   src/VarNames.h src/Term.h src/TermTranslator.h src/BigPolynomial.h
 $(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h \
-  src/IOHandler.h src/BigIdeal.h src/VarNames.h src/CoefTermConsumer.h \
-  src/TermConsumer.h src/BigPolynomial.h
+  src/IOHandler.h src/BigIdeal.h src/VarNames.h \
+  src/NullCoefTermConsumer.h src/CoefTermConsumer.h \
+  src/NullTermConsumer.h src/TermConsumer.h src/BigPolynomial.h
 $(outdir)Minimizer.o: src/Minimizer.cpp src/stdinc.h src/Minimizer.h src/Term.h
 $(outdir)AlexanderDualAction.o: src/AlexanderDualAction.cpp src/stdinc.h \
   src/AlexanderDualAction.h src/Action.h src/BoolParameter.h \
@@ -190,9 +191,8 @@ $(outdir)frobby.o: src/frobby.cpp src/stdinc.h src/frobby.h src/BigIdeal.h \
 $(outdir)BigTermConsumer.o: src/BigTermConsumer.cpp src/stdinc.h \
   src/BigTermConsumer.h
 $(outdir)TranslatingTermConsumer.o: src/TranslatingTermConsumer.cpp src/stdinc.h \
-  src/TranslatingTermConsumer.h src/TermConsumer.h src/CoefTermConsumer.h \
-  src/Term.h src/TermTranslator.h src/VarNames.h src/BigTermConsumer.h \
-  src/CoefBigTermConsumer.h
+  src/TranslatingTermConsumer.h src/TermConsumer.h src/Term.h \
+  src/TermTranslator.h src/VarNames.h src/BigTermConsumer.h
 $(outdir)frobbyTest.o: src/frobbyTest.cpp src/stdinc.h src/frobby.h
 $(outdir)HilbertAction.o: src/HilbertAction.cpp src/stdinc.h src/HilbertAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h src/IOParameters.h \
@@ -200,7 +200,8 @@ $(outdir)HilbertAction.o: src/HilbertAction.cpp src/stdinc.h src/HilbertAction.h
   src/BigIdeal.h src/VarNames.h src/IOFacade.h src/Facade.h src/Timer.h \
   src/SliceFacade.h src/Scanner.h
 $(outdir)HilbertSlice.o: src/HilbertSlice.cpp src/stdinc.h src/HilbertSlice.h \
-  src/Slice.h src/Ideal.h src/Term.h src/CoefTermConsumer.h
+  src/Slice.h src/Ideal.h src/Term.h src/CoefTermConsumer.h \
+  src/HilbertBasecase.h
 $(outdir)Polynomial.o: src/Polynomial.cpp src/stdinc.h src/Polynomial.h src/Term.h
 $(outdir)CanonicalCoefTermConsumer.o: src/CanonicalCoefTermConsumer.cpp \
   src/stdinc.h src/CanonicalCoefTermConsumer.h src/CoefTermConsumer.h \
@@ -226,9 +227,9 @@ $(outdir)SliceFacade.o: src/SliceFacade.cpp src/stdinc.h src/SliceFacade.h \
   src/CoefBigTermConsumer.h src/TermTranslator.h src/VarNames.h \
   src/BigIdeal.h src/Ideal.h src/Term.h src/MsmStrategy.h \
   src/SliceStrategyCommon.h src/SliceStrategy.h src/TermConsumer.h \
-  src/TranslatingTermConsumer.h src/CoefTermConsumer.h \
-  src/DebugStrategy.h src/SliceAlgorithm.h src/DecomRecorder.h \
-  src/TermGrader.h src/FrobeniusStrategy.h \
+  src/TranslatingTermConsumer.h src/TranslatingCoefTermConsumer.h \
+  src/CoefTermConsumer.h src/DebugStrategy.h src/SliceAlgorithm.h \
+  src/DecomRecorder.h src/TermGrader.h src/FrobeniusStrategy.h \
   src/CanonicalCoefTermConsumer.h src/Polynomial.h src/HilbertStrategy.h \
   src/IOHandler.h src/BigPolynomial.h src/TotalDegreeCoefTermConsumer.h \
   src/CoefBigTermRecorder.h
@@ -255,6 +256,24 @@ $(outdir)PolyTransformAction.o: src/PolyTransformAction.cpp src/stdinc.h \
   src/PolyTransformAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
   src/StringParameter.h src/IOHandler.h src/Scanner.h src/IOFacade.h \
-  src/Facade.h src/Timer.h src/BigPolynomial.h src/VarNames.h
+  src/Facade.h src/Timer.h src/BigPolynomial.h src/VarNames.h \
+  src/PolynomialFacade.h
 $(outdir)VarSorter.o: src/VarSorter.cpp src/stdinc.h src/VarSorter.h \
   src/VarNames.h
+$(outdir)SliceEvent.o: src/SliceEvent.cpp src/stdinc.h src/SliceEvent.h
+$(outdir)TermConsumer.o: src/TermConsumer.cpp src/stdinc.h src/TermConsumer.h
+$(outdir)NullTermConsumer.o: src/NullTermConsumer.cpp src/stdinc.h \
+  src/NullTermConsumer.h src/TermConsumer.h
+$(outdir)CoefTermConsumer.o: src/CoefTermConsumer.cpp src/stdinc.h \
+  src/CoefTermConsumer.h
+$(outdir)NullCoefTermConsumer.o: src/NullCoefTermConsumer.cpp src/stdinc.h \
+  src/NullCoefTermConsumer.h src/CoefTermConsumer.h
+$(outdir)TranslatingCoefTermConsumer.o: src/TranslatingCoefTermConsumer.cpp \
+  src/stdinc.h src/TranslatingCoefTermConsumer.h src/CoefTermConsumer.h \
+  src/CoefBigTermConsumer.h src/Term.h src/TermTranslator.h \
+  src/VarNames.h
+$(outdir)PolynomialFacade.o: src/PolynomialFacade.cpp src/stdinc.h \
+  src/PolynomialFacade.h src/Facade.h src/Timer.h src/BigPolynomial.h \
+  src/VarNames.h
+$(outdir)HilbertBasecase.o: src/HilbertBasecase.cpp src/stdinc.h \
+  src/HilbertBasecase.h src/Ideal.h src/Term.h

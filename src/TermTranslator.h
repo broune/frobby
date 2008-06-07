@@ -69,7 +69,7 @@ public:
   // to 0. Note that this does NOT preserve order - the highest ID
   // always maps to 0. The reason for this is that this is what is
   // needed for computing irreducible decompositions.
-  void addArtinianPowers(Ideal& ideal) const;
+  void addPurePowersAtInfinity(Ideal& ideal) const;
 
   const VarNames& getNames() const;
   size_t getVarCount() const;

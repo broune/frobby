@@ -178,7 +178,7 @@ void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
   }
 }
 
-void TermTranslator::addArtinianPowers(Ideal& ideal) const {
+void TermTranslator::addPurePowersAtInfinity(Ideal& ideal) const {
   size_t varCount = ideal.getVarCount();
 
   // Find out which variables already have artinian powers.
