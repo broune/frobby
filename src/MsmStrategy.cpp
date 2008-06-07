@@ -63,7 +63,7 @@ bool MsmStrategy::debugIsValidSlice(Slice* slice) {
 void MsmStrategy::labelSplit(Slice* slice,
 							 Slice*& leftSlice, Slice*& rightSlice) {
   ASSERT(!slice->normalize());
-  size_t var = getLabelSplitVariable(*slice);
+  size_t var = SplitStrategy::getLabelSplitVariable(*slice, _splitStrategy);
 
   Term term(slice->getVarCount());
 
@@ -123,25 +123,14 @@ void MsmStrategy::labelSplit(Slice* slice,
   rightSlice = slice;
 }
 
-MsmStrategy::MsmStrategy(TermConsumer* consumer): 
+MsmStrategy::MsmStrategy(TermConsumer* consumer,
+						 SplitStrategy split): 
+  _splitStrategy(split),
   _consumer(consumer) {
 }
 
 MsmStrategy::~MsmStrategy() {
 }
-
-void MsmStrategy::setPivotStrategy(PivotStrategy pivotStrategy) {
-  _splitStrategy = PivotSplit;
-  _pivotStrategy = pivotStrategy;
-  _labelStrategy = UnknownLabelStrategy;
-}
-
-void MsmStrategy::setLabelStrategy(LabelStrategy labelStrategy) {
-  _splitStrategy = LabelSplit;
-  _pivotStrategy = UnknownPivotStrategy;
-  _labelStrategy = labelStrategy;
-}
-
 
 class MsmIndependenceSplit : public TermConsumer, public SliceEvent {
 public:
@@ -251,17 +240,11 @@ void MsmStrategy::split(Slice* sliceParam,
 	  (slice, leftEvent, leftSlice, rightEvent, rightSlice))
 	return;
 
-  switch (_splitStrategy) {
-  case MsmStrategy::LabelSplit:
+  if (_splitStrategy.isLabelSplit())
 	labelSplit(slice, leftSlice, rightSlice);
-	break;
-
-  case MsmStrategy::PivotSplit:
+  else {
+	ASSERT(_splitStrategy.isPivotSplit());
 	pivotSplit(slice, leftSlice, rightSlice);
-	break;
-
-  default:
-	ASSERT(false);
   }
 
   if (leftSlice != 0)
@@ -276,92 +259,7 @@ void MsmStrategy::simplify(Slice& slice) {
 }
 
 void MsmStrategy::getPivot(Term& pivot, Slice& slice) {
-  ASSERT(_splitStrategy == PivotSplit);
-  SliceStrategyCommon::getPivot(pivot, slice, _pivotStrategy);
-}
+  ASSERT(_splitStrategy.isPivotSplit());
 
-size_t MsmStrategy::getLabelSplitVariable(const Slice& slice) {
-  ASSERT(_splitStrategy == LabelSplit);
-
-  Term co(slice.getVarCount());
-  slice.getIdeal().getSupportCounts(co);
-
-  if (_labelStrategy == MaxLabel) {
-	// Return the variable that divides the most minimal generators.
-	// This cannot be an invalid split because if every count was 1,
-	// then this would be a base case.
-	return co.getFirstMaxExponent();
-  }
-
-  // For each variable, count number of terms with exponent of 1
-  Term co1(slice.getVarCount());
-  Ideal::const_iterator end = slice.getIdeal().end();
-  for (Ideal::const_iterator it = slice.getIdeal().begin();
-	   it != end; ++it) {
-	// This way we avoid bad splits.
-	if (getSizeOfSupport(*it, slice.getVarCount()) == 1)
-	  continue;
-	for (size_t var = 0; var < slice.getVarCount(); ++var)
-	  if ((*it)[var] == 1)
-		co1[var] += 1;
-  }
-
-  // The slice is simplified and not a base case slice.
-  ASSERT(!co1.isIdentity());
-
-  if (_labelStrategy == VarLabel) {
-	// Return the least variable that is valid.
-	for (size_t var = 0; ; ++var) {
-	  ASSERT(var < slice.getVarCount());
-	  if (co1[var] > 0)
-		return var;
-	}
-  }
-
-  if (_labelStrategy != MinLabel) {
-	fputs("INTERNAL ERROR: Undefined label split type.\n", stderr);
-	ASSERT(false);
-	exit(1);
-  }
-
-  // Zero those variables of co that have more than the least number
-  // of exponent 1 minimal generators.
-  size_t mostGeneric = 0;
-  for (size_t var = 1; var < slice.getVarCount(); ++var)
-	if (mostGeneric == 0 || (mostGeneric > co1[var] && co1[var] > 0))
-	  mostGeneric = co1[var];
-  for (size_t var = 0; var < slice.getVarCount(); ++var)
-	if (co1[var] != mostGeneric)
-	  co[var] = 0;
-
-  // Among those with least exponent 1 minimal generators, return
-  // the variable that divides the most minimal generators.
-  return co.getFirstMaxExponent();
-}
-
-bool MsmStrategy::setSplitStrategy(const string& name) {
-  if (name == "maxlabel")
-	setLabelStrategy(MaxLabel);
-  else if (name == "minlabel")
-	setLabelStrategy(MinLabel);
-  else if (name == "varlabel")
-	setLabelStrategy(VarLabel);
-  else {
-	PivotStrategy pivotStrategy = SliceStrategyCommon::getPivotStrategy(name);
-	if (pivotStrategy == UnknownPivotStrategy)
-	  return false;
-
-	setPivotStrategy(pivotStrategy);
-  }
-  return true;
-}
-
-MsmStrategy* MsmStrategy::newDecomStrategy(const string& name,
-										   TermConsumer* consumer) {
-  MsmStrategy* strategy = new MsmStrategy(consumer);
-  if (!strategy->setSplitStrategy(name)) {
-	fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n", name.c_str());
-	exit(1);
-  }
-  return strategy;
+  SplitStrategy::getPivot(pivot, slice, _splitStrategy);
 }

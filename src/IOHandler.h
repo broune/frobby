@@ -40,6 +40,9 @@ class IOHandler {
 
   virtual void writeIdeal(const BigIdeal& ideal, FILE* out);
   virtual void writePolynomial(const BigPolynomial& polynomial, FILE* out);
+  virtual void writeTerm(const vector<mpz_class>& term,
+						 const VarNames& names,
+						 FILE* out) = 0;
 
   virtual bool hasMoreInput(Scanner& in) const;
 

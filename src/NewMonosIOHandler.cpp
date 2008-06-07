@@ -28,6 +28,12 @@ NewMonosIOHandler::NewMonosIOHandler():
   registerOutput(MonomialIdeal);
 }
 
+void NewMonosIOHandler::writeTerm(const vector<mpz_class>& term,
+								  const VarNames& names,
+								  FILE* out) {
+  writeTermProduct(term, names, out);
+}
+
 void NewMonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
   fputs("(monomial-ideal-with-order\n (lex-order", out);
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {

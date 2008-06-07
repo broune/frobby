@@ -106,6 +106,17 @@ void IOFacade::writePolynomial(const BigPolynomial& polynomial,
   endAction();
 }
 
+void IOFacade::writeTerm(const vector<mpz_class>& term,
+						 const VarNames& names,
+						 IOHandler* handler,
+						 FILE* out) {
+  beginAction("Writing monomial.");
+
+  handler->writeTerm(term, names, out);
+
+  endAction();
+}
+
 bool IOFacade::readAlexanderDualInstance
 (Scanner& in, BigIdeal& ideal, vector<mpz_class>& term) {
   beginAction("Reading Alexander dual input.");

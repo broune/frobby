@@ -47,17 +47,20 @@ void Projection::reset(const Partition& partition,
 
     _offsets.push_back(i);
   }
+
+  updateHasProjections();
 }
 
 void Projection::reset(const vector<size_t>& inverseProjections) {
   _offsets = inverseProjections;
-  // TODO: ASSERT valid
+  updateHasProjections();
 }
 
 void Projection::setToIdentity(size_t varCount) {
   _offsets.clear();
   for (size_t var = 0; var < varCount; ++var)
     _offsets.push_back(var);
+  updateHasProjections();
 }
 
 
@@ -83,12 +86,19 @@ size_t Projection::inverseProjectVar(size_t rangeVar) const {
   return _offsets[rangeVar];
 }
 
-// TODO: it might pay off to make this function O(1) time.
 bool Projection::domainVarHasProjection(size_t var) const {
+  if (var >= _domainVarHasProjection.size())
+	_domainVarHasProjection.resize(var + 1);
+
+#ifdef DEBUG
+  bool has = false;
   for (size_t rangeVar = 0; rangeVar < _offsets.size(); ++rangeVar)
 	if (var == inverseProjectVar(rangeVar))
-	  return true;
-  return false;
+	  has = true;
+  ASSERT(has == _domainVarHasProjection[var]);
+#endif
+
+  return _domainVarHasProjection[var];
 }
 
 void Projection::print(FILE* file) const {
@@ -100,4 +110,19 @@ void Projection::print(FILE* file) const {
 
 void Projection::swap(Projection& projection) {
   _offsets.swap(projection._offsets);
+  _domainVarHasProjection.swap(projection._domainVarHasProjection);
+}
+
+void Projection::updateHasProjections() {
+  _domainVarHasProjection.clear();
+  if (_offsets.empty())
+	return;
+
+  size_t max = *max_element(_offsets.begin(), _offsets.end());
+  _domainVarHasProjection.resize(max + 1);
+
+  for (size_t rangeVar = 0; rangeVar < _offsets.size(); ++rangeVar) {
+	ASSERT(inverseProjectVar(rangeVar) < _domainVarHasProjection.size());
+	_domainVarHasProjection[inverseProjectVar(rangeVar)] = true;
+  }
 }

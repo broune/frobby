@@ -28,24 +28,24 @@ public:
   NewMonosIOHandler();
 
   virtual void readIdeal(Scanner& in, BigIdeal& ideal);
+  virtual void writeTerm(const vector<mpz_class>& term,
+						 const VarNames& names,
+						 FILE* out);
 
+ private:
   virtual void writeIdealHeader(const VarNames& names, FILE* out);
-
   virtual void writeTermOfIdeal(const Term& term,
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
-
   virtual void writeTermOfIdeal(const vector<mpz_class> term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);
-
   virtual void writeIdealFooter(const VarNames& names,
 								bool wroteAnyGenerators,
 								FILE* out);
 
-private:
   void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
 };
 

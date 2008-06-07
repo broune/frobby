@@ -15,6 +15,9 @@ public:
 
   virtual void readIdeal(Scanner& in, BigIdeal& ideal);
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
+  virtual void writeTerm(const vector<mpz_class>& term,
+						 const VarNames& names,
+						 FILE* out);
 
  private:
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);

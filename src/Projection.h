@@ -50,7 +50,10 @@ class Projection {
   bool domainVarHasProjection(size_t var) const;
 
  private:
+  void updateHasProjections();
+
   vector<size_t> _offsets;
+  mutable vector<int> _domainVarHasProjection;
 };
 
 #endif

@@ -34,6 +34,11 @@ NullIOHandler::NullIOHandler():
   registerOutput(MonomialIdealList);
 }
 
+void NullIOHandler::writeTerm(const vector<mpz_class>& term,
+							  const VarNames& names,
+							  FILE* out) {
+}
+
 TermConsumer* NullIOHandler::createIdealWriter(TermTranslator* translator,
 											   FILE* file) {
   return new NullTermConsumer();

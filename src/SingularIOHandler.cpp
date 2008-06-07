@@ -33,6 +33,12 @@ SingularIOHandler::SingularIOHandler():
   registerOutput(Polynomial);
 }
 
+void SingularIOHandler::writeTerm(const vector<mpz_class>& term,
+								   const VarNames& names,
+								   FILE* out) {
+  writeTermProduct(term, names, out);
+}
+
 void SingularIOHandler::writePolynomialHeader(const VarNames& names,
 											  FILE* out) {
   writeRing(names, out);

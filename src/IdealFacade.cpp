@@ -22,7 +22,7 @@
 #include "TermTranslator.h"
 #include "IOHandler.h"
 #include "SliceAlgorithm.h"
-
+#include "IOFacade.h"
 #include "Macaulay2IOHandler.h"
 #include "CanonicalCoefTermConsumer.h"
 
@@ -112,61 +112,20 @@ void IdealFacade::printAnalysis(FILE* out, BigIdeal& bigIdeal) {
   fprintf(out, "is strongly generic: %s",
 		  ideal.isStronglyGeneric() ? "yes" : "no");
 
-/*
-TODO:
-
-CHEAP
-square-free
-canonical
-partition
-lcm exponent vector
-gcd exponent vector
-sparsity
-
-EXPENSIVE
-minimized
-
-MORE EXPENSIVE
-weakly generic (could this be done efficiently?)
-
-VERY EXPENSIVE
-size of irreducible decomposition
-strongly cogeneric
-dimension
-degree
-
-EVEN MORE EXPENSIVE
-weakly cogeneric
-
-EVEN EVEN MORE EXPENSIVE
-self Alexander dual
-
-*/
-
   endAction();
 }
 
-void IdealFacade::printLcm(FILE* out, BigIdeal& ideal) {
+void IdealFacade::printLcm(BigIdeal& ideal,
+						   IOHandler* handler,
+						   FILE* out) {
   beginAction("Computing lcm");
 
-  // TODO: integrate this with the regular IO system
   vector<mpz_class> lcm;
   ideal.getLcm(lcm);
-  if (lcm == vector<mpz_class>(lcm.size()))
-	fputs("1\n", out);
-  else {
-	const char* pre = "";
-	for (size_t var = 0; var < ideal.getVarCount(); ++var) {
-	  if (lcm[var] == 0)
-		continue;
-	  gmp_fprintf(out, lcm[var] == 1 ? "%s%s" : "%s%s^%Zd",
-				  pre,
-				  ideal.getNames().getName(var).c_str(),
-				  lcm[var].get_mpz_t());
-	  pre = "*";
-	}
-	fputc('\n', out);
-  }
-  
-  endAction();
+
+  IOFacade ioFacade(isPrintingActions());
+  ioFacade.writeTerm(lcm, ideal.getNames(), handler, out);
+  fputc('\n', out);
+
+   endAction();
 }

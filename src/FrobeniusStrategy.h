@@ -26,20 +26,13 @@ class TermGrader;
 
 class FrobeniusStrategy : public MsmStrategy, public TermConsumer {
 public:
-  virtual ~FrobeniusStrategy();
-
-  static SliceStrategy* newFrobeniusStrategy(const string& name,
-											 TermConsumer* consumer,
-											 TermGrader& grader,
-											 bool useBound);
-
-private:
   FrobeniusStrategy(TermConsumer* consumer,
 					TermGrader& grader,
+					SplitStrategy split,
 					bool useBound);
+  virtual ~FrobeniusStrategy();
 
-  void setFrobPivotStrategy();
-
+private:
   virtual void getPivot(Term& pivot, Slice& slice);
   virtual void simplify(Slice& slice);
   virtual void consume(const Term& term);

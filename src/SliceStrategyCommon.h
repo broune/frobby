@@ -18,6 +18,7 @@
 #define SLICE_STRATEGY_COMMON
 
 #include "SliceStrategy.h"
+#include "SplitStrategy.h"
 
 #include <vector>
 #include <string>
@@ -60,19 +61,6 @@ class SliceStrategyCommon : public SliceStrategy {
   virtual void getPivot(Term& pivot, Slice& slice) = 0;
 
   bool getUseIndependence() const;
-
-  enum PivotStrategy {
-	UnknownPivotStrategy, // Cannot be used to obtain pivots.
-    Minimum,
-    Median,
-    Maximum,
-	MinGen,
-	Indep,
-	GCD
-  };
-
-  static void getPivot(Term& pivot, Slice& slice, PivotStrategy ps);
-  static PivotStrategy getPivotStrategy(const string& name);
 
  private:
   bool _useIndependence;

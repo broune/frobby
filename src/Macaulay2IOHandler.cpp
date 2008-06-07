@@ -32,6 +32,12 @@ Macaulay2IOHandler::Macaulay2IOHandler():
   registerOutput(Polynomial);
 }
 
+void Macaulay2IOHandler::writeTerm(const vector<mpz_class>& term,
+								   const VarNames& names,
+								   FILE* out) {
+  writeTermProduct(term, names, out);
+}
+
 void Macaulay2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
   writeRing(names, out);
   fputs("I = monomialIdeal(", out);

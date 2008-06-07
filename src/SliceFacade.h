@@ -17,6 +17,7 @@
 #ifndef SLICE_FACADE_GUARD
 #define SLICE_FACADE_GUARD
 
+#include "SplitStrategy.h"
 #include "Facade.h"
 #include <vector>
 #include <cstdio>
@@ -92,8 +93,9 @@ class SliceFacade : public Facade {
   // are valid. It is an error to run an algorithm that does not
   // support label splits while using a label split selection
   // strategy.
-  bool setSplitStrategy(const char* strategyName,
-						bool allowLabelSplits = false);
+  bool setSplitStrategy(const string& strategyName,
+						bool allowLabelSplits = false,
+						bool allowFrobeniusSplit = false);
 
   // Compute the numerator of the multigraded Hilbert-Poincare series
   // expessed as a rational function. If canonical is true, then the
@@ -197,7 +199,7 @@ class SliceFacade : public Facade {
   TermConsumer* _generatedTermConsumer;
   CoefTermConsumer* _generatedCoefTermConsumer;
 
-  string _strategy;
+  SplitStrategy _split;
 
   // These are points to avoid including more headers than necessary.
   TermTranslator* _translator;

@@ -126,6 +126,11 @@ void TermTranslator::clearStrings() {
     for (size_t j = 0; j < _stringExponents[i].size(); ++j)
       delete[] _stringExponents[i][j];
   _stringExponents.clear();
+
+  for (size_t i = 0; i < _stringVarExponents.size(); ++i)
+    for (size_t j = 0; j < _stringVarExponents[i].size(); ++j)
+      delete[] _stringVarExponents[i][j];
+  _stringVarExponents.clear();
 }
 
 void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
@@ -237,11 +242,14 @@ void TermTranslator::print(FILE* file) const {
 }
 
 void TermTranslator::makeStrings(bool includeVar) const {
-  ASSERT(_stringExponents.empty());
+  vector<vector<const char*> >& strings =
+	includeVar ? _stringVarExponents : _stringExponents;
 
-  _stringExponents.resize(_exponents.size());
+  ASSERT(strings.empty());
+
+  strings.resize(_exponents.size());
   for (unsigned int i = 0; i < _exponents.size(); ++i) {
-    _stringExponents[i].resize(_exponents[i].size());
+    strings[i].resize(_exponents[i].size());
     for (unsigned int j = 0; j < _exponents[i].size(); ++j) {
       char* str = 0;
 
@@ -258,7 +266,7 @@ void TermTranslator::makeStrings(bool includeVar) const {
 		str = new char[out.str().size() + 1];
 		strcpy(str, out.str().c_str());
       }
-      _stringExponents[i][j] = str;
+      strings[i][j] = str;
     }
   }
 }
@@ -280,13 +288,11 @@ getVarExponentString(size_t variable, Exponent exponent) const {
   ASSERT(variable < _exponents.size());
   ASSERT(exponent < _exponents[variable].size());
 
-  if (_stringExponents.empty())
+  if (_stringVarExponents.empty())
 	makeStrings(true);
-  return (_stringExponents[variable][exponent]);
+  return _stringVarExponents[variable][exponent];
 }
 
-// TODO: have two separate exponent containers including and not
-// including the var, respectively.
 const char* TermTranslator::
 getExponentString(size_t variable, Exponent exponent) const {
   ASSERT(variable < _exponents.size());
@@ -294,7 +300,7 @@ getExponentString(size_t variable, Exponent exponent) const {
 
   if (_stringExponents.empty())
 	makeStrings(false);
-  return (_stringExponents[variable][exponent]);
+  return _stringExponents[variable][exponent];
 }
 
 const mpz_class& TermTranslator::

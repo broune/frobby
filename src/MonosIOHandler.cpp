@@ -29,6 +29,12 @@ MonosIOHandler::MonosIOHandler():
   registerOutput(MonomialIdeal);
 }
 
+void MonosIOHandler::writeTerm(const vector<mpz_class>& term,
+							   const VarNames& names,
+							   FILE* out) {
+  writeTermProduct(term, names, out);
+}
+
 void MonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
   fputs("vars ", out);
   const char* pre = "";

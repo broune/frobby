@@ -32,6 +32,12 @@ Fourti2IOHandler::Fourti2IOHandler():
   registerOutput(Polynomial);
 }
 
+void Fourti2IOHandler::writeTerm(const vector<mpz_class>& term,
+								 const VarNames& names,
+								 FILE* out) {
+  writeTermOfIdeal(term, names, false, out);
+}
+
 void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,
 											 size_t termCount,
 											 FILE* out) {
