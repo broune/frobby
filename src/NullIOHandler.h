@@ -32,6 +32,9 @@ public:
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
+  virtual void writeTerm(const vector<mpz_class>& term,
+						 const VarNames& names,
+						 FILE* out);
 
   virtual TermConsumer* createIdealWriter(TermTranslator* translator,
 										  FILE* out);

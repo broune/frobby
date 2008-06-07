@@ -22,8 +22,9 @@
 
 FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
 									 TermGrader& grader,
+									 SplitStrategy split,
 									 bool useBound):
-  MsmStrategy(this),
+  MsmStrategy(this, split),
   _consumer(consumer),
   _grader(grader),
   _hasSeenAnyValue(false),
@@ -33,11 +34,9 @@ FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
   _simplify_oldBound(grader.getVarCount()),
   _simplify_colon(grader.getVarCount()) {
   ASSERT(consumer != 0);
-}
 
-void FrobeniusStrategy::setFrobPivotStrategy() {
-  setPivotStrategy(UnknownPivotStrategy);
-  _useFrobPivotStrategy = true;
+  if (_splitStrategy.isSpecialPivot())
+	_useFrobPivotStrategy = true;
 }
 
 FrobeniusStrategy::~FrobeniusStrategy() {
@@ -205,20 +204,4 @@ void FrobeniusStrategy::getUpperBound(const Slice& slice, Term& bound) {
 	if (bound[var] == _grader.getMaxExponent(var) &&
 		slice.getMultiply()[var] < bound[var])
 	  --bound[var];
-}
-
-SliceStrategy* FrobeniusStrategy::
-newFrobeniusStrategy(const string& name,
-					 TermConsumer* consumer,
-					 TermGrader& grader,
-					 bool useBound) {
-  FrobeniusStrategy* strategy =
-	new FrobeniusStrategy(consumer, grader, useBound);
-  
-  if (name == "frob")
-	strategy->setFrobPivotStrategy();
-  else
-	strategy->setSplitStrategy(name);
-  
-  return strategy;
 }

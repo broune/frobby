@@ -96,6 +96,7 @@ private:
 
   vector<vector<mpz_class> > _exponents;
   mutable vector<vector<const char*> > _stringExponents;
+  mutable vector<vector<const char*> > _stringVarExponents;
   VarNames _names;
 };
 

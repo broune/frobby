@@ -34,6 +34,12 @@ CoCoA4IOHandler::CoCoA4IOHandler():
   registerOutput(Polynomial);
 }
 
+void CoCoA4IOHandler::writeTerm(const vector<mpz_class>& term,
+								const VarNames& names,
+								FILE* out) {
+  writeCoCoA4TermProduct(term, names, out);
+}
+
 void CoCoA4IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
   writeRing(names, out);
   fputs("I := Ideal(", out);

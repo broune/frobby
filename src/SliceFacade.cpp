@@ -127,10 +127,15 @@ void SliceFacade::setIsMinimallyGenerated(bool isMinimallyGenerated) {
   _isMinimallyGenerated = isMinimallyGenerated;
 }
 
-bool SliceFacade::setSplitStrategy(const char* strategyName,
-								   bool allowLabelSplits) {
-  _strategy = strategyName;
-  return true; // TODO: perform proper check.
+bool SliceFacade::setSplitStrategy(const string& strategyName,
+								   bool allowLabelSplits,
+								   bool allowFrobeniusSplit) {
+  SplitStrategy split = SplitStrategy::getSplitStrategy(strategyName);
+  if (!split.isValid())
+	return false;
+
+  _split = split;
+  return true;
 }
 
 void SliceFacade::computeMultigradedHilbertSeries(bool canonical) {
@@ -207,13 +212,13 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 
 void SliceFacade::computeMaximalStaircaseMonomials() {
   ASSERT(_ideal != 0);
+  ASSERT(_split.isValid());
 
   minimize();
 
   beginAction("Computing maximal staircase monomials.");
 
-  SliceStrategy* strategy =
-	MsmStrategy::newDecomStrategy(_strategy, getTermConsumer());
+  SliceStrategy* strategy = new MsmStrategy(getTermConsumer(), _split);
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
   endAction();
@@ -343,6 +348,7 @@ void SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
   ASSERT(_ideal != 0);
   ASSERT(_translator != 0);
   ASSERT(grading.size() == _ideal->getVarCount());
+  ASSERT(_split.isValid());
 
   minimize();
 
@@ -350,8 +356,10 @@ void SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 
   _translator->decrement();
   TermGrader grader(grading, _translator);
-  SliceStrategy* strategy = FrobeniusStrategy::newFrobeniusStrategy
-	(_strategy, getTermConsumer(), grader, useBound);
+
+  SliceStrategy* strategy =
+	new FrobeniusStrategy(getTermConsumer(), grader, _split, useBound);
+
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
   endAction();

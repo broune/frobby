@@ -22,6 +22,7 @@
 #include "IdealFacade.h"
 #include "IrreducibleDecomParameters.h"
 #include "Scanner.h"
+#include "IOHandler.h"
 
 #include <algorithm>
 
@@ -84,8 +85,10 @@ void AnalyzeAction::perform() {
   ioFacade.readIdeal(in, ideal);
 
   IdealFacade idealFacade(_printActions);
-  if (_printLcm)
-	idealFacade.printLcm(stdout, ideal);
+  if (_printLcm) {
+	IOHandler* handler = IOHandler::getIOHandler("m2");
+	idealFacade.printLcm(ideal, handler, stdout);
+  }
   if (_printVarCount) {
 	fprintf(stdout, "%lu\n", (unsigned long)ideal.getVarCount());
   }

@@ -24,6 +24,7 @@ class BigIdeal;
 class Scanner;
 class IOHandler;
 class BigPolynomial;
+class VarNames;
 
 class IOFacade : private Facade {
  public:
@@ -39,6 +40,10 @@ class IOFacade : private Facade {
   void writePolynomial(const BigPolynomial& polynomial,
 					   IOHandler* handler,
 					   FILE* out);
+  void writeTerm(const vector<mpz_class>& term,
+				 const VarNames& names,
+				 IOHandler* handler,
+				 FILE* out);
 
   void readFrobeniusInstance(Scanner& in, vector<mpz_class>& instance);
   void readFrobeniusInstanceWithGrobnerBasis

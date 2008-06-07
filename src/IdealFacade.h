@@ -20,6 +20,7 @@
 #include "Facade.h"
 
 class BigIdeal;
+class IOHandler;
 
 class IdealFacade : private Facade {
  public:
@@ -44,7 +45,9 @@ class IdealFacade : private Facade {
   void sortVariables(BigIdeal& ideal);
 
   void printAnalysis(FILE* out, BigIdeal& ideal);
-  void printLcm(FILE* out, BigIdeal& ideal);
+  void printLcm(BigIdeal& ideal,
+				IOHandler* handler,
+				FILE* out);
 };
 
 #endif

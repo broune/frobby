@@ -21,7 +21,7 @@
 #include <string>
 #include "TermConsumer.h"
 #include <vector>
-
+#include "SplitStrategy.h"
 
 class MsmSlice;
 class Term;
@@ -35,20 +35,11 @@ class TermConsumer;
 
 class MsmStrategy : public SliceStrategyCommon {
  public:
-  enum LabelStrategy {
-	UnknownLabelStrategy,
-	MaxLabel,
-	MinLabel,
-    VarLabel
-  };
-
-  MsmStrategy(TermConsumer* consumer);
+  MsmStrategy(TermConsumer* consumer, SplitStrategy split);
   virtual ~MsmStrategy();
 
   // Returns false if name is an unknown split strategy.
-  bool setSplitStrategy(const string& name);
-  void setPivotStrategy(PivotStrategy pivotStrategy);
-  void setLabelStrategy(LabelStrategy labelStrategy);
+  //bool setSplitStrategy(const string& name);
 
   virtual Slice* setupInitialSlice(const Ideal& ideal);
 
@@ -56,12 +47,10 @@ class MsmStrategy : public SliceStrategyCommon {
 					 SliceEvent*& leftEvent, Slice*& leftSlice,
 					 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  // These report an error and exit the program if the name is unknown.
-  static MsmStrategy* newDecomStrategy(const string& name,
-									   TermConsumer* consumer);
-
  protected:
   virtual void getPivot(Term& pivot, Slice& slice);
+
+  SplitStrategy _splitStrategy;
 
  private:
   MsmSlice* newMsmSlice();
@@ -80,14 +69,6 @@ class MsmStrategy : public SliceStrategyCommon {
 
   size_t getLabelSplitVariable(const Slice& slice);
 
-  enum SplitStrategy {
-    LabelSplit = 1,
-    PivotSplit = 2
-  };
-
-  SplitStrategy _splitStrategy;
-  PivotStrategy _pivotStrategy;
-  LabelStrategy _labelStrategy;
 
   TermConsumer* _consumer;
 };
