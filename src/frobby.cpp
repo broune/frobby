@@ -125,8 +125,8 @@ void Frobby::Ideal::addExponent(unsigned int exponent) {
 }
 
 void Frobby::alexanderDual(const Ideal& ideal,
-			   const mpz_t* exponentVector,
-			   TermConsumer& consumer) {
+						   const mpz_t* exponentVector,
+						   TermConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
   vector<mpz_class> point;
@@ -143,14 +143,9 @@ void Frobby::alexanderDual(const Ideal& ideal,
   // the Boehm garbage collector.
   exponentVector = 0;
 
-  // We copy the ideal because computeAlexanderDual clears the ideal,
-  // which we guarantee not to do. TODO: make computeAlexanderDual not
-  // do this and remove this copy.
-  BigIdeal bigIdealCopy(bigIdeal);
-
   BigTermConsumer* adaptedConsumer = 
-    new ExternalConsumerAdapter(&consumer, bigIdealCopy.getVarCount());
-  SliceFacade facade(bigIdealCopy, adaptedConsumer, false);
+    new ExternalConsumerAdapter(&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, adaptedConsumer, false);
   IrreducibleDecomParameters params;
   params.apply(facade);
 
