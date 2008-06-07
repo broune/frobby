@@ -172,12 +172,11 @@ bool HilbertStrategy::independenceSplit(HilbertSlice* slice,
 										Slice*& rightSlice) {
   ASSERT(slice != 0);
 
-  static IndependenceSplitter splitter; // TODO: get rid of static
-  if (!splitter.analyze(*slice))
+  if (!_indepSplitter.analyze(*slice))
 	return false;
 
   HilbertIndependenceConsumer* consumer = newConsumer();
-  consumer->reset(slice->getConsumer(), splitter, slice->getVarCount());
+  consumer->reset(slice->getConsumer(), _indepSplitter, slice->getVarCount());
   leftEvent = consumer;
 
   HilbertSlice* hilbertLeftSlice = newHilbertSlice();

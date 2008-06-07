@@ -19,6 +19,7 @@
 
 #include <vector>
 #include "Term.h"
+#include "IndependenceSplitter.h"
 
 class HilbertSlice;
 class Ideal;
@@ -51,6 +52,7 @@ class HilbertStrategy : public SliceStrategyCommon {
 
   virtual void getPivot(Term& term, Slice& slice);
 
+  IndependenceSplitter _indepSplitter;
   bool independenceSplit(HilbertSlice* slice,
 						 SliceEvent*& leftEvent,
 						 Slice*& leftSlice,
