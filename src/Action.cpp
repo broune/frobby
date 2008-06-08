@@ -83,13 +83,13 @@ Action* Action::getAction(const string& prefix) {
 }
 
 void Action::getActions(const string& prefix, ActionContainer& actions) {
-  addIfPrefix<HelpAction>(prefix, actions);
-  addIfPrefix<TransformAction>(prefix, actions);
-  addIfPrefix<PolyTransformAction>(prefix, actions);
   addIfPrefix<HilbertAction>(prefix, actions);
   addIfPrefix<IrreducibleDecomAction>(prefix, actions);
   addIfPrefix<AlexanderDualAction>(prefix, actions);
   addIfPrefix<AssociatedPrimesAction>(prefix, actions);
+  addIfPrefix<TransformAction>(prefix, actions);
+  addIfPrefix<PolyTransformAction>(prefix, actions);
+
   addIfPrefix<IntersectAction>(prefix, actions);
   addIfPrefix<GenerateIdealAction>(prefix, actions);
   addIfPrefix<FrobeniusAction>(prefix, actions);
@@ -97,6 +97,8 @@ void Action::getActions(const string& prefix, ActionContainer& actions) {
   addIfPrefix<GenerateFrobeniusAction>(prefix, actions);
   addIfPrefix<AnalyzeAction>(prefix, actions);
   addIfPrefix<LatticeFormatAction>(prefix, actions);
+
+  addIfPrefix<HelpAction>(prefix, actions);
 }
 
 const char* Action::getName() const {

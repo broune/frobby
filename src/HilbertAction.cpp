@@ -26,14 +26,20 @@ HilbertAction::HilbertAction():
   Action
 (staticGetName(),
  "Compute the Hilbert-Poincare series of the input ideal.",
- "Compute the Hilbert-Poincare series of the input ideal.",
+ "Compute the multigraded Hilbert-Poincare series of the input\n"
+ "ideal. Use the -univariate option to get the univariate series.\n\n"
+ "The Hilbert-Poincare series of a monomial ideal is the sum of all\n"
+ "monomials not in the ideal. This sum can be written as a (finite)\n"
+ "rational function with (x1-1)(x2-1)...(xn-1) in the denominator,\n"
+ "assuming the variables of the ring are x1,x2,...,xn. This action\n"
+ "computes the polynomial in the numerator of this fraction.",
  false),
 
   _io(IOHandler::MonomialIdeal, IOHandler::Polynomial),
 
   _univariate
   ("univariate",
-   "Substitute t for each variable. Otherwise use the trivial multi-grading.",
+   "Output a univariate polynomial by substituting t for each variable.",
    false),
 
   _canonical
