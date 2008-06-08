@@ -28,7 +28,7 @@ class FrobeniusStrategy : public MsmStrategy, public TermConsumer {
 public:
   FrobeniusStrategy(TermConsumer* consumer,
 					TermGrader& grader,
-					SplitStrategy* split,
+					const SplitStrategy* split,
 					bool useBound);
   virtual ~FrobeniusStrategy();
 

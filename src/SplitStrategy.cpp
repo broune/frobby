@@ -31,7 +31,7 @@ SplitStrategy::~SplitStrategy() {
 // pivot split strategies.
 class SplitStrategyCommon : public SplitStrategy {
 public:
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	fputs
 	  ("INTERNAL ERROR: Requested pivot split of non-pivot split strategy.\n",
 	   stderr);
@@ -39,7 +39,7 @@ public:
 	exit(1);
   }
 
-  virtual size_t getLabelSplitVariable(const Slice& slice) {
+  virtual size_t getLabelSplitVariable(const Slice& slice) const {
 	fputs
 	  ("INTERNAL ERROR: Requested label split of non-label split strategy.\n",
 	   stderr);
@@ -48,35 +48,20 @@ public:
 	return 0;
   }
 
-  virtual bool isPivotSplit() {
+  virtual bool isPivotSplit() const {
 	return false;
   }
 
-  virtual bool isLabelSplit() {
+  virtual bool isLabelSplit() const {
 	return false;
   }
 
-  virtual bool isFrobeniusSplit() {
+  virtual bool isFrobeniusSplit() const {
 	return false;
   }
 
 protected:
-  static size_t getRandomSupportVar(const Term& term) {
-	ASSERT(!term.isIdentity());
-
-	size_t selected = rand() % term.getSizeOfSupport();
-	for (size_t var = 0; ; ++var) {
-	  ASSERT(var < term.getVarCount());
-	  if (term[var] == 0)
-		continue;
-
-	  if (selected == 0)
-		return var;
-	  --selected;
-	}
-  }
-
-  static Exponent getMedianPositiveExponentOf(Slice& slice, size_t var) {
+  Exponent getMedianPositiveExponentOf(Slice& slice, size_t var) const {
 	slice.singleDegreeSortIdeal(var);
 	Ideal::const_iterator end = slice.getIdeal().end();
 	Ideal::const_iterator begin = slice.getIdeal().begin();
@@ -90,8 +75,8 @@ protected:
   // Returns the variable that divides the most minimal generators of
   // those where some minimal generator is divisible by the square of
   // that variable.
-  static size_t getBestVar(const Slice& slice) {
-	Term co(slice.getVarCount());
+  size_t getBestVar(const Slice& slice) const {
+	Term co(slice.getVarCount()); // TODO
 	slice.getIdeal().getSupportCounts(co);
 
 	const Term& lcm = slice.getLcm();
@@ -108,20 +93,20 @@ protected:
 
 	// Choose a deterministically random variable among those that are
 	// best. This helps to avoid getting into a bad pattern.
-	return getRandomSupportVar(co);
+	return co.getFirstNonZeroExponent();
   }
 };
 
 class LabelSplit : public SplitStrategyCommon {
 protected:
-  Term _counts;
-  void setCounts(const Slice& slice) {
+  mutable Term _counts;
+  void setCounts(const Slice& slice) const {
 	_counts.reset(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(_counts);	
   }
 
-  Term _oneCounts;
-  void setOneCounts(const Slice& slice) {
+  mutable Term _oneCounts;
+  void setOneCounts(const Slice& slice) const {
 	// For each variable, count number of terms with exponent equal to 1,
 	// not counting pure powers.
 	_oneCounts.reset(slice.getVarCount());
@@ -137,7 +122,7 @@ protected:
 	}
   }
 
-  virtual bool isLabelSplit() {
+  virtual bool isLabelSplit() const {
 	return true;
   }
 };
@@ -145,7 +130,11 @@ protected:
 // Use the variable that divides the most minimal generators.
 class MaxLabelSplit : public LabelSplit {
 public:
-  virtual size_t getLabelSplitVariable(const Slice& slice) {
+  virtual const char* getName() const {
+	return "maxlabel";
+  }
+
+  virtual size_t getLabelSplitVariable(const Slice& slice) const {
 	setCounts(slice);
 	return _counts.getFirstMaxExponent();
   }
@@ -153,7 +142,11 @@ public:
 
 // Use the first variable that is valid for a label split.
 class VarLabelSplit : public LabelSplit {
-  virtual size_t getLabelSplitVariable(const Slice& slice) {
+  virtual const char* getName() const {
+	return "varlabel";
+  }
+
+  virtual size_t getLabelSplitVariable(const Slice& slice) const {
 	setOneCounts(slice);
 
 	for (size_t var = 0; ; ++var) {
@@ -167,7 +160,11 @@ class VarLabelSplit : public LabelSplit {
 // Among those variables with least number of exponents equal to one,
 // use the variable that divides the most minimal generators.
 class MinLabelSplit : public LabelSplit {
-  virtual size_t getLabelSplitVariable(const Slice& slice) {
+  virtual const char* getName() const {
+	return "minlabel";
+  }
+
+  virtual size_t getLabelSplitVariable(const Slice& slice) const {
 	setCounts(slice);
 	setOneCounts(slice);
 
@@ -188,14 +185,18 @@ class MinLabelSplit : public LabelSplit {
 
 class PivotSplit : public SplitStrategyCommon {
 public:
-  virtual bool isPivotSplit() {
+  virtual bool isPivotSplit() const {
 	return true;
   }
 };
 
 class MinimumSplit : public PivotSplit {
 public:
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual const char* getName() const {
+	return "minimum";
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	size_t var = getBestVar(slice);
 	pivot.setToIdentity();
 	pivot[var] = 1;
@@ -204,7 +205,11 @@ public:
 
 class MedianSplit : public PivotSplit {
 public:
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual const char* getName() const {
+	return "median";
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	size_t var = getBestVar(slice);
 
 	pivot.setToIdentity();
@@ -216,7 +221,11 @@ public:
 
 class MaximumSplit : public PivotSplit {
 public:
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual const char* getName() const {
+	return "maximum";
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	size_t var = getBestVar(slice);
 	pivot.setToIdentity();
 	pivot[var] = slice.getLcm()[var] - 1;
@@ -225,7 +234,11 @@ public:
 
 class IndependencePivotSplit : public MedianSplit {
 public:
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual const char* getName() const {
+	return "indep";
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	if (slice.getVarCount() == 1) {
 	  MedianSplit::getPivot(pivot, slice);
 	  return;
@@ -266,7 +279,11 @@ public:
 
 class GcdSplit : public PivotSplit {
 public:
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual const char* getName() const {
+	return "gcd";
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	size_t var = getBestVar(slice);
 
 	size_t nonDivisibleCount = 0;
@@ -300,7 +317,11 @@ public:
 
 class MinGenSplit : public PivotSplit {
 public:
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual const char* getName() const {
+	return "mingen";
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	size_t nonSquareFreeCount = 0;
 	Ideal::const_iterator end = slice.getIdeal().end();
 	for (Ideal::const_iterator it = slice.getIdeal().begin();
@@ -327,11 +348,15 @@ public:
 
 class FrobeniusSplit : public PivotSplit {
 public:
-  virtual bool isFrobeniusSplit() {
+  virtual const char* getName() const {
+	return "frob";
+  }
+
+  virtual bool isFrobeniusSplit() const {
 	return true;
   }
 
-  virtual void getPivot(Term& pivot, Slice& slice) {
+  virtual void getPivot(Term& pivot, Slice& slice) const {
 	fputs
 	  ("INTERNAL ERROR: Called getPivot directly on FrobeniusSplit.\n",
 	   stderr);
@@ -340,29 +365,46 @@ public:
   }
 };
 
-SplitStrategy* SplitStrategy::getStrategy(const string& name) {
-  if (name == "maxlabel")
-	return new MaxLabelSplit();
-  if (name == "minlabel")
-	return new MinLabelSplit();
-  if (name == "varlabel")
-	return new VarLabelSplit();
+const SplitStrategy* SplitStrategy::getStrategy(const string& name) {
+  vector<SplitStrategy*> splits;
 
-  if (name == "minimum")
-	return new MinimumSplit();
-  if (name == "median")
-	return new MedianSplit();
-  if (name == "maximum")
-	return new MaximumSplit();
-  if (name == "mingen")
-	return new MinGenSplit();
-  if (name == "indep")
-	return new IndependencePivotSplit();
-  if (name == "gcd")
-	return new GcdSplit();
+  if (splits.empty()) {
+	static MaxLabelSplit maxlabel;
+	splits.push_back(&maxlabel);
 
-  if (name == "frob")
-	return new FrobeniusSplit();
+	static MinLabelSplit minlabel;
+	splits.push_back(&minlabel);
+
+	static VarLabelSplit varlabel;
+	splits.push_back(&varlabel);
+
+	static MinimumSplit minimum;
+	splits.push_back(&minimum);
+
+	static MedianSplit median;
+	splits.push_back(&median);
+
+	static MaximumSplit maximum;
+	splits.push_back(&maximum);
+
+	static MinGenSplit mingen;
+	splits.push_back(&mingen);
+
+	static IndependencePivotSplit indep;
+	splits.push_back(&indep);
+
+	static GcdSplit gcd;
+	splits.push_back(&gcd);
+
+	static FrobeniusSplit frob;
+	splits.push_back(&frob);
+  }
+
+  for (vector<SplitStrategy*>::const_iterator it = splits.begin();
+	   it != splits.end(); ++it) {
+	if (name == (*it)->getName())
+	  return *it;
+  }
 
   return 0;
 }

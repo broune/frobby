@@ -57,7 +57,7 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
    "median") {
   addParameter(&_minimal);
   addParameter(&_split);
-  addParameter(&_printStatistics);
+  //addParameter(&_printStatistics); // TODO: reimplement
   addParameter(&_useIndependence);
   addParameter(&_printDebug);
 
@@ -79,7 +79,7 @@ bool SliceParameters::getUseBound() const {
 
 void SliceParameters::validateSplit(bool allowLabel,
 											   bool allowFrob) {
-  SplitStrategy* split =
+  const SplitStrategy* split =
 	SplitStrategy::getStrategy(_split.getValue().c_str());
 
   if (split == 0) {
@@ -102,7 +102,7 @@ void SliceParameters::validateSplit(bool allowLabel,
 }
 
 void SliceParameters::apply(SliceFacade& facade) const {
-  SplitStrategy* split =
+  const SplitStrategy* split =
 	SplitStrategy::getStrategy(_split.getValue().c_str());
 
   facade.setPrintDebug(_printDebug);

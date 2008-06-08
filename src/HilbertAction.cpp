@@ -52,11 +52,14 @@ void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
   parameters.push_back(&_univariate);
   parameters.push_back(&_canonical);
+  _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
 }
 
 void HilbertAction::perform() {
   BigIdeal ideal;
+
+  _sliceParams.validateSplit(false, false);
 
   {
 	Scanner in(_io.getInputFormat(), stdin);
@@ -67,9 +70,8 @@ void HilbertAction::perform() {
 	facade.readIdeal(in, ideal);
   }
 
-  // TODO: use SlicePArams
-
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
+  _sliceParams.apply(facade);
   if (_univariate)
 	facade.computeUnivariateHilbertSeries();
   else

@@ -23,14 +23,16 @@ class Ideal;
 
 class SplitStrategy {
  public:
-  virtual void getPivot(Term& pivot, Slice& slice) = 0;
-  virtual size_t getLabelSplitVariable(const Slice& slice) = 0;
+  virtual void getPivot(Term& pivot, Slice& slice) const = 0;
+  virtual size_t getLabelSplitVariable(const Slice& slice) const = 0;
 
-  virtual bool isPivotSplit() = 0;
-  virtual bool isLabelSplit() = 0;
-  virtual bool isFrobeniusSplit() = 0;
+  virtual bool isPivotSplit() const = 0;
+  virtual bool isLabelSplit() const = 0;
+  virtual bool isFrobeniusSplit() const = 0;
 
-  static SplitStrategy* getStrategy(const string& name);
+  virtual const char* getName() const = 0;
+
+  static const SplitStrategy* getStrategy(const string& name);
 
  protected:
   virtual ~SplitStrategy();

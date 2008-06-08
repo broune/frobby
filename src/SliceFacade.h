@@ -89,7 +89,7 @@ class SliceFacade : public Facade {
 
   // It is an error to run an algorithm that does not support the
   // specified label split strategy.
-  void setSplitStrategy(SplitStrategy* split);
+  void setSplitStrategy(const SplitStrategy* split);
 
   // Compute the numerator of the multigraded Hilbert-Poincare series
   // expessed as a rational function. If canonical is true, then the
@@ -193,7 +193,7 @@ class SliceFacade : public Facade {
   TermConsumer* _generatedTermConsumer;
   CoefTermConsumer* _generatedCoefTermConsumer;
 
-  SplitStrategy* _split;
+  const SplitStrategy* _split;
 
   // These are points to avoid including more headers than necessary.
   TermTranslator* _translator;

@@ -25,12 +25,13 @@
 
 class Slice;
 class Term;
+class SplitStrategy;
 
 // This class adds code to the SliceStrategy base class that is useful
 // for derived classes.
 class SliceStrategyCommon : public SliceStrategy {
  public:
-  SliceStrategyCommon();
+  SliceStrategyCommon(const SplitStrategy* split);
   virtual ~SliceStrategyCommon();
 
   virtual void freeSlice(Slice* slice);
@@ -61,6 +62,8 @@ class SliceStrategyCommon : public SliceStrategy {
   virtual void getPivot(Term& pivot, Slice& slice) = 0;
 
   bool getUseIndependence() const;
+
+  const SplitStrategy* _split;
 
  private:
   bool _useIndependence;

@@ -29,6 +29,4 @@ class SliceStrategy;
 
 void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy);
 
-void computeHilbertSeries(const Ideal& ideal, CoefTermConsumer* consumer);
-
 #endif

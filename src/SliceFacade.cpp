@@ -127,7 +127,7 @@ void SliceFacade::setIsMinimallyGenerated(bool isMinimallyGenerated) {
   _isMinimallyGenerated = isMinimallyGenerated;
 }
 
-void SliceFacade::setSplitStrategy(SplitStrategy* split) {
+void SliceFacade::setSplitStrategy(const SplitStrategy* split) {
   _split = split;
 }
 
@@ -140,7 +140,7 @@ void SliceFacade::computeMultigradedHilbertSeries(bool canonical) {
 
   CoefTermConsumer* consumer = getCoefTermConsumer(canonical);
 
-  SliceStrategy* strategy = new HilbertStrategy(consumer);
+  SliceStrategy* strategy = new HilbertStrategy(consumer, _split);
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
   endAction();
@@ -402,8 +402,6 @@ void SliceFacade::runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy) {
 
   if (_printDebug)
 	strategy = new DebugStrategy(strategy, stderr);
-
-  // TODO: implement collection and printing of statistics.
 
   ::runSliceAlgorithm(*_ideal, strategy);
   delete strategy;

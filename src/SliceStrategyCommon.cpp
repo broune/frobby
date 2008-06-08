@@ -20,9 +20,10 @@
 #include "Slice.h"
 #include "Term.h"
 
-SliceStrategyCommon::SliceStrategyCommon():
+SliceStrategyCommon::SliceStrategyCommon(const SplitStrategy* split):
+  _split(split),
   _useIndependence(true) {
-  srand(0); // To make things repeatable.
+  ASSERT(split != 0);
 }
 
 SliceStrategyCommon::~SliceStrategyCommon() {

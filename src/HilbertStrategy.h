@@ -27,12 +27,13 @@ class CoefTermConsumer;
 class SliceEvent;
 class HilbertIndependenceConsumer;
 class Slice;
+class SplitStrategy;
 
 #include "SliceStrategyCommon.h"
 
 class HilbertStrategy : public SliceStrategyCommon {
  public:
-  HilbertStrategy(CoefTermConsumer* consumer);
+  HilbertStrategy(CoefTermConsumer* consumer, const SplitStrategy* split);
   virtual ~HilbertStrategy();
 
   virtual Slice* setupInitialSlice(const Ideal& ideal);

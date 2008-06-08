@@ -20,6 +20,7 @@
 #include "Action.h"
 #include "IOParameters.h"
 #include "BoolParameter.h"
+#include "SliceParameters.h"
 
 class HilbertAction : public Action {
  public:
@@ -33,6 +34,7 @@ class HilbertAction : public Action {
 
  private:
   IOParameters _io;
+  SliceParameters _sliceParams;
   BoolParameter _univariate;
   BoolParameter _canonical;
 };

@@ -35,7 +35,7 @@ class TermConsumer;
 
 class MsmStrategy : public SliceStrategyCommon {
  public:
-  MsmStrategy(TermConsumer* consumer, SplitStrategy* split);
+  MsmStrategy(TermConsumer* consumer, const SplitStrategy* split);
   virtual ~MsmStrategy();
 
   virtual Slice* setupInitialSlice(const Ideal& ideal);
@@ -46,8 +46,6 @@ class MsmStrategy : public SliceStrategyCommon {
 
  protected:
   virtual void getPivot(Term& pivot, Slice& slice);
-
-  SplitStrategy* _split;
 
  private:
   MsmSlice* newMsmSlice();
@@ -65,7 +63,6 @@ class MsmStrategy : public SliceStrategyCommon {
   virtual void simplify(Slice& slice);
 
   size_t getLabelSplitVariable(const Slice& slice);
-
 
   TermConsumer* _consumer;
 };
