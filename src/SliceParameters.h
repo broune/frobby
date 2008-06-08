@@ -14,10 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef IRREDUCIBLE_DECOM_PARAMETERS_GUARD
-#define IRREDUCIBLE_DECOM_PARAMETERS_GUARD
-
-// TODO: rename to SliceParameters.
+#ifndef SLICE_PARAMETERS_GUARD
+#define SLICE_PARAMETERS_GUARD
 
 #include "ParameterGroup.h"
 #include "BoolParameter.h"
@@ -25,9 +23,9 @@
 
 class SliceFacade;
 
-class IrreducibleDecomParameters : public ParameterGroup {
+class SliceParameters : public ParameterGroup {
  public:
-  IrreducibleDecomParameters(bool exposeBoundParam = false);
+  SliceParameters(bool exposeBoundParam = false);
 
   void setUseIndependence(bool value);
   void setSplit(const string& split);

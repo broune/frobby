@@ -40,23 +40,23 @@ FrobeniusAction::FrobeniusAction():
  "at www.broune.com for more details.",
  false),
   
-  _decomParameters(true),
+  _sliceParams(true),
   _displaySolution
 ("vector",
  "Display the vector that achieves the optimal value.",
  false) {
-  _decomParameters.setSplit("frob");
+  _sliceParams.setSplit("frob");
 }
 
 void FrobeniusAction::obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
-  _decomParameters.obtainParameters(parameters);
+  _sliceParams.obtainParameters(parameters);
 
   parameters.push_back(&_displaySolution);
 }
 
 void FrobeniusAction::perform() {
-  _decomParameters.validateSplit(true, true);
+  _sliceParams.validateSplit(true, true);
 
   vector<mpz_class> instance;
   BigIdeal ideal;
@@ -72,8 +72,8 @@ void FrobeniusAction::perform() {
   BigTermRecorder consumer(&maxSolution);
 
   SliceFacade facade(ideal, &consumer, _printActions);
-  _decomParameters.apply(facade);
-  facade.solveStandardProgram(shiftedDegrees, _decomParameters.getUseBound());
+  _sliceParams.apply(facade);
+  facade.solveStandardProgram(shiftedDegrees, _sliceParams.getUseBound());
 
   ASSERT(maxSolution.getGeneratorCount() == 1);
   bigVector = maxSolution[0];

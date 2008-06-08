@@ -44,14 +44,14 @@ IrreducibleDecomAction::IrreducibleDecomAction():
 void IrreducibleDecomAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
   parameters.push_back(&_encode);
-  _decomParameters.obtainParameters(parameters);
+  _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
 }
 
 void IrreducibleDecomAction::perform() {
   BigIdeal ideal;
 
-  _decomParameters.validateSplit(true, false);
+  _sliceParams.validateSplit(true, false);
 
   {
 	Scanner in(_io.getInputFormat(), stdin);
@@ -63,7 +63,7 @@ void IrreducibleDecomAction::perform() {
   }
 
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
-  _decomParameters.apply(facade);
+  _sliceParams.apply(facade);
   facade.computeIrreducibleDecomposition(_encode);
 }
 

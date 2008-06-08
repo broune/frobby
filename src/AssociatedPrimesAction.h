@@ -19,7 +19,7 @@
 
 #include "Action.h"
 #include "IOParameters.h"
-#include "IrreducibleDecomParameters.h"
+#include "SliceParameters.h"
 
 class AssociatedPrimesAction : public Action {
  public:
@@ -32,7 +32,7 @@ class AssociatedPrimesAction : public Action {
   static const char* staticGetName();
 
  protected:
-  IrreducibleDecomParameters _decomParameters;
+  SliceParameters _sliceParams;
   IOParameters _io;
 };
 

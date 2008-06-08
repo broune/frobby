@@ -38,12 +38,12 @@ AlexanderDualAction::AlexanderDualAction():
 
 void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
-  _decomParameters.obtainParameters(parameters);
+  _sliceParams.obtainParameters(parameters);
   _io.obtainParameters(parameters);
 }
 
 void AlexanderDualAction::perform() {
-  _decomParameters.validateSplit(true, false);
+  _sliceParams.validateSplit(true, false);
 
   BigIdeal ideal;
   vector<mpz_class> point;
@@ -59,7 +59,7 @@ void AlexanderDualAction::perform() {
   }
 
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
-  _decomParameters.apply(facade);
+  _sliceParams.apply(facade);
 
   if (pointSpecified)
 	facade.computeAlexanderDual(point);
