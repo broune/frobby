@@ -10,7 +10,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   FrobeniusAction.cpp Facade.cpp IOFacade.cpp							\
   DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp	\
   IdealFacade.cpp Parameter.cpp ParameterGroup.cpp						\
-  IntegerParameter.cpp IrreducibleDecomParameters.cpp					\
+  IntegerParameter.cpp SliceParameters.cpp								\
   BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp		\
   Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp					\
   LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp	\

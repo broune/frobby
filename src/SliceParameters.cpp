@@ -15,11 +15,11 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "IrreducibleDecomParameters.h"
+#include "SliceParameters.h"
 
 #include "SliceFacade.h"
 
-IrreducibleDecomParameters::IrreducibleDecomParameters(bool exposeBoundParam):
+SliceParameters::SliceParameters(bool exposeBoundParam):
   _exposeBoundParam(exposeBoundParam),
 
   _printDebug
@@ -65,19 +65,19 @@ IrreducibleDecomParameters::IrreducibleDecomParameters(bool exposeBoundParam):
 	addParameter(&_useBound);
 }
 
-void IrreducibleDecomParameters::setUseIndependence(bool value) {
+void SliceParameters::setUseIndependence(bool value) {
   _useIndependence = value;
 }
 
-void IrreducibleDecomParameters::setSplit(const string& split) {
+void SliceParameters::setSplit(const string& split) {
   _split = split;
 }
 
-bool IrreducibleDecomParameters::getUseBound() const {
+bool SliceParameters::getUseBound() const {
   return _useBound;
 }
 
-void IrreducibleDecomParameters::validateSplit(bool allowLabel,
+void SliceParameters::validateSplit(bool allowLabel,
 											   bool allowFrob) {
   SplitStrategy* split =
 	SplitStrategy::getStrategy(_split.getValue().c_str());
@@ -101,7 +101,7 @@ void IrreducibleDecomParameters::validateSplit(bool allowLabel,
   }
 }
 
-void IrreducibleDecomParameters::apply(SliceFacade& facade) const {
+void SliceParameters::apply(SliceFacade& facade) const {
   SplitStrategy* split =
 	SplitStrategy::getStrategy(_split.getValue().c_str());
 

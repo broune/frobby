@@ -18,7 +18,7 @@
 #define ALEXANDER_DUAL_ACTION
 
 #include "Action.h"
-#include "IrreducibleDecomParameters.h"
+#include "SliceParameters.h"
 #include "IOParameters.h"
 
 class AlexanderDualAction : public Action {
@@ -32,7 +32,7 @@ class AlexanderDualAction : public Action {
   static const char* staticGetName();
 
  private:
-  IrreducibleDecomParameters _decomParameters;
+  SliceParameters _sliceParams;
   IOParameters _io;
 };
 

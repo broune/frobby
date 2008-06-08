@@ -18,7 +18,7 @@
 #define FROBENIUS_ACTION_GUARD
 
 #include "Action.h"
-#include "IrreducibleDecomParameters.h"
+#include "SliceParameters.h"
 #include "BoolParameter.h"
 
 class FrobeniusAction : public Action {
@@ -32,7 +32,7 @@ class FrobeniusAction : public Action {
   static const char* staticGetName();
 
  private:
-  IrreducibleDecomParameters _decomParameters;
+  SliceParameters _sliceParams;
   BoolParameter _displaySolution;
 };
 

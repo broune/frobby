@@ -19,7 +19,7 @@
 
 #include "Action.h"
 #include "IOParameters.h"
-#include "IrreducibleDecomParameters.h"
+#include "SliceParameters.h"
 #include "BoolParameter.h"
 
 class IrreducibleDecomAction : public Action {
@@ -34,7 +34,7 @@ class IrreducibleDecomAction : public Action {
 
  private:
   BoolParameter _encode;
-  IrreducibleDecomParameters _decomParameters;
+  SliceParameters _sliceParams;
   IOParameters _io;
 };
 

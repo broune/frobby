@@ -20,7 +20,6 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "IdealFacade.h"
-#include "IrreducibleDecomParameters.h"
 #include "Scanner.h"
 #include "IOHandler.h"
 

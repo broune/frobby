@@ -20,7 +20,7 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "SliceFacade.h"
-#include "IrreducibleDecomParameters.h"
+#include "SliceParameters.h"
 #include "Scanner.h"
 #include "BigTermConsumer.h"
 
@@ -40,12 +40,13 @@ AssociatedPrimesAction::AssociatedPrimesAction():
 }
 
 void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
-  Action::obtainParameters(parameters);
   _io.obtainParameters(parameters);
+  _sliceParams.obtainParameters(parameters);
+  Action::obtainParameters(parameters);
 }
 
 void AssociatedPrimesAction::perform() {
-  _decomParameters.validateSplit(true, false);
+  _sliceParams.validateSplit(true, false);
 
   BigIdeal ideal;
 
@@ -59,7 +60,7 @@ void AssociatedPrimesAction::perform() {
   }
 
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
-  _decomParameters.apply(facade);
+  _sliceParams.apply(facade); // TODO: does this work?
   facade.computeAssociatedPrimes();
 }
 
