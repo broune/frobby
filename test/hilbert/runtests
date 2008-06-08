@@ -2,15 +2,6 @@
 
 for t in `ls -S -r *.test`
 do
-  b="`basename $t .test`"
-  hg rm $b.gen
-  hg rm $b.gen.uni
-  hg rm $b.gen.ref
-done
-
-
-for t in `ls -S -r *.test`
-do
   ./runtest `basename $t .test` $*
   if [ $? != 0 ]
   then
