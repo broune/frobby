@@ -51,6 +51,8 @@ void IrreducibleDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 void IrreducibleDecomAction::perform() {
   BigIdeal ideal;
 
+  _decomParameters.validateSplit(true, false);
+
   {
 	Scanner in(_io.getInputFormat(), stdin);
 	_io.autoDetectInputFormat(in);

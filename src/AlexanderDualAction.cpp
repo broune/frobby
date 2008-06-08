@@ -43,6 +43,8 @@ void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AlexanderDualAction::perform() {
+  _decomParameters.validateSplit(true, false);
+
   BigIdeal ideal;
   vector<mpz_class> point;
   bool pointSpecified;

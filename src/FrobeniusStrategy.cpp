@@ -22,7 +22,7 @@
 
 FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
 									 TermGrader& grader,
-									 SplitStrategy split,
+									 SplitStrategy* split,
 									 bool useBound):
   MsmStrategy(this, split),
   _consumer(consumer),
@@ -34,9 +34,6 @@ FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
   _simplify_oldBound(grader.getVarCount()),
   _simplify_colon(grader.getVarCount()) {
   ASSERT(consumer != 0);
-
-  if (_splitStrategy.isSpecialPivot())
-	_useFrobPivotStrategy = true;
 }
 
 FrobeniusStrategy::~FrobeniusStrategy() {
@@ -56,7 +53,7 @@ void FrobeniusStrategy::consume(const Term& term) {
 }
 
 void FrobeniusStrategy::getPivot(Term& pivot, Slice& slice) {
-  if (!_useFrobPivotStrategy) {
+  if (!_split->isFrobeniusSplit()) {
 	MsmStrategy::getPivot(pivot, slice);
 	return;
   }

@@ -87,15 +87,9 @@ class SliceFacade : public Facade {
   // necessarily minimally generated.
   void setIsMinimallyGenerated(bool isMinimallyGenerated);
 
-  // If strategyName is the name of a valid split selection strategy,
-  // then use that strategy and return true. Otherwise return false.
-  // allowLabelSplits specifies whether strategies for label splits
-  // are valid. It is an error to run an algorithm that does not
-  // support label splits while using a label split selection
-  // strategy.
-  bool setSplitStrategy(const string& strategyName,
-						bool allowLabelSplits = false,
-						bool allowFrobeniusSplit = false);
+  // It is an error to run an algorithm that does not support the
+  // specified label split strategy.
+  void setSplitStrategy(SplitStrategy* split);
 
   // Compute the numerator of the multigraded Hilbert-Poincare series
   // expessed as a rational function. If canonical is true, then the
@@ -199,7 +193,7 @@ class SliceFacade : public Facade {
   TermConsumer* _generatedTermConsumer;
   CoefTermConsumer* _generatedCoefTermConsumer;
 
-  SplitStrategy _split;
+  SplitStrategy* _split;
 
   // These are points to avoid including more headers than necessary.
   TermTranslator* _translator;

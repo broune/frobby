@@ -56,6 +56,8 @@ void FrobeniusAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void FrobeniusAction::perform() {
+  _decomParameters.validateSplit(true, true);
+
   vector<mpz_class> instance;
   BigIdeal ideal;
 

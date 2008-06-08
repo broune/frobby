@@ -28,7 +28,6 @@
 #include "LatticeFormatAction.h"
 #include "IntersectAction.h"
 #include "AssociatedPrimesAction.h"
-#include "PrimaryDecomAction.h"
 #include "AlexanderDualAction.h"
 #include "HilbertAction.h"
 #include "PolyTransformAction.h"
@@ -98,8 +97,6 @@ void Action::getActions(const string& prefix, ActionContainer& actions) {
   addIfPrefix<GenerateFrobeniusAction>(prefix, actions);
   addIfPrefix<AnalyzeAction>(prefix, actions);
   addIfPrefix<LatticeFormatAction>(prefix, actions);
-
-  // PrimaryDecomAction primaryDecom;
 }
 
 const char* Action::getName() const {

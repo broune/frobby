@@ -63,7 +63,8 @@ bool MsmStrategy::debugIsValidSlice(Slice* slice) {
 void MsmStrategy::labelSplit(Slice* slice,
 							 Slice*& leftSlice, Slice*& rightSlice) {
   ASSERT(!slice->normalize());
-  size_t var = SplitStrategy::getLabelSplitVariable(*slice, _splitStrategy);
+  ASSERT(_split != 0);
+  size_t var = _split->getLabelSplitVariable(*slice);
 
   Term term(slice->getVarCount());
 
@@ -123,10 +124,11 @@ void MsmStrategy::labelSplit(Slice* slice,
   rightSlice = slice;
 }
 
-MsmStrategy::MsmStrategy(TermConsumer* consumer,
-						 SplitStrategy split): 
-  _splitStrategy(split),
+MsmStrategy::MsmStrategy(TermConsumer* consumer, SplitStrategy* split): 
+  _split(split),
   _consumer(consumer) {
+  ASSERT(split != 0);
+  ASSERT(consumer != 0);
 }
 
 MsmStrategy::~MsmStrategy() {
@@ -240,10 +242,10 @@ void MsmStrategy::split(Slice* sliceParam,
 	  (slice, leftEvent, leftSlice, rightEvent, rightSlice))
 	return;
 
-  if (_splitStrategy.isLabelSplit())
+  if (_split->isLabelSplit())
 	labelSplit(slice, leftSlice, rightSlice);
   else {
-	ASSERT(_splitStrategy.isPivotSplit());
+	ASSERT(_split->isPivotSplit());
 	pivotSplit(slice, leftSlice, rightSlice);
   }
 
@@ -259,7 +261,8 @@ void MsmStrategy::simplify(Slice& slice) {
 }
 
 void MsmStrategy::getPivot(Term& pivot, Slice& slice) {
-  ASSERT(_splitStrategy.isPivotSplit());
+  ASSERT(_split != 0);
+  ASSERT(_split->isPivotSplit());
 
-  SplitStrategy::getPivot(pivot, slice, _splitStrategy);
+  _split->getPivot(pivot, slice);
 }

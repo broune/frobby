@@ -127,15 +127,8 @@ void SliceFacade::setIsMinimallyGenerated(bool isMinimallyGenerated) {
   _isMinimallyGenerated = isMinimallyGenerated;
 }
 
-bool SliceFacade::setSplitStrategy(const string& strategyName,
-								   bool allowLabelSplits,
-								   bool allowFrobeniusSplit) {
-  SplitStrategy split = SplitStrategy::getSplitStrategy(strategyName);
-  if (!split.isValid())
-	return false;
-
+void SliceFacade::setSplitStrategy(SplitStrategy* split) {
   _split = split;
-  return true;
 }
 
 void SliceFacade::computeMultigradedHilbertSeries(bool canonical) {
@@ -212,7 +205,7 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 
 void SliceFacade::computeMaximalStaircaseMonomials() {
   ASSERT(_ideal != 0);
-  ASSERT(_split.isValid());
+  ASSERT(_split != 0);
 
   minimize();
 
@@ -345,10 +338,10 @@ void SliceFacade::computeAssociatedPrimes() {
 
 void SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 									   bool useBound) {
+  ASSERT(_split != 0);
   ASSERT(_ideal != 0);
   ASSERT(_translator != 0);
   ASSERT(grading.size() == _ideal->getVarCount());
-  ASSERT(_split.isValid());
 
   minimize();
 

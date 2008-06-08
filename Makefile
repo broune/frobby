@@ -15,7 +15,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp					\
   LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp intersect.cpp	\
   IntersectFacade.cpp IntersectAction.cpp								\
-  AssociatedPrimesAction.cpp PrimaryDecomAction.cpp MsmSlice.cpp		\
+  AssociatedPrimesAction.cpp MsmSlice.cpp								\
   IndependenceSplitter.cpp Projection.cpp MsmStrategy.cpp				\
   lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp		\
   Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp					\
@@ -31,7 +31,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   CoefTermConsumer.cpp NullCoefTermConsumer.cpp							\
   TranslatingCoefTermConsumer.cpp PolynomialFacade.cpp					\
   HilbertBasecase.cpp HilbertIndependenceConsumer.cpp					\
-  SplitStrategy.cpp
+  SplitStrategy.cpp 
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

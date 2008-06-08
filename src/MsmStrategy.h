@@ -35,11 +35,8 @@ class TermConsumer;
 
 class MsmStrategy : public SliceStrategyCommon {
  public:
-  MsmStrategy(TermConsumer* consumer, SplitStrategy split);
+  MsmStrategy(TermConsumer* consumer, SplitStrategy* split);
   virtual ~MsmStrategy();
-
-  // Returns false if name is an unknown split strategy.
-  //bool setSplitStrategy(const string& name);
 
   virtual Slice* setupInitialSlice(const Ideal& ideal);
 
@@ -50,7 +47,7 @@ class MsmStrategy : public SliceStrategyCommon {
  protected:
   virtual void getPivot(Term& pivot, Slice& slice);
 
-  SplitStrategy _splitStrategy;
+  SplitStrategy* _split;
 
  private:
   MsmSlice* newMsmSlice();
