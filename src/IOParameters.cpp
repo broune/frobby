@@ -53,8 +53,9 @@ IOParameters::IOParameters(DataType input, DataType output):
 
   if (_inputType != IOHandler::None) {
 	string desc =
-	  "The supported input formats are:" + inputFormats + ".\n"
-	  "The special format autodetect instructs Frobby to guess the format.\n"
+      "The format used to read the input. "
+	  "This action supports the formats:\n " + inputFormats + ".\n"
+	  "The format \"autodetect\" instructs Frobby to guess the format.\n"
 	  "Type 'frobby help io' for more information on input formats.";
 
 	_inputFormat = new StringParameter("iformat", desc.c_str(),  "autodetect");
@@ -63,9 +64,11 @@ IOParameters::IOParameters(DataType input, DataType output):
 
   if (output != IOHandler::None) {
 	string desc =
-	  "The supported output formats are:" + outputFormats + ".\n";
+	  "The format used to write the output. "
+	  "This action supports the formats:\n " + outputFormats + ".\n";
 	if (_inputType != IOHandler::None) {
-	  desc += "The special format input instructs Frobby to use the input format.\n";
+	  desc +=
+		"The format \"input\" instructs Frobby to use the input format.\n";
 	}
 	desc += "Type 'frobby help io' for more information on output formats.";
 
