@@ -60,7 +60,7 @@ void AssociatedPrimesAction::perform() {
   }
 
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
-  _sliceParams.apply(facade); // TODO: does this work?
+  _sliceParams.apply(facade);
   facade.computeAssociatedPrimes();
 }
 

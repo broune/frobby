@@ -26,7 +26,9 @@
 #include "SliceEvent.h"
 #include "HilbertIndependenceConsumer.h"
 
-HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer):
+HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
+								 const SplitStrategy* split):
+  SliceStrategyCommon(split),
   _consumer(consumer) {
 }
 
@@ -126,35 +128,7 @@ bool HilbertStrategy::debugIsValidSlice(Slice* slice) {
 void HilbertStrategy::getPivot(Term& term, Slice& slice) {
   ASSERT(term.getVarCount() == slice.getVarCount());
 
-  // Get best (most populated) variable to split on. Term serves
-  // double-duty as a container of the support counts.
-  slice.getIdeal().getSupportCounts(term);
-
-  const Term& lcm = slice.getLcm();
-  for (size_t var = 0; var < slice.getVarCount(); ++var)
-	if (lcm[var] <= 1)
-	  term[var] = 0;
-
-  ASSERT(!term.isIdentity());
-  size_t bestVar = term.getFirstMaxExponent();
-
-  // Get median positive exponent of bestVar.
-  slice.singleDegreeSortIdeal(bestVar);
-  Ideal::const_iterator end = slice.getIdeal().end();
-  Ideal::const_iterator begin = slice.getIdeal().begin();
-  while ((*begin)[bestVar] == 0) {
-	++begin;
-	ASSERT(begin != end);
-  }
-  term.setToIdentity();
-  term[bestVar] = (*(begin + (distance(begin, end) ) / 2))[bestVar];
-  if (term[bestVar] == lcm[bestVar])
-	term[bestVar] -= 1;
-
-  ASSERT(!term.isIdentity());
-  ASSERT(!slice.getIdeal().contains(term));
-  ASSERT(!slice.getSubtract().contains(term));
-  ASSERT(term.strictlyDivides(slice.getLcm()));
+  _split->getPivot(term, slice);
 }
 
 void HilbertStrategy::freeConsumer(HilbertIndependenceConsumer* consumer) {

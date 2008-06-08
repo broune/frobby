@@ -70,12 +70,3 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
 	  slices.push_back(rightSlice);
   }
 }
-
-void computeMaximalStandardMonomials(Ideal& ideal, SliceStrategy* strategy) {
-  runSliceAlgorithm(ideal, strategy);
-}
-
-void computeHilbertSeries(const Ideal& ideal, CoefTermConsumer* consumer) {
-  HilbertStrategy strategy(consumer);
-  runSliceAlgorithm(ideal, &strategy);
-}
