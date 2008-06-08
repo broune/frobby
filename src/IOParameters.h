@@ -43,7 +43,7 @@ class IOParameters : public ParameterGroup {
   // in is autodetect, it will (also) be set.
   void autoDetectInputFormat(Scanner& in);
 
-  // Exits with an error message if the input or output format us not
+  // Exits with an error message if the input or output format is not
   // known.
   void validateFormats() const;
 

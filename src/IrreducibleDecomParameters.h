@@ -17,6 +17,8 @@
 #ifndef IRREDUCIBLE_DECOM_PARAMETERS_GUARD
 #define IRREDUCIBLE_DECOM_PARAMETERS_GUARD
 
+// TODO: rename to SliceParameters.
+
 #include "ParameterGroup.h"
 #include "BoolParameter.h"
 #include "StringParameter.h"
@@ -30,13 +32,9 @@ class IrreducibleDecomParameters : public ParameterGroup {
   void setUseIndependence(bool value);
   void setSplit(const string& split);
 
-  bool getPrintDebug() const;
-  bool getPrintStatistics() const;
   bool getUseBound() const;
-  bool getUseIndependence() const;
-  bool getMinimal() const;
-  
-  const string& getSplit() const;
+
+  void validateSplit(bool allowLabel, bool allowFrob);
 
   void apply(SliceFacade& facade) const;
 

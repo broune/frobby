@@ -61,6 +61,8 @@ void HilbertAction::perform() {
 	facade.readIdeal(in, ideal);
   }
 
+  // TODO: use SlicePArams
+
   SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
   if (_univariate)
 	facade.computeUnivariateHilbertSeries();

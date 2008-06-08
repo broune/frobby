@@ -73,34 +73,41 @@ void IrreducibleDecomParameters::setSplit(const string& split) {
   _split = split;
 }
 
-bool IrreducibleDecomParameters::getPrintDebug() const {
-  return _printDebug;
-}
-
-bool IrreducibleDecomParameters::getPrintStatistics() const {
-  return _printStatistics;
-}
-
 bool IrreducibleDecomParameters::getUseBound() const {
   return _useBound;
 }
 
-bool IrreducibleDecomParameters::getUseIndependence() const {
-  return _useIndependence;
-}
+void IrreducibleDecomParameters::validateSplit(bool allowLabel,
+											   bool allowFrob) {
+  SplitStrategy* split =
+	SplitStrategy::getStrategy(_split.getValue().c_str());
 
-bool IrreducibleDecomParameters::getMinimal() const {
-  return _minimal;
-}
+  if (split == 0) {
+	fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n",
+			_split.getValue().c_str());
+	exit(1);
+  }
 
-const string& IrreducibleDecomParameters::getSplit() const {
-  return _split;
+  if (split->isFrobeniusSplit() && !allowFrob) {
+	fputs("ERROR: Frobenius split strategy is not appropriate\n"
+		  "in this context.\n", stderr);
+	exit(1);
+  }
+
+  if (!allowLabel && split->isLabelSplit()) {
+	fputs("ERROR: Label split strategy is not appropriate\n"
+		  "in this context.\n", stderr);
+	exit(1);
+  }
 }
 
 void IrreducibleDecomParameters::apply(SliceFacade& facade) const {
-  facade.setPrintDebug(getPrintDebug());
-  facade.setPrintStatistics(getPrintStatistics());
-  facade.setUseIndependence(getUseIndependence());
-  facade.setIsMinimallyGenerated(getMinimal());
-  facade.setSplitStrategy(getSplit().c_str(), true);  
+  SplitStrategy* split =
+	SplitStrategy::getStrategy(_split.getValue().c_str());
+
+  facade.setPrintDebug(_printDebug);
+  facade.setPrintStatistics(_printStatistics);
+  facade.setUseIndependence(_useIndependence);
+  facade.setIsMinimallyGenerated(_minimal);
+  facade.setSplitStrategy(split);
 }

@@ -45,6 +45,8 @@ void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AssociatedPrimesAction::perform() {
+  _decomParameters.validateSplit(true, false);
+
   BigIdeal ideal;
 
   {

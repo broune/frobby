@@ -17,112 +17,29 @@
 #ifndef SPLIT_STRATEGY_GUARD
 #define SPLIT_STRATEGY_GUARD
 
-#include "Term.h"
-#include "Ideal.h"
-
+class Term;
 class Slice;
+class Ideal;
 
 class SplitStrategy {
  public:
-  enum SplitType {
-	Unknown,
+  virtual void getPivot(Term& pivot, Slice& slice) = 0;
+  virtual size_t getLabelSplitVariable(const Slice& slice) = 0;
 
-    Minimum,
-    Median,
-    Maximum,
-	MinGen,
-	Indep,
-	GCD,
+  virtual bool isPivotSplit() = 0;
+  virtual bool isLabelSplit() = 0;
+  virtual bool isFrobeniusSplit() = 0;
 
-	MaxLabel,
-	MinLabel,
-    VarLabel,
+  static SplitStrategy* getStrategy(const string& name);
 
-	FrobSpecial
-  };
+ protected:
+  virtual ~SplitStrategy();
 
-  SplitStrategy(SplitType ps):
-	_id(ps) {
-  }
-
-  static void getPivot(Term& pivot, Slice& slice, SplitStrategy ps);
-
-  static SplitStrategy getSplitStrategy(const string& name) {
-	if (name == "maxlabel")
-	  return MaxLabel;
-	if (name == "minlabel")
-	  return MinLabel;
-	if (name == "varlabel")
-	  return VarLabel;
-	if (name == "minimum")
-	  return Minimum;
-	if (name == "median")
-	  return Median;
-	if (name == "maximum")
-	  return Maximum;
-	if (name == "mingen")
-	  return MinGen;
-	if (name == "indep")
-	  return Indep;
-	if (name == "gcd")
-	  return GCD;
-	if (name == "frob")
-	  return FrobSpecial;
-	return Unknown;
-  }
-
-  static size_t getLabelSplitVariable(const Slice& slice,
-									  SplitStrategy labelStrategy);
-
-  static SplitStrategy getSpecialPivotStrategy() {
-	return FrobSpecial;
-  }
-
-  bool isPivotSplit() {
-	switch (_id) {
-	case Minimum:
-	case Median:
-	case Maximum:
-	case MinGen:
-	case Indep:
-	case GCD:
-	case FrobSpecial:
-	  return true;
-
-	default:
-	  return false;
-	}
-  }
-
-  bool isLabelSplit() {
-	switch (_id) {
-	case MaxLabel:
-	case MinLabel:
-    case VarLabel:
-	  return true;
-
-	default:
-	  return false;
-	}
-  }
-
-  bool isValid() {
-	return _id != Unknown;
-  }
-
-  bool isSpecialPivot() {
-	return _id == FrobSpecial;
-  }
-
-  SplitStrategy(): _id(Unknown) {}
-
- private:
   // To make these inaccessible.
-  //SplitStrategy();
-  //SplitStrategy(const SplitStrategy&);
-  //void operator=(const SplitStrategy&);
-
-  SplitType _id;
+  SplitStrategy();
+  SplitStrategy(const SplitStrategy&);
+  SplitStrategy& operator=(const SplitStrategy&);
+  bool operator==(const SplitStrategy&);
 };
 
 #endif

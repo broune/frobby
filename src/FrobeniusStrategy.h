@@ -28,7 +28,7 @@ class FrobeniusStrategy : public MsmStrategy, public TermConsumer {
 public:
   FrobeniusStrategy(TermConsumer* consumer,
 					TermGrader& grader,
-					SplitStrategy split,
+					SplitStrategy* split,
 					bool useBound);
   virtual ~FrobeniusStrategy();
 
@@ -52,7 +52,6 @@ private:
   bool _hasSeenAnyValue;
 
   bool _useBound;
-  bool _useFrobPivotStrategy;
 
   // These are in place of using static variables. The static
   // variables were introduced because constructing these objects took
