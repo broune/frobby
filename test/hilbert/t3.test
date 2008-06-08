@@ -1,5 +1,5 @@
-vars a, b, c, d;
-[
+R = QQ[a, b, c, d];
+I = monomialIdeal(
  a^2*b,
  a*b*c,
  a*c*d,
@@ -10,4 +10,4 @@ vars a, b, c, d;
  b*c^2,
  c^2*d,
  c*d^2
-];
+);

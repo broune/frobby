@@ -1,21 +1,15 @@
 #!/bin/bash
 
-../../$frobby hilbert -oformat m2 -canon -univariate off $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.ref
+testName="$1"
+shift
 
-if [ $? != 0 ]
-then
-  echo
-  echo Test $1 failed \(Multigraded Hilbert-Poincare series\)
-  exit 1
-fi
+inputFile="$testName.test"
+params="$*"
 
-../../$frobby hilbert -oformat m2 -univariate on $2 $3 $4 $5 $6 < $1 2> /dev/null | diff - $1.uni
+outputFile="$testName.multi"
+../testhelper hilbert $inputFile $outputFile $params -canon
+if [ $? != 0 ]; then exit 1; fi
 
-if [ $? != 0 ]
-then
-  echo
-  echo Test $1 failed \(Univariate Hilbert-Poincare series\)
-  exit 1
-fi
-
-echo -n .
+outputFile="$testName.uni"
+../testHelper hilbert $inputFile $outputFile $params -univariate -canon
+if [ $? != 0 ]; then exit 1; fi

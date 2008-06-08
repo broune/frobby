@@ -23,6 +23,8 @@
 # summary of all failing tests, instead of getting detailed
 # information on the first failure.
 
+# This script is designed to be run from a sub-directory of where it
+# resides.
 frobby=../../bin/frobby
 action="$1"
 inputFile="$2"
