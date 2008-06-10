@@ -34,6 +34,13 @@ shift
 shift
 shift
 
+idealCanon=0
+if [ "$1" = "_idealCanon" ];
+then
+  idealCanon=1;
+  shift;
+fi
+
 generate=0
 if [ "$1" = "_generate" ];
 then
@@ -61,8 +68,15 @@ then
   exit 0
 fi
 
-$frobby $action $params < $inputFile 2> /dev/null | \
-  diff - $referenceOutputFile > /dev/null
+if [ $idealCanon = 0 ];
+then
+  $frobby $action $params < $inputFile 2> /dev/null $canonCmd | \
+    diff - $referenceOutputFile > /dev/null
+else
+  $frobby $action $params < $inputFile 2> /dev/null $canonCmd | \
+    $frobby transform -canon 2>/dev/null | \
+    diff - $referenceOutputFile > /dev/null
+fi
 
 if [ $? = 0 ];
 then
@@ -88,16 +102,23 @@ echo "***** Reference output:"
 cat $referenceOutputFile
 
 echo "***** Standard output from Frobby:"
-$frobby $action $params < $inputFile 2> /dev/null
-
-echo "***** Output from diff:"
-$frobby $action $params < $inputFile 2> /dev/null | \
-  diff - $referenceOutputFile
+if [ $idealCanon = 0 ];
+then
+  $frobby $action $params < $inputFile 2>/dev/null
+else
+  $frobby $action $params < $inputFile 2>/dev/null | \
+    $frobby transform -canon 2>/dev/null
+fi
 
 echo "***** Error output from Frobby:"
 $frobby $action $params < $inputFile > /dev/null
 
+echo
 echo "***** A test $action: $inputFile -> $referenceOutputFile failed."
 echo "  $frobby $action $params < $inputFile"
+if [ $idealCanon = 1 ];
+then
+  echo "    | $frobby transform -canon 2>/dev/null"
+fi
 
 exit 1

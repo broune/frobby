@@ -18,7 +18,6 @@
 #include "SliceStrategyCommon.h"
 
 #include "Slice.h"
-#include "Term.h"
 
 SliceStrategyCommon::SliceStrategyCommon(const SplitStrategy* split):
   _split(split),
@@ -60,22 +59,25 @@ Slice* SliceStrategyCommon::newSlice() {
 void SliceStrategyCommon::pivotSplit(Slice* slice,
 									 Slice*& leftSlice,
 									 Slice*& rightSlice) {
-  Term pivot(slice->getVarCount());
-  getPivot(pivot, *slice);
+  _pivotTmp.reset(slice->getVarCount());
+  getPivot(_pivotTmp, *slice);
 
   // Assert valid pivot.
-  ASSERT(!pivot.isIdentity()); 
-  ASSERT(!slice->getIdeal().contains(pivot));
-  ASSERT(!slice->getSubtract().contains(pivot));
+  ASSERT(_pivotTmp.getVarCount() == slice->getVarCount());
+  ASSERT(!_pivotTmp.isIdentity()); 
+  ASSERT(!slice->getIdeal().contains(_pivotTmp));
+  ASSERT(!slice->getSubtract().contains(_pivotTmp));
 
   // The inner slice.
   leftSlice = newSlice();
   *leftSlice = *slice;
-  leftSlice->innerSlice(pivot);
+  leftSlice->innerSlice(_pivotTmp);
+  leftSlice->simplify();
 
   // The outer slice
   rightSlice = slice;
-  rightSlice->outerSlice(pivot);
+  rightSlice->outerSlice(_pivotTmp);
+  rightSlice->simplify();
 
   // Process the smaller one first to preserve memory.
   if (leftSlice->getIdeal().getGeneratorCount() <

@@ -39,8 +39,9 @@ class Polynomial {
   // same exponents. Does nothing if coef is zero.
   void add(const mpz_class& coef, const Term& term);
 
-  // Sort the terms in lexicographic order.
-  void sortTermsLex();
+  // Sort the terms in lexicographic order. Also adds same-monomial
+  // terms and removes zero coefficients if collect is true.
+  void sortTermsLex(bool collect = true);
 
  private:
   struct CoefTerm {

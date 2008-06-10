@@ -25,7 +25,6 @@
 #include "Projection.h"
 #include "SliceAlgorithm.h"
 #include "TermGrader.h"
-#include "IndependenceSplitter.h"
 #include "SliceEvent.h"
 
 Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal) {
@@ -35,11 +34,9 @@ Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal) {
   for (size_t var = 0; var < varCount; ++var)
 	sliceMultiply[var] = 1;
 
-  Slice* slice = new MsmSlice(ideal,
-							  Ideal(varCount),
-							  sliceMultiply,
+  Slice* slice = new MsmSlice(ideal, Ideal(varCount), sliceMultiply,
 							  _consumer);
-  simplify(*slice);
+  slice->simplify();
 
   return slice;
 }
@@ -121,7 +118,11 @@ void MsmStrategy::labelSplit(Slice* slice,
   }
 
   leftSlice = hasLabelSlice;
+  if (leftSlice != 0)
+	leftSlice->simplify();
+
   rightSlice = slice;
+  rightSlice->simplify();
 }
 
 MsmStrategy::MsmStrategy(TermConsumer* consumer, const SplitStrategy* split):
@@ -203,12 +204,11 @@ bool MsmStrategy::independenceSplit
  SliceEvent*& leftEvent, Slice*& leftSlice,
  SliceEvent*& rightEvent, Slice*& rightSlice) {
 
-  static IndependenceSplitter indep;
-  if (!indep.analyze(*slice))
+  if (!_indep.analyze(*slice))
     return false;
 
   MsmIndependenceSplit* events = new MsmIndependenceSplit();
-  events->reset(slice->getConsumer(), indep);
+  events->reset(slice->getConsumer(), _indep);
 
   leftEvent = events;
   MsmSlice* msmLeftSlice = new MsmSlice();
@@ -247,16 +247,6 @@ void MsmStrategy::split(Slice* sliceParam,
 	ASSERT(_split->isPivotSplit());
 	pivotSplit(slice, leftSlice, rightSlice);
   }
-
-  if (leftSlice != 0)
-	simplify(*leftSlice);
-
-  if (rightSlice != 0)
-	simplify(*rightSlice);
-}
-
-void MsmStrategy::simplify(Slice& slice) {
-  slice.simplify();
 }
 
 void MsmStrategy::getPivot(Term& pivot, Slice& slice) {
