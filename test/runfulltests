@@ -1,88 +1,59 @@
 #!/bin/bash
 
-./test/runtests
+test/runtests $*
 
 TIMEFORMAT=$' (%2lR real)'
 
-echo
-echo "*** decom"
-cd test/decom
+pivotSplits="minimum median maximum gcd indep"
+pivotActions="hilbert"
 
-echo -n " minimum  "
-./runtests -split minimum
-echo
+labelSplits="$pivotSplits maxlabel varlabel minlabel"
+labelActions="irrdecom assoprimes alexdual"
 
-echo -n " median   "
-./runtests -split median
-echo
+frobSplits="frob $pivotSplits"
+frobActions="frob"
 
-echo -n " maximum  "
-./runtests -split maximum
-echo
+for action in $labelActions;
+do
+  echo
+  echo "*** $action"
+  cd test/$action
+  for split in $labelSplits
+  do
+    echo -n " $split "
+    ./runtests $* -split $split
+    if [ $? != 0 ]; then exit 1; fi
+    echo
+  done
+  cd ../..
+done
 
-echo -n " maxlabel "
-./runtests -split maxlabel
-echo
+for action in $pivotActions;
+do
+  echo
+  echo "*** $action"
+  cd test/$action
+  for split in $pivotSplits
+  do
+    echo -n " $split "
+    ./runtests $* -split $split
+    if [ $? != 0 ]; then exit 1; fi
+    echo
+  done
+  cd ../..
+done
 
-echo -n " varlabel "
-./runtests -split varlabel
-echo
-
-echo -n " minlabel "
-./runtests -split minlabel
-echo
-
-echo -n " gcd      "
-./runtests -split gcd
-echo
-
-echo -n " indep    "
-./runtests -split indep
-echo
-
-cd ../..
-
-
-
-
-echo
-echo "*** frob"
-cd test/frob
-
-echo -n " frob     "
-./runtests -split frob
-echo
-
-echo -n " minimum  "
-./runtests -split minimum
-echo
-
-echo -n " median   "
-./runtests -split median
-echo
-
-echo -n " maximum  "
-./runtests -split maximum
-echo
-
-echo -n " maxlabel "
-./runtests -split maxlabel
-echo
-
-echo -n " varlabel "
-./runtests -split varlabel
-echo
-
-echo -n " minlabel "
-./runtests -split minlabel
-echo
-
-echo -n " gcd      "
-./runtests -split gcd
-echo
-
-echo -n " indep    "
-./runtests -split indep
-echo
-
-cd ../..
+for action in $frobActions;
+do
+  echo
+  echo "*** $action"
+  cd test/$action
+  for split in $frobSplits
+  do
+    echo -n " $split "
+    ./runtests $* -split $split
+    if [ $? != 0 ]; then exit 1; fi
+    echo
+  done
+  cd ../..
+done

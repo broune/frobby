@@ -2,112 +2,13 @@
 
 TIMEFORMAT=$' (%2lR real)'
 
-echo -n "hilbert    "
-cd test/hilbert
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "decom      "
-cd test/decom
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "frob       "
-cd test/frob
-./runtests -split median
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "intersect  "
-cd test/intersect
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "assoprimes "
-cd test/assoprimes
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "minimize   "
-cd test/minimize
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "transform  "
-cd test/transform
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "ptransform "
-cd test/ptransform
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "latformat  "
-cd test/latformat
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "alexdual   "
-cd test/alexdual
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
-
-echo -n "radical    "
-cd test/radical
-./runtests
-if [ $? != 0 ]
-then
-  exit 1
-fi
-echo
-cd ../..
+tests="hilbert irrdecom frob intersect assoprimes minimize transform ptransform latformat alexdual radical"
+for t in $tests;
+do
+  echo -n "$t "
+  cd test/$t
+  ./runtests $*
+  if [ $? != 0 ]; then exit 1; fi
+  echo
+  cd ../..
+done
