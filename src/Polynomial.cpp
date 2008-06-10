@@ -32,8 +32,34 @@ void Polynomial::add(const mpz_class& coef, const Term& term) {
   _terms.back().term = term;
 }
 
-void Polynomial::sortTermsLex() {
+void Polynomial::sortTermsLex(bool collect) {
+  if (_terms.empty())
+	return;
+
   sort(_terms.begin(), _terms.end());
+
+  if (!collect)
+	return;
+
+  // TODO: improve collection. E.g. have it be its own method.
+
+  size_t last = 0;
+  for (size_t i = 1; i < _terms.size(); ++i) {
+	if (_terms[last].term == _terms[i].term)
+	  _terms[last].coef += _terms[last].coef;
+	else {
+	  if (_terms[last].coef == 0)
+		_terms[last] = _terms[i];
+	  else {
+		++last;
+		if (last != i)
+		  _terms[last] = _terms[i];
+	  }
+	}
+  }
+
+  ASSERT(last < _terms.size());
+  _terms.erase(_terms.begin() + last + 1, _terms.end());	
 }
 
 bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {

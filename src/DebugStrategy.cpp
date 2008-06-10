@@ -52,8 +52,22 @@ void DebugStrategy::split(Slice* slice,
 						  SliceEvent*& leftEvent, Slice*& leftSlice,
 						  SliceEvent*& rightEvent, Slice*& rightSlice) {
   fputs("DEBUG: Starting split of slice.\n", _out);
+  slice->print(stderr);
   _strategy->split(slice, leftEvent, leftSlice, rightEvent, rightSlice);
+
   fputs("DEBUG: Done with split of slice.\n", _out);
+
+  fputs("Left slice: ", stderr);
+  if (leftSlice == 0)
+	fputs("None.\n", stderr);
+  else
+	leftSlice->print(stderr);
+
+  fputs("Right slice: ", stderr);
+  if (rightSlice == 0)
+	fputs("None.\n", stderr);
+  else
+	rightSlice->print(stderr);
 }
 
 void DebugStrategy::freeSlice(Slice* slice) {

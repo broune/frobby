@@ -41,7 +41,6 @@ HilbertStrategy::~HilbertStrategy() {
 
 Slice* HilbertStrategy::setupInitialSlice(const Ideal& ideal) {
   ASSERT(_consumer != 0);
-  _term.reset(ideal.getVarCount());
 
   size_t varCount = ideal.getVarCount();
   Ideal sliceIdeal(varCount);
@@ -70,8 +69,7 @@ split(Slice* sliceParam,
 	  SliceEvent*& leftEvent, Slice*& leftSlice,
 	  SliceEvent*& rightEvent, Slice*& rightSlice) {
   ASSERT(sliceParam != 0);
-  ASSERT(dynamic_cast<HilbertSlice*>(sliceParam) != 0);
-  HilbertSlice* slice = (HilbertSlice*)sliceParam;
+  HilbertSlice* slice = static_cast<HilbertSlice*>(sliceParam);
 
   ASSERT(leftEvent == 0);
   ASSERT(leftSlice == 0);
@@ -82,31 +80,8 @@ split(Slice* sliceParam,
 	  independenceSplit(slice, leftEvent, leftSlice, rightSlice))
 	return;
 
-  _term.reset(slice->getVarCount());
-  getPivot(_term, *slice);
-
-  ASSERT(_term.getVarCount() == slice->getVarCount());
-  ASSERT(!_term.isIdentity()); 
-  ASSERT(!slice->getIdeal().contains(_term));
-  ASSERT(!slice->getSubtract().contains(_term));
-
-  // Compute inner slice.
-  Slice* inner = newHilbertSlice();
-  *inner = *slice;
-  inner->innerSlice(_term);
-  inner->simplify();
-
-  // Compute outer slice.
-  slice->outerSlice(_term);
-  slice->simplify();
-
-  leftSlice = inner;
-  rightSlice = slice;
-
-  // Process smaller slices before larger ones to preserve memory.
-  if (leftSlice->getIdeal().getGeneratorCount() <
-	  rightSlice->getIdeal().getGeneratorCount())
-	swap(leftSlice, rightSlice);
+  ASSERT(_split->isPivotSplit());
+  pivotSplit(slice, leftSlice, rightSlice);
 }
 
 HilbertSlice* HilbertStrategy::newHilbertSlice() {

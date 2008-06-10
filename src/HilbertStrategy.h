@@ -18,7 +18,6 @@
 #define HILBERT_STRATEGY_GUARD
 
 #include <vector>
-#include "Term.h"
 #include "IndependenceSplitter.h"
 
 class HilbertSlice;
@@ -58,8 +57,6 @@ class HilbertStrategy : public SliceStrategyCommon {
 						 SliceEvent*& leftEvent,
 						 Slice*& leftSlice,
 						 Slice*& rightSlice);
-
-  Term _term;
 
   // It would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.

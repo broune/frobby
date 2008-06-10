@@ -1,8 +1,8 @@
 #!/bin/bash
 
-for t in `ls -S -r *.gen`
+for t in `ls -S -r *.test`
 do
-  ./runtest $t $*
+  ./runtest `basename $t .test` $*
   if [ $? != 0 ]
   then
     exit 1

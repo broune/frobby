@@ -22,6 +22,7 @@
 #include "TermConsumer.h"
 #include <vector>
 #include "SplitStrategy.h"
+#include "IndependenceSplitter.h"
 
 class MsmSlice;
 class Term;
@@ -59,11 +60,9 @@ class MsmStrategy : public SliceStrategyCommon {
 						 SliceEvent*& leftEvent, Slice*& leftSlice,
 						 SliceEvent*& rightEvent, Slice*& rightSlice);
 
-  // Simplifies the slice prior to a split.
-  virtual void simplify(Slice& slice);
-
   size_t getLabelSplitVariable(const Slice& slice);
 
+  IndependenceSplitter _indep;
   TermConsumer* _consumer;
 };
 

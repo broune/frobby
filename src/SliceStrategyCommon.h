@@ -22,9 +22,9 @@
 
 #include <vector>
 #include <string>
+#include "Term.h"
 
 class Slice;
-class Term;
 class SplitStrategy;
 
 // This class adds code to the SliceStrategy base class that is useful
@@ -72,6 +72,8 @@ class SliceStrategyCommon : public SliceStrategy {
   // would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
   vector<Slice*> _sliceCache;
+
+  Term _pivotTmp;
 };
 
 #endif
