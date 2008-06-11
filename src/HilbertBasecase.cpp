@@ -35,7 +35,7 @@ void HilbertBasecase::computeCoefficient(Ideal& ideal,
   size_t varCount = ideal.getVarCount();
 
   // This object is reused for several different purposes in order to
-  // avoid havin to allocate and deallocate the underlying data
+  // avoid having to allocate and deallocate the underlying data
   // structure.
   Term term(varCount);
   Ideal outer(varCount);
@@ -177,7 +177,7 @@ size_t HilbertBasecase::eliminate1Counts(Ideal& ideal,
 	return adj;
   }
 
-  for (size_t var = 0; var < varCount; ++var) {
+    for (size_t var = 0; var < varCount; ++var) {
 	if (canSimplify(var, ideal, counts)) {
 	  if (!ideal.colonReminimize(var, 1))
 		ideal.clear();
