@@ -74,7 +74,7 @@ void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
 
   mpz_out_str(out, 10, coef.get_mpz_t());
   if (!term.empty())
-	fputc(' ', out);
+	fputs("  ", out);
 
   writeTermOfIdeal(term, names, isFirst, out);  
 }
