@@ -20,27 +20,33 @@
 
 #include "VarNames.h"
 #include <vector>
+#include "Term.h"
+
+class TermTranslator;
 
 struct VarSorter {
   // Makes this object represent a sorted permutation of names.
-  VarSorter(VarNames& names);
+  VarSorter(const VarNames& names);
 
-  // Permute the exponents of term according to the permutation
-  // generated at construction.
+  // Permute the variables according to the permutation generated at
+  // construction.
   void permute(vector<mpz_class>& term);
+  void permute(Exponent* term);
+  void permute(TermTranslator* translator);
 
   // Set the parameter equal the names this object represents in
   // sorted order.
   void getOrderedNames(VarNames& names);
 
   // Internal method that needs to be public for technical reasons
-  // (other std::sort cannot use it.
+  // (otherwise std::sort cannot use it.
   bool operator()(size_t a, size_t b) const;
 
 private:
   vector<size_t> _permutation;
   VarNames _names;
-  vector<mpz_class> _tmp;
+  vector<mpz_class> _bigTmpTerm;
+  Term _tmpTerm;
 };
 
 #endif

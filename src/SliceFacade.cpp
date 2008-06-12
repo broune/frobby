@@ -37,6 +37,8 @@
 #include "BigPolynomial.h"
 #include "TotalDegreeCoefTermConsumer.h"
 #include "CoefBigTermRecorder.h"
+#include "CanonicalTermConsumer.h"
+#include "VarSorter.h"
 
 SliceFacade::SliceFacade(const BigIdeal& ideal,
 						 BigTermConsumer* consumer,
@@ -46,6 +48,7 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
   _printStatistics(false),
   _useIndependence(false),
   _isMinimallyGenerated(false),
+  _canonicalOutput(false),
   _out(0),
   _ioHandler(0),
   _termConsumer(consumer),
@@ -67,6 +70,7 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
   _printStatistics(false),
   _useIndependence(false),
   _isMinimallyGenerated(false),
+  _canonicalOutput(false),
   _out(0),
   _ioHandler(0),
   _termConsumer(0),
@@ -131,14 +135,27 @@ void SliceFacade::setSplitStrategy(const SplitStrategy* split) {
   _split = split;
 }
 
-void SliceFacade::computeMultigradedHilbertSeries(bool canonical) {
+void SliceFacade::setCanonicalOutput() {
+  ASSERT(_translator != 0);
+
+  _canonicalOutput = true;
+
+  VarSorter sorter(_translator->getNames());
+  sorter.permute(_translator);
+
+  Ideal::iterator stop = _ideal->end();
+  for (Ideal::iterator it = _ideal->begin(); it != stop; ++it)
+    sorter.permute(*it);
+}
+
+void SliceFacade::computeMultigradedHilbertSeries() {
   ASSERT(_ideal != 0);
 
   minimize();
 
   beginAction("Computing multigraded Hilbert-Poincare series.");
 
-  CoefTermConsumer* consumer = getCoefTermConsumer(canonical);
+  CoefTermConsumer* consumer = getCoefTermConsumer();
 
   SliceStrategy* strategy = new HilbertStrategy(consumer, _split);
   runSliceAlgorithmAndDeleteStrategy(strategy);
@@ -165,7 +182,7 @@ void SliceFacade::computeUnivariateHilbertSeries() {
 
   endAction();
 
-  computeMultigradedHilbertSeries(false);
+  computeMultigradedHilbertSeries();
 
   delete _generatedCoefTermConsumer;
   _generatedCoefTermConsumer = 0;
@@ -414,6 +431,8 @@ void SliceFacade::doIrreducibleIdealOutput() {
   ASSERT(_ioHandler != 0);
   ASSERT(_termConsumer == 0);
 
+  // TODO: make canonical work with this.
+
   _generatedTermConsumer =
 	_ioHandler->createIrreducibleIdealWriter(_translator, _out);
 
@@ -433,13 +452,17 @@ TermConsumer* SliceFacade::getTermConsumer() {
 	  _generatedTermConsumer =
 		_ioHandler->createIdealWriter(_translator, _out);
 	}
+
+	if (_canonicalOutput)
+	  _generatedTermConsumer = new CanonicalTermConsumer
+		(_generatedTermConsumer, _ideal->getVarCount(), _translator);
   }
   ASSERT(_generatedTermConsumer != 0);
 
   return _generatedTermConsumer;
 }
 
-CoefTermConsumer* SliceFacade::getCoefTermConsumer(bool canonical) {
+CoefTermConsumer* SliceFacade::getCoefTermConsumer() {
   ASSERT(_ideal != 0);
   ASSERT(_translator != 0);
 
@@ -452,11 +475,11 @@ CoefTermConsumer* SliceFacade::getCoefTermConsumer(bool canonical) {
 	  ASSERT(_out != 0);
 	  _generatedCoefTermConsumer =
 		_ioHandler->createPolynomialWriter(_translator, _out);
-
-	  if (canonical)
-		_generatedCoefTermConsumer = new CanonicalCoefTermConsumer
-		  (_generatedCoefTermConsumer, _ideal->getVarCount());
 	}
+
+	if (_canonicalOutput)
+	  _generatedCoefTermConsumer = new CanonicalCoefTermConsumer
+		(_generatedCoefTermConsumer, _ideal->getVarCount());
   }
 
   return _generatedCoefTermConsumer;

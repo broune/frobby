@@ -81,6 +81,11 @@ public:
   // Replaces var^v by var^(v-1).
   void decrement();
 
+  void renameVariables(const VarNames& names);
+  void swapVariables(size_t a, size_t b);
+
+  bool lessThanReverseLex(const Exponent* a, const Exponent* b) const;
+
   void print(FILE* file) const;
 
 private:

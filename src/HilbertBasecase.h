@@ -18,7 +18,10 @@
 #define HILBERT_BASECASE_GUARD
 
 class Ideal;
-class Term;
+
+#include "Term.h"
+
+#include <vector>
 
 class HilbertBasecase {
  public:
@@ -27,15 +30,23 @@ class HilbertBasecase {
   const mpz_class& getLastCoefficient();
 
  private:
-  void computeCoefficient(Ideal& ideal,
-						  bool negate,
-						  size_t extraSupport);
+  struct Entry {
+	bool negate;
+	size_t extraSupport;
+	Ideal* ideal;
+  };
 
+  vector<Entry> _todo;
+
+  Ideal* getNewIdeal();
+  void freeIdeal(Ideal* ideal);
+  vector<Ideal*> _idealCache;
 
   bool canSimplify(size_t var, const Ideal& ideal, const Term& counts);
   size_t eliminate1Counts(Ideal& ideal, Term& counts, bool& negate);
 
   mpz_class _sum;
+  Term _term;
 };
 
 #endif

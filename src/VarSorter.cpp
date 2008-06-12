@@ -17,11 +17,14 @@
 #include "stdinc.h"
 #include "VarSorter.h"
 
+#include "TermTranslator.h"
+
 #include <algorithm>
 
-VarSorter::VarSorter(VarNames& names):
+VarSorter::VarSorter(const VarNames& names):
   _names(names),
-  _tmp(names.getVarCount()) {
+  _bigTmpTerm(names.getVarCount()),
+  _tmpTerm(names.getVarCount()) {
   _permutation.reserve(names.getVarCount());
   for (size_t i = 0; i < names.getVarCount(); ++i)
 	_permutation.push_back(i);
@@ -41,8 +44,40 @@ void VarSorter::getOrderedNames(VarNames& names) {
 }
 
 void VarSorter::permute(vector<mpz_class>& term) {
-  ASSERT(term.size() == _tmp.size());
-  _tmp.swap(term);
+  ASSERT(term.size() == _bigTmpTerm.size());
+  _bigTmpTerm.swap(term);
   for (size_t i = 0; i < _permutation.size(); ++i)
-	mpz_swap(term[i].get_mpz_t(), _tmp[_permutation[i]].get_mpz_t());
+	mpz_swap(term[i].get_mpz_t(), _bigTmpTerm[_permutation[i]].get_mpz_t());
+}
+
+void VarSorter::permute(Exponent* term) {
+  _tmpTerm = term;
+  for (size_t i = 0; i < _permutation.size(); ++i)
+	std::swap(term[i], _tmpTerm[_permutation[i]]);
+}
+
+#include <iostream> // TODO
+void VarSorter::permute(TermTranslator* translator) {
+  ASSERT(translator->getVarCount() == _permutation.size());
+
+  size_t varCount = _permutation.size();
+  vector<int> done(translator->getVarCount());  
+  for (size_t var = 0; var < varCount; ++var) {
+	if (done[var])
+	  continue;
+
+	size_t v = var;
+	while (true) {
+	  done[v] = true;
+	  size_t nextInCycle = _permutation[v];
+	  if (done[nextInCycle])
+		break;
+
+	  cerr << "permuting " << v << " and " << nextInCycle << endl;
+
+	  translator->swapVariables(v, nextInCycle);
+	  v = nextInCycle;
+	}
+  }
+
 }

@@ -40,18 +40,12 @@ HilbertAction::HilbertAction():
   _univariate
   ("univariate",
    "Output a univariate polynomial by substituting t for each variable.",
-   false),
-
-  _canonical
-  ("canon",
-   "Collect and sort terms to get a canonical representation.",
    false) {
 }
 
 void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
   parameters.push_back(&_univariate);
-  parameters.push_back(&_canonical);
   _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
 }
@@ -75,7 +69,7 @@ void HilbertAction::perform() {
   if (_univariate)
 	facade.computeUnivariateHilbertSeries();
   else
-	facade.computeMultigradedHilbertSeries(_canonical);
+	facade.computeMultigradedHilbertSeries();
 }
 
 const char* HilbertAction::staticGetName() {

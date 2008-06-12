@@ -129,9 +129,8 @@ void BigPolynomial::add(const mpz_class& coef,
 
 bool BigPolynomial::compareCoefTerms(const BigCoefTerm& a,
 									 const BigCoefTerm& b) {
-  if (a.term < b.term)
-	return true;
-  if (a.term > b.term)
-	return false;
+  for (size_t var = 0; var < a.term.size(); ++var)
+	if (a.term[var] != b.term[var])
+	  return a.term[var] > b.term[var];
   return a.coef < b.coef;
 }

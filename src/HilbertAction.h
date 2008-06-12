@@ -36,7 +36,6 @@ class HilbertAction : public Action {
   IOParameters _io;
   SliceParameters _sliceParams;
   BoolParameter _univariate;
-  BoolParameter _canonical;
 };
 
 #endif
