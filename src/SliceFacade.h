@@ -91,12 +91,12 @@ class SliceFacade : public Facade {
   // specified label split strategy.
   void setSplitStrategy(const SplitStrategy* split);
 
+  // TODO
+  void setCanonicalOutput();
+
   // Compute the numerator of the multigraded Hilbert-Poincare series
-  // expessed as a rational function. If canonical is true, then the
-  // terms of the output polynomial are provided in lexicographical
-  // order according to exponent vectors. Otherwise the terms are
-  // provided in arbitrary order.
-  void computeMultigradedHilbertSeries(bool canonical);
+  // expessed as a rational function.
+  void computeMultigradedHilbertSeries();
 
   // Compute the numerator of the univariate (i.e. the grading is the
   // total degree) Hilbert-Poincare series expessed as a rational
@@ -177,12 +177,13 @@ class SliceFacade : public Facade {
   void doIrreducibleIdealOutput();
 
   TermConsumer* getTermConsumer();
-  CoefTermConsumer* getCoefTermConsumer(bool canonical);
+  CoefTermConsumer* getCoefTermConsumer();
 
   bool _printDebug;
   bool _printStatistics;
   bool _useIndependence;
   bool _isMinimallyGenerated;
+  bool _canonicalOutput;
 
   FILE* _out;
   IOHandler* _ioHandler;

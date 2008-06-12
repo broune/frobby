@@ -133,6 +133,19 @@ bool VarNames::operator==(const VarNames& names) const {
   return true;
 }
 
+void VarNames::swapVariables(size_t a, size_t b) {
+  ASSERT(a < getVarCount());
+  ASSERT(b < getVarCount());
+
+  if (a == b)
+	return;
+
+  _nameToIndex[_indexToName[a]->c_str()] = b;
+  _nameToIndex[_indexToName[b]->c_str()] = a;
+
+  std::swap(_indexToName[a], _indexToName[b]);
+}
+
 void VarNames::print(FILE* file) const {
   fputs("VarNames(", file);
   for (size_t i = 0; i < getVarCount(); ++i) {

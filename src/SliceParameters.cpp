@@ -49,6 +49,13 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
    "true, Frobby may go into an infinite loop or produce incorrect results.",
    false),
 
+  _canonical
+  ("canon",
+   "Sort the output, including the variables, to get a canonical\n"
+   "representation. This requires storing the entire output in memory, which\n"
+   "can increase run time modestly and increase memory consumption greatly.",
+   false),
+
   _split
   ("split",
    "The split selection strategy to use. Options are maxlabel, minlabel,\n"
@@ -63,6 +70,8 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
 
   if (_exposeBoundParam)
 	addParameter(&_useBound);
+  else
+	addParameter(&_canonical);
 }
 
 void SliceParameters::setUseIndependence(bool value) {
@@ -110,4 +119,6 @@ void SliceParameters::apply(SliceFacade& facade) const {
   facade.setUseIndependence(_useIndependence);
   facade.setIsMinimallyGenerated(_minimal);
   facade.setSplitStrategy(split);
+  if (_canonical)
+	facade.setCanonicalOutput();
 }

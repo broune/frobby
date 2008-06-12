@@ -44,6 +44,7 @@ class SliceParameters : public ParameterGroup {
   BoolParameter _useBound;
   BoolParameter _useIndependence;
   BoolParameter _minimal;
+  BoolParameter _canonical;
 
   StringParameter _split;
 };

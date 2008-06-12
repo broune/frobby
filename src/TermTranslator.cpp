@@ -227,6 +227,31 @@ void TermTranslator::decrement() {
 	  _exponents[var][exp] -= 1;
 }
 
+void TermTranslator::renameVariables(const VarNames& names) {
+  ASSERT(getVarCount() == names.getVarCount());
+
+  clearStrings();
+  _names = names;
+}
+
+void TermTranslator::swapVariables(size_t a, size_t b) {
+  ASSERT(a < getVarCount());
+  ASSERT(b < getVarCount());
+
+  if (a == b)
+	return;
+
+  std::swap(_exponents[a], _exponents[b]);
+
+  if (!_stringExponents.empty())
+	std::swap(_stringExponents[a], _stringExponents[b]);
+
+  if (!_stringVarExponents.empty())
+	std::swap(_stringVarExponents[a], _stringVarExponents[b]);
+
+  _names.swapVariables(a, b);
+}
+
 void TermTranslator::print(FILE* file) const {
   fputs("TermTranslator(\n", file);
   for (size_t variable = 0; variable < _exponents.size(); ++variable) {
@@ -333,4 +358,19 @@ const VarNames& TermTranslator::getNames() const {
 
 size_t TermTranslator::getVarCount() const {
   return _names.getVarCount();
+}
+
+bool TermTranslator::
+lessThanReverseLex(const Exponent* a, const Exponent* b) const {
+  size_t varCount = getVarCount();
+
+  for (size_t var = 0; var < varCount; ++var) {
+	const mpz_class& ae = getExponent(var, a[var]);
+	const mpz_class& be = getExponent(var, b[var]);
+
+    if (ae != be)
+	  return ae > be;
+  }
+
+  return 0;
 }

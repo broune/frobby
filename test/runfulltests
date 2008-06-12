@@ -1,6 +1,7 @@
 #!/bin/bash
 
 test/runtests $*
+if [ $? != 0 ]; then exit 1; fi
 
 TIMEFORMAT=$' (%2lR real)'
 

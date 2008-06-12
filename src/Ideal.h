@@ -21,7 +21,6 @@
 
 class Ideal {
   typedef vector<Exponent*> Cont;
-  typedef Cont::iterator iterator;
 
  public:
   Ideal(size_t varCount = 0);
@@ -31,9 +30,12 @@ class Ideal {
   // *** Accessors
 
   typedef Cont::const_iterator const_iterator;
+  typedef Cont::iterator iterator;
 
   const_iterator begin() const {return _terms.begin();}
   const_iterator end() const {return _terms.end();}
+  iterator begin() {return _terms.begin();}
+  iterator end() {return _terms.end();}
   size_t getVarCount() const {return _varCount;}
   size_t getGeneratorCount() const {return _terms.size();}
 

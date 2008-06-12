@@ -20,95 +20,120 @@
 #include "Ideal.h"
 #include "Term.h"
 
-void HilbertBasecase::computeCoefficient(Ideal& ideal) {
+void HilbertBasecase::computeCoefficient(Ideal& originalIdeal) {
+  ASSERT(_todo.empty());
+
   _sum = 0;
-  computeCoefficient(ideal, false, 0);
+  size_t varCount = originalIdeal.getVarCount();
+
+  // This object is reused for several different purposes in order to
+  // avoid having to allocate and deallocate the underlying data
+  // structure.
+  _term.reset(varCount);
+
+  Ideal* ideal = &originalIdeal;
+  bool negate = false;
+  size_t extraSupport = 0;
+
+  while (true) {
+	while (true) {
+	  // term is used to contain support counts to choose best pivot and
+	  // to detect base case.
+	  
+	  ideal->getSupportCounts(_term);
+	  if (_term.getSizeOfSupport() + extraSupport != varCount)
+		break;
+
+	  if (_term.isSquareFree()) {
+		if ((ideal->getGeneratorCount() % 2) == 1)
+		  negate = !negate;
+		if (negate)
+		  _sum -= 1;
+		else
+		  _sum += 1;
+		break;
+	  }
+
+	  if (ideal->getGeneratorCount() == 2) {
+		if (negate)
+		  _sum -= 1;
+		else
+		  _sum += 1;
+		break;
+	  }
+
+	  size_t ridden = eliminate1Counts(*ideal, _term, negate);
+	  if (ridden != 0) {
+		extraSupport += ridden;
+		continue;
+	  }
+
+	  if (ideal->getGeneratorCount() == 3) {
+		if (negate)
+		  _sum -= 2;
+		else
+		  _sum += 2;
+		break;
+	  }
+
+	  if (ideal->getGeneratorCount() == 4 &&
+		  _term[_term.getFirstMaxExponent()] == 2 &&
+		  _term.getSizeOfSupport() == 4) {
+		if (negate)
+		  _sum += 1;
+		else
+		  _sum -= 1;
+		break;
+	  }
+
+	  size_t bestPivotVar = _term.getFirstMaxExponent();
+
+	  // Handle inner slice.
+	  Ideal* outer = getNewIdeal();
+	  *outer = *ideal;
+	  outer->removeMultiples(bestPivotVar, 1);
+
+	  // inner is subtracted instead of added due to having added the
+	  // pivot to the ideal.
+	  {
+		Entry entry;
+		entry.negate = !negate;
+		entry.extraSupport = extraSupport + 1;
+		entry.ideal = outer;
+		_todo.push_back(entry);
+	  }
+
+	  // Handle outer slice.
+	  ideal->colonReminimize(bestPivotVar, 1);
+	  ++extraSupport;
+
+	  // Run loop again to process outer slice.
+	}
+
+	if (ideal != &originalIdeal)
+	  freeIdeal(ideal);
+
+	if (_todo.empty())
+	  break;
+
+	{
+	  Entry entry = _todo.back();
+	  _todo.pop_back();
+	
+	  ideal = entry.ideal;
+	  negate = entry.negate;
+	  extraSupport = entry.extraSupport;
+	}
+  }
+
+  ASSERT(_todo.empty());
 }
 
 const mpz_class& HilbertBasecase::getLastCoefficient() {
   return _sum;
 }
 
-void HilbertBasecase::computeCoefficient(Ideal& ideal,
-										 bool negate,
-										 size_t extraSupport) {
-  size_t varCount = ideal.getVarCount();
-
-  // This object is reused for several different purposes in order to
-  // avoid having to allocate and deallocate the underlying data
-  // structure.
-  Term term(varCount);
-  Ideal outer(varCount);
-
-  while (true) {
-	// term is used to contain support counts to choose best pivot and
-	// to detect base case.
-
-	ideal.getSupportCounts(term);
-	if (term.getSizeOfSupport() + extraSupport != varCount)
-	  return;
-
-	if (term.isSquareFree()) {
-	  if ((ideal.getGeneratorCount() % 2) == 1)
-		negate = !negate;
-	  if (negate)
-		_sum -= 1;
-	  else
-		_sum += 1;
-	  return;
-	}
-
-	if (ideal.getGeneratorCount() == 2) {
-	  if (negate)
-		_sum -= 1;
-	  else
-		_sum += 1;
-	  return;
-	}
-
-	size_t ridden = eliminate1Counts(ideal, term, negate);
-	if (ridden != 0) {
-	  extraSupport += ridden;
-	  continue;
-	}
-
-	if (ideal.getGeneratorCount() == 3) {
-	  if (negate)
-		_sum -= 2;
-	  else
-		_sum += 2;
-	  return;
-	}
-
-	if (ideal.getGeneratorCount() == 4 &&
-		term[term.getFirstMaxExponent()] == 2 &&
-		term.getSizeOfSupport() == 4) {
-	  if (negate)
-		_sum += 1;
-	  else
-		_sum -= 1;
-	  return;
-	}
-
-	size_t bestPivotVar = term.getFirstMaxExponent();
-
-	// Handle inner slice.
-	outer = ideal;
-	outer.removeMultiples(bestPivotVar, 1);
-
-	// Handle outer slice.
-	ideal.colonReminimize(bestPivotVar, 1);
-
-	// inner is subtracted instead of added due to having added the
-	// pivot to the ideal.
-	computeCoefficient(outer, !negate, extraSupport + 1);
-
-	// Run loop again instead of a recursive call. This has the
-	// benefit of avoiding reallocation of data structures, and also a
-	// C++ compiler cannot be trusted to optimize tail recursive calls
-	// away.
-	++extraSupport;
-  }
+void simplify(Ideal& ideal) {
 }
 
 bool HilbertBasecase::canSimplify(size_t var,
@@ -177,7 +202,7 @@ size_t HilbertBasecase::eliminate1Counts(Ideal& ideal,
 	return adj;
   }
 
-    for (size_t var = 0; var < varCount; ++var) {
+  for (size_t var = 0; var < varCount; ++var) {
 	if (canSimplify(var, ideal, counts)) {
 	  if (!ideal.colonReminimize(var, 1))
 		ideal.clear();
@@ -186,4 +211,21 @@ size_t HilbertBasecase::eliminate1Counts(Ideal& ideal,
   }
 
   return adj;
+}
+
+Ideal* HilbertBasecase::getNewIdeal() {
+  if (_idealCache.empty())
+	return new Ideal();
+
+  Ideal* ideal = _idealCache.back();
+  _idealCache.pop_back();
+
+  return ideal;
+}
+
+void HilbertBasecase::freeIdeal(Ideal* ideal) {
+  ASSERT(ideal != 0);
+
+  ideal->clear();
+  _idealCache.push_back(ideal);
 }

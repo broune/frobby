@@ -356,16 +356,14 @@ void Ideal::swap(Ideal& ideal) {
 
 
 
-const int ExponentsPerChunk = 1000;
+const int ExponentsPerChunk = 1024;
 const int MinTermsPerChunk = 2;
 
 class ChunkPool {
 public:
   Exponent* allocate() {
-    if (_chunks.empty()) {
-      Exponent* e = new Exponent[ExponentsPerChunk];
-      return e;
-    }
+    if (_chunks.empty())
+      return new Exponent[ExponentsPerChunk];
 
     Exponent* chunk = _chunks.back();
     _chunks.pop_back();
@@ -387,11 +385,10 @@ private:
 
 Ideal::ExponentAllocator::ExponentAllocator(size_t varCount):
   _varCount(varCount),
-  _chunk(0),
   _chunkIterator(0),
   _chunkEnd(0) {
   if (_varCount == 0)
-	_varCount = 1; // Otherwise strange things happen
+	_varCount = 1;
 }
 
 Ideal::ExponentAllocator::~ExponentAllocator() {
@@ -406,11 +403,10 @@ Exponent* Ideal::ExponentAllocator::allocate() {
       return term;
     }
 
-    _chunk = globalChunkPool.allocate();
-    _chunkIterator = _chunk;
-    _chunkEnd = _chunk + ExponentsPerChunk;
+    _chunkIterator = globalChunkPool.allocate();
+    _chunkEnd = _chunkIterator + ExponentsPerChunk;
 
-    _chunks.push_back(_chunk);
+    _chunks.push_back(_chunkIterator);
   }
 
   Exponent* term = _chunkIterator;
@@ -426,7 +422,6 @@ void Ideal::ExponentAllocator::reset(size_t newVarCount) {
       delete[] _chunks[i];
     _chunks.clear();
   } else {
-    _chunk = 0;
     _chunkIterator = 0;
     _chunkEnd = 0;
     
@@ -440,7 +435,6 @@ void Ideal::ExponentAllocator::reset(size_t newVarCount) {
 
 void Ideal::ExponentAllocator::swap(ExponentAllocator& allocator) {
   std::swap(_varCount, allocator._varCount);
-  std::swap(_chunk, allocator._chunk);
   std::swap(_chunkIterator, allocator._chunkIterator);
   std::swap(_chunkEnd, allocator._chunkEnd);
 

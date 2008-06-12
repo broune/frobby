@@ -81,6 +81,8 @@ public:
   VarNames& operator=(const VarNames& names);
   bool operator==(const VarNames& names) const;
 
+  void swapVariables(size_t a, size_t b);
+
   void print(FILE* file) const;
 
 private:
