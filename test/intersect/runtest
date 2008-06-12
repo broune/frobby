@@ -1,6 +1,6 @@
 #!/bin/bash
 
-../../$frobby intersect < $1 2> /dev/null -oformat monos | \
+../../$frobby intersect < $1.test 2> /dev/null -oformat monos | \
 ../../$frobby transform -canon 2> /dev/null| diff - $1.ref
 
 if [ $? != 0 ]
