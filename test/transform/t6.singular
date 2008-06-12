@@ -1,0 +1,65 @@
+ring R = 0, (dummy), lp;
+int noVars = 1;
+ideal I =
+ 0;
+ring R = 0, (dummy), lp;
+int noVars = 1;
+ideal I =
+ 1;
+ring R = 0, (a), lp;
+int noVars = 0;
+ideal I =
+ 0;
+ring R = 0, (a), lp;
+int noVars = 0;
+ideal I =
+ 1;
+ring R = 0, (a), lp;
+int noVars = 0;
+ideal I =
+ a;
+ring R = 0, (a), lp;
+int noVars = 0;
+ideal I =
+ a;
+ring R = 0, (b, a), lp;
+int noVars = 0;
+ideal I =
+ 0;
+ring R = 0, (a, b), lp;
+int noVars = 0;
+ideal I =
+ 0;
+ring R = 0, (a, b), lp;
+int noVars = 0;
+ideal I =
+ 1;
+ring R = 0, (b, c), lp;
+int noVars = 0;
+ideal I =
+ 1;
+ring R = 0, (a, b), lp;
+int noVars = 0;
+ideal I =
+ a*b,
+ a^2;
+ring R = 0, (a, b), lp;
+int noVars = 0;
+ideal I =
+ a*b,
+ a^3;
+ring R = 0, (a, b), lp;
+int noVars = 0;
+ideal I =
+ a*b,
+ a;
+ring R = 0, (long, longer, longestlongest), lp;
+int noVars = 0;
+ideal I =
+ 1,
+ long^100000000000000000000001;
+ring R = 0, (long, longer, longestlongest), lp;
+int noVars = 0;
+ideal I =
+ long^100000000000000000000000,
+ 1;

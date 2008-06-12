@@ -1,0 +1,10 @@
+ring R = 0, (a, A, b, abe), lp;
+int noVars = 0;
+ideal I =
+ a^12345678901234567890,
+ b,
+ A,
+ abe,
+ a*A*b*abe,
+ a*A,
+ b*abe;

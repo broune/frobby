@@ -1,0 +1,5 @@
+Use R ::= Q[x];
+Names := [];
+I := Ideal(
+ 1
+);

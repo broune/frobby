@@ -1,0 +1,4 @@
+ring R = 0, (a, b, c, d), lp;
+int noVars = 0;
+ideal I =
+ 1;
