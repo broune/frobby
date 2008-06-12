@@ -14,16 +14,16 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef INTERSECT_ACTION_GUARD
-#define INTERSECT_ACTION_GUARD
+#ifndef INTERSECTION_ACTION_GUARD
+#define INTERSECTION_ACTION_GUARD
 
 #include "Action.h"
 #include "IOParameters.h"
 #include "BoolParameter.h"
 
-class IntersectAction : public Action {
+class IntersectionAction : public Action {
  public:
-  IntersectAction();
+  IntersectionAction();
 
   virtual void obtainParameters(vector<Parameter*>& parameters);
 

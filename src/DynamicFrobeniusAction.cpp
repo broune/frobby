@@ -24,7 +24,7 @@
 DynamicFrobeniusAction::DynamicFrobeniusAction():
   Action
 (staticGetName(),
- "Compute Frobenius number using a dynamic programming algorithm.",
+ "Compute Frobenius number using dynamic programming.",
  "Compute the Frobenius number of the input Frobenius instance using a "
  "simple\n"
  "and quite slow dynamic programming algorithm. This functionality has "

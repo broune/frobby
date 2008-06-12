@@ -7,7 +7,7 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
   src/DynamicFrobeniusAction.h src/GenerateIdealAction.h \
   src/IntegerParameter.h src/GenerateFrobeniusAction.h \
   src/FrobeniusAction.h src/AnalyzeAction.h src/LatticeFormatAction.h \
-  src/IntersectAction.h src/AssociatedPrimesAction.h \
+  src/IntersectionAction.h src/AssociatedPrimesAction.h \
   src/AlexanderDualAction.h src/HilbertAction.h src/PolyTransformAction.h
 $(outdir)IOParameters.o: src/IOParameters.cpp src/stdinc.h src/IOParameters.h \
   src/ParameterGroup.h src/Parameter.h src/StringParameter.h \
@@ -36,7 +36,7 @@ $(outdir)MonosIOHandler.o: src/MonosIOHandler.cpp src/stdinc.h \
   src/MonosIOHandler.h src/IOHandler.h src/BigIdeal.h src/VarNames.h \
   src/Scanner.h
 $(outdir)BigIdeal.o: src/BigIdeal.cpp src/stdinc.h src/BigIdeal.h src/VarNames.h \
-  src/TermTranslator.h src/Ideal.h src/VarSorter.h
+  src/TermTranslator.h src/Ideal.h src/VarSorter.h src/Term.h
 $(outdir)TransformAction.o: src/TransformAction.cpp src/stdinc.h \
   src/TransformAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/IOParameters.h src/ParameterGroup.h src/StringParameter.h \
@@ -128,17 +128,10 @@ $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceEvent.h src/DebugStrategy.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h \
   src/Minimizer.h
-$(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
-  src/Term.h
 $(outdir)IntersectFacade.o: src/IntersectFacade.cpp src/stdinc.h \
   src/IntersectFacade.h src/Facade.h src/Timer.h src/Term.h \
   src/BigIdeal.h src/VarNames.h src/Ideal.h src/intersect.h \
   src/TermTranslator.h
-$(outdir)IntersectAction.o: src/IntersectAction.cpp src/stdinc.h \
-  src/IntersectAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
-  src/IOParameters.h src/ParameterGroup.h src/StringParameter.h \
-  src/IOHandler.h src/BigIdeal.h src/VarNames.h src/IOFacade.h \
-  src/Facade.h src/Timer.h src/IntersectFacade.h src/Scanner.h
 $(outdir)AssociatedPrimesAction.o: src/AssociatedPrimesAction.cpp src/stdinc.h \
   src/AssociatedPrimesAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
@@ -235,7 +228,7 @@ $(outdir)SliceFacade.o: src/SliceFacade.cpp src/stdinc.h src/SliceFacade.h \
   src/TermGrader.h src/FrobeniusStrategy.h \
   src/CanonicalCoefTermConsumer.h src/Polynomial.h src/HilbertStrategy.h \
   src/IOHandler.h src/BigPolynomial.h src/TotalDegreeCoefTermConsumer.h \
-  src/CoefBigTermRecorder.h src/CanonicalTermConsumer.h
+  src/CoefBigTermRecorder.h src/CanonicalTermConsumer.h src/VarSorter.h
 $(outdir)BigTermRecorder.o: src/BigTermRecorder.cpp src/stdinc.h \
   src/BigTermRecorder.h src/BigTermConsumer.h src/BigIdeal.h \
   src/VarNames.h src/Term.h src/TermTranslator.h
@@ -262,7 +255,7 @@ $(outdir)PolyTransformAction.o: src/PolyTransformAction.cpp src/stdinc.h \
   src/Facade.h src/Timer.h src/BigPolynomial.h src/VarNames.h \
   src/PolynomialFacade.h
 $(outdir)VarSorter.o: src/VarSorter.cpp src/stdinc.h src/VarSorter.h \
-  src/VarNames.h
+  src/VarNames.h src/Term.h src/TermTranslator.h
 $(outdir)SliceEvent.o: src/SliceEvent.cpp src/stdinc.h src/SliceEvent.h
 $(outdir)TermConsumer.o: src/TermConsumer.cpp src/stdinc.h src/TermConsumer.h
 $(outdir)NullTermConsumer.o: src/NullTermConsumer.cpp src/stdinc.h \
@@ -289,4 +282,5 @@ $(outdir)HilbertIndependenceConsumer.o: src/HilbertIndependenceConsumer.cpp \
 $(outdir)SplitStrategy.o: src/SplitStrategy.cpp src/stdinc.h src/SplitStrategy.h \
   src/Slice.h src/Ideal.h src/Term.h
 $(outdir)CanonicalTermConsumer.o: src/CanonicalTermConsumer.cpp src/stdinc.h \
-  src/CanonicalTermConsumer.h src/TermConsumer.h src/Ideal.h src/Term.h
+  src/CanonicalTermConsumer.h src/TermConsumer.h src/Ideal.h \
+  src/TermTranslator.h src/VarNames.h src/Term.h
