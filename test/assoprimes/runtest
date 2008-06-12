@@ -1,14 +1,11 @@
 #!/bin/bash
 
-../../$frobby assoprimes < $1 2> /dev/null | \
-../../$frobby transform -canon 2> /dev/null| diff - $1.ref
+testName="$1"
+shift
 
+inputFile="$testName.test"
+params="$*"
 
-if [ $? != 0 ]
-then
-  echo
-  echo Test $1 failed
-  exit 1
-fi
-
-echo -n .
+outputFile="$testName.assoprimes"
+../testhelper assoprimes $inputFile $outputFile $params -canon
+if [ $? != 0 ]; then exit 1; fi
