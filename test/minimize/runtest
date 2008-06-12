@@ -1,12 +1,11 @@
 #!/bin/bash
 
-../../$frobby transform -minimize -canon < $1 2> /dev/null | diff - $1.ref
+testName="$1"
+shift
 
-if [ $? != 0 ]
-then
-  echo
-  echo Test $1 failed
-  exit 1
-fi
+inputFile="$testName.test"
+params="$*"
 
-echo -n .
+outputFile="$testName.minimize"
+../testhelper transform $inputFile $outputFile $params -canon -minimize
+if [ $? != 0 ]; then exit 1; fi
