@@ -19,6 +19,7 @@
 
 #include "Action.h"
 #include "IOParameters.h"
+#include "BoolParameter.h"
 
 class IntersectAction : public Action {
  public:
@@ -32,6 +33,7 @@ class IntersectAction : public Action {
 
  private:
   IOParameters _io;
+  BoolParameter _canonical;
 };
 
 #endif
