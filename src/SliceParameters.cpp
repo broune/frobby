@@ -64,7 +64,7 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
    "median") {
   addParameter(&_minimal);
   addParameter(&_split);
-  //addParameter(&_printStatistics); // TODO: reimplement
+  addParameter(&_printStatistics);
   addParameter(&_useIndependence);
   addParameter(&_printDebug);
 

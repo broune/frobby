@@ -128,6 +128,11 @@ class Ideal {
   void removeMultiples(const Exponent* term);
   void removeMultiples(size_t var, Exponent e);
 
+  // Insert those generators of ideal that are not multiples of
+  // term. The second overload has term equal to var raised to e.
+  void insertNonMultiples(const Exponent* term, const Ideal& ideal);
+  void insertNonMultiples(size_t var, Exponent e, const Ideal& ideal);
+
   // Removes those generators that are strict multiples of term.
   void removeStrictMultiples(const Exponent* term);
 

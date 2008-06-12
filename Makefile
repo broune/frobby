@@ -31,7 +31,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   CoefTermConsumer.cpp NullCoefTermConsumer.cpp							\
   TranslatingCoefTermConsumer.cpp PolynomialFacade.cpp					\
   HilbertBasecase.cpp HilbertIndependenceConsumer.cpp					\
-  SplitStrategy.cpp CanonicalTermConsumer.cpp
+  SplitStrategy.cpp CanonicalTermConsumer.cpp StatisticsStrategy.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

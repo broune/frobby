@@ -67,6 +67,8 @@ $(outdir)GenerateFrobeniusAction.o: src/GenerateFrobeniusAction.cpp src/stdinc.h
   src/GenerateFrobeniusAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/BigIdeal.h src/VarNames.h src/GenerateDataFacade.h \
   src/Facade.h src/Timer.h src/IOFacade.h
+$(outdir)intersect.o: src/intersect.cpp src/stdinc.h src/intersect.h src/Ideal.h \
+  src/Term.h
 $(outdir)FrobeniusAction.o: src/FrobeniusAction.cpp src/stdinc.h \
   src/FrobeniusAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
   src/SliceParameters.h src/ParameterGroup.h src/StringParameter.h \
@@ -128,6 +130,12 @@ $(outdir)SliceAlgorithm.o: src/SliceAlgorithm.cpp src/stdinc.h \
   src/SliceEvent.h src/DebugStrategy.h
 $(outdir)Ideal.o: src/Ideal.cpp src/stdinc.h src/Ideal.h src/Term.h \
   src/Minimizer.h
+$(outdir)IntersectionAction.o: src/IntersectionAction.cpp src/stdinc.h \
+  src/IntersectionAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
+  src/StringParameter.h src/IOHandler.h src/BigIdeal.h src/VarNames.h \
+  src/IOFacade.h src/Facade.h src/Timer.h src/IntersectFacade.h \
+  src/Scanner.h src/IdealFacade.h
 $(outdir)IntersectFacade.o: src/IntersectFacade.cpp src/stdinc.h \
   src/IntersectFacade.h src/Facade.h src/Timer.h src/Term.h \
   src/BigIdeal.h src/VarNames.h src/Ideal.h src/intersect.h \
@@ -228,7 +236,8 @@ $(outdir)SliceFacade.o: src/SliceFacade.cpp src/stdinc.h src/SliceFacade.h \
   src/TermGrader.h src/FrobeniusStrategy.h \
   src/CanonicalCoefTermConsumer.h src/Polynomial.h src/HilbertStrategy.h \
   src/IOHandler.h src/BigPolynomial.h src/TotalDegreeCoefTermConsumer.h \
-  src/CoefBigTermRecorder.h src/CanonicalTermConsumer.h src/VarSorter.h
+  src/CoefBigTermRecorder.h src/CanonicalTermConsumer.h src/VarSorter.h \
+  src/StatisticsStrategy.h
 $(outdir)BigTermRecorder.o: src/BigTermRecorder.cpp src/stdinc.h \
   src/BigTermRecorder.h src/BigTermConsumer.h src/BigIdeal.h \
   src/VarNames.h src/Term.h src/TermTranslator.h
@@ -284,3 +293,6 @@ $(outdir)SplitStrategy.o: src/SplitStrategy.cpp src/stdinc.h src/SplitStrategy.h
 $(outdir)CanonicalTermConsumer.o: src/CanonicalTermConsumer.cpp src/stdinc.h \
   src/CanonicalTermConsumer.h src/TermConsumer.h src/Ideal.h \
   src/TermTranslator.h src/VarNames.h src/Term.h
+$(outdir)StatisticsStrategy.o: src/StatisticsStrategy.cpp src/stdinc.h \
+  src/StatisticsStrategy.h src/SliceStrategy.h src/Slice.h src/Ideal.h \
+  src/Term.h

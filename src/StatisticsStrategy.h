@@ -14,20 +14,19 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef DEBUG_STRATEGY
-#define DEBUG_STRATEGY
+#ifndef STATISTICS_STRATEGY
+#define STATISTICS_STRATEGY
 
 #include "SliceStrategy.h"
 
-// A wrapper for a slice that prints out some of what is going out for
-// debugging purposes, while delegating everything to the strategy
-// being wrapped.
-class DebugStrategy : public SliceStrategy {
+// A wrapper for a slice that collects statistics on what is going on,
+// while delegating everything to the strategy being wrapped.
+class StatisticsStrategy : public SliceStrategy {
  public:
   // Takes over ownership of strategy. Does not close out in
   // destructor.
-  DebugStrategy(SliceStrategy* strategy, FILE* out);
-  virtual ~DebugStrategy();
+  StatisticsStrategy(SliceStrategy* strategy, FILE* out);
+  virtual ~StatisticsStrategy();
 
   virtual void setUseIndependence(bool use);
 
@@ -42,6 +41,11 @@ class DebugStrategy : public SliceStrategy {
  private:
   SliceStrategy* _strategy;
   FILE* _out;
+
+  mpz_class _splitCount;
+  mpz_class _generatorCountSum;
+  mpz_class _varCountSum;
+  mpz_class _subtractGeneratorCountSum;
 };
 
 #endif

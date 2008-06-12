@@ -90,8 +90,8 @@ void HilbertBasecase::computeCoefficient(Ideal& originalIdeal) {
 
 	  // Handle inner slice.
 	  Ideal* outer = getNewIdeal();
-	  *outer = *ideal;
-	  outer->removeMultiples(bestPivotVar, 1);
+	  outer->clearAndSetVarCount(varCount);
+	  outer->insertNonMultiples(bestPivotVar, 1, *ideal);
 
 	  // inner is subtracted instead of added due to having added the
 	  // pivot to the ideal.
