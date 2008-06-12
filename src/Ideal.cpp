@@ -417,6 +417,8 @@ Exponent* Ideal::ExponentAllocator::allocate() {
 }
 
 void Ideal::ExponentAllocator::reset(size_t newVarCount) {
+  _varCount = newVarCount;
+
   if (useSingleChunking()) {
     for (size_t i = 0; i < _chunks.size(); ++i)
       delete[] _chunks[i];
@@ -429,8 +431,6 @@ void Ideal::ExponentAllocator::reset(size_t newVarCount) {
       globalChunkPool.deallocate(_chunks[i]);
     _chunks.clear();
   }
-
-  _varCount = newVarCount;
 }
 
 void Ideal::ExponentAllocator::swap(ExponentAllocator& allocator) {
