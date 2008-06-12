@@ -56,7 +56,7 @@ endif
 MATCH=false
 ifeq ($(MODE), release)
   outdir = bin/release/
-  cflags += -O3
+  cflags += -O2
   MATCH=true
 endif
 ifeq ($(MODE), debug)
@@ -66,13 +66,13 @@ ifeq ($(MODE), debug)
 endif
 ifeq ($(MODE), shared)
   outdir = bin/shared/
-  cflags += -O3 -fPIC
+  cflags += -O2 -fPIC
   library = frobby.so
   MATCH=true
 endif
 ifeq ($(MODE), profile)
   outdir = bin/profile/
-  cflags += -g -pg -O3
+  cflags += -g -pg -O2
   ldflags += -pg
   MATCH=true
 endif

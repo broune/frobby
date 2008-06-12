@@ -76,7 +76,8 @@ protected:
   // those where some minimal generator is divisible by the square of
   // that variable.
   size_t getBestVar(const Slice& slice) const {
-	Term co(slice.getVarCount()); // TODO
+	static Term co; // TODO: get rid of static
+	co.reset(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(co);
 
 	const Term& lcm = slice.getLcm();
