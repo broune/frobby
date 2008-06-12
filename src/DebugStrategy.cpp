@@ -29,7 +29,6 @@ DebugStrategy::DebugStrategy(SliceStrategy* strategy, FILE* out):
 DebugStrategy::~DebugStrategy() {
   delete _strategy;
   fputs("DEBUG: Slice computation done.\n", _out);
-  fflush(_out);
 }
 
 void DebugStrategy::setUseIndependence(bool use) {

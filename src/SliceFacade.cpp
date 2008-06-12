@@ -39,6 +39,7 @@
 #include "CoefBigTermRecorder.h"
 #include "CanonicalTermConsumer.h"
 #include "VarSorter.h"
+#include "StatisticsStrategy.h"
 
 SliceFacade::SliceFacade(const BigIdeal& ideal,
 						 BigTermConsumer* consumer,
@@ -420,6 +421,9 @@ void SliceFacade::runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy) {
 
   if (_printDebug)
 	strategy = new DebugStrategy(strategy, stderr);
+
+  if (_printStatistics)
+	strategy = new StatisticsStrategy(strategy, stderr);
 
   ::runSliceAlgorithm(*_ideal, strategy);
   delete strategy;

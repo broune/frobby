@@ -294,6 +294,20 @@ void Ideal::removeMultiples(size_t var, Exponent e) {
   _terms.erase(newEnd, stop);
 }
 
+void Ideal::insertNonMultiples(const Exponent* term, const Ideal& ideal) {
+  const_iterator stop = ideal.end();
+  for (const_iterator it = ideal.begin(); it != stop; ++it)
+    if (!::divides(term, *it, _varCount))
+	  insert(*it);
+}
+
+void Ideal::insertNonMultiples(size_t var, Exponent e, const Ideal& ideal) {
+  const_iterator stop = ideal.end();
+  for (const_iterator it = ideal.begin(); it != stop; ++it)
+    if ((*it)[var] < e)
+	  insert(*it);
+}
+
 void Ideal::removeStrictMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
   iterator stop = _terms.end();
