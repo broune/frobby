@@ -15,7 +15,7 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "IntersectAction.h"
+#include "IntersectionAction.h"
 
 #include "BigIdeal.h"
 #include "IOFacade.h"
@@ -23,7 +23,7 @@
 #include "Scanner.h"
 #include "IdealFacade.h"
 
-IntersectAction::IntersectAction():
+IntersectionAction::IntersectionAction():
   Action
 (staticGetName(),
  "Intersect the input ideals.",
@@ -41,13 +41,13 @@ IntersectAction::IntersectAction():
    false) {
 }
 
-void IntersectAction::obtainParameters(vector<Parameter*>& parameters) {
+void IntersectionAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
   parameters.push_back(&_canonical);
   Action::obtainParameters(parameters);
 }
 
-void IntersectAction::perform() {
+void IntersectionAction::perform() {
   Scanner in(_io.getInputFormat(), stdin);
   _io.autoDetectInputFormat(in);
   _io.validateFormats();
@@ -73,6 +73,6 @@ void IntersectAction::perform() {
     delete ideals[i];
 }
 
-const char* IntersectAction::staticGetName() {
-  return "intersect";
+const char* IntersectionAction::staticGetName() {
+  return "intersection";
 }

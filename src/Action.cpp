@@ -26,7 +26,7 @@
 #include "FrobeniusAction.h"
 #include "AnalyzeAction.h"
 #include "LatticeFormatAction.h"
-#include "IntersectAction.h"
+#include "IntersectionAction.h"
 #include "AssociatedPrimesAction.h"
 #include "AlexanderDualAction.h"
 #include "HilbertAction.h"
@@ -90,7 +90,7 @@ void Action::getActions(const string& prefix, ActionContainer& actions) {
   addIfPrefix<TransformAction>(prefix, actions);
   addIfPrefix<PolyTransformAction>(prefix, actions);
 
-  addIfPrefix<IntersectAction>(prefix, actions);
+  addIfPrefix<IntersectionAction>(prefix, actions);
   addIfPrefix<GenerateIdealAction>(prefix, actions);
   addIfPrefix<FrobeniusAction>(prefix, actions);
   addIfPrefix<DynamicFrobeniusAction>(prefix, actions);

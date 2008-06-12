@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 for t in `ls -S -r *.test`
 do
   ./runtest `basename $t .test` $*
