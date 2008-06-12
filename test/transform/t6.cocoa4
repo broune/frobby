@@ -1,0 +1,76 @@
+Use R ::= Q[x];
+Names := [];
+I := Ideal(
+);
+Use R ::= Q[x];
+Names := [];
+I := Ideal(
+ 1
+);
+Use R ::= Q[x[1..1]];
+Names := ["a"];
+I := Ideal(
+);
+Use R ::= Q[x[1..1]];
+Names := ["a"];
+I := Ideal(
+ 1
+);
+Use R ::= Q[x[1..1]];
+Names := ["a"];
+I := Ideal(
+ x[1]
+);
+Use R ::= Q[x[1..1]];
+Names := ["a"];
+I := Ideal(
+ x[1]
+);
+Use R ::= Q[x[1..2]];
+Names := ["b", "a"];
+I := Ideal(
+);
+Use R ::= Q[x[1..2]];
+Names := ["a", "b"];
+I := Ideal(
+);
+Use R ::= Q[x[1..2]];
+Names := ["a", "b"];
+I := Ideal(
+ 1
+);
+Use R ::= Q[x[1..2]];
+Names := ["b", "c"];
+I := Ideal(
+ 1
+);
+Use R ::= Q[x[1..2]];
+Names := ["a", "b"];
+I := Ideal(
+ x[1]x[2],
+ x[1]^2
+);
+Use R ::= Q[x[1..2]];
+Names := ["a", "b"];
+I := Ideal(
+ x[1]x[2],
+ x[1]^3
+);
+Use R ::= Q[x[1..2]];
+Names := ["a", "b"];
+I := Ideal(
+ x[1]x[2],
+ x[1]
+);
+Use R ::= Q[x[1..3]];
+Names := ["long", "longer", "longestlongest"];
+I := Ideal(
+ 1,
+ x[1]^100000000000000000000001
+);
+Use R ::= Q[x[1..3]];
+Names := ["long", "longer", "longestlongest"];
+I := Ideal(
+ x[1]^100000000000000000000000,
+ 1
+);

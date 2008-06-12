@@ -1,75 +1,28 @@
 #!/bin/bash
 
-../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat m2 < $1 2> /dev/null| diff - $1.m2
+# Note that not specifying the input format tests the format
+# autodetection. We first produce output in all formats with no other
+# transformation, and we end with producing canonical output without
+# specifying the output format.
 
-if [ $? != 0 ]
-then
-  echo
-  echo "Test $1 failed (monos to m2)"
-  exit 1
-fi
+testName="$1"
+shift
 
-../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat monos < $1.m2 2> /dev/null| diff - $1
+inputFile="$testName.test"
+oformats="m2 4ti2 monos newmonos singular cocoa4"
+params="$*"
 
-if [ $? != 0 ]
-then
-  echo
-  echo "Test $1 failed (m2 to monos)"
-  exit 1
-fi
+for oformat in $oformats; do
+  # Test format conversion to $oformat
+  outputFile="$testName.$oformat";
+  ../testhelper transform $inputFile $outputFile $params -oformat $oformat;
+  if [ $? != 0 ]; then exit 1; fi
 
+  # Test same-format transform
+  ../testhelper transform $outputFile $outputFile $params;
+  if [ $? != 0 ]; then exit 1; fi
+done
 
-
-../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat newmonos < $1 2> /dev/null| diff - $1.nm
-
-if [ $? != 0 ]
-then
-  echo
-  echo "Test $1 failed (monos to newmonos)"
-  exit 1
-fi
-
-
-
-../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat monos < $1.nm 2> /dev/null| diff - $1
-
-if [ $? != 0 ]
-then
-  echo
-  echo "Test $1 failed (newmonos to monos)"
-  exit 1
-fi
-
-
-
-
-../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat 4ti2 < $1 2> /dev/null| diff - $1.4ti2
-
-if [ $? != 0 ]
-then
-  echo
-  echo "Test $1 failed (monos to 4ti2)"
-  exit 1
-fi
-
-
-../../$frobby transform $2 $3 $4 $5 $6 $7 -oformat monos < $1.4ti2 2> /dev/null| diff - $1
-
-if [ $? != 0 ]
-then
-  echo
-  echo "Test $1 failed (4ti2 to monos)"
-  exit 1
-fi
-
-../../$frobby transform $2 $3 $4 $5 $6 $7 -canon < $1 2> /dev/null| diff - $1.canon
-
-if [ $? != 0 ]
-then
-  echo
-  echo "Test $1 failed (monos to canonical monos)"
-  exit 1
-fi
-
-
-echo -n .
+# Test canonicalization of input
+outputFile="$testName.canon";
+../testhelper transform $inputFile $outputFile $params -canon
