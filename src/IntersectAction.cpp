@@ -21,6 +21,7 @@
 #include "IOFacade.h"
 #include "IntersectFacade.h"
 #include "Scanner.h"
+#include "IdealFacade.h"
 
 IntersectAction::IntersectAction():
   Action
@@ -32,12 +33,18 @@ IntersectAction::IntersectAction():
  "Note that this operation is currently implemented in a rather slow way.",
  false),
 
-  _io(IOHandler::MonomialIdealList, IOHandler::MonomialIdeal) {
+  _io(IOHandler::MonomialIdealList, IOHandler::MonomialIdeal),
+
+  _canonical
+  ("canon",
+   "Sort the generators and variables to get a canonical output.",
+   false) {
 }
 
 void IntersectAction::obtainParameters(vector<Parameter*>& parameters) {
-  Action::obtainParameters(parameters);
   _io.obtainParameters(parameters);
+  parameters.push_back(&_canonical);
+  Action::obtainParameters(parameters);
 }
 
 void IntersectAction::perform() {
@@ -52,6 +59,12 @@ void IntersectAction::perform() {
 
   IntersectFacade facade(_printActions);
   BigIdeal* intersection = facade.intersect(ideals);
+
+  if (_canonical) {
+	IdealFacade idealFacade(_printActions);
+	idealFacade.sortVariables(*intersection);
+	idealFacade.sortGenerators(*intersection);
+  }
 
   ioFacade.writeIdeal(*intersection, _io.getOutputHandler(), stdout );
 
