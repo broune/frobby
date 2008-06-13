@@ -25,7 +25,6 @@ StatisticsStrategy::StatisticsStrategy(SliceStrategy* strategy, FILE* out):
   ASSERT(strategy != 0);
 }
 
-#include <iostream>
 StatisticsStrategy::~StatisticsStrategy() {
   fputs("*** Statistics\n", _out);
 

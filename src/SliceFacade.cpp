@@ -170,9 +170,6 @@ void SliceFacade::computeUnivariateHilbertSeries() {
 
   ASSERT(_translator != 0);
 
-  ASSERT(_out != 0); // TODO: lift this restriction
-  ASSERT(_ioHandler != 0);
-
   beginAction("Preparing to compute univariate Hilbert-Poincare series.");
 
   VarNames names;
@@ -186,10 +183,24 @@ void SliceFacade::computeUnivariateHilbertSeries() {
 
   computeMultigradedHilbertSeries();
 
+  beginAction("Writing computed univariate Hilbert-Poincare series.");
+
   delete _generatedCoefTermConsumer;
   _generatedCoefTermConsumer = 0;
 
-  _ioHandler->writePolynomial(polynomial, _out);
+  if (_out != 0) {
+	ASSERT(_ioHandler != 0);
+	_ioHandler->writePolynomial(polynomial, _out);
+  } else {
+	ASSERT(_termConsumer != 0);
+
+	size_t termCount = polynomial.getTermCount();
+	for (size_t term = 0; term < termCount; ++term)
+	  _coefTermConsumer->consume(polynomial.getCoef(term),
+								 polynomial.getTerm(term));
+  }
+
+  endAction();
 }
 
 void SliceFacade::computeIrreducibleDecomposition(bool encode) {
@@ -436,10 +447,12 @@ void SliceFacade::doIrreducibleIdealOutput() {
   ASSERT(_ioHandler != 0);
   ASSERT(_termConsumer == 0);
 
-  // TODO: make canonical work with this.
-
   _generatedTermConsumer =
 	_ioHandler->createIrreducibleIdealWriter(_translator, _out);
+
+  if (_canonicalOutput)
+	_generatedTermConsumer = new CanonicalTermConsumer
+	  (_generatedTermConsumer, _ideal->getVarCount(), _translator);
 
   ASSERT(_generatedTermConsumer != 0);
 }

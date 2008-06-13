@@ -33,6 +33,9 @@ class CoefBigTermRecorder : public CoefBigTermConsumer {
 
   virtual void consume(const mpz_class& coef, mpz_ptr* term);
 
+  virtual void consume(const mpz_class& coef,
+					   const vector<mpz_class>& term);
+
  private:
   BigPolynomial* _recordInto;
 };
