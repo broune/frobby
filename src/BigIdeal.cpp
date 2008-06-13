@@ -177,6 +177,17 @@ bool BigIdeal::empty() const {
   return _terms.empty();
 }
 
+bool BigIdeal::containsIdentity() const {
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
+	for (size_t var = 0; var < getVarCount(); ++var)
+	  if (_terms[gen][var] != 0)
+		goto notIdentity;
+	return true;
+  notIdentity:;
+  }
+  return false;
+}
+
 void BigIdeal::clear() {
   _terms.clear();
 }

@@ -78,18 +78,3 @@ void printPolynomial(MyPolynomial polynomial) {
 	fputc('\n', stdout);
   }
 }
-
-// Print an error and exit if a is not equal to b. Otherwise print a
-// dot to signify that a test passed.
-void assertEqual(const MyPolynomial& a, const MyPolynomial& b) {
-  if (!equal(a, b)) {
-	fputs("\nFrobby library interface test error: Polynomials not equal.\n",
-		  stdout);
-	printPolynomial(a);
-	printPolynomial(b);
-	exit(1);
-  } else {
-	fputc('.', stdout);
-	fflush(stdout);
-  }
-}

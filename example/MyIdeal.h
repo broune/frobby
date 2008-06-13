@@ -22,19 +22,50 @@ typedef std::vector<int> MyPP;
 // A representation of a monomial ideal.
 typedef std::vector<MyPP> MyIdeal;
 
+// A representation of a set of ideals.
+typedef std::vector<MyIdeal> MyIdeals;
 
+MyPP makePP(int e1, int e2, int e3, int e4) {
+  MyPP pp(4);
+  pp[0] = e1;
+  pp[1] = e2;
+  pp[2] = e3;
+  pp[3] = e4;
+  return pp;
+}
+
+MyIdeals makeIdeals(MyIdeal ideal) {
+  MyIdeals ideals;
+  ideals.push_back(ideal);
+  return ideals;
+}
+
+void sortIdeal(MyIdeal& a) {
+  std::sort(a.begin(), a.end());
+}
+
+void sortIdeals(MyIdeals& a) {
+  for (size_t i = 0; i < a.size(); ++i)
+	sortIdeal(a[i]);
+}
 
 // Returns true if a is equal to b.
 bool equal(MyIdeal a, MyIdeal b) {
-  std::sort(a.begin(), a.end());
-  std::sort(b.begin(), b.end());
+  sortIdeal(a);
+  sortIdeal(b);
+  return a == b;
+}
 
+bool equal(MyIdeals a, MyIdeals b) {
+  sortIdeals(a);
+  sortIdeals(b);
   return a == b;
 }
 
 // Print ideal to standard out.
 void printIdeal(MyIdeal ideal) {
-  fputs("Ideal:\n", stdout);
+  fprintf(stdout, "Ideal (%lu generator(s)):\n",
+		  (unsigned long)ideal.size());
   for (size_t gen = 0; gen < ideal.size(); ++gen) {
 	for (size_t var = 0; var < ideal[gen].size(); ++var)
 	  fprintf(stdout, " %i", ideal[gen][var]);
@@ -42,18 +73,11 @@ void printIdeal(MyIdeal ideal) {
   }
 }
 
-// Print an error and exit if a is not equal to b. Otherwise print a
-// dot to signify that a test passed.
-void assertEqual(const MyIdeal& a, const MyIdeal& b) {
-  if (!equal(a, b)) {
-	fputs("\nError: ideals not equal.\n", stdout);
-	printIdeal(a);
-	printIdeal(b);
-	exit(1);
-  } else {
-	fputc('.', stdout);
-	fflush(stdout);
-  }
+void printIdeals(MyIdeals ideals) {
+  fprintf(stdout, "*** Set of %lu ideals:\n",
+		  (unsigned long)ideals.size());
+  for (size_t i = 0; i < ideals.size(); ++i)
+	printIdeal(ideals[i]);
 }
 
 // Covert from MyIdeal to Frobby::Ideal. Ideal cannot be empty as then

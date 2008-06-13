@@ -21,13 +21,11 @@
 // Do a test where the point used for the Alexander dual is given
 // explicitly.
 void testAlexanderDualExplicitPoint() {
-  const size_t varCount = 4;
-
   MyIdeal inputIdeal = make4_xx_yy_xz_yz();
   Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
 
-  MyTermConsumer consumer(varCount);
-  mpz_t pointLcm[varCount];
+  MyIdealConsumer consumer;
+  mpz_t pointLcm[4];
   mpz_init_set_si(pointLcm[0], 2);
   mpz_init_set_si(pointLcm[1], 2);
   mpz_init_set_si(pointLcm[2], 3);
@@ -40,21 +38,21 @@ void testAlexanderDualExplicitPoint() {
   mpz_clear(pointLcm[2]);
   mpz_clear(pointLcm[3]);
 
-  assertEqual(consumer.getIdeal(), make4_xyzzz_xxyy());
+  assertEqual(consumer.getIdeal(), make4_xyzzz_xxyy(),
+			  "alexdual explicit of ideal");
 }
 
 // Do a test where the point used for the Alexander dual is not given
 // explicitly.
 void testAlexanderDualImplicitPoint() {
-  size_t varCount = 4;
-
   MyIdeal inputIdeal = make4_xx_yy_xz_yz();
   Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
 
-  MyTermConsumer consumer(varCount);
+  MyIdealConsumer consumer;
   Frobby::alexanderDual(frobbyInputIdeal, 0, consumer);
 
-  assertEqual(consumer.getIdeal(), make4_xyz_xxyy());
+  assertEqual(consumer.getIdeal(), make4_xyz_xxyy(),
+			  "alexdual implicit of ideal");
 }
 
 // Do a test of the edge case of computing the Alexander dual of the
@@ -63,10 +61,10 @@ void testAlexanderDualZeroIdeal() {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
 	Frobby::Ideal frobbyInputIdeal(varCount);
 
-	MyTermConsumer consumer(varCount);
+	MyIdealConsumer consumer;
 	Frobby::alexanderDual(frobbyInputIdeal, 0, consumer);
 
-	assertEqual(consumer.getIdeal(), make_0());
+	assertEqual(consumer.getIdeal(), make_0(), "alexdual of zero");
   }
 }
 
@@ -78,10 +76,10 @@ void testAlexanderDualOneIdeal() {
 	MyIdeal inputIdeal = make_1(varCount);
 	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
 
-	MyTermConsumer consumer(varCount);
+	MyIdealConsumer consumer;
 	Frobby::alexanderDual(frobbyInputIdeal, 0, consumer);
 
-	assertEqual(consumer.getIdeal(), make_1(varCount));
+	assertEqual(consumer.getIdeal(), make_1(varCount), "alexdual of one");
   }
 }
 

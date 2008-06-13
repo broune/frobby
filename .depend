@@ -300,7 +300,8 @@ $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h \
   src/../example/example.cpp src/../example/../src/frobby.h \
   src/../example/MyIdeal.h src/../example/MyPolynomial.h \
-  src/../example/MyTermConsumer.h src/../example/MyIdealCreators.h \
-  src/../example/MyPolynomialCreators.h \
+  src/../example/MyAsserts.h src/../example/MyConsumers.h \
+  src/../example/MyIdealCreators.h src/../example/MyPolynomialCreators.h \
   src/../example/AlexanderDualTests.h \
-  src/../example/HilbertPoincareTests.h
+  src/../example/HilbertPoincareTests.h \
+  src/../example/IrreducibleDecomTests.h

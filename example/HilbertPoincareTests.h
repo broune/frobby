@@ -20,26 +20,26 @@
 // number of tests of the computations performed.
 
 void testHilbertPoincareIdeal() {
-  size_t varCount = 4;
-
   MyIdeal inputIdeal = make4_xx_yy_xz_yz();
 
   {
 	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
 
-	MyTermConsumer consumer(varCount);
+	MyPolynomialConsumer consumer;
 	Frobby::multigradedHilbertPoincareSeries(frobbyInputIdeal, consumer);
 
-	assertEqual(consumer.getPolynomial(), makeHilbert4_xx_yy_xz_yz());
+	assertEqual(consumer.getPolynomial(), makeHilbert4_xx_yy_xz_yz(),
+				"multigraded hilbert ideal");
   }
 
   {
 	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
 
-	MyTermConsumer consumer(1);
+	MyPolynomialConsumer consumer;
 	Frobby::univariateHilbertPoincareSeries(frobbyInputIdeal, consumer);
 
-	assertEqual(consumer.getPolynomial(), makePoly1_1_m4to2_3to3_1to4_m1to5());
+	assertEqual(consumer.getPolynomial(), makePoly1_1_m4to2_3to3_1to4_m1to5(),
+				"univariate hilbert ideal");
   }
 }
 
@@ -47,19 +47,21 @@ void testHilbertPoincareZeroIdeal() {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
 	Frobby::Ideal frobbyInputIdeal(varCount);
 
-	MyTermConsumer consumer(varCount);
+	MyPolynomialConsumer consumer;
 	Frobby::multigradedHilbertPoincareSeries(frobbyInputIdeal, consumer);
-
-	assertEqual(consumer.getPolynomial(), makePoly_1(varCount));
+	
+	assertEqual(consumer.getPolynomial(), makePoly_1(varCount),
+				"multigraded hilbert zero");
   }
 
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
 	Frobby::Ideal frobbyInputIdeal(varCount);
 
-	MyTermConsumer consumer(1);
+	MyPolynomialConsumer consumer;
 	Frobby::univariateHilbertPoincareSeries(frobbyInputIdeal, consumer);
-
-	assertEqual(consumer.getPolynomial(), makePoly_1(1));
+	
+	assertEqual(consumer.getPolynomial(), makePoly_1(1),
+				"univariate hilbert zero");
   }
 }
 
@@ -68,20 +70,22 @@ void testHilbertPoincareOneIdeal() {
 	MyIdeal inputIdeal = make_1(varCount);
 	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
 
-	MyTermConsumer consumer(varCount);
+	MyPolynomialConsumer consumer;
 	Frobby::multigradedHilbertPoincareSeries(frobbyInputIdeal, consumer);
 
-	assertEqual(consumer.getPolynomial(), makePoly_0());
+	assertEqual(consumer.getPolynomial(), makePoly_0(),
+				"multigraded hilbert one");
   }
 
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
 	MyIdeal inputIdeal = make_1(varCount);
 	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
 
-	MyTermConsumer consumer(1);
+	MyPolynomialConsumer consumer;
 	Frobby::univariateHilbertPoincareSeries(frobbyInputIdeal, consumer);
 
-	assertEqual(consumer.getPolynomial(), makePoly_0());
+	assertEqual(consumer.getPolynomial(), makePoly_0(),
+				"univariate hilbert one");
   }
 }
 
