@@ -174,7 +174,8 @@ void HelpAction::perform() {
 
   for (ActionContainer::const_iterator it = actions.begin();
        it != actions.end(); ++it) {
-    if (string("help") == (*it)->getName())
+    if (string("help") == (*it)->getName() ||
+		string("test") == (*it)->getName())
       continue;
 
     size_t length = (string((*it)->getName())).size();

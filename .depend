@@ -8,7 +8,8 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
   src/IntegerParameter.h src/GenerateFrobeniusAction.h \
   src/FrobeniusAction.h src/AnalyzeAction.h src/LatticeFormatAction.h \
   src/IntersectionAction.h src/AssociatedPrimesAction.h \
-  src/AlexanderDualAction.h src/HilbertAction.h src/PolyTransformAction.h
+  src/AlexanderDualAction.h src/HilbertAction.h src/PolyTransformAction.h \
+  src/TestAction.h
 $(outdir)IOParameters.o: src/IOParameters.cpp src/stdinc.h src/IOParameters.h \
   src/ParameterGroup.h src/Parameter.h src/StringParameter.h \
   src/IOHandler.h src/IOFacade.h src/Facade.h src/Timer.h \
@@ -186,13 +187,12 @@ $(outdir)frobby.o: src/frobby.cpp src/stdinc.h src/frobby.h src/BigIdeal.h \
   src/VarNames.h src/SliceFacade.h src/SplitStrategy.h src/Facade.h \
   src/Timer.h src/SliceParameters.h src/ParameterGroup.h src/Parameter.h \
   src/BoolParameter.h src/StringParameter.h src/BigTermConsumer.h \
-  src/TermTranslator.h src/Term.h
+  src/TermTranslator.h src/Term.h src/CoefBigTermConsumer.h
 $(outdir)BigTermConsumer.o: src/BigTermConsumer.cpp src/stdinc.h \
   src/BigTermConsumer.h
 $(outdir)TranslatingTermConsumer.o: src/TranslatingTermConsumer.cpp src/stdinc.h \
   src/TranslatingTermConsumer.h src/TermConsumer.h src/Term.h \
   src/TermTranslator.h src/VarNames.h src/BigTermConsumer.h
-$(outdir)frobbyTest.o: src/frobbyTest.cpp src/stdinc.h src/frobby.h
 $(outdir)HilbertAction.o: src/HilbertAction.cpp src/stdinc.h src/HilbertAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h src/IOParameters.h \
   src/ParameterGroup.h src/StringParameter.h src/IOHandler.h \
@@ -296,3 +296,11 @@ $(outdir)CanonicalTermConsumer.o: src/CanonicalTermConsumer.cpp src/stdinc.h \
 $(outdir)StatisticsStrategy.o: src/StatisticsStrategy.cpp src/stdinc.h \
   src/StatisticsStrategy.h src/SliceStrategy.h src/Slice.h src/Ideal.h \
   src/Term.h
+$(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
+  src/Action.h src/BoolParameter.h src/Parameter.h \
+  src/../example/example.cpp src/../example/../src/frobby.h \
+  src/../example/MyIdeal.h src/../example/MyPolynomial.h \
+  src/../example/MyTermConsumer.h src/../example/MyIdealCreators.h \
+  src/../example/MyPolynomialCreators.h \
+  src/../example/AlexanderDualTests.h \
+  src/../example/HilbertPoincareTests.h

@@ -183,7 +183,7 @@ void SliceFacade::computeUnivariateHilbertSeries() {
 
   computeMultigradedHilbertSeries();
 
-  beginAction("Writing computed univariate Hilbert-Poincare series.");
+  beginAction("Output of computed univariate Hilbert-Poincare series.");
 
   delete _generatedCoefTermConsumer;
   _generatedCoefTermConsumer = 0;
@@ -192,7 +192,7 @@ void SliceFacade::computeUnivariateHilbertSeries() {
 	ASSERT(_ioHandler != 0);
 	_ioHandler->writePolynomial(polynomial, _out);
   } else {
-	ASSERT(_termConsumer != 0);
+	ASSERT(_coefTermConsumer != 0);
 
 	size_t termCount = polynomial.getTermCount();
 	for (size_t term = 0; term < termCount; ++term)

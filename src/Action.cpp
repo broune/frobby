@@ -31,6 +31,8 @@
 #include "AlexanderDualAction.h"
 #include "HilbertAction.h"
 #include "PolyTransformAction.h"
+#include "HelpAction.h"
+#include "TestAction.h"
 
 Action::Action(const char* name,
 			   const char* shortDescription,
@@ -99,6 +101,7 @@ void Action::getActions(const string& prefix, ActionContainer& actions) {
   addIfPrefix<LatticeFormatAction>(prefix, actions);
 
   addIfPrefix<HelpAction>(prefix, actions);
+  addIfPrefix<TestAction>(prefix, actions);
 }
 
 const char* Action::getName() const {
