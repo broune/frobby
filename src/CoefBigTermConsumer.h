@@ -17,6 +17,8 @@
 #ifndef COEF_BIG_TERM_CONSUMER_GUARD
 #define COEF_BIG_TERM_CONSUMER_GUARD
 
+#include <vector>
+
 class Term;
 class TermTranslator;
 
@@ -29,6 +31,9 @@ class CoefBigTermConsumer {
 					   TermTranslator* translator) = 0;
 
   virtual void consume(const mpz_class& coef, mpz_ptr* term) = 0;
+
+  virtual void consume(const mpz_class& coef,
+					   const vector<mpz_class>& term) = 0;
 };
 
 #endif

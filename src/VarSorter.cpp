@@ -56,7 +56,6 @@ void VarSorter::permute(Exponent* term) {
 	std::swap(term[i], _tmpTerm[_permutation[i]]);
 }
 
-#include <iostream> // TODO
 void VarSorter::permute(TermTranslator* translator) {
   ASSERT(translator->getVarCount() == _permutation.size());
 
@@ -72,8 +71,6 @@ void VarSorter::permute(TermTranslator* translator) {
 	  size_t nextInCycle = _permutation[v];
 	  if (done[nextInCycle])
 		break;
-
-	  cerr << "permuting " << v << " and " << nextInCycle << endl;
 
 	  translator->swapVariables(v, nextInCycle);
 	  v = nextInCycle;
