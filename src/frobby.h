@@ -57,40 +57,65 @@ namespace Frobby {
     FrobbyImpl::FrobbyIdealHelper* _data;
   };
 
-  // This class is a way for you to get output from Frobby one term at
-  // a time. Most computations performed by Frobby can produce output
-  // continously instead of having to wait for the computation to be
-  // done to be able to produce any output. Often the output can be
-  // processed, such as writing it to disk, as it is produced, and in
-  // these cases there is no reason to store all of the output before
-  // processing any of it. Often just storing the output can consume
-  // many times the amount of memory Frobby otherwise needs to carry
-  // out the computation.
-  class TermConsumer {
+  // The consumer classes below provide way to get output from Frobby
+  // one term at a time. Most computations performed by Frobby can
+  // produce output continously instead of having to wait for the
+  // computation to be done to be able to produce any output. Often
+  // the output can be processed, such as writing it to disk, as it is
+  // produced, and in these cases there is no reason to store all of
+  // the output before processing any of it. Often just storing the
+  // output can consume many times the amount of memory Frobby
+  // otherwise needs to carry out the computation.
+  //
+  // The parameters passed to the consume method of a consumer must
+  // not be altered or deallocated, and no reference to them can be
+  // retained after the consume method has returned. If the output
+  // must be stored, then a copy must be made.
+
+  // For output of monomial ideals from Frobby.
+  class IdealConsumer {
   public:
-    virtual ~TermConsumer();
+	// The provided implementation does nothing.
+    virtual ~IdealConsumer();
 
-	// This method is used to output a term with no associated
-	// coefficient. Either this method is used to produce all of the
-	// output from a computation, or it is not used at all, i.e. this
-	// method is not used in case the output has a coefficient of 1.
-	//
-    // exponentVector is an array containing the exponents of a term.
-    // You may not retain a reference to the array exponentVector itself
-    // or to any of the integers pointed to by the entries of exponentVector.
-    // You may not alter the array exponentVector or any of the integers
-    // pointed to. Doing so will result in undefined behavior.
-	//
-	// The provided implementation of this method does nothing.
-    virtual void consume(mpz_ptr* exponentVector);
+	// Called before output of a monomial ideal. varCount is the
+	// number of variables of the output ideal. The provided
+	// implementation does nothing.
+	virtual void idealBegin(size_t varCount);
 
-    // This method is used to ouput a term with an associated
-	// coefficient. The restrictions on use of exponentVector are the
-	// same as for the other overload. You may not alter or deallocate
-	// the integer in the paramter coefficient.
-	//
-	// The provided implemenation of this method does nothing.
-	virtual void consume(const mpz_t coefficient, mpz_ptr* exponentVector);
+	// For output of a generator of the ideal. exponentVector is an
+	// array containing the exponents of the generator.
+    virtual void consume(mpz_ptr* exponentVector) = 0;
+
+	// Called after output of a monomial ideal. The provided
+	// implementation does nothing.
+	virtual void idealEnd();
+  };
+
+  // This typedef is for backwards compatability. The use of the name
+  // TermConsumer is deprecated and will be removed in a future
+  // version of Frobby.
+  typedef IdealConsumer TermConsumer;
+
+  // For output of polynomials from Frobby.
+  class PolynomialConsumer {
+  public:
+	// The provided implementation does nothing.
+	virtual ~PolynomialConsumer();
+
+	// Called before output of a polynomial. varCount is the number of
+	// variables of the output polynomial. The provided implementation
+	// does nothing.
+	virtual void polynomialBegin(size_t varCount);
+
+	// For output of a term of the polynomial. coefficient contains
+	// the coefficient of the term, and exponentVector is an array
+	// containing the exponents of the term.
+	virtual void consume(const mpz_t coefficient, mpz_ptr* exponentVector) = 0;
+
+	// Called after output of a polynomial. The provided
+	// implementation does nothing.
+	virtual void polynomialEnd();
   };
 
   // Compute the Alexander dual of ideal using the point
@@ -108,22 +133,57 @@ namespace Frobby {
   // exponentVector.
   void alexanderDual(const Ideal& ideal,
                      const mpz_t* exponentVector,
-                     TermConsumer& consumer);
+                     IdealConsumer& consumer);
 
-  // Compute the muligraded Hilbert-Poincare series of ideal. More
+  // Compute the multigraded Hilbert-Poincare series of ideal. More
   // precisely, compute the numerator polynomial of the series
   // expressed as a rational function with (1-x1)...(1-xn) in the
   // denominator where x1,...,xn are the variables in the polynomial
   // ring. The multigraded Hilbert-Poincare series of a monomial ideal
   // is the possibly infinite sum of all monomials not in that ideal.
   void multigradedHilbertPoincareSeries(const Ideal& ideal,
-										TermConsumer& consumer);
+										PolynomialConsumer& consumer);
 
   // Compute the univariate Hilbert-Poincare series of ideal. The
   // univariate series can be obtained from the multigraded one by
   // substituting the same variable for each other variable.
   void univariateHilbertPoincareSeries(const Ideal& ideal,
-									   TermConsumer& consumer);
+									   PolynomialConsumer& consumer);
+
+  // Compute the irreducible decomposition of ideal. Every monomial
+  // ideal can be written uniquely as the irredundant intersection of
+  // irreducible monomial ideals, and each intersectand in this
+  // intersection is called a irreducible component. A monomial ideal
+  // is irreducible if and only if each minimal generator is a pure
+  // power, i.e. has the form x^e for a variable x and an integer
+  // exponent e.
+  //
+  // The output is each of the irreducible components. These are
+  // provided to the consumer in some arbitrary order. The ideal
+  // generated by the identity has no irreducible components, since
+  // the intersection of no ideals is the entire ring, i.e. the ideal
+  // generated by the identity. The output for the zero ideal is a
+  // single ideal which is the zero ideal itself.
+  void irreducibleDecompositionAsIdeals(const Ideal& ideal,
+										IdealConsumer& consumer);
+
+  // irreducibleDecompositionAsMonomials computes the irreducible
+  // decomposition of ideal, and encodes each irreducible component as
+  // a monomial. This is done by multiplyng the minimal generators of
+  // the irreducible ideal, which defines a bijection between
+  // irreducible monomial ideals and monomials.
+  //
+  // It is notable that the ideal generated by the identity has no
+  // irreducible components, so the output is the zero ideal, since
+  // that ideal has no generators.
+  //
+  // The zero ideal as input presents a problem, since no monomial
+  // corresponds to the zero ideal. If ideal is the zero ideal, then
+  // there is no output (i.e. idealBegin does not get called on the
+  // consumer), and the return value is false. Otherwise the return
+  // value is true.
+  bool irreducibleDecompositionAsMonomials(const Ideal& ideal,
+										   IdealConsumer& consumer);
 }
 
 #endif

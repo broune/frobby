@@ -25,53 +25,19 @@
 #include "Term.h"
 #include "CoefBigTermConsumer.h"
 
-class ExternalConsumerAdapter :
-  public BigTermConsumer, public CoefBigTermConsumer{
-public:
-  ExternalConsumerAdapter(Frobby::TermConsumer* consumer,
-						  size_t varCount):
-	_consumer(consumer),
+class ConsumerWrapper {
+protected:
+  ConsumerWrapper(size_t varCount):
 	_varCount(varCount),
 	_term(new mpz_ptr[varCount]) {
-	ASSERT(consumer != 0);
   }
 
-  virtual ~ExternalConsumerAdapter() {
-    delete[] _term;
+  virtual ~ConsumerWrapper() {
+	delete[] _term;
   }
 
-  // BigTermConsumer methods.
-  virtual void consume(const Term& term, TermTranslator* translator) {
-	ASSERT(term.getVarCount() == _varCount);
-	setTerm(term, translator);
-	_consumer->consume(_term);
-  }
-
-  virtual void consume(mpz_ptr* term) {
-	_consumer->consume(term);
-  }
-
-  // CoefBigTermConsumer methods.
-  virtual void consume(const mpz_class& coef,
-					   const Term& term,
-					   TermTranslator* translator) {
-	setTerm(term, translator);
-	_consumer->consume(coef.get_mpz_t(), _term);
-  }
-
-  virtual void consume(const mpz_class& coef, mpz_ptr* term) {
-	_consumer->consume(coef.get_mpz_t(), term);
-  }
-
-  virtual void consume(const mpz_class& coef,
-					   const vector<mpz_class>& term) {
-	for (size_t var = 0; var < _varCount; ++var)
-	  _term[var] = const_cast<mpz_ptr>(term[var].get_mpz_t());
-	_consumer->consume(coef.get_mpz_t(), _term);
-  }
-
-private:
   void setTerm(const Term& term, TermTranslator* translator) {
+	ASSERT(translator != 0);
 	ASSERT(term.getVarCount() == _varCount);
 	ASSERT(translator->getVarCount() == _varCount);
 
@@ -80,19 +46,106 @@ private:
 		(translator->getExponent(var, term).get_mpz_t());
   }
 
-  Frobby::TermConsumer* _consumer;
   size_t _varCount;
   mpz_ptr* _term;
 };
 
-Frobby::TermConsumer::~TermConsumer() {
+class ExternalIdealConsumerWrapper : public BigTermConsumer,
+									 public ConsumerWrapper {
+public:
+  ExternalIdealConsumerWrapper(Frobby::IdealConsumer* consumer,
+							   size_t varCount):
+	ConsumerWrapper(varCount),
+	_consumer(consumer) {
+	ASSERT(consumer != 0);
+	consumer->idealBegin(varCount);
+  }
+
+  virtual ~ExternalIdealConsumerWrapper() {
+	_consumer->idealEnd();
+  }
+
+  virtual void consume(const Term& term, TermTranslator* translator) {
+	ASSERT(translator != 0);
+	ASSERT(term.getVarCount() == _varCount);
+	ASSERT(translator->getVarCount() == _varCount);
+
+	setTerm(term, translator);
+	_consumer->consume(_term);
+  }
+
+  virtual void consume(mpz_ptr* term) {
+	ASSERT(term != 0);
+
+	_consumer->consume(term);
+  }
+
+private:
+  Frobby::IdealConsumer* _consumer;
+};
+
+class ExternalPolynomialConsumerWrapper : public CoefBigTermConsumer,
+										  public ConsumerWrapper {
+public:
+  ExternalPolynomialConsumerWrapper(Frobby::PolynomialConsumer* consumer,
+									size_t varCount):
+	ConsumerWrapper(varCount),
+	_consumer(consumer) {
+	ASSERT(consumer != 0);
+	consumer->polynomialBegin(varCount);
+  }
+
+  virtual ~ExternalPolynomialConsumerWrapper() {
+    delete[] _term;
+	_consumer->polynomialEnd();
+  }
+
+  virtual void consume(const mpz_class& coef,
+					   const Term& term,
+					   TermTranslator* translator) {
+	ASSERT(translator != 0);
+	ASSERT(term.getVarCount() == _varCount);
+	ASSERT(translator->getVarCount() == _varCount);
+
+	setTerm(term, translator);
+	_consumer->consume(coef.get_mpz_t(), _term);
+  }
+
+  virtual void consume(const mpz_class& coef, mpz_ptr* term) {
+	ASSERT(term != 0);
+
+	_consumer->consume(coef.get_mpz_t(), term);
+  }
+
+  virtual void consume(const mpz_class& coef,
+					   const vector<mpz_class>& term) {
+	ASSERT(term.size() == _varCount);
+
+	for (size_t var = 0; var < _varCount; ++var)
+	  _term[var] = const_cast<mpz_ptr>(term[var].get_mpz_t());
+	_consumer->consume(coef.get_mpz_t(), _term);
+  }
+
+private:
+  Frobby::PolynomialConsumer* _consumer;
+};
+
+Frobby::IdealConsumer::~IdealConsumer() {
 }
 
-void Frobby::TermConsumer::consume(mpz_ptr* exponentVector) {
+void Frobby::IdealConsumer::idealBegin(size_t varCount) {
 }
 
-void Frobby::TermConsumer::consume(const mpz_t coefficient,
-								   mpz_ptr* exponentVector) {
+void Frobby::IdealConsumer::idealEnd() {
+}
+
+Frobby::PolynomialConsumer::~PolynomialConsumer() {
+}
+
+void Frobby::PolynomialConsumer::polynomialBegin(size_t varCount) {
+}
+
+void Frobby::PolynomialConsumer::polynomialEnd() {
 }
 
 namespace FrobbyImpl {
@@ -162,7 +215,7 @@ void Frobby::Ideal::addExponent(unsigned int exponent) {
 
 void Frobby::alexanderDual(const Ideal& ideal,
 						   const mpz_t* exponentVector,
-						   TermConsumer& consumer) {
+						   IdealConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
   vector<mpz_class> point;
@@ -177,9 +230,9 @@ void Frobby::alexanderDual(const Ideal& ideal,
   // terms to the consumer.
   exponentVector = 0;
 
-  BigTermConsumer* adaptedConsumer = 
-    new ExternalConsumerAdapter(&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, adaptedConsumer, false);
+  BigTermConsumer* wrappedConsumer = 
+    new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
@@ -187,12 +240,12 @@ void Frobby::alexanderDual(const Ideal& ideal,
 }
 
 void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
-											  TermConsumer& consumer) {
+											  PolynomialConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  CoefBigTermConsumer* adaptedConsumer = 
-    new ExternalConsumerAdapter(&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, adaptedConsumer, false);
+  CoefBigTermConsumer* wrappedConsumer = 
+    new ExternalPolynomialConsumerWrapper(&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
@@ -200,14 +253,94 @@ void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
 }
 
 void Frobby::univariateHilbertPoincareSeries(const Ideal& ideal,
-											 TermConsumer& consumer) {
+											 PolynomialConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  CoefBigTermConsumer* adaptedConsumer =
-	new ExternalConsumerAdapter(&consumer, 1);
-  SliceFacade facade(bigIdeal, adaptedConsumer, false);
+  CoefBigTermConsumer* wrappedConsumer =
+	new ExternalPolynomialConsumerWrapper(&consumer, 1);
+  SliceFacade facade(bigIdeal, wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
   facade.computeUnivariateHilbertSeries();
+}
+
+class IrreducibleIdealDecoder : public Frobby::IdealConsumer {
+public:
+  IrreducibleIdealDecoder(IdealConsumer* consumer):
+	_varCount(0),
+	_consumer(consumer),
+	_term(0) {
+	ASSERT(_consumer != 0);
+
+	mpz_init_set_ui(_zero, 0);
+  }
+
+  virtual void idealBegin(size_t varCount) {
+	ASSERT(_term == 0);
+
+	_varCount = varCount;
+	_term = new mpz_ptr[varCount];
+	for (size_t var = 0; var < _varCount; ++var)
+	  _term[var] = _zero;
+  }
+
+  virtual void consume(mpz_ptr* exponentVector) {
+	_consumer->idealBegin(_varCount);
+
+	bool isIdentity = true;
+	for (size_t var = 0; var < _varCount; ++var) {
+	  if (mpz_cmp_ui(exponentVector[var], 0) != 0) {
+		isIdentity = false;
+		_term[var] = exponentVector[var];
+		_consumer->consume(_term);
+		_term[var] = _zero;
+	  }
+	}
+	if (isIdentity)
+	  _consumer->consume(_term);
+
+	_consumer->idealEnd();
+  }
+
+private:
+  size_t _varCount;
+  IdealConsumer* _consumer;
+  mpz_ptr* _term;
+  mpz_t _zero;
+};
+
+void Frobby::irreducibleDecompositionAsIdeals(const Ideal& ideal,
+											  IdealConsumer& consumer) {
+  IrreducibleIdealDecoder wrappedConsumer(&consumer);
+  if (!irreducibleDecompositionAsMonomials(ideal, wrappedConsumer)) {
+	const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+	consumer.idealBegin(bigIdeal.getVarCount());
+	consumer.idealEnd();
+  }
+}
+
+bool Frobby::irreducibleDecompositionAsMonomials(const Ideal& ideal,
+												 IdealConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+  if (bigIdeal.getGeneratorCount() == 0)
+	return false;
+
+  // The SliceFacade outputs an ideal containing the identity when
+  // given one as input. That behavior differs from the contract of
+  // this method, so that case needs to be handled here.
+  if (bigIdeal.containsIdentity()) {
+	consumer.idealBegin(bigIdeal.getVarCount());
+	consumer.idealEnd();
+	return true;
+  }
+
+  BigTermConsumer* wrappedConsumer =
+	new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  SliceParameters params;
+  params.apply(facade);
+
+  facade.computeIrreducibleDecomposition(true);
+  return true;
 }

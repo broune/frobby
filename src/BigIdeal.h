@@ -55,6 +55,7 @@ public:
   bool operator<(const BigIdeal& ideal) const;
 
   bool empty() const;
+  bool containsIdentity() const;
 
   void clear();
 

@@ -26,14 +26,17 @@
 
 #include "MyIdeal.h"
 #include "MyPolynomial.h"
-#include "MyTermConsumer.h"
+#include "MyAsserts.h"
+#include "MyConsumers.h"
 #include "MyIdealCreators.h"
 #include "MyPolynomialCreators.h"
 
 #include "AlexanderDualTests.h"
 #include "HilbertPoincareTests.h"
+#include "IrreducibleDecomTests.h"
 
 void testFrobbyLibraryInterface() {
   testAlexanderDual();
   testHilbertPoincareSeries();
+  testIrreducibleDecom();
 }
