@@ -23,11 +23,13 @@
 #include "BigTermConsumer.h"
 #include "TermTranslator.h"
 #include "Term.h"
+#include "CoefBigTermConsumer.h"
 
-class ExternalConsumerAdapter : public BigTermConsumer {
+class ExternalConsumerAdapter :
+  public BigTermConsumer, public CoefBigTermConsumer{
 public:
   ExternalConsumerAdapter(Frobby::TermConsumer* consumer,
-			  size_t varCount):
+						  size_t varCount):
 	_consumer(consumer),
 	_varCount(varCount),
 	_term(new mpz_ptr[varCount]) {
@@ -38,11 +40,10 @@ public:
     delete[] _term;
   }
 
+  // BigTermConsumer methods.
   virtual void consume(const Term& term, TermTranslator* translator) {
 	ASSERT(term.getVarCount() == _varCount);
-	for (size_t var = 0; var < _varCount; ++var)
-	  _term[var] = const_cast<mpz_ptr>
-		(translator->getExponent(var, term).get_mpz_t());
+	setTerm(term, translator);
 	_consumer->consume(_term);
   }
 
@@ -50,13 +51,48 @@ public:
 	_consumer->consume(term);
   }
 
+  // CoefBigTermConsumer methods.
+  virtual void consume(const mpz_class& coef,
+					   const Term& term,
+					   TermTranslator* translator) {
+	setTerm(term, translator);
+	_consumer->consume(coef.get_mpz_t(), _term);
+  }
+
+  virtual void consume(const mpz_class& coef, mpz_ptr* term) {
+	_consumer->consume(coef.get_mpz_t(), term);
+  }
+
+  virtual void consume(const mpz_class& coef,
+					   const vector<mpz_class>& term) {
+	for (size_t var = 0; var < _varCount; ++var)
+	  _term[var] = const_cast<mpz_ptr>(term[var].get_mpz_t());
+	_consumer->consume(coef.get_mpz_t(), _term);
+  }
+
 private:
+  void setTerm(const Term& term, TermTranslator* translator) {
+	ASSERT(term.getVarCount() == _varCount);
+	ASSERT(translator->getVarCount() == _varCount);
+
+	for (size_t var = 0; var < _varCount; ++var)
+	  _term[var] = const_cast<mpz_ptr>
+		(translator->getExponent(var, term).get_mpz_t());
+  }
+
   Frobby::TermConsumer* _consumer;
   size_t _varCount;
   mpz_ptr* _term;
 };
 
 Frobby::TermConsumer::~TermConsumer() {
+}
+
+void Frobby::TermConsumer::consume(mpz_ptr* exponentVector) {
+}
+
+void Frobby::TermConsumer::consume(const mpz_t coefficient,
+								   mpz_ptr* exponentVector) {
 }
 
 namespace FrobbyImpl {
@@ -138,9 +174,7 @@ void Frobby::alexanderDual(const Ideal& ideal,
     bigIdeal.getLcm(point);
 
   // We guarantee not to retain a reference to exponentVector when providing
-  // terms to the consumer, so we must set exponentVector
-  // to null. This is visible behavior if the caller is using something like
-  // the Boehm garbage collector.
+  // terms to the consumer.
   exponentVector = 0;
 
   BigTermConsumer* adaptedConsumer = 
@@ -150,4 +184,30 @@ void Frobby::alexanderDual(const Ideal& ideal,
   params.apply(facade);
 
   facade.computeAlexanderDual(point);
+}
+
+void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
+											  TermConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  CoefBigTermConsumer* adaptedConsumer = 
+    new ExternalConsumerAdapter(&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, adaptedConsumer, false);
+  SliceParameters params;
+  params.apply(facade);
+
+  facade.computeMultigradedHilbertSeries();
+}
+
+void Frobby::univariateHilbertPoincareSeries(const Ideal& ideal,
+											 TermConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  CoefBigTermConsumer* adaptedConsumer =
+	new ExternalConsumerAdapter(&consumer, 1);
+  SliceFacade facade(bigIdeal, adaptedConsumer, false);
+  SliceParameters params;
+  params.apply(facade);
+
+  facade.computeUnivariateHilbertSeries();
 }
