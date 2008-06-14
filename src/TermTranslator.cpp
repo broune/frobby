@@ -62,7 +62,7 @@ bool mpzClassPointerEqual(const mpz_class* a, const mpz_class* b) {
 //
 // Assign int IDs to big integer exponents. The correspondence
 // preserves order, except that the largest ID maps to 0, which is
-// necessary to support adding artinian powers. Only the exponents
+// necessary to support adding pure powers. Only the exponents
 // that actually appear in generators of the ideals are translated,
 // except that 0 is guaranteed to be included and to be assigned the
 // ID 0, and that a maximal ID is added, which also maps to zero.
@@ -186,8 +186,8 @@ void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
 void TermTranslator::addPurePowersAtInfinity(Ideal& ideal) const {
   size_t varCount = ideal.getVarCount();
 
-  // Find out which variables already have artinian powers.
-  vector<bool> hasArtinianPower(varCount);
+  // Find out which variables already have pure powers.
+  vector<bool> hasPurePower(varCount);
 
   Ideal::const_iterator stop = ideal.end();
   for (Ideal::const_iterator term = ideal.begin(); term != stop; ++term) {
@@ -198,17 +198,17 @@ void TermTranslator::addPurePowersAtInfinity(Ideal& ideal) const {
     if (var == varCount)
       return; // The ideal is <1> so we need add nothing.
 
-    hasArtinianPower[var] = true;
+    hasPurePower[var] = true;
   }
 
-  // Add any missing Artinian powers.
+  // Add any missing pure powers.
   for (size_t var = 0; var < varCount; ++var) {
-    if (hasArtinianPower[var])
+    if (hasPurePower[var])
       continue;
 
-    Term artinian(varCount);
-    artinian[var] = _exponents[var].size() - 1;
-    ideal.insert(artinian);
+    Term purePower(varCount);
+    purePower[var] = _exponents[var].size() - 1;
+    ideal.insert(purePower);
   }
 }
 
