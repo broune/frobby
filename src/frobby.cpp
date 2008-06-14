@@ -344,3 +344,27 @@ bool Frobby::irreducibleDecompositionAsMonomials(const Ideal& ideal,
   facade.computeIrreducibleDecomposition(true);
   return true;
 }
+
+bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
+										  const mpz_t* l,
+										  IdealConsumer& consumer) {
+  ASSERT(l != 0);
+
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  BigTermConsumer* wrappedConsumer =
+	new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  SliceParameters params;
+  params.apply(facade);
+
+  bool canUseBound = true;
+  vector<mpz_class> grading;
+  for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+	grading.push_back(mpz_class(l[var]));
+	if (grading.back() < 0)
+	  canUseBound = false;
+  }
+
+  return facade.solveStandardProgram(grading, canUseBound);
+}

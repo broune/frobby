@@ -34,9 +34,11 @@
 #include "AlexanderDualTests.h"
 #include "HilbertPoincareTests.h"
 #include "IrreducibleDecomTests.h"
+#include "StandardProgramTests.h"
 
 void testFrobbyLibraryInterface() {
   testAlexanderDual();
   testHilbertPoincareSeries();
   testIrreducibleDecom();
+  testStandardProgram();
 }

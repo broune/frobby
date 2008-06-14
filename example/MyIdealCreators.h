@@ -125,6 +125,30 @@ MyIdeal make4_xy_xxyyz() {
   return ideal;
 }
 
+MyIdeal make4_xx_yy_zz_t_xz_yz() {
+  MyIdeal ideal;
+  ideal.push_back(makePP(2, 0, 0, 0));
+  ideal.push_back(makePP(0, 2, 0, 0));
+  ideal.push_back(makePP(0, 0, 2, 0));
+  ideal.push_back(makePP(0, 0, 0, 1));
+  ideal.push_back(makePP(1, 0, 1, 0));
+  ideal.push_back(makePP(0, 1, 1, 0));
+  return ideal;
+}
+
+MyIdeal make4_xy() {
+  MyIdeal ideal;
+  ideal.push_back(makePP(1, 1, 0, 0));
+  return ideal;
+}
+
+MyIdeal make4_z() {
+  MyIdeal ideal;
+  ideal.push_back(makePP(0, 0, 1, 0));
+  return ideal;
+}
+
+
 // Return the irreducible decomposition of the ideal.
 MyIdeals makeIrrdecom4_xx_yy_xz_yz() {
   MyIdeals ideals;

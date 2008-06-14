@@ -366,7 +366,7 @@ void SliceFacade::computeAssociatedPrimes() {
   endAction();
 }
 
-void SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
+bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 									   bool useBound) {
   ASSERT(_split != 0);
   ASSERT(_ideal != 0);
@@ -375,17 +375,32 @@ void SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 
   minimize();
 
+  size_t varCount = _ideal->getVarCount();
+
   beginAction("Solving maximal standard monomial optimization program.");
 
   _translator->decrement();
   TermGrader grader(grading, _translator);
+
+  Ideal solution(varCount);
+  _generatedTermConsumer = new DecomRecorder(&solution);
 
   SliceStrategy* strategy =
 	new FrobeniusStrategy(getTermConsumer(), grader, _split, useBound);
 
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
+  delete _generatedTermConsumer;
+  _generatedTermConsumer = 0;
+
   endAction();
+
+  if (solution.isZeroIdeal())
+	return false;
+
+  getTermConsumer()->consume(Term(*solution.begin(), varCount));
+
+  return true;
 }
 
 void SliceFacade::initialize(const BigIdeal& ideal) {
