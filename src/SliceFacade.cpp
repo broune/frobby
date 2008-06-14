@@ -214,15 +214,16 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 	// necessary to actually write an empty ideal as opposed to
 	// writing nothing. This will not work after the encode parameter
 	// is done, so do that after.
-	getTermConsumer();
+	if (!encode)
+	  getTermConsumer();
 	return;
   }
-  
+
   if (!encode)
 	doIrreducibleIdealOutput();
 
   if (_ideal->containsIdentity()) {
-	getTermConsumer()->consume(Term(_ideal->getVarCount()));
+	getTermConsumer();
 	return;
   }
 
@@ -292,6 +293,13 @@ void SliceFacade::computeAlexanderDual(const vector<mpz_class>& point) {
 
   endAction();
 
+  getTermConsumer(); // To ensure some output is generated.
+  
+  if (_ideal->getGeneratorCount() == 1 && _ideal->containsIdentity()) {
+	getTermConsumer()->consume(Term(_ideal->getVarCount()));
+	return;
+  }
+	
   computeIrreducibleDecomposition(true);
 }
 
