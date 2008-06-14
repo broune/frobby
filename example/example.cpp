@@ -35,10 +35,12 @@
 #include "HilbertPoincareTests.h"
 #include "IrreducibleDecomTests.h"
 #include "StandardProgramTests.h"
+#include "maximalStandardMonomialTests.h"
 
 void testFrobbyLibraryInterface() {
   testAlexanderDual();
   testHilbertPoincareSeries();
   testIrreducibleDecom();
   testStandardProgram();
+  testMsm();
 }
