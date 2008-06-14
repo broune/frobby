@@ -138,10 +138,14 @@ void Macaulay2IOHandler::readPolynomial(Scanner& in,
 void Macaulay2IOHandler::readVars(VarNames& names, Scanner& in) {
   in.expect('R');
   in.expect('=');
+
   in.eatWhite();
-  if (in.peek() == 'Z')
+  if (in.peek() == 'Z') {
+	fputs("WARNING (m2 format): Writing ZZ as the ground field\n"
+		  "instead of QQ is deprecated.\n",
+		  stderr);
 	in.expect("ZZ");
-  else
+  } else
 	in.expect("QQ");
   in.expect('[');
 
@@ -149,7 +153,8 @@ void Macaulay2IOHandler::readVars(VarNames& names, Scanner& in) {
   // there, then the end brace should be there too.
   bool readBrace = in.match('{'); 
   if (readBrace) {
-	fputs("WARNING: Putting braces { } around the variables is deprecated.\n",
+	fputs("WARNING (m2 format): Putting braces { } around the variables "
+		  "is deprecated.\n",
 		  stderr);
   }
 
@@ -213,6 +218,14 @@ void Macaulay2IOHandler::writeRing(const VarNames& names, FILE* out) {
   const char* pre = "";
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
 	fputs(pre, out);
+	if (names.getName(i) == "R") {
+	  fputs("WARNING (m2 format): Using R as a variable name is supported by\n"
+			"Frobby, but even though this data is being written in\n"
+			"Macaulay 2 format, Macaulay 2 will likely not be able to read\n"
+			"it since it will confuse the variable R with the polynomial\n"
+			"ring R.\n", stderr);
+	}
+
 	fputs(names.getName(i).c_str(), out);
 	pre = ", ";
   }
