@@ -136,6 +136,13 @@ MyIdeal make4_xx_yy_zz_t_xz_yz() {
   return ideal;
 }
 
+MyIdeal make4_xy_z() {
+  MyIdeal ideal;
+  ideal.push_back(makePP(1, 1, 0, 0));
+  ideal.push_back(makePP(0, 0, 1, 0));
+  return ideal;
+}
+
 MyIdeal make4_xy() {
   MyIdeal ideal;
   ideal.push_back(makePP(1, 1, 0, 0));

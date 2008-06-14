@@ -345,6 +345,19 @@ bool Frobby::irreducibleDecompositionAsMonomials(const Ideal& ideal,
   return true;
 }
 
+void Frobby::maximalStandardMonomials(const Ideal& ideal,
+									  IdealConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  BigTermConsumer* wrappedConsumer =
+	new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  SliceParameters params;
+  params.apply(facade);
+
+  facade.computeMaximalStandardMonomials();
+}
+
 bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 										  const mpz_t* l,
 										  IdealConsumer& consumer) {
