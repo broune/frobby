@@ -207,6 +207,8 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
   ASSERT(_ideal != 0);
   ASSERT(_translator != 0);
 
+  minimize();
+
   if (_ideal->isZeroIdeal()) {
 	// This creates an output writer if doing file IO. This is
 	// necessary to actually write an empty ideal as opposed to
