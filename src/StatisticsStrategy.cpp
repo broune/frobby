@@ -31,18 +31,20 @@ StatisticsStrategy::~StatisticsStrategy() {
   gmp_fprintf(_out, " splits performed: %Zd\n",
 			  _splitCount.get_mpz_t());
 
-  mpq_class avgGeneratorCount = mpq_class(_generatorCountSum) / _splitCount;
-  fprintf(_out, " avg. generator count: %f\n",
-		  avgGeneratorCount.get_d());
+  if (_splitCount > 0) {
+	mpq_class avgGeneratorCount = mpq_class(_generatorCountSum) / _splitCount;
+	fprintf(_out, " avg. generator count: %f\n",
+			avgGeneratorCount.get_d());
 
-  mpq_class avgVarCount = mpq_class(_varCountSum) / _splitCount;
-  fprintf(_out, " avg. variable count: %f\n",
-		  avgVarCount.get_d());
+	mpq_class avgVarCount = mpq_class(_varCountSum) / _splitCount;
+	fprintf(_out, " avg. variable count: %f\n",
+			avgVarCount.get_d());
 
-  mpq_class avgSubtractGeneratorCount =
-	mpq_class(_subtractGeneratorCountSum) / _splitCount;
-  fprintf(_out, " avg. subtract generator count: %f\n",
-		  avgSubtractGeneratorCount.get_d());
+	mpq_class avgSubtractGeneratorCount =
+	  mpq_class(_subtractGeneratorCountSum) / _splitCount;
+	fprintf(_out, " avg. subtract generator count: %f\n",
+			avgSubtractGeneratorCount.get_d());
+  }
 
   delete _strategy;
 }
