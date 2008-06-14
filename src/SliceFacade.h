@@ -148,14 +148,17 @@ class SliceFacade : public Facade {
 
   // Output an optimal solution to the following optimization problem.
   //   
-  //   maximize v * grading such that x ^ v is a maximal standard
+  //   maximize v * grading subject to x ^ v being a maximal standard
   //   monomial of ideal
   //
-  // Produces no output if ideal has no maximal standard monomials.
+  // Produces no output and returns false if ideal has no maximal
+  // standard monomials.
   //
   // The parameter useBound specifies whether or not to use
-  // brand-and-bound to speed the computation up.
-  void solveStandardProgram(const vector<mpz_class>& grading,
+  // branch-and-bound to speed the computation up. Note that this is
+  // currently only allowed if grading has no strictly negative
+  // entries.
+  bool solveStandardProgram(const vector<mpz_class>& grading,
 							bool useBound);
 
  private:
