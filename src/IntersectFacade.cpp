@@ -39,9 +39,6 @@ BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
 	return entireRing;
   }
 
-  if (ideals.size() == 1)
-    return new BigIdeal(*ideals[0]);
-
   vector<Ideal*> ideals2;
   TermTranslator translator(ideals, ideals2);
 
@@ -53,6 +50,8 @@ BigIdeal* IntersectFacade::intersect(const vector<BigIdeal*>& ideals) {
   intersection->insert(identity);
 
   for (size_t i = 0; i < ideals2.size(); ++i) {
+	ideals2[i]->minimize();
+
     // Compute intersection
     Ideal* tmp = new Ideal(variableCount);
     ::intersect(tmp, intersection, ideals2[i]);
