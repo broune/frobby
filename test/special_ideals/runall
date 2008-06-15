@@ -1,0 +1,9 @@
+#!/bin/env sh
+
+./runtests alexdual
+./runtests irrdecom
+./runtests assoprimes
+./runtests hilbert
+./runtests radical
+./runtests intersection
+./runtests minimize

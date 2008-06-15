@@ -2,7 +2,24 @@
 
 TIMEFORMAT=$' (%2lR real)'
 
-tests="hilbert irrdecom frob intersect assoprimes minimize transform ptransform latformat alexdual radical"
+edgetests="hilbert irrdecom intersect assoprimes minimize alexdual radical"
+tests="frob transform ptransform latformat"
+
+for t in $edgetests;
+do
+  echo -n "$t "
+  cd test/$t
+  ./runtests $*
+  if [ $? != 0 ]; then exit 1; fi
+  cd ../..
+
+  cd test/special_ideals
+  ./runtests $t
+  cd ../..
+
+  echo
+done
+
 for t in $tests;
 do
   echo -n "$t "
