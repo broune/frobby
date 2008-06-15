@@ -37,7 +37,7 @@ void IdealFacade::deform(BigIdeal& bigIdeal) {
 
   // Reduce range of exponents
   Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal, true);
+  TermTranslator translator(bigIdeal, ideal, false);
   bigIdeal.clear();
   bigIdeal.insert(ideal);
 
@@ -50,7 +50,7 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
   bigIdeal.takeRadical();
 
   Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal, true);
+  TermTranslator translator(bigIdeal, ideal, false);
   bigIdeal.clear();
 
   ideal.minimize();
@@ -65,7 +65,7 @@ void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal) {
   beginAction("Minimizing ideal.");
 
   Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal, true);
+  TermTranslator translator(bigIdeal, ideal, false);
   bigIdeal.clear();
 
   ideal.minimize();
@@ -107,7 +107,7 @@ void IdealFacade::printAnalysis(FILE* out, BigIdeal& bigIdeal) {
   fprintf(out, "%u variables\n", (unsigned int)bigIdeal.getVarCount());
 
   Ideal ideal(bigIdeal.getVarCount());
-  TermTranslator translator(bigIdeal, ideal, true);
+  TermTranslator translator(bigIdeal, ideal, false);
 
   fprintf(out, "is strongly generic: %s",
 		  ideal.isStronglyGeneric() ? "yes" : "no");
