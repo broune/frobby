@@ -191,8 +191,12 @@ void Macaulay2IOHandler::writeTermOfPolynomial
   ASSERT(translator != 0);
   ASSERT(out != 0);
 
-  fputs("\n ", out);
-  writeCoefTermProduct(coef, term, translator, isFirst, out);
+  if (isFirst)
+	fputs("\n ", out);
+  else
+	fputs(" +\n ", out);
+
+  writeCoefTermProduct(coef, term, translator, true, out);
 }
 
 void Macaulay2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
@@ -200,8 +204,12 @@ void Macaulay2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
 											   const VarNames& names,
 											   bool isFirst,
 											   FILE* out) {
-  fputs("\n ", out);
-  writeCoefTermProduct(coef, term, names, isFirst, out);
+  if (isFirst)
+	fputs("\n ", out);
+  else
+	fputs(" +\n ", out);
+
+  writeCoefTermProduct(coef, term, names, true, out);
 }
 
 void Macaulay2IOHandler::writePolynomialFooter(const VarNames& names,
