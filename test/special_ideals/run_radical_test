@@ -1,0 +1,5 @@
+#!/bin/env sh
+
+test="$1"
+shift
+../testhelper transform $test.test $test.radical $* -canon -radical

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+test="$1"
+shift
+../testhelper transform $test.test $test.minimize $* -canon -minimize
