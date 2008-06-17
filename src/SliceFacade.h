@@ -121,11 +121,11 @@ class SliceFacade : public Facade {
   // arbitrary order.
   void computeMaximalStaircaseMonomials();
 
-  // Compute each maximal standard monomial. A monomial m is a
-  // standard monomial if it does not belong to the ideal. A monomial
-  // m is a maximal standard monomial if it is standard and m * x_i is
-  // not standard for every variable x_i. The output monomials are
-  // provided in arbitrary order.
+  // Compute the maximal standard monomials of the ideal. A monomial m
+  // is a standard monomial if it does not belong to the ideal. A
+  // monomial m is a maximal standard monomial if it is standard and m
+  // * x_i is not standard for every variable x_i. The output
+  // monomials are provided in arbitrary order.
   void computeMaximalStandardMonomials();
 
   // Compute the minimal generators of the Alexander dual of the
@@ -139,7 +139,7 @@ class SliceFacade : public Facade {
   void computeAlexanderDual(const vector<mpz_class>& point);
 
   // Like computeAlexanderDual, except that the point is set to the
-  // lcm of the minimal geneators of ideal.
+  // lcm of the minimal generators of ideal.
   void computeAlexanderDual();
 
   // Compute the associated primes of ideal and represent them by

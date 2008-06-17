@@ -43,6 +43,7 @@ class TransformAction : public Action {
   BoolParameter _minimize;
   BoolParameter _deform;
   BoolParameter _radical;
+  BoolParameter _product;
 };
 
 #endif

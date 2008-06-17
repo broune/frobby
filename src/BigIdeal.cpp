@@ -170,7 +170,24 @@ bool BigIdeal::operator<(const BigIdeal& ideal) const {
   if (ideal.getNames() < getNames())
 	return false;
 
-  return _terms < ideal._terms;
+  for (size_t t = 0; t < _terms.size(); ++t) {
+	if (t == ideal._terms.size())
+	  return true;
+
+	const vector<mpz_class>& a = _terms[t];
+	const vector<mpz_class>& b = ideal._terms[t];
+
+	ASSERT(a.size() == b.size());
+
+	for (size_t i = 0; i < a.size(); ++i) {
+	  if (a[i] > b[i])
+		return true;
+	  if (a[i] < b[i])
+		return false;
+	}
+  }
+
+  return false;
 }
 
 bool BigIdeal::empty() const {

@@ -1,5 +1,45 @@
 #!/bin/env sh
 
+frobby=../../bin/frobby
+testhelper=../testhelper
 test="$1"
 shift
-../testhelper irrdecom $test.test $test.irrdecom $* -encode -canon
+
+if [ "$1" = "_full" ];
+then
+  shift;
+
+  # Check -canon agrees with transform on ideal list
+  $testhelper transform $test.irrdecom $test.irrdecom -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Check -canon agrees with transform on ideal
+  $testhelper transform $test.irrdecom_ideal $test.irrdecom_ideal -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  # TODO: get rid of the need for setting the oformat and checking for those
+  # tests where the irrdecom output is empty.
+  if [ "$test" != "e15" ]; then
+  if [ "$test" != "e2" ]; then
+  if [ "$test" != "e13" ]; then
+  if [ "$test" != "e4" ];
+  then
+    # Check that taking products relate the two representations.
+    $testhelper transform $test.irrdecom $test.irrdecom_ideal \
+      -product -canon -oformat monos
+    if [ $? != 0 ]; then exit 1; fi
+
+    # Check that intersection is inverse of irrdecom.
+    $frobby transform < $test.test > /tmp/$test.test \
+      -canon -minimize 2>/dev/null
+    $testhelper intersect $test.irrdecom /tmp/$test.test -canon
+    if [ $? != 0 ]; then exit 1; fi
+    rm /tmp/$test.test
+  fi fi fi fi
+fi
+
+$testhelper irrdecom $test.test $test.irrdecom $* -encode off -canon
+if [ $? != 0 ]; then exit 1; fi
+
+$testhelper irrdecom $test.test $test.irrdecom_ideal $* -encode on -canon
+if [ $? != 0 ]; then exit 1; fi

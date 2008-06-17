@@ -1,6 +1,15 @@
 vars a, b, c;
 [
- a*b,
- a*c,
- b*c
+ a,
+ b
+];
+vars a, b, c;
+[
+ a,
+ c
+];
+vars a, b, c;
+[
+ b,
+ c
 ];
