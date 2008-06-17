@@ -34,7 +34,7 @@
 #include "AlexanderDualTests.h"
 #include "HilbertPoincareTests.h"
 #include "IrreducibleDecomTests.h"
-#include "StandardProgramTests.h"
+#include "standardProgramTests.h"
 #include "maximalStandardMonomialTests.h"
 
 void testFrobbyLibraryInterface() {
