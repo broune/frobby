@@ -41,19 +41,26 @@ VarNames::~VarNames() {
   clear();
 }
 
-void VarNames::addVar(const string& name) {
+bool VarNames::addVar(const string& name) {
   ASSERT(name != "");
-  ASSERT(!contains(name));
 
-  _indexToName.push_back(new string(name));
   char* str = new char[name.size() + 1];
   strcpy(str, name.c_str());
-  _nameToIndex[str] = _indexToName.size() - 1;
+  pair<VarNameMap::iterator, bool> p =_nameToIndex.insert
+	(make_pair(str, _indexToName.size()));
+  if (!p.second) {
+	delete[] str;
+	return false;
+  }
+
+  _indexToName.push_back(new string(name));
 
   if (getVarCount() == UNKNOWN) {
-    fputs("ERROR: Too many variables names.\n", stderr);
+    fputs("ERROR: Too many variable names.\n", stderr);
     exit(1);
   }
+
+  return true;
 }
 
 bool VarNames::operator<(const VarNames& names) const {

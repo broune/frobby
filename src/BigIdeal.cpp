@@ -225,12 +225,7 @@ void BigIdeal::clearAndSetNames(const VarNames& names) {
 bool BigIdeal::addVarToClearedIdeal(const char* var) {
   ASSERT(getGeneratorCount() == 0);
 
-  if (_names.contains(var))
-	return false;
-  else {
-	_names.addVar(var);
-	return true;
-  }
+  return _names.addVar(var);
 }
 
 const VarNames& BigIdeal::getNames() const {

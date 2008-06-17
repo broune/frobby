@@ -52,7 +52,7 @@ public:
   VarNames(const VarNames& names);
   ~VarNames();
 
-  void addVar(const string& name);
+  bool addVar(const string& name);
 
   // This also depends on the order of the names.
   bool operator<(const VarNames& names) const;

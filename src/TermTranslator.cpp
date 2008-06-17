@@ -178,17 +178,24 @@ void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
 }
 
 void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
-				    Ideal& ideal) const {
+									Ideal& ideal) const {
   ideal.clearAndSetVarCount(_names.getVarCount());
 
   // Figure out how bigIdeal's names map onto _names.
   vector<size_t> newVars;
-  for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
-    const string& name = bigIdeal.getNames().getName(var);
-    size_t newVar = _names.getIndex(name);
-    newVars.push_back(newVar);
+  newVars.reserve(bigIdeal.getVarCount());
 
-    ASSERT(newVar != VarNames::UNKNOWN);
+  if (bigIdeal.getNames() == _names) {
+	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+	  newVars.push_back(var);
+  } else {
+	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+	  const string& name = bigIdeal.getNames().getName(var);
+	  size_t newVar = _names.getIndex(name);
+	  newVars.push_back(newVar);
+	  
+	  ASSERT(newVar != VarNames::UNKNOWN);
+	}
   }
 
   // Insert generators after translating exponents and variables.
