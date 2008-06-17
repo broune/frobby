@@ -64,7 +64,7 @@ void testAlexanderDualZeroIdeal() {
 	MyIdealConsumer consumer;
 	Frobby::alexanderDual(frobbyInputIdeal, 0, consumer);
 
-	assertEqual(consumer.getIdeal(), make_0(), "alexdual of zero");
+	assertEqual(consumer.getIdeal(), make_1(varCount), "alexdual of zero");
   }
 }
 
@@ -79,7 +79,7 @@ void testAlexanderDualOneIdeal() {
 	MyIdealConsumer consumer;
 	Frobby::alexanderDual(frobbyInputIdeal, 0, consumer);
 
-	assertEqual(consumer.getIdeal(), make_1(varCount), "alexdual of one");
+	assertEqual(consumer.getIdeal(), make_0(), "alexdual of one");
   }
 }
 

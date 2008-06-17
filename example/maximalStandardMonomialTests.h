@@ -36,7 +36,10 @@ void testMsmZeroIdeal() {
 	MyIdealConsumer consumer;
 	Frobby::maximalStandardMonomials(frobbyInputIdeal, consumer);
 
-	assertEqual(consumer.getIdeal(), make_0(), "msm of zero");
+	if (varCount == 0)
+	  assertEqual(consumer.getIdeal(), make_1(0), "msm of zero (zero)");
+	else
+	  assertEqual(consumer.getIdeal(), make_0(), "msm of zero (more)");
   }
 }
 
