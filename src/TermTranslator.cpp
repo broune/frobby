@@ -133,19 +133,37 @@ void TermTranslator::clearStrings() {
   _stringVarExponents.clear();
 }
 
+bool TermTranslatorInitializeHelper_StringPointerCompareLess
+(const string* a, const string* b) {
+  return *a < *b;
+}
+
+bool TermTranslatorInitializeHelper_StringPointerCompareEqual
+(const string* a, const string* b) {
+  return *a == *b;
+}
+
 void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
-				bool sortVars) {
+								bool sortVars) {
   ASSERT(!bigIdeals.empty());
 
   if (sortVars) {
-    set<string> variables;
-    for (size_t ideal = 0; ideal < bigIdeals.size(); ++ideal)
+	vector<const string*> variables;
+    for (size_t ideal = 0; ideal < bigIdeals.size(); ++ideal) {
+	  const VarNames& names = bigIdeals[ideal]->getNames();
       for (size_t var = 0; var < bigIdeals[ideal]->getVarCount(); ++var)
-	variables.insert(bigIdeals[ideal]->getNames().getName(var));
-    
-    for (set<string>::const_iterator var = variables.begin();
-	 var != variables.end(); ++var)
-      _names.addVar(*var);
+		variables.push_back(&(names.getName(var)));
+	}
+	std::sort(variables.begin(), variables.end(),
+			  TermTranslatorInitializeHelper_StringPointerCompareLess);
+	variables.erase
+	  (std::unique(variables.begin(), variables.end(),
+				   TermTranslatorInitializeHelper_StringPointerCompareEqual),
+	   variables.end());
+
+    for (vector<const string*>::const_iterator var = variables.begin();
+		 var != variables.end(); ++var)
+      _names.addVar(**var);
   } else {
     ASSERT(bigIdeals.size() == 1);
     _names = bigIdeals[0]->getNames();

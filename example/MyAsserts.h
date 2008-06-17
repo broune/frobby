@@ -74,6 +74,7 @@ void assertTrue(bool b, const char* msg) {
 	fputs("Context: ", stdout);
 	fputs(msg, stdout);
 	fputc('\n', stdout);
+	exit(1);
   } else {
 	fputc('.', stdout);
 	fflush(stdout);

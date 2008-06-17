@@ -305,4 +305,5 @@ $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/../example/AlexanderDualTests.h \
   src/../example/HilbertPoincareTests.h \
   src/../example/IrreducibleDecomTests.h \
-  src/../example/StandardProgramTests.h
+  src/../example/StandardProgramTests.h \
+  src/../example/maximalStandardMonomialTests.h

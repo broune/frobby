@@ -83,8 +83,15 @@ void testStandardProgramZeroIdeal() {
 	  Frobby::solveStandardMonomialProgram
 	  (frobbyInputIdeal, grading, consumer);
 
-	assertTrue(!returnValue, "standard program zero.");
-	assertEqual(consumer.getIdeal(), make_0(), "standard program zero");
+	if (varCount == 0) {
+	  assertTrue(returnValue, "standard program zero (zero).");
+	  assertEqual(consumer.getIdeal(), make_1(varCount),
+				  "standard program zero (zero)");
+	} else {
+	  assertTrue(!returnValue, "standard program zero (more).");
+	  assertEqual(consumer.getIdeal(), make_0(),
+				  "standard program zero (more)");
+	}
   }
 
   mpz_clear(grading[0]);
