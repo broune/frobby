@@ -163,23 +163,18 @@ public:
 	  if (_translator->getExponent(var, term) != 0)
 		++support;
 
-	if (support == 0) {
-	  _handler->writeIdealHeader(_translator->getNames(), 1, _out);
-	  _handler->writeTermOfIdeal(_tmp, _translator, true, _out);
-	  _handler->writeIdealFooter(_translator->getNames(), true, _out);
-	} else {
-	  _handler->writeIdealHeader(_translator->getNames(), support, _out);
-	  bool first = true;
-	  for (size_t var = 0; var < _varCount; ++var) {
-		if (_translator->getExponent(var, term) != 0) {
-		  _tmp[var] = term[var];
-		  _handler->writeTermOfIdeal(_tmp, _translator, first, _out);
-		  first = false;
-		  _tmp[var] = 0;
-		}
+	_handler->writeIdealHeader(_translator->getNames(), support, _out);
+	bool first = true;
+	for (size_t var = 0; var < _varCount; ++var) {
+	  if (_translator->getExponent(var, term) != 0) {
+		_tmp[var] = term[var];
+		_handler->writeTermOfIdeal(_tmp, _translator, first, _out);
+		first = false;
+		_tmp[var] = 0;
 	  }
-	  _handler->writeIdealFooter(_translator->getNames(), true, _out);
 	}
+	_handler->writeIdealFooter(_translator->getNames(), true, _out);
+
 	ASSERT(_tmp.isIdentity());
   }
 

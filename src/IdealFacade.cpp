@@ -53,10 +53,36 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
   TermTranslator translator(bigIdeal, ideal, false);
   bigIdeal.clear();
 
-  ideal.minimize();
-  ideal.sortReverseLex();
-
   bigIdeal.insert(ideal, translator);
+
+  endAction();
+}
+
+void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,
+							   BigIdeal& ideal) {
+  beginAction("Taking products.");
+
+  size_t idealCount = ideals.size();
+  for (size_t i = 0; i < idealCount; ++i) {
+	ASSERT(ideals[i] != 0);
+
+	if (!(ideal.getNames() == ideals[i]->getNames())) {
+	  fputs
+		("ERROR: Taking products of ideals with different variable lists.\n",
+		 stderr);
+	  ideal.getNames().print(stderr);
+	  ideals[i]->getNames().print(stderr);
+	  exit(1);
+	}
+
+	size_t genCount = ideals[i]->getGeneratorCount();
+	size_t varCount = ideals[i]->getVarCount();
+
+	ideal.newLastTerm();
+	for (size_t t = 0; t < genCount; ++t)
+	  for (size_t var = 0; var < varCount; ++var)
+		ideal.getLastTermExponentRef(var) += (*ideals[i])[t][var];
+  }
 
   endAction();
 }

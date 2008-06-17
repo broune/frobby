@@ -33,8 +33,8 @@ TotalDegreeCoefTermConsumer(CoefBigTermConsumer* consumer,
 }
 
 TotalDegreeCoefTermConsumer::~TotalDegreeCoefTermConsumer() {
-  map<mpz_class, mpz_class>::iterator stop = _polynomial.end();
-  for (map<mpz_class, mpz_class>::iterator it = _polynomial.begin();
+  map<mpz_class, mpz_class>::reverse_iterator stop = _polynomial.rend();
+  for (map<mpz_class, mpz_class>::reverse_iterator it = _polynomial.rbegin();
 	   it != stop; ++it) {
 	ASSERT(it->second != 0);
 	mpz_ptr ptr = const_cast<mpz_ptr>(it->first.get_mpz_t());

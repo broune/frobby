@@ -36,17 +36,24 @@ MsmSlice::MsmSlice(const Ideal& ideal,
 bool MsmSlice::baseCase() {
   ASSERT(_consumer != 0);
 
-  if (getIdeal().getGeneratorCount() < _varCount || _varCount == 0)
+  if (getIdeal().getGeneratorCount() < _varCount)
     return true;
 
   // Check that each variable appears in some minimal generator.
   if (getLcm().getSizeOfSupport() < _varCount)
     return true;
 
+  if (_varCount == 0) {
+	if (getIdeal().isZeroIdeal())
+	  _consumer->consume(_multiply);
+	return true;
+  }
+
   if (_varCount == 1) {
     _consumer->consume(_multiply);
     return true;
   }
+
   if (_varCount == 2) {
     twoVarBaseCase();
     return true;

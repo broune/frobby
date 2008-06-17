@@ -1,9 +1,11 @@
 #!/bin/env sh
 
-./runtests alexdual
-./runtests irrdecom
-./runtests assoprimes
-./runtests hilbert
-./runtests radical
-./runtests intersection
-./runtests minimize
+tests="alexdual irrdecom assoprimes hilbert radical intersect minimize"
+
+for t in $tests;
+do
+  echo -n "$t "
+  ./runtests $t $*
+  if [ $? != 0 ]; then exit 1; fi
+  echo
+done

@@ -47,7 +47,7 @@ TransformAction::TransformAction():
    "Remove duplicate generators.",
    false),
 
-  _minimize 
+  _minimize
   ("minimize",
   "Remove non-minimial generators.",
    false),
@@ -59,7 +59,13 @@ TransformAction::TransformAction():
 
   _radical
   ("radical",
-   "Take the radical of the input ideal.",
+   "Take the radical of the generators. Combine this with -minimize to\n"
+   "get rid of any non-minimal ones.",
+   false),
+
+  _product
+  ("product",
+   "Replace each ideal with the product of its generators.",
    false) {
 }
 
@@ -71,6 +77,7 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_unique);
   parameters.push_back(&_deform);
   parameters.push_back(&_radical);
+  parameters.push_back(&_product);
   Action::obtainParameters(parameters);
 }
 
@@ -84,6 +91,22 @@ void TransformAction::perform() {
   vector<BigIdeal*> ideals;
   facade.readIdeals(in, ideals);
 
+  if (_product) {
+	BigIdeal* ideal;
+	if (ideals.empty())
+	  ideal = new BigIdeal();
+	else
+	  ideal = new BigIdeal(ideals[0]->getNames());
+
+	IdealFacade idealFacade(_printActions);
+	idealFacade.takeProducts(ideals, *ideal);
+
+	for (size_t i = 0; i < ideals.size(); ++i)
+	  delete ideals[i];
+	ideals.clear();
+	ideals.push_back(ideal);
+  }
+
   for (size_t i = 0; i < ideals.size(); ++i) {
 	BigIdeal& ideal = *(ideals[i]);
 
@@ -92,7 +115,7 @@ void TransformAction::perform() {
 	if (_radical)
 	  idealFacade.takeRadical(ideal);
 
-	if (_minimize || _radical)
+	if (_minimize)
 	  idealFacade.sortAllAndMinimize(ideal);
 
 	if (_deform)
@@ -100,7 +123,7 @@ void TransformAction::perform() {
 
 	if (_canonicalize)
 	  idealFacade.sortVariables(ideal);
-	if (_unique )
+	if (_unique)
 	  idealFacade.sortGeneratorsUnique(ideal);
 	else if (_sort || _canonicalize)
 	  idealFacade.sortGenerators(ideal);

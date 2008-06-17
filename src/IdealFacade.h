@@ -19,6 +19,8 @@
 
 #include "Facade.h"
 
+#include <vector>
+
 class BigIdeal;
 class IOHandler;
 
@@ -29,8 +31,14 @@ class IdealFacade : private Facade {
   // Applies some generic deformation to the ideal.
   void deform(BigIdeal& ideal);
 
-  // Takes the radical of the ideal and minimizes it.
+  // Takes the radical of the generators of ideal. Non-minimal
+  // generators that may appear due to this are not removed.
   void takeRadical(BigIdeal& ideal);
+
+  // Take the product of the minimal generators of each ideal, and add
+  // the resulting monomials as generators of ideal. Requires that
+  // each ideal have the same names, including ideal.
+  void takeProducts(const vector<BigIdeal*>& ideals, BigIdeal& ideal);
 
   // Removes redundant generators from ideal.
   void sortAllAndMinimize(BigIdeal& bigIdeal);
