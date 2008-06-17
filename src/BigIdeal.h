@@ -64,6 +64,12 @@ public:
 
   void clearAndSetNames(const VarNames& names);
 
+  // Adds a variable to the VarNames associated to the ideal. It is an
+  // error to call this method when the ideal has any generators. If
+  // var is already a known variable, nothing is changed, and the
+  // return value is false. Otherwise, the return value is true.
+  bool addVarToClearedIdeal(const char* var);
+
   const VarNames& getNames() const;
 
   // Applies a generic deformation.

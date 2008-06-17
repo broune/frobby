@@ -87,23 +87,20 @@ void MonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
 }
 
 void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
+  ideal.clear();
+
   scanner.expect("vars");
 
-  VarNames names;
   if (!scanner.match(';')) {
 	do {
 	  const char* varName = scanner.readIdentifier();
-	  if (names.contains(varName)) {
+	  if (!ideal.addVarToClearedIdeal(varName)) {
 		scanner.printError();
 		fprintf(stderr, "The variable %s is declared twice.\n", varName);
 		exit(1);
 	  }
-	  
-	  names.addVar(varName);
 	} while (scanner.match(','));
 
 	scanner.expect(';');
   }
-
-  ideal.clearAndSetNames(names);
 }
