@@ -18,4 +18,4 @@ then
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-$testhelper transform $test.test $test.minimize $* -canon -minimize
+$testhelper transform $test.*test $test.minimize $* -canon -minimize

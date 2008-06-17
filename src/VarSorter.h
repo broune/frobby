@@ -38,10 +38,6 @@ struct VarSorter {
   // sorted order.
   void getOrderedNames(VarNames& names);
 
-  // Internal method that needs to be public for technical reasons
-  // (otherwise std::sort cannot use it.
-  bool operator()(size_t a, size_t b) const;
-
 private:
   vector<size_t> _permutation;
   VarNames _names;

@@ -18,4 +18,4 @@ then
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-$testhelper assoprimes $test.test $test.assoprimes $* -canon
+$testhelper assoprimes $test.*test $test.assoprimes $* -canon

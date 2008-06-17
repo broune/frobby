@@ -17,8 +17,8 @@ then
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-$testhelper hilbert $test.test $test.multi $* -canon -oformat m2
+$testhelper hilbert $test.*test $test.multi $* -canon -oformat m2
 if [ $? != 0 ]; then exit 1; fi
 
-$testhelper hilbert $test.test $test.uni $* -univariate -canon -oformat m2
+$testhelper hilbert $test.*test $test.uni $* -univariate -canon -oformat m2
 if [ $? != 0 ]; then exit 1; fi

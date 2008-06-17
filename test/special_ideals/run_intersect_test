@@ -16,8 +16,8 @@ then
   # Check that intersecting the same ideals more times, along with
   # other ideals that should contain the intersection, yields the same
   # result.
-  cat $test.test $test.intersection $test.irrdecom $test.radical \
-     $test.minimize $test.test > /tmp/$test.test
+  cat $test.*test $test.intersection $test.irrdecom $test.radical \
+     $test.minimize $test.*test > /tmp/$test.test
   $testhelper intersection /tmp/$test.test $test.intersection -canon
   if [ $? != 0 ]; then exit 1; fi
 
@@ -29,4 +29,4 @@ then
   rm /tmp/$test.test /tmp/$test.test2
 fi
 
-$testhelper intersection $test.test $test.intersection $* -canon
+$testhelper intersection $test.*test $test.intersection $* -canon

@@ -21,6 +21,20 @@
 
 #include <algorithm>
 
+class VarSorterCompare {
+public:
+  VarSorterCompare(const VarNames& names):
+	_names(names) {
+  }
+
+  bool operator()(size_t a, size_t b) const {
+	return _names.getName(a) < _names.getName(b);
+  }
+
+private:
+  const VarNames& _names;
+};
+
 VarSorter::VarSorter(const VarNames& names):
   _names(names),
   _bigTmpTerm(names.getVarCount()),
@@ -28,13 +42,7 @@ VarSorter::VarSorter(const VarNames& names):
   _permutation.reserve(names.getVarCount());
   for (size_t i = 0; i < names.getVarCount(); ++i)
 	_permutation.push_back(i);
-  sort(_permutation.begin(), _permutation.end(), *this);
-}
-
-bool VarSorter::operator()(size_t a, size_t b) const {
-  return
-	_names.getName(_permutation[a]) <
-	_names.getName(_permutation[b]);
+  sort(_permutation.begin(), _permutation.end(), VarSorterCompare(_names));
 }
 
 void VarSorter::getOrderedNames(VarNames& names) {

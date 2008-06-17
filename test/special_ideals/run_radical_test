@@ -26,4 +26,4 @@ then
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-../testhelper transform $test.test $test.radical $* -canon -radical -minimize
+$testhelper transform $test.*test $test.radical $* -canon -radical -minimize
