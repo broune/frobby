@@ -151,6 +151,8 @@ void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
 	vector<const string*> variables;
     for (size_t ideal = 0; ideal < bigIdeals.size(); ++ideal) {
 	  const VarNames& names = bigIdeals[ideal]->getNames();
+	  if (ideal != 0 && names == bigIdeals[ideal - 1]->getNames())
+		continue;
       for (size_t var = 0; var < bigIdeals[ideal]->getVarCount(); ++var)
 		variables.push_back(&(names.getName(var)));
 	}
