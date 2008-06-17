@@ -117,6 +117,9 @@ bool VarNames::empty() const {
 
 VarNames& VarNames::operator=(const VarNames& names) {
   clear();
+
+  _indexToName.reserve(names.getVarCount());
+
   for (size_t var = 0; var < names.getVarCount(); ++var)
 	addVar(names.getName(var));
   return *this;

@@ -222,6 +222,17 @@ void BigIdeal::clearAndSetNames(const VarNames& names) {
   _names = names;
 }
 
+bool BigIdeal::addVarToClearedIdeal(const char* var) {
+  ASSERT(getGeneratorCount() == 0);
+
+  if (_names.contains(var))
+	return false;
+  else {
+	_names.addVar(var);
+	return true;
+  }
+}
+
 const VarNames& BigIdeal::getNames() const {
   return _names;
 }
