@@ -30,7 +30,7 @@ then
     if [ $? != 0 ]; then exit 1; fi
 
     # Check that intersection is inverse of irrdecom.
-    $frobby transform < $test.test > /tmp/$test.test \
+    $frobby transform < `ls $test.*test` > /tmp/$test.test \
       -canon -minimize 2>/dev/null
     $testhelper intersect $test.irrdecom /tmp/$test.test -canon
     if [ $? != 0 ]; then exit 1; fi
@@ -38,8 +38,8 @@ then
   fi fi fi fi
 fi
 
-$testhelper irrdecom $test.test $test.irrdecom $* -encode off -canon
+$testhelper irrdecom $test.*test $test.irrdecom $* -encode off -canon
 if [ $? != 0 ]; then exit 1; fi
 
-$testhelper irrdecom $test.test $test.irrdecom_ideal $* -encode on -canon
+$testhelper irrdecom $test.*test $test.irrdecom_ideal $* -encode on -canon
 if [ $? != 0 ]; then exit 1; fi

@@ -119,7 +119,7 @@ void IdealFacade::sortGenerators(BigIdeal& ideal) {
 }
 
 void IdealFacade::sortVariables(BigIdeal& ideal) {
-  beginAction("Sorting generators.");
+  beginAction("Sorting variables.");
 
   ideal.sortVariables();
 
