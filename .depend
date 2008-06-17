@@ -296,8 +296,6 @@ $(outdir)CanonicalTermConsumer.o: src/CanonicalTermConsumer.cpp src/stdinc.h \
 $(outdir)StatisticsStrategy.o: src/StatisticsStrategy.cpp src/stdinc.h \
   src/StatisticsStrategy.h src/SliceStrategy.h src/Slice.h src/Ideal.h \
   src/Term.h
-<<<<<<< local
-=======
 $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h \
   src/../example/example.cpp src/../example/../src/frobby.h \
@@ -307,6 +305,5 @@ $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/../example/AlexanderDualTests.h \
   src/../example/HilbertPoincareTests.h \
   src/../example/IrreducibleDecomTests.h \
-  src/../example/StandardProgramTests.h \
+  src/../example/standardProgramTests.h \
   src/../example/maximalStandardMonomialTests.h
->>>>>>> other
