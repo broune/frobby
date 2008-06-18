@@ -90,7 +90,6 @@ void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
   ideal.clear();
 
   scanner.expect("vars");
-
   if (!scanner.match(';')) {
 	do {
 	  const char* varName = scanner.readIdentifier();
