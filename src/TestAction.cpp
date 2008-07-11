@@ -17,7 +17,7 @@
 #include "stdinc.h"
 #include "TestAction.h"
 
-#include "../example/example.cpp"
+#include "../example/include.cpp"
 
 TestAction::TestAction():
   Action

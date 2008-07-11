@@ -15,66 +15,31 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
+#ifndef MY_POLYNOMIAL_GUARD
+#define MY_POLYNOMIAL_GUARD
+
+#include "MyIdeal.h"
+
 // Represents a term with a coefficient.
 struct MyTerm {
-  MyTerm(int coef, MyPP exponents):
-	coefficient(coef),
-	   exponents(exponents) {
-  }
+  MyTerm(int coef, MyPP exponents);
+  MyTerm(int coef, int e);
+  MyTerm(int coef, int e1, int e2, int e3, int e4);
 
-  MyTerm(int coef, int e):
-	coefficient(coef), 
-	   exponents(1) {
-	coefficient = coef;
-	exponents[0] = e;
-  }
-
-  MyTerm(int coef, int e1, int e2, int e3, int e4):
-	coefficient(coef), 
-	   exponents(4) {
-	coefficient = coef;
-	exponents[0] = e1;
-	exponents[1] = e2;
-	exponents[2] = e3;
-	exponents[3] = e4;
-  }
+  bool operator<(const MyTerm& term) const;
+  bool operator==(const MyTerm& term) const;
 
   int coefficient;
   MyPP exponents;
-
-  // For use by std::sort.
-  bool operator<(const MyTerm& term) const {
-	return exponents < term.exponents ||
-	  (exponents == term.exponents && coefficient < term.coefficient);
-  }
-
-  bool operator==(const MyTerm& term) const {
-	return exponents == term.exponents && coefficient == term.coefficient;
-  }
 };
 
 // Represents a polynomial.
 typedef vector<MyTerm> MyPolynomial;
 
-
 // Returns true if a is equal to b.
-bool equal(MyPolynomial a, MyPolynomial b) {
-  std::sort(a.begin(), a.end());
-  std::sort(b.begin(), b.end());
+bool equal(MyPolynomial a, MyPolynomial b);
 
-  return a == b;
-}
+// Print polynomial to standard out.
+void printPolynomial(MyPolynomial polynomial);
 
-// Print ideal to standard out.
-void printPolynomial(MyPolynomial polynomial) {
-  std::sort(polynomial.begin(), polynomial.end());
-
-  fprintf(stdout, "Polynomial (%lu terms):\n",
-		  (unsigned long)polynomial.size());
-  for (size_t term = 0; term < polynomial.size(); ++term) {
-	fprintf(stdout, " %i ", polynomial[term].coefficient);
-	for (size_t var = 0; var < polynomial[term].exponents.size(); ++var)
-	  fprintf(stdout, " %i", polynomial[term].exponents[var]);
-	fputc('\n', stdout);
-  }
-}
+#endif
