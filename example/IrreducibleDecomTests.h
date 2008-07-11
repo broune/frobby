@@ -15,96 +15,10 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
-// This file shows how to compute irreducible decompositions using
-// Frobby. This is done by way of a number of tests of the
-// computations performed.
+#ifndef IRREDUCIBLE_DECOM_TESTS_GUARD
+#define IRREDUCIBLE_DECOM_TESTS_GUARD
 
-void testIrreducibleDecomIdeal() {
-  {
-	MyIdeal inputIdeal = make4_xx_yy_xz_yz();
-	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
-	
-	MyIdealConsumer consumer;
-	bool returnValue =
-	  Frobby::irreducibleDecompositionAsMonomials(frobbyInputIdeal, consumer);
+// Test the computation of irreducible decompositions using Frobby.
+void testIrreducibleDecom();
 
-	assertTrue(returnValue,
-			   "irrdecom as monomials of ideal returnValue");
-	assertEqual(consumer.getIdeal(), make4_xy_xxyyz(),
-				"irrdecom as monomials of ideal");
-	assertTrue(consumer.hasAnyOutput(),
-			   "irrdecom as monomials of ideal hasAnyOutput");
-  }
-
-  {
-	MyIdeal inputIdeal = make4_xx_yy_xz_yz();
-	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
-
-	MyIdealsConsumer consumer;
-	Frobby::irreducibleDecompositionAsIdeals(frobbyInputIdeal, consumer);
-
-	assertEqual(consumer.getIdeals(), makeIrrdecom4_xx_yy_xz_yz(),
-				"irrdecom as ideals of ideal");
-  }
-}
-
-void testIrreducibleDecomZeroIdeal() {
-  for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal frobbyInputIdeal(varCount);
-
-	MyIdealConsumer consumer;
-	bool returnValue =
-	  Frobby::irreducibleDecompositionAsMonomials(frobbyInputIdeal, consumer);
-
-	assertTrue(!returnValue,
-			   "irrdecom as monomials of decomZero returnValue");
-	assertTrue(!consumer.hasAnyOutput(),
-			   "irrdecom as monomials of decomZero hasAnyOutput");
-  }
-
-  for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal frobbyInputIdeal(varCount);
-
-	MyIdealsConsumer consumer;
-	Frobby::irreducibleDecompositionAsIdeals(frobbyInputIdeal, consumer);
-
-	assertEqual(consumer.getIdeals(), makeIdeals(make_0()),
-				"irrdecom as ideals of decomZero");
-  }
-}
-
-void testIrreducibleDecomOneIdeal() {
-  for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	MyIdeal inputIdeal = make_1(varCount);
-	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
-
-	MyIdealConsumer consumer;
-	bool returnValue =
-	  Frobby::irreducibleDecompositionAsMonomials(frobbyInputIdeal, consumer);
-
-	assertTrue(returnValue,
-			   "irrdecom as monomials of one returnValue");
-	assertTrue(consumer.hasAnyOutput(),
-			   "irrdecom as monomials of one hasAnyOutput");
-	assertEqual(consumer.getIdeal(), make_0(),
-				"irrdecom as monomials of one");
-  }
-
-  for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	MyIdeal inputIdeal = make_1(varCount);
-	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
-
-	MyIdealsConsumer consumer;
-	Frobby::irreducibleDecompositionAsIdeals(frobbyInputIdeal, consumer);
-
-	assertEqual(consumer.getIdeals(), MyIdeals(),
-				"irrdecom as ideals of one");
-  }
-}
-
-// Perform each of the tests above.
-void testIrreducibleDecom() {
-  testIrreducibleDecomIdeal();
-  testIrreducibleDecomZeroIdeal();
-  testIrreducibleDecomOneIdeal();
-}
+#endif

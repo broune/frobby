@@ -298,12 +298,19 @@ $(outdir)StatisticsStrategy.o: src/StatisticsStrategy.cpp src/stdinc.h \
   src/Term.h
 $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h \
-  src/../example/example.cpp src/../example/../src/frobby.h \
-  src/../example/MyIdeal.h src/../example/MyPolynomial.h \
-  src/../example/MyAsserts.h src/../example/MyConsumers.h \
-  src/../example/MyIdealCreators.h src/../example/MyPolynomialCreators.h \
+  src/../example/include.cpp src/../example/../src/frobby.h \
+  src/../example/example.cpp src/../example/MyIdeal.h \
+  src/../example/MyPolynomial.h src/../example/MyAsserts.h \
+  src/../example/MyConsumers.h src/../example/MyIdealCreators.h \
+  src/../example/MyPolynomialCreators.h \
   src/../example/AlexanderDualTests.h \
   src/../example/HilbertPoincareTests.h \
   src/../example/IrreducibleDecomTests.h \
   src/../example/standardProgramTests.h \
-  src/../example/maximalStandardMonomialTests.h
+  src/../example/maximalStandardMonomialTests.h \
+  src/../example/AlexanderDualTests.cpp \
+  src/../example/HilbertPoincareTests.cpp \
+  src/../example/IrreducibleDecomTests.cpp \
+  src/../example/standardProgramTests.cpp \
+  src/../example/maximalStandardMonomialTests.cpp \
+  src/../example/MyIdeal.cpp

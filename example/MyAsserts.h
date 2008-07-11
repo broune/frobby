@@ -15,68 +15,24 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
+#ifndef MY_ASSERTS_GUARD
+#define MY_ASSERTS_GUARD
+
+#include "MyIdeal.h"
+#include "MyPolynomial.h"
+
 // Print an error and exit if a is not equal to b. Otherwise print a
 // dot to signify that a test passed.
-void assertEqual(const MyIdeal& a, const MyIdeal& b, const char* msg) {
-  if (!equal(a, b)) {
-	fputs("\nFrobby internal test error: ideals not equal.\n", stdout);
-	fputs("Context: ", stdout);
-	fputs(msg, stdout);
-	fputc('\n', stdout);
-	printIdeal(a);
-	printIdeal(b);
-	exit(1);
-  } else {
-	fputc('.', stdout);
-	fflush(stdout);
-  }
-}
-
-void assertEqual(const MyIdeals& a, const MyIdeals& b, const char* msg) {
-  if (!equal(a, b)) {
-	fputs("\nFrobby internal test error: ideal sets not equal.\n", stdout);
-	fputs("Context: ", stdout);
-	fputs(msg, stdout);
-	fputc('\n', stdout);
-	printIdeals(a);
-	printIdeals(b);
-	exit(1);
-  } else {
-	fputc('.', stdout);
-	fflush(stdout);
-  }
-}
+void assertEqual(const MyIdeal& a, const MyIdeal& b, const char* msg);
+void assertEqual(const MyIdeals& a, const MyIdeals& b, const char* msg);
 
 // Print an error and exit if a is not equal to b. Otherwise print a
 // dot to signify that a test passed.
 void assertEqual(const MyPolynomial& a, const MyPolynomial& b,
-				 const char* msg) {
-  if (!equal(a, b)) {
-	fputs("\nFrobby internal test error: Polynomials not equal.\n",
-		  stdout);
-	fputs("Context: ", stdout);
-	fputs(msg, stdout);
-	fputc('\n', stdout);
-	printPolynomial(a);
-	printPolynomial(b);
-	exit(1);
-  } else {
-	fputc('.', stdout);
-	fflush(stdout);
-  }
-}
+				 const char* msg);
 
 // Print an error and exit if b is not true. Otherwise print a dot to
 // signify that a test passed.
-void assertTrue(bool b, const char* msg) {
-  if (!b) {
-	fputs("\nFrobby internal test error: condition not true.\n", stdout);
-	fputs("Context: ", stdout);
-	fputs(msg, stdout);
-	fputc('\n', stdout);
-	exit(1);
-  } else {
-	fputc('.', stdout);
-	fflush(stdout);
-  }
-}
+void assertTrue(bool b, const char* msg);
+
+#endif

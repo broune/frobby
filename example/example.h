@@ -15,23 +15,10 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
-#include "MyIdeal.h"
-#include "MyPolynomial.h"
-#include "MyAsserts.h"
-#include "MyConsumers.h"
-#include "MyIdealCreators.h"
-#include "MyPolynomialCreators.h"
+#ifndef EXAMPLE_GUARD
+#define EXAMPLE_GUARD
 
-#include "AlexanderDualTests.h"
-#include "HilbertPoincareTests.h"
-#include "IrreducibleDecomTests.h"
-#include "standardProgramTests.h"
-#include "maximalStandardMonomialTests.h"
+// Test the various functionalities of the Frobby library interface.
+void testFrobbyLibraryInterface();
 
-void testFrobbyLibraryInterface() {
-  testAlexanderDual();
-  testHilbertPoincareSeries();
-  testIrreducibleDecom();
-  testStandardProgram();
-  testMsm();
-}
+#endif

@@ -15,10 +15,17 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
-#ifndef MAXIMAL_STANDARD_MONOMIAL_TESTS
-#define MAXIMAL_STANDARD_MONOMIAL_TESTS
+#include "AlexanderDualTests.cpp"
+#include "HilbertPoincareTests.cpp"
+#include "IrreducibleDecomTests.cpp"
+#include "standardProgramTests.cpp"
+#include "maximalStandardMonomialTests.cpp"
 
-// Test the computation of maximal standard monomials using Frobby.
-void testMsm();
+#include "MyIdeal.cpp"
+#include "MyPolynomial.cpp"
+#include "MyAsserts.cpp"
+#include "MyConsumers.cpp"
+#include "MyIdealCreators.cpp"
+#include "MyPolynomialCreators.cpp"
 
-#endif
+#include "example.cpp"

@@ -15,26 +15,22 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
-// A common base class for consumers.
+#ifndef MY_CONSUMERS_GUARD
+#define MY_CONSUMERS_GUARD
+
+#include <gmp.h>
+#include "../src/frobby.h"
+#include "MyIdeal.h"
+#include "MyPolynomial.h"
+
+// A common base class for consumers with some useful common
+// functionality.
 class MyConsumer {
  protected:
-  MyConsumer():
-	_varCount(0) {
-  }
+  MyConsumer();
 
-  MyPP toPP(mpz_ptr* exponentVector) {
-	MyPP pp(_varCount);
-	for (size_t var = 0; var < _varCount; ++var)
-	  pp[var] = toInt(exponentVector[var]);
-	return pp;
-  }
-
-  int toInt(const mpz_t bigInteger) {
-	if (!mpz_fits_sint_p(bigInteger))
-	  return 0xFFFFFFFF; // A real program should report an error here.
-	else
-	  return mpz_get_si(bigInteger);
-  }
+  MyPP toPP(mpz_ptr* exponentVector);
+  int toInt(const mpz_t bigInteger);
 
   size_t _varCount;
 };
@@ -42,50 +38,26 @@ class MyConsumer {
 class MyIdealConsumer : public Frobby::IdealConsumer,
 						public MyConsumer {
 public:
-  MyIdealConsumer():
-	_hasAnyOutput(false) {
-  }
+  MyIdealConsumer();
   
-  virtual void idealBegin(size_t varCount) {
-	_varCount = varCount;
-	_hasAnyOutput = true;
-  }
+  virtual void idealBegin(size_t varCount);
+  virtual void consume(mpz_ptr* exponentVector);
+  const MyIdeal& getIdeal() const;
+  bool hasAnyOutput() const;
 
-  virtual void consume(mpz_ptr* exponentVector) {
-	_ideal.push_back(toPP(exponentVector));
-  }
-
-  const MyIdeal& getIdeal() const {
-	return _ideal;
-  }
-
-  bool hasAnyOutput() const {
-	return _hasAnyOutput;
-  }
-  
 private:
   bool _hasAnyOutput;
   MyIdeal _ideal;
 };
 
 class MyIdealsConsumer : public Frobby::IdealConsumer,
-						public MyConsumer {
+						 public MyConsumer {
 public:
-  MyIdealsConsumer() {
-  }
-  
-  virtual void idealBegin(size_t varCount) {
-	_varCount = varCount;
-	_ideals.resize(_ideals.size() + 1);
-  }
+  MyIdealsConsumer();
 
-  virtual void consume(mpz_ptr* exponentVector) {
-	_ideals.back().push_back(toPP(exponentVector));
-  }
-
-  const MyIdeals& getIdeals() const {
-	return _ideals;
-  }
+  virtual void idealBegin(size_t varCount);
+  virtual void consume(mpz_ptr* exponentVector);
+  const MyIdeals& getIdeals() const;
 
 private:
   MyIdeals _ideals;
@@ -94,18 +66,12 @@ private:
 class MyPolynomialConsumer : public Frobby::PolynomialConsumer,
 							 public MyConsumer {
  public:
-  virtual void polynomialBegin(size_t varCount) {
-	_varCount = varCount;
-  }
-
-  virtual void consume(const mpz_t coef, mpz_ptr* exponentVector) {
-	_polynomial.push_back(MyTerm(toInt(coef), toPP(exponentVector)));
-  }
-
-  const MyPolynomial& getPolynomial() const {
-	return _polynomial;
-  }
+  virtual void polynomialBegin(size_t varCount);
+  virtual void consume(const mpz_t coef, mpz_ptr* exponentVector);
+  const MyPolynomial& getPolynomial() const;
 
  private:
   MyPolynomial _polynomial;
 };
+
+#endif
