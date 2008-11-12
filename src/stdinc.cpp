@@ -17,5 +17,5 @@
 #include "stdinc.h"
 
 namespace constants {
-  const char* version = "0.7.6";
+  const char* version = "0.7.7";
 }
