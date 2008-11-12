@@ -15,6 +15,7 @@ do
 
   cd test/special_ideals
   ./runtests $t
+  if [ $? != 0 ]; then exit 1; fi
   cd ../..
 
   echo
