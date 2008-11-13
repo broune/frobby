@@ -16,6 +16,7 @@
 */
 #include "stdinc.h"
 #include "Action.h"
+#include <cstdlib>
 
 int main(int argc, const char** argv) {
 #ifdef DEBUG
