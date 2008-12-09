@@ -16,7 +16,9 @@
 */
 #include "stdinc.h"
 #include "Action.h"
+
 #include <cstdlib>
+#include <memory>
 
 int main(int argc, const char** argv) {
 #ifdef DEBUG
@@ -40,7 +42,7 @@ int main(int argc, const char** argv) {
   } else
 	prefix = "help";
 
-  Action* action = Action::getAction(prefix);
+  const auto_ptr<Action> action(Action::createActionWithPrefix(prefix));
   action->parseCommandLine(argc - 1, argv + 1);
   action->perform();
 

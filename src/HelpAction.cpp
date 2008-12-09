@@ -20,6 +20,8 @@
 #include "Parameter.h"
 #include "IOHandler.h"
 
+#include <memory>
+
 HelpAction::HelpAction():
   Action
 (staticGetName(),
@@ -44,8 +46,9 @@ bool HelpAction::processNonParameter(const char* str) {
   if (_topic == "io")
 	return true;
 
-  Action* action = Action::getAction(str);
-  if (action == 0) {
+  vector<string> names;
+  Action::addNamesWithPrefix(str, names);
+  if (names.empty()) {
     fprintf(stderr, "ERROR: Unknown help topic \"%s\".\n", str);
     return false;
   }
@@ -147,8 +150,8 @@ void HelpAction::perform() {
 	if (_topic == "io")
 	  displayIOHelp();
 	else {
-	  Action* action = Action::getAction(_topic);
-	  displayActionHelp(action);
+	  auto_ptr<Action> action(Action::createActionWithPrefix(_topic));
+	  displayActionHelp(action.get());
 	}
 
     return;
@@ -160,30 +163,29 @@ void HelpAction::perform() {
 "run it by typing `frobby ACTION', where ACTION is one of the following.\n\n",
 	  constants::version);
 
-  ActionContainer actions;
-  Action::getActions("", actions);
+  vector<string> names;
+  Action::addNamesWithPrefix("", names);
 
   // Compute maximum name length to make descriptions line up.
   size_t maxNameLength = 0;
-  for (ActionContainer::const_iterator it = actions.begin();
-       it != actions.end(); ++it) {
-    size_t length = (string((*it)->getName())).size();
-    if (maxNameLength < length)
-      maxNameLength = length;
-  }
+  for (vector<string>::const_iterator it = names.begin();
+       it != names.end(); ++it)
+    if (maxNameLength < it->size())
+      maxNameLength = it->size();
 
-  for (ActionContainer::const_iterator it = actions.begin();
-       it != actions.end(); ++it) {
-    if (string("help") == (*it)->getName() ||
-		string("test") == (*it)->getName())
+  for (vector<string>::const_iterator it = names.begin();
+       it != names.end(); ++it) {
+	auto_ptr<Action> action(Action::createActionWithPrefix(*it));
+    if (string("help") == action->getName() ||
+		string("test") == action->getName())
       continue;
 
-    size_t length = (string((*it)->getName())).size();
+    size_t length = (string(action->getName())).size();
     fputc(' ', stderr);
-    fputs((*it)->getName(), stderr);
+    fputs(action->getName(), stderr);
     for (size_t i = length; i < maxNameLength; ++i)
       fputc(' ', stderr);
-    fprintf(stderr, " - %s\n", (*it)->getShortDescription());
+    fprintf(stderr, " - %s\n", action->getShortDescription());
   }
 
   fputs(
