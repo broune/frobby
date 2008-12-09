@@ -22,9 +22,9 @@
 
 FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
 									 TermGrader& grader,
-									 const SplitStrategy* split,
+									 const SplitStrategy* splitStrategy,
 									 bool useBound):
-  MsmStrategy(this, split),
+  MsmStrategy(this, splitStrategy),
   _consumer(consumer),
   _grader(grader),
   _hasSeenAnyValue(false),

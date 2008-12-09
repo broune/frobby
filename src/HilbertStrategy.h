@@ -32,7 +32,8 @@ class SplitStrategy;
 
 class HilbertStrategy : public SliceStrategyCommon {
  public:
-  HilbertStrategy(CoefTermConsumer* consumer, const SplitStrategy* split);
+  HilbertStrategy(CoefTermConsumer* consumer,
+				  const SplitStrategy* splitStrategy);
   virtual ~HilbertStrategy();
 
   virtual Slice* setupInitialSlice(const Ideal& ideal);

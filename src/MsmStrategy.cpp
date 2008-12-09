@@ -125,8 +125,9 @@ void MsmStrategy::labelSplit(Slice* slice,
   rightSlice->simplify();
 }
 
-MsmStrategy::MsmStrategy(TermConsumer* consumer, const SplitStrategy* split):
-  SliceStrategyCommon(split),
+MsmStrategy::MsmStrategy(TermConsumer* consumer,
+						 const SplitStrategy* splitStrategy):
+  SliceStrategyCommon(splitStrategy),
   _consumer(consumer) {
   ASSERT(consumer != 0);
 }

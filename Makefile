@@ -87,7 +87,7 @@ ifeq ($(MODE), analysis)
             -Wno-multichar -Wno-deprecated-declarations -Wpacked        \
             -Wredundant-decls -Wunreachable-code -Winline               \
             -Wno-invalid-offsetof -Winvalid-pch -Wlong-long             \
-            -Wdisabled-optimization
+            -Wdisabled-optimization -D DEBUG
   MATCH=true
 endif
 
