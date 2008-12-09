@@ -46,7 +46,7 @@ ifndef ldflags
 endif
 
 cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
-         -Wno-unused-parameter -Werror -isystem $(GMP_INC_DIR)
+         -Wno-unused-parameter -isystem $(GMP_INC_DIR)
 program = frobby
 library = libfrobby.a
 
@@ -62,7 +62,7 @@ ifeq ($(MODE), release)
 endif
 ifeq ($(MODE), debug)
   outdir = bin/debug/
-  cflags += -g -D DEBUG -fno-inline
+  cflags += -g -D DEBUG -fno-inline -Werror
   MATCH=true
 endif
 ifeq ($(MODE), shared)
@@ -87,7 +87,7 @@ ifeq ($(MODE), analysis)
             -Wno-multichar -Wno-deprecated-declarations -Wpacked        \
             -Wredundant-decls -Wunreachable-code -Winline               \
             -Wno-invalid-offsetof -Winvalid-pch -Wlong-long             \
-            -Wdisabled-optimization -D DEBUG
+            -Wdisabled-optimization -D DEBUG -Werror
   MATCH=true
 endif
 
