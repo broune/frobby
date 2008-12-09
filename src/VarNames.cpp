@@ -19,8 +19,6 @@
 
 #include <sstream>
 
-const size_t VarNames::UNKNOWN = numeric_limits<size_t>::max();
-
 VarNames::VarNames() {
 }
 
@@ -55,7 +53,7 @@ bool VarNames::addVar(const string& name) {
 
   _indexToName.push_back(new string(name));
 
-  if (getVarCount() == UNKNOWN) {
+  if (getVarCount() == getInvalidIndex()) {
     fputs("ERROR: Too many variable names.\n", stderr);
     exit(1);
   }
@@ -78,13 +76,13 @@ size_t VarNames::getIndex(const string& name) const {
 size_t VarNames::getIndex(const char* name) const {
   VarNameMap::const_iterator it = _nameToIndex.find(name);
   if (it == _nameToIndex.end())
-    return UNKNOWN;
+    return getInvalidIndex();
   else	
     return it->second;
 }
 
 bool VarNames::contains(const string& name) const {
-  return getIndex(name) != UNKNOWN;
+  return getIndex(name) != getInvalidIndex();
 }
 
 bool VarNames::namesAreDefault() const {
@@ -164,6 +162,10 @@ void VarNames::print(FILE* file) const {
     fprintf(file, "%lu<->\"%s\"", (unsigned long)i, getName(i).c_str());
   }
   fputs(")\n", file);
+}
+
+size_t VarNames::getInvalidIndex() {
+  return numeric_limits<size_t>::max();
 }
 
 bool VarNames::compareNames(const string* a, const string* b) {

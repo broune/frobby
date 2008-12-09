@@ -57,7 +57,7 @@ public:
   // This also depends on the order of the names.
   bool operator<(const VarNames& names) const;
 
-  // Returns VarNames::UNKNOWN if name is not known.
+  // Returns VarNames::getInvalidIndex() if name is not known.
   size_t getIndex(const string& name) const;
   size_t getIndex(const char* name) const;
 
@@ -76,14 +76,14 @@ public:
 
   bool empty() const;
 
-  static const size_t UNKNOWN;
-
   VarNames& operator=(const VarNames& names);
   bool operator==(const VarNames& names) const;
 
   void swapVariables(size_t a, size_t b);
 
   void print(FILE* file) const;
+
+  static size_t getInvalidIndex();
 
 private:
   static bool compareNames(const string* a, const string* b);
