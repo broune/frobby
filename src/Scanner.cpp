@@ -304,7 +304,7 @@ size_t Scanner::readVariable(const VarNames& names) {
 
   const char* name = readIdentifier();
   size_t var = names.getIndex(name);
-  if (var == VarNames::UNKNOWN) {
+  if (var == VarNames::getInvalidIndex()) {
 	printError();
     fprintf(stderr, "Unknown variable \"%s\". Maybe you forgot a *.\n", name);
     exit(1);

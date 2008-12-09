@@ -90,7 +90,7 @@ void extractExponents(const vector<BigIdeal*>& ideals,
   for (size_t i = 0; i < ideals.size(); ++i) {
     BigIdeal& ideal = *(ideals[i]);
     size_t var = ideal.getNames().getIndex(varName);
-    if (var == VarNames::UNKNOWN)
+    if (var == VarNames::getInvalidIndex())
       continue;
 
     size_t generatorCount = ideal.getGeneratorCount();
@@ -194,7 +194,7 @@ void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
 	  size_t newVar = _names.getIndex(name);
 	  newVars.push_back(newVar);
 	  
-	  ASSERT(newVar != VarNames::UNKNOWN);
+	  ASSERT(newVar != VarNames::getInvalidIndex());
 	}
   }
 
