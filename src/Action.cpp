@@ -48,60 +48,118 @@ Action::Action(const char* name,
 Action::~Action() {
 }
 
-// The point of doing it this way is that only actions that are
-// actually used get constructed and deallocation is automatic.
-template<class ActionType>
-void addIfPrefix(const string& str,
-				 Action::ActionContainer& actions) {
-  if (string(ActionType::staticGetName()).compare(0, str.size(), str) == 0) {
-	static ActionType action;
-	actions.push_back(&action);
+// This is helper code that makes use of template to save a lot of the
+// typing required to do this directly by hand. Also, this has the
+// benefit that this is the single place that each new ActionType has
+// to be registered.
+namespace {
+  // Helper function for ActionFactory.
+  template<class ActionType>
+  Action* factoryMethod() {
+	return new ActionType();
+  }
+
+  // No virtual methods means that we can copy these things around by
+  // value and this avoid having to deal with memory allocation.
+  class ActionFactory {
+  public:
+	ActionFactory(const char* name, Action* (*factoryMethodParam)()):
+	  _name(name),
+	  _factoryMethod(factoryMethodParam) {
+	}
+	
+	const string& getName() const {
+	  return _name;
+	}
+
+	Action* createAction() const {
+	  return _factoryMethod();
+	}
+
+	bool hasPrefix(const string& prefix) const {
+	  return getName().compare(0, prefix.size(), prefix) == 0;
+	}
+
+  private:
+	string _name;
+	Action* (*_factoryMethod)();
+  };
+
+  // Helper function for addActionFactories.
+  template<class ActionType>
+  void addActionFactory(vector<ActionFactory>& factories) {
+	const char* name = ActionType::staticGetName();
+	Action* (*factoryMethodParam)() = factoryMethod<ActionType>;
+
+	factories.push_back(ActionFactory(name, factoryMethodParam));
+  }
+
+  void addActionFactories(vector<ActionFactory>& factories) {
+	addActionFactory<HilbertAction>(factories);
+	addActionFactory<IrreducibleDecomAction>(factories);
+	addActionFactory<AlexanderDualAction>(factories);
+	addActionFactory<AssociatedPrimesAction>(factories);
+	addActionFactory<TransformAction>(factories);
+	addActionFactory<PolyTransformAction>(factories);
+
+	addActionFactory<IntersectionAction>(factories);
+	addActionFactory<GenerateIdealAction>(factories);
+	addActionFactory<FrobeniusAction>(factories);
+	addActionFactory<DynamicFrobeniusAction>(factories);
+	addActionFactory<GenerateFrobeniusAction>(factories);
+	addActionFactory<AnalyzeAction>(factories);
+	addActionFactory<LatticeFormatAction>(factories);
+
+	addActionFactory<HelpAction>(factories);
+	addActionFactory<TestAction>(factories);
   }
 }
 
-Action* Action::getAction(const string& prefix) {
-  ActionContainer actions;
-  getActions(prefix, actions);
+void Action::addNamesWithPrefix(const string& prefix,
+								vector<string>& names) {
+  vector<ActionFactory> factories;
+  addActionFactories(factories);
 
-  if (actions.empty()) {
+  for (vector<ActionFactory>::const_iterator factory = factories.begin();
+	   factory != factories.end(); ++factory)
+	if (factory->hasPrefix(prefix))
+	  names.push_back(factory->getName());
+}
+
+auto_ptr<Action> Action::createActionWithPrefix(const string& prefix) {
+  vector<string> names;
+  addNamesWithPrefix(prefix, names);
+
+  if (names.empty()) {
     fprintf(stderr, "ERROR: No action has the prefix \"%s\".\n",
 			prefix.c_str());
 	exit(1);
   }
 
-  if (actions.size() >= 2) {
+  if (names.size() >= 2) {
     fprintf(stderr, "ERROR: Prefix \"%s\" is ambigous.\nPossibilities are:",
 			prefix.c_str());
-	for (size_t i = 0; i < actions.size(); ++i) {
+	for (vector<string>::iterator name = names.begin();
+		 name != names.end(); ++name) {
 	  fputc(' ', stderr);
-	  fputs(actions[i]->getName(), stderr);
+	  fputs(name->c_str(), stderr);
 	}
 	fputc('\n', stderr);
     exit(1);
   }
 
-  ASSERT(actions.size() == 1);
-  return actions.back();
-}
+  ASSERT(names.size() == 1);
 
-void Action::getActions(const string& prefix, ActionContainer& actions) {
-  addIfPrefix<HilbertAction>(prefix, actions);
-  addIfPrefix<IrreducibleDecomAction>(prefix, actions);
-  addIfPrefix<AlexanderDualAction>(prefix, actions);
-  addIfPrefix<AssociatedPrimesAction>(prefix, actions);
-  addIfPrefix<TransformAction>(prefix, actions);
-  addIfPrefix<PolyTransformAction>(prefix, actions);
+  vector<ActionFactory> factories;
+  addActionFactories(factories);
 
-  addIfPrefix<IntersectionAction>(prefix, actions);
-  addIfPrefix<GenerateIdealAction>(prefix, actions);
-  addIfPrefix<FrobeniusAction>(prefix, actions);
-  addIfPrefix<DynamicFrobeniusAction>(prefix, actions);
-  addIfPrefix<GenerateFrobeniusAction>(prefix, actions);
-  addIfPrefix<AnalyzeAction>(prefix, actions);
-  addIfPrefix<LatticeFormatAction>(prefix, actions);
+  for (vector<ActionFactory>::const_iterator factory = factories.begin();
+	   factory != factories.end(); ++factory)
+	if (factory->hasPrefix(prefix))
+	  return auto_ptr<Action>(factory->createAction());
 
-  addIfPrefix<HelpAction>(prefix, actions);
-  addIfPrefix<TestAction>(prefix, actions);
+  ASSERT(false);
+  return auto_ptr<Action>();
 }
 
 const char* Action::getName() const {

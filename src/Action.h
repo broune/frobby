@@ -18,7 +18,9 @@
 #define ACTION_GUARD
 
 #include "BoolParameter.h"
+
 #include <vector>
+#include <memory>
 
 class Parameter;
 
@@ -46,9 +48,9 @@ class Action {
 
   virtual void perform() = 0;
 
-  typedef vector<Action*> ActionContainer;
-  static void getActions(const string& prefix, ActionContainer& actions);
-  static Action* getAction(const string& prefix);
+  static void addNamesWithPrefix(const string& prefix,
+								 vector<string>& names);
+  static auto_ptr<Action> createActionWithPrefix(const string& prefix);
 
  protected:
   const char* _name;
