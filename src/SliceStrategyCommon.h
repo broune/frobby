@@ -31,7 +31,7 @@ class SplitStrategy;
 // for derived classes.
 class SliceStrategyCommon : public SliceStrategy {
  public:
-  SliceStrategyCommon(const SplitStrategy* split);
+  SliceStrategyCommon(const SplitStrategy* splitStrategy);
   virtual ~SliceStrategyCommon();
 
   virtual void freeSlice(Slice* slice);

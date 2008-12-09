@@ -27,8 +27,8 @@
 #include "HilbertIndependenceConsumer.h"
 
 HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
-								 const SplitStrategy* split):
-  SliceStrategyCommon(split),
+								 const SplitStrategy* splitStrategy):
+  SliceStrategyCommon(splitStrategy),
   _consumer(consumer) {
 }
 

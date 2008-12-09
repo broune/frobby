@@ -19,10 +19,10 @@
 
 #include "Slice.h"
 
-SliceStrategyCommon::SliceStrategyCommon(const SplitStrategy* split):
-  _split(split),
+SliceStrategyCommon::SliceStrategyCommon(const SplitStrategy* splitStrategy):
+  _split(splitStrategy),
   _useIndependence(true) {
-  ASSERT(split != 0);
+  ASSERT(splitStrategy != 0);
 }
 
 SliceStrategyCommon::~SliceStrategyCommon() {

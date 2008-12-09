@@ -15,9 +15,9 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 
-MyTerm::MyTerm(int coef, MyPP exponents):
+MyTerm::MyTerm(int coef, MyPP exponentsParam):
   coefficient(coef),
-  exponents(exponents) {
+  exponents(exponentsParam) {
 }
 
 MyTerm::MyTerm(int coef, int e):
