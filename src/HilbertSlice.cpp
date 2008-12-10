@@ -45,7 +45,12 @@ bool HilbertSlice::baseCase() {
   if (_varCount == 0)
 	return true;
 
-  static HilbertBasecase basecase; // TODO: get rid of static
+  // TODO: find a way other than static to use the same basecase
+  // object every time, instead of allocating a new one. This provides
+  // around a 4% speed-up, at least on Cygwin. We cannot use static
+  // since the base case has an mpz_class, and static mpz_class
+  // crashes on Mac OS X.
+  HilbertBasecase basecase;
   basecase.computeCoefficient(_ideal);
   const mpz_class& coef = basecase.getLastCoefficient();
 

@@ -70,14 +70,10 @@ const char* IOHandler::getDataTypeName(DataType type) {
   }
 }
 
-const vector<IOHandler::DataType>& IOHandler::getDataTypes() {
-  static vector<DataType> types;
-  if (types.empty()) {
-	types.push_back(MonomialIdeal);
-	types.push_back(MonomialIdealList);
-	types.push_back(Polynomial);
-  }
-  return types;
+void IOHandler::addDataTypes(vector<DataType> types) {
+  types.push_back(MonomialIdeal);
+  types.push_back(MonomialIdealList);
+  types.push_back(Polynomial);
 }
 
 void IOHandler::registerInput(DataType type) {

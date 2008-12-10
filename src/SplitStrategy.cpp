@@ -76,8 +76,9 @@ protected:
   // Returns the variable that divides the most minimal generators of
   // those where some minimal generator is divisible by the square of
   // that variable.
+  mutable Term coVariableForGetBestVar;
   size_t getBestVar(const Slice& slice) const {
-	static Term co; // TODO: get rid of static
+	Term& co = coVariableForGetBestVar;
 	co.reset(slice.getVarCount());
 	slice.getIdeal().getSupportCounts(co);
 
