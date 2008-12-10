@@ -124,7 +124,9 @@ void HelpAction::displayIOHelp() {
 			handler->getName(),
 			handler->getDescription());
 
-	const vector<IOHandler::DataType> types = IOHandler::getDataTypes();
+	
+	vector<IOHandler::DataType> types;
+	IOHandler::addDataTypes(types);
 	for (vector<IOHandler::DataType>::const_iterator typeIt = types.begin();
 		 typeIt != types.end(); ++typeIt) {
 	  IOHandler::DataType type = *typeIt;

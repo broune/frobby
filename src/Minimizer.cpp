@@ -234,7 +234,7 @@ Minimizer::iterator Minimizer::minimize(iterator begin, iterator end) const {
   if (distance(begin, end) < 1000 || _varCount == 0)
 	return simpleMinimize(begin, end, _varCount);
 
-  static vector<Exponent*> terms; // TODO: get rid of static
+  vector<Exponent*> terms;
   terms.clear();
   terms.reserve(distance(begin, end));
 

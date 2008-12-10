@@ -213,7 +213,11 @@ void MsmSlice::twoVarBaseCase() {
 
   singleDegreeSortIdeal(0);
 
-  static Term term(2); // TODO: get rid of static
+  // We use _lcm to store the maximal standard monomial in, since we
+  // are not going to be using _lcm later anyway, and this way we
+  // avoid having to do a potentially costly allocation of an array of
+  // size 2 in this method that can be called a lot on small ideals.
+  _lcmUpdated = false;
 
   Ideal::const_iterator stop = getIdeal().end();
   Ideal::const_iterator it = getIdeal().begin();
@@ -221,21 +225,21 @@ void MsmSlice::twoVarBaseCase() {
     return;
 
   while (true) {
-    term[1] = (*it)[1] - 1;
+    _lcm[1] = (*it)[1] - 1;
     
     ++it;
     if (it == stop)
       break;
 
-    term[0] = (*it)[0] - 1;
+    _lcm[0] = (*it)[0] - 1;
 
-    ASSERT(!getIdeal().contains(term));
+    ASSERT(!getIdeal().contains(_lcm));
 
-    if (!_subtract.contains(term)) {
-      term[0] += _multiply[0];
-      term[1] += _multiply[1];
+    if (!_subtract.contains(_lcm)) {
+      _lcm[0] += _multiply[0];
+      _lcm[1] += _multiply[1];
       
-      _consumer->consume(term);
+      _consumer->consume(_lcm);
     }
   }
 }
