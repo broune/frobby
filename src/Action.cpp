@@ -33,6 +33,7 @@
 #include "PolyTransformAction.h"
 #include "HelpAction.h"
 #include "TestAction.h"
+#include "NameFactory.h"
 
 Action::Action(const char* name,
 			   const char* shortDescription,
@@ -48,82 +49,37 @@ Action::Action(const char* name,
 Action::~Action() {
 }
 
-// This is helper code that makes use of template to save a lot of the
-// typing required to do this directly by hand. Also, this has the
-// benefit that this is the single place that each new ActionType has
-// to be registered.
 namespace {
-  // Helper function for ActionFactory.
-  template<class ActionType>
-  Action* factoryMethod() {
-	return new ActionType();
-  }
+  typedef NameFactory<Action> ActionFactory;
 
-  // No virtual methods means that we can copy these things around by
-  // value and this avoid having to deal with memory allocation.
-  class ActionFactory {
-  public:
-	ActionFactory(const char* name, Action* (*factoryMethodParam)()):
-	  _name(name),
-	  _factoryMethod(factoryMethodParam) {
-	}
-	
-	const string& getName() const {
-	  return _name;
-	}
+  ActionFactory getActionFactory() {
+	ActionFactory factory;
 
-	Action* createAction() const {
-	  return _factoryMethod();
-	}
+	nameFactoryRegister<HilbertAction>(factory);
+	nameFactoryRegister<IrreducibleDecomAction>(factory);
+	nameFactoryRegister<AlexanderDualAction>(factory);
+	nameFactoryRegister<AssociatedPrimesAction>(factory);
+	nameFactoryRegister<TransformAction>(factory);
+	nameFactoryRegister<PolyTransformAction>(factory);
 
-	bool hasPrefix(const string& prefix) const {
-	  return getName().compare(0, prefix.size(), prefix) == 0;
-	}
+	nameFactoryRegister<IntersectionAction>(factory);
+	nameFactoryRegister<GenerateIdealAction>(factory);
+	nameFactoryRegister<FrobeniusAction>(factory);
+	nameFactoryRegister<DynamicFrobeniusAction>(factory);
+	nameFactoryRegister<GenerateFrobeniusAction>(factory);
+	nameFactoryRegister<AnalyzeAction>(factory);
+	nameFactoryRegister<LatticeFormatAction>(factory);
 
-  private:
-	string _name;
-	Action* (*_factoryMethod)();
-  };
+	nameFactoryRegister<HelpAction>(factory);
+	nameFactoryRegister<TestAction>(factory);
 
-  // Helper function for addActionFactories.
-  template<class ActionType>
-  void addActionFactory(vector<ActionFactory>& factories) {
-	const char* name = ActionType::staticGetName();
-	Action* (*factoryMethodParam)() = factoryMethod<ActionType>;
-
-	factories.push_back(ActionFactory(name, factoryMethodParam));
-  }
-
-  void addActionFactories(vector<ActionFactory>& factories) {
-	addActionFactory<HilbertAction>(factories);
-	addActionFactory<IrreducibleDecomAction>(factories);
-	addActionFactory<AlexanderDualAction>(factories);
-	addActionFactory<AssociatedPrimesAction>(factories);
-	addActionFactory<TransformAction>(factories);
-	addActionFactory<PolyTransformAction>(factories);
-
-	addActionFactory<IntersectionAction>(factories);
-	addActionFactory<GenerateIdealAction>(factories);
-	addActionFactory<FrobeniusAction>(factories);
-	addActionFactory<DynamicFrobeniusAction>(factories);
-	addActionFactory<GenerateFrobeniusAction>(factories);
-	addActionFactory<AnalyzeAction>(factories);
-	addActionFactory<LatticeFormatAction>(factories);
-
-	addActionFactory<HelpAction>(factories);
-	addActionFactory<TestAction>(factories);
+	return factory;
   }
 }
 
 void Action::addNamesWithPrefix(const string& prefix,
 								vector<string>& names) {
-  vector<ActionFactory> factories;
-  addActionFactories(factories);
-
-  for (vector<ActionFactory>::const_iterator factory = factories.begin();
-	   factory != factories.end(); ++factory)
-	if (factory->hasPrefix(prefix))
-	  names.push_back(factory->getName());
+  getActionFactory().addNamesWithPrefix(prefix, names);
 }
 
 auto_ptr<Action> Action::createActionWithPrefix(const string& prefix) {
@@ -150,16 +106,7 @@ auto_ptr<Action> Action::createActionWithPrefix(const string& prefix) {
 
   ASSERT(names.size() == 1);
 
-  vector<ActionFactory> factories;
-  addActionFactories(factories);
-
-  for (vector<ActionFactory>::const_iterator factory = factories.begin();
-	   factory != factories.end(); ++factory)
-	if (factory->hasPrefix(prefix))
-	  return auto_ptr<Action>(factory->createAction());
-
-  ASSERT(false);
-  return auto_ptr<Action>();
+  return getActionFactory().createWithPrefix(prefix);
 }
 
 const char* Action::getName() const {
@@ -180,7 +127,6 @@ bool Action::acceptsNonParameter() const {
 
 bool Action::processNonParameter(const char* str) {
   ASSERT(false);
-
   return false;
 }
 

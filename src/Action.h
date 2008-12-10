@@ -20,7 +20,6 @@
 #include "BoolParameter.h"
 
 #include <vector>
-#include <memory>
 
 class Parameter;
 
