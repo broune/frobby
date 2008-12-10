@@ -91,67 +91,67 @@ void nameFactoryRegister(NameFactory<AbstractProduct>& factory);
 // These are implementations that have to be included here due to
 // being templates.
 
-namespace {
-  template<class AbstractProduct>
-	auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
-	create(const string& name) {
-	for (typename vector<Pair>::const_iterator it = _pairs.begin();
-		 it != _pairs.end(); ++it)
-	  if (it->getName() == name)
-		return auto_ptr<AbstractProduct>(it->create());
-	return auto_ptr<AbstractProduct>();
-  }
+template<class AbstractProduct>
+auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
+create(const string& name) {
+  for (typename vector<Pair>::const_iterator it = _pairs.begin();
+	   it != _pairs.end(); ++it)
+	if (it->getName() == name)
+	  return auto_ptr<AbstractProduct>(it->create());
+  return auto_ptr<AbstractProduct>();
+}
 
-  template<class AbstractProduct>
-  auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
-	createWithPrefix(const string& prefix) {
-	typename vector<Pair>::const_iterator match = _pairs.end();
-	for (typename vector<Pair>::const_iterator it = _pairs.begin();
-		 it != _pairs.end(); ++it) {
-	  if (it->hasPrefix(prefix)) {
-		if (match != _pairs.end())
-		  return auto_ptr<AbstractProduct>(); // not unique
-		match = it; // first match
-	  }
+template<class AbstractProduct>
+auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
+createWithPrefix(const string& prefix) {
+  typename vector<Pair>::const_iterator match = _pairs.end();
+  for (typename vector<Pair>::const_iterator it = _pairs.begin();
+	   it != _pairs.end(); ++it) {
+	if (it->hasPrefix(prefix)) {
+	  if (match != _pairs.end())
+		return auto_ptr<AbstractProduct>(); // not unique
+	  match = it; // first match
 	}
-
-	if (match == _pairs.end())
-	  return auto_ptr<AbstractProduct>();
-	else
-	  return auto_ptr<AbstractProduct>(match->create());
   }
 
-  template<class AbstractProduct>
-  void NameFactory<AbstractProduct>::
-	registerProduct(const string& name, FactoryFunction function) {
-	_pairs.push_back(Pair(name, function));
-  }
+  if (match == _pairs.end())
+	return auto_ptr<AbstractProduct>();
+  else
+	return auto_ptr<AbstractProduct>(match->create());
+}
 
-  template<class AbstractProduct>
-  void NameFactory<AbstractProduct>::
-	addNamesWithPrefix(const string& prefix, vector<string>& names) {
-	for (typename vector<Pair>::const_iterator it = _pairs.begin();
-		 it != _pairs.end(); ++it)
-	  if (it->hasPrefix(prefix))
-		names.push_back(it->getName());
-  }
+template<class AbstractProduct>
+void NameFactory<AbstractProduct>::
+registerProduct(const string& name, FactoryFunction function) {
+  _pairs.push_back(Pair(name, function));
+}
 
-  template<class AbstractProduct>
-  size_t NameFactory<AbstractProduct>::
-	countNamesWithPrefix(const string& prefix) const {
-	size_t count = 0;
-	for (typename vector<Pair>::const_iterator it = _pairs.begin();
-		 it != _pairs.end(); ++it)
-	  if (it->hasPrefix(prefix))
-		++count;
-	return count;
-  }
+template<class AbstractProduct>
+void NameFactory<AbstractProduct>::
+addNamesWithPrefix(const string& prefix, vector<string>& names) {
+  for (typename vector<Pair>::const_iterator it = _pairs.begin();
+	   it != _pairs.end(); ++it)
+	if (it->hasPrefix(prefix))
+	  names.push_back(it->getName());
+}
 
-  template<class AbstractProduct>
-	bool NameFactory<AbstractProduct>::isEmpty() const {
-	return _pairs.empty();
-  }
+template<class AbstractProduct>
+size_t NameFactory<AbstractProduct>::
+countNamesWithPrefix(const string& prefix) const {
+  size_t count = 0;
+  for (typename vector<Pair>::const_iterator it = _pairs.begin();
+	   it != _pairs.end(); ++it)
+	if (it->hasPrefix(prefix))
+	  ++count;
+  return count;
+}
 
+template<class AbstractProduct>
+bool NameFactory<AbstractProduct>::isEmpty() const {
+  return _pairs.empty();
+}
+
+namespace {
   // Helper function for nameFactoryRegister.
   template<class AbstractProduct, class ConcreteProduct>
   AbstractProduct* createConcreteProductHelper() {
