@@ -16,6 +16,7 @@
 */
 #include <gmp.h>
 #include <gmpxx.h>
+#include <memory>
 using namespace std;
 
 //#define LOG

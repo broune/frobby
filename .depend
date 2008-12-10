@@ -9,7 +9,7 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
   src/FrobeniusAction.h src/AnalyzeAction.h src/LatticeFormatAction.h \
   src/IntersectionAction.h src/AssociatedPrimesAction.h \
   src/AlexanderDualAction.h src/HilbertAction.h src/PolyTransformAction.h \
-  src/TestAction.h
+  src/TestAction.h src/NameFactory.h
 $(outdir)IOParameters.o: src/IOParameters.cpp src/stdinc.h src/IOParameters.h \
   src/ParameterGroup.h src/Parameter.h src/StringParameter.h \
   src/IOHandler.h src/IOFacade.h src/Facade.h src/Timer.h \
@@ -315,3 +315,4 @@ $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/../example/MyAsserts.cpp src/../example/MyConsumers.cpp \
   src/../example/MyIdealCreators.cpp \
   src/../example/MyPolynomialCreators.cpp src/../example/example.cpp
+$(outdir)NameFactory.o: src/NameFactory.cpp src/stdinc.h src/NameFactory.h
