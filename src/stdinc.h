@@ -48,7 +48,6 @@ _noInline();_noInline();_noInline();_noInline();_noInline();}}
 #endif
 
 typedef unsigned int Exponent;
-typedef mpz_class Degree;
 
 namespace constants {
   extern const char* version;
