@@ -152,15 +152,15 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
   return generatorsToGo == 0;
 }
 
-void generateRandomFrobeniusInstance(vector<Degree>& degrees) {
+void generateRandomFrobeniusInstance(vector<mpz_class>& degrees) {
   int numberCount = 10;//;4 + (rand() % 6);
   int mod = 100000;
 
   degrees.resize(numberCount);
 
-  Degree totalGcd = 0;
+  mpz_class totalGcd = 0;
   for (int i = 0; i < numberCount - 1; ++i) {
-    Degree number = Degree(2+(rand() % mod));
+    mpz_class number = mpz_class(2+(rand() % mod));
     if (totalGcd == 0)
       totalGcd = number;
     else {
@@ -173,7 +173,7 @@ void generateRandomFrobeniusInstance(vector<Degree>& degrees) {
 
   // This ensures that the gcd of all the numbers is 1.
   degrees[numberCount - 1] =
-    (totalGcd == 1 ? Degree((rand() % mod) + 2) : totalGcd + 1);
+    (totalGcd == 1 ? mpz_class((rand() % mod) + 2) : totalGcd + 1);
 
   sort(degrees.begin(), degrees.end());
 }

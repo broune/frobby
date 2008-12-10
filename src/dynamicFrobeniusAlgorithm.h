@@ -19,6 +19,6 @@
 
 #include <vector>
 
-Degree dynamicFrobeniusAlgorithm(const vector<mpz_class>& degrees);
+mpz_class dynamicFrobeniusAlgorithm(const vector<mpz_class>& degrees);
 
 #endif

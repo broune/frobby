@@ -31,6 +31,6 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
 						 unsigned int variableCount,
 						 unsigned int generatorCount);
 
-void generateRandomFrobeniusInstance(vector<Degree>& degrees);
+void generateRandomFrobeniusInstance(vector<mpz_class>& degrees);
 
 #endif
