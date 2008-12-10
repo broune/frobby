@@ -19,6 +19,8 @@ public:
 						 const VarNames& names,
 						 FILE* out);
 
+  static const char* staticGetName();
+
  private:
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,

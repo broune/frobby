@@ -27,7 +27,7 @@ public:
 
   const string& getFormat() const;
   void setFormat(const string& format);
-  IOHandler* getIOHandler() const;
+  auto_ptr<IOHandler> createIOHandler() const;
 
   bool match(char c);
   bool matchEOF();

@@ -27,6 +27,7 @@
 #include "CoefTermConsumer.h"
 #include "Polynomial.h"
 #include "BigPolynomial.h"
+#include "NameFactory.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -477,41 +478,30 @@ void IOHandler::readVarPower(vector<mpz_class>& term,
     term[var] = 1;
 }
 
-IOHandler* IOHandler::getIOHandler(const string& name) {
-  const vector<IOHandler*>& handlers = getIOHandlers();
-  for (vector<IOHandler*>::const_iterator it = handlers.begin();
-	   it != handlers.end(); ++it) {
-	if (name == (*it)->getName())
-	  return *it;
+namespace {
+  typedef NameFactory<IOHandler> IOHandlerFactory;
+
+  IOHandlerFactory getIOHandlerFactory() {
+	IOHandlerFactory factory;
+
+	nameFactoryRegister<Macaulay2IOHandler>(factory);
+	nameFactoryRegister<CoCoA4IOHandler>(factory);
+	nameFactoryRegister<SingularIOHandler>(factory);
+	nameFactoryRegister<MonosIOHandler>(factory);
+	nameFactoryRegister<NewMonosIOHandler>(factory);
+	nameFactoryRegister<Fourti2IOHandler>(factory);
+	nameFactoryRegister<NullIOHandler>(factory);
+
+	return factory;
   }
-  return 0;
 }
 
-const vector<IOHandler*>& IOHandler::getIOHandlers() {
-  static vector<IOHandler*> handlers;
-  if (handlers.empty()) {
-	static Macaulay2IOHandler m2;
-	handlers.push_back(&m2);
+auto_ptr<IOHandler> IOHandler::createIOHandler(const string& name) {
+  return getIOHandlerFactory().create(name);
+}
 
-	static CoCoA4IOHandler cocoa4;
-	handlers.push_back(&cocoa4);
-
-	static SingularIOHandler singular;
-	handlers.push_back(&singular);
-
-	static MonosIOHandler monos;
-	handlers.push_back(&monos);
-
-	static NewMonosIOHandler newMonos;
-	handlers.push_back(&newMonos);
-
-	static Fourti2IOHandler fourti2;
-	handlers.push_back(&fourti2);
-
-	static NullIOHandler nullHandler;
-	handlers.push_back(&nullHandler);
-  }
-  return handlers;
+void IOHandler::addFormatNames(vector<string>& names) {
+  getIOHandlerFactory().addNamesWithPrefix("", names);
 }
 
 void IOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {

@@ -35,6 +35,8 @@ public:
 						 const VarNames& names,
 						 FILE* out);
 
+  static const char* staticGetName();
+
  protected:
   virtual void writePolynomialHeader(const VarNames& names,
 									 size_t termCount,

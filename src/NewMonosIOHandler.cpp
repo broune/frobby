@@ -22,10 +22,15 @@
 #include "VarNames.h"
 
 NewMonosIOHandler::NewMonosIOHandler():
-  IOHandler("newmonos", "Newer format used by the program Monos.", false) {
+  IOHandler(staticGetName(),
+			"Newer format used by the program Monos.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerOutput(MonomialIdeal);
+}
+
+const char* NewMonosIOHandler::staticGetName() {
+  return "newmonos";
 }
 
 void NewMonosIOHandler::writeTerm(const vector<mpz_class>& term,

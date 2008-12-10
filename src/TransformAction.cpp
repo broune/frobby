@@ -132,8 +132,9 @@ void TransformAction::perform() {
   if (_canonicalize)
 	sort(ideals.begin(), ideals.end(), compareIdeals);
 
+  auto_ptr<IOHandler> output = _io.createOutputHandler();
   for (size_t i = 0; i < ideals.size(); ++i)
-	facade.writeIdeal(*(ideals[i]), _io.getOutputHandler(), stdout);
+	facade.writeIdeal(*(ideals[i]), output.get(), stdout);
 }
 
 const char* TransformAction::staticGetName() {

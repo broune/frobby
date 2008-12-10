@@ -153,5 +153,5 @@ void IdealFacade::printLcm(BigIdeal& ideal,
   ioFacade.writeTerm(lcm, ideal.getNames(), handler, out);
   fputc('\n', out);
 
-   endAction();
+  endAction();
 }

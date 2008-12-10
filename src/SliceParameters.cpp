@@ -88,10 +88,10 @@ bool SliceParameters::getUseBound() const {
 
 void SliceParameters::validateSplit(bool allowLabel,
 											   bool allowFrob) {
-  const SplitStrategy* split =
-	SplitStrategy::getStrategy(_split.getValue().c_str());
+  auto_ptr<SplitStrategy>
+	split(SplitStrategy::createStrategy(_split.getValue().c_str()));
 
-  if (split == 0) {
+  if (split.get() == 0) {
 	fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n",
 			_split.getValue().c_str());
 	exit(1);
@@ -111,8 +111,8 @@ void SliceParameters::validateSplit(bool allowLabel,
 }
 
 void SliceParameters::apply(SliceFacade& facade) const {
-  const SplitStrategy* split =
-	SplitStrategy::getStrategy(_split.getValue().c_str());
+  auto_ptr<SplitStrategy> split =
+	SplitStrategy::createStrategy(_split.getValue().c_str());
 
   facade.setPrintDebug(_printDebug);
   facade.setPrintStatistics(_printStatistics);

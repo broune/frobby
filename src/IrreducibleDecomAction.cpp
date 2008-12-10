@@ -62,7 +62,8 @@ void IrreducibleDecomAction::perform() {
 	ioFacade.readIdeal(in, ideal);
   }
 
-  SliceFacade facade(ideal, _io.getOutputHandler(), stdout, _printActions);
+  auto_ptr<IOHandler> output = _io.createOutputHandler();
+  SliceFacade facade(ideal, output.get(), stdout, _printActions);
   _sliceParams.apply(facade);
   facade.computeIrreducibleDecomposition(_encode);
 }

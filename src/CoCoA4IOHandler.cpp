@@ -26,12 +26,17 @@
 #include "BigPolynomial.h"
 
 CoCoA4IOHandler::CoCoA4IOHandler():
-  IOHandler("cocoa4", "Format understandable by the program CoCoA 4.", false) {
+  IOHandler(staticGetName(),
+			"Format understandable by the program CoCoA 4.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
+}
+
+const char* CoCoA4IOHandler::staticGetName() {
+  return "cocoa4";
 }
 
 void CoCoA4IOHandler::writeTerm(const vector<mpz_class>& term,

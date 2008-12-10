@@ -85,8 +85,8 @@ void AnalyzeAction::perform() {
 
   IdealFacade idealFacade(_printActions);
   if (_printLcm) {
-	IOHandler* handler = IOHandler::getIOHandler("m2");
-	idealFacade.printLcm(ideal, handler, stdout);
+	auto_ptr<IOHandler> handler(IOHandler::createIOHandler("m2"));
+	idealFacade.printLcm(ideal, handler.get(), stdout);
   }
   if (_printVarCount) {
 	fprintf(stdout, "%lu\n", (unsigned long)ideal.getVarCount());

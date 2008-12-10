@@ -34,8 +34,8 @@ class IOParameters : public ParameterGroup {
   const string& getInputFormat() const;
   const string& getOutputFormat() const;
 
-  IOHandler* getInputHandler() const;
-  IOHandler* getOutputHandler() const;
+  auto_ptr<IOHandler> createInputHandler() const;
+  auto_ptr<IOHandler> createOutputHandler() const;
 
   // If using the input format, this must be called before validating
   // the ideals, since "autodetect" is not a valid format other than

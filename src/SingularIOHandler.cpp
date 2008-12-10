@@ -24,13 +24,17 @@
 #include "BigPolynomial.h"
 
 SingularIOHandler::SingularIOHandler():
-  IOHandler("singular",
+  IOHandler(staticGetName(),
 			"Format understandable by the program Singular.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
+}
+
+const char* SingularIOHandler::staticGetName() {
+  return "singular";
 }
 
 void SingularIOHandler::writeTerm(const vector<mpz_class>& term,

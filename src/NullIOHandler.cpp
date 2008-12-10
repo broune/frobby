@@ -24,7 +24,7 @@
 #include "VarNames.h"
 
 NullIOHandler::NullIOHandler():
-  IOHandler("null", "Ignores input and produces no output.", false) {
+  IOHandler(staticGetName(), "Ignores input and produces no output.", false) {
   registerInput(MonomialIdeal);
   registerInput(Polynomial);
   registerInput(MonomialIdealList);
@@ -32,6 +32,10 @@ NullIOHandler::NullIOHandler():
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
   registerOutput(MonomialIdealList);
+}
+
+const char* NullIOHandler::staticGetName() {
+  return "null";
 }
 
 void NullIOHandler::writeTerm(const vector<mpz_class>& term,

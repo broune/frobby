@@ -24,12 +24,17 @@
 #include "TermTranslator.h"
 
 Macaulay2IOHandler::Macaulay2IOHandler():
-  IOHandler("m2", "Format understandable by the program Macaulay 2.", false) {
+  IOHandler(staticGetName(),
+			"Format understandable by the program Macaulay 2.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
+}
+
+const char* Macaulay2IOHandler::staticGetName() {
+  return "m2";
 }
 
 void Macaulay2IOHandler::writeTerm(const vector<mpz_class>& term,

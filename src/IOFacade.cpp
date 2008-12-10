@@ -32,8 +32,7 @@ IOFacade::IOFacade(bool printActions):
 bool IOFacade::isValidMonomialIdealFormat(const string& format) {
   beginAction("Validating monomial ideal format name.");
 
-  IOHandler* handler = IOHandler::getIOHandler(format);
-  bool valid = (handler != 0);
+  bool valid = (IOHandler::createIOHandler(format).get() != 0);
 
   endAction();
 
@@ -43,8 +42,8 @@ bool IOFacade::isValidMonomialIdealFormat(const string& format) {
 void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   beginAction("Reading monomial ideal.");
 
-  IOHandler* handler = in.getIOHandler();
-  ASSERT(handler != 0);
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
 
   handler->readIdeal(in, ideal);
   in.expectEOF();
@@ -55,8 +54,8 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
 void IOFacade::readIdeals(Scanner& in, vector<BigIdeal*>& ideals) {
   beginAction("Reading monomial ideals.");
 
-  IOHandler* handler = in.getIOHandler();
-  ASSERT(handler != 0);
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
 
   while (handler->hasMoreInput(in)) {
     BigIdeal* ideal = new BigIdeal();
@@ -84,8 +83,8 @@ void IOFacade::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
 
   beginAction("Reading polynomial.");
 
-  IOHandler* handler = in.getIOHandler();
-  ASSERT(handler != 0);
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
 
   handler->readPolynomial(in, polynomial);
   in.expectEOF();
@@ -121,8 +120,8 @@ bool IOFacade::readAlexanderDualInstance
 (Scanner& in, BigIdeal& ideal, vector<mpz_class>& term) {
   beginAction("Reading Alexander dual input.");
 
-  IOHandler* handler = in.getIOHandler();
-  ASSERT(handler != 0);
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
 
   handler->readIdeal(in, ideal);
 

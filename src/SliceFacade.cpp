@@ -133,7 +133,7 @@ void SliceFacade::setIsMinimallyGenerated(bool isMinimallyGenerated) {
   _isMinimallyGenerated = isMinimallyGenerated;
 }
 
-void SliceFacade::setSplitStrategy(const SplitStrategy* split) {
+void SliceFacade::setSplitStrategy(auto_ptr<SplitStrategy> split) {
   _split = split;
 }
 
@@ -159,7 +159,7 @@ void SliceFacade::computeMultigradedHilbertSeries() {
 
   CoefTermConsumer* consumer = getCoefTermConsumer();
 
-  SliceStrategy* strategy = new HilbertStrategy(consumer, _split);
+  SliceStrategy* strategy = new HilbertStrategy(consumer, _split.get());
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
   endAction();
@@ -223,13 +223,13 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 
 void SliceFacade::computeMaximalStaircaseMonomials() {
   ASSERT(_ideal != 0);
-  ASSERT(_split != 0);
+  ASSERT(_split.get() != 0);
 
   minimize();
 
   beginAction("Computing maximal staircase monomials.");
 
-  SliceStrategy* strategy = new MsmStrategy(getTermConsumer(), _split);
+  SliceStrategy* strategy = new MsmStrategy(getTermConsumer(), _split.get());
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
   endAction();
@@ -358,7 +358,7 @@ void SliceFacade::computeAssociatedPrimes() {
 
 bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 									   bool useBound) {
-  ASSERT(_split != 0);
+  ASSERT(_split.get() != 0);
   ASSERT(_ideal != 0);
   ASSERT(_translator != 0);
   ASSERT(grading.size() == _ideal->getVarCount());
@@ -376,7 +376,7 @@ bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
   _generatedTermConsumer = new DecomRecorder(&solution);
 
   SliceStrategy* strategy =
-	new FrobeniusStrategy(getTermConsumer(), grader, _split, useBound);
+	new FrobeniusStrategy(getTermConsumer(), grader, _split.get(), useBound);
 
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
