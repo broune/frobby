@@ -34,10 +34,12 @@ IOParameters::IOParameters(DataType input, DataType output):
   if (_inputType != IOHandler::None)
 	defaultOutput = "input";
 
-  const vector<IOHandler*> handlers = IOHandler::getIOHandlers();
-  for (vector<IOHandler*>::const_iterator handlerIt = handlers.begin();
-	   handlerIt != handlers.end(); ++handlerIt) {
-	IOHandler* handler = *handlerIt;
+  vector<string> names;
+  IOHandler::addFormatNames(names);
+  for (vector<string>::const_iterator name = names.begin();
+	   name != names.end(); ++name) {
+	auto_ptr<IOHandler> handler = IOHandler::createIOHandler(*name);
+	ASSERT(handler.get() != 0);
 
 	if (handler->supportsInput(_inputType)) {
 	  inputFormats += ' ';
@@ -100,15 +102,15 @@ const string& IOParameters::getOutputFormat() const {
   return *_outputFormat;
 }
 
-IOHandler* IOParameters::getInputHandler() const {
-  IOHandler* handler = IOHandler::getIOHandler(getInputFormat());
-  ASSERT(handler != 0);
+auto_ptr<IOHandler> IOParameters::createInputHandler() const {
+  auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getInputFormat()));
+  ASSERT(handler.get() != 0);
   return handler;
 }
 
-IOHandler* IOParameters::getOutputHandler() const {
-  IOHandler* handler = IOHandler::getIOHandler(getOutputFormat());
-  ASSERT(handler != 0);
+auto_ptr<IOHandler> IOParameters::createOutputHandler() const {
+  auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getOutputFormat()));
+  ASSERT(handler.get() != 0);
   return handler;
 }
 
@@ -149,8 +151,8 @@ void IOParameters::validateFormats() const {
   IOFacade facade(false);
 
   if (_inputType != IOHandler::None) {
-	IOHandler* handler = IOHandler::getIOHandler(getInputFormat());
-	if (handler == 0) {
+	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getInputFormat()));
+	if (handler.get() == 0) {
 	  fprintf(stderr, "ERROR: Unknown input format \"%s\".\n",
 			  getInputFormat().c_str());
 	  exit(1);
@@ -165,8 +167,8 @@ void IOParameters::validateFormats() const {
   }
 
   if (_outputType != IOHandler::None) {
-	IOHandler* handler = IOHandler::getIOHandler(getOutputFormat());
-	if (handler == 0) {
+	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getOutputFormat()));
+	if (handler.get() == 0) {
 	  fprintf(stderr, "ERROR: Unknown output format \"%s\".\n",
 			  getOutputFormat().c_str());
 	  exit(1);

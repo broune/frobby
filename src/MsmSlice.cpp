@@ -213,7 +213,7 @@ void MsmSlice::twoVarBaseCase() {
 
   singleDegreeSortIdeal(0);
 
-  static Term term(2);
+  static Term term(2); // TODO: get rid of static
 
   Ideal::const_iterator stop = getIdeal().end();
   Ideal::const_iterator it = getIdeal().begin();

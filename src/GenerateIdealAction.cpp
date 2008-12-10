@@ -82,7 +82,8 @@ void GenerateIdealAction::perform() {
   }
 
   IOFacade ioFacade(_printActions);
-  ioFacade.writeIdeal(ideal, _io.getOutputHandler(), stdout);
+  auto_ptr<IOHandler> output = _io.createOutputHandler();
+  ioFacade.writeIdeal(ideal, output.get(), stdout);
 }
 
 const char* GenerateIdealAction::staticGetName() {

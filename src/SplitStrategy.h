@@ -23,6 +23,9 @@ class Ideal;
 
 class SplitStrategy {
  public:
+  SplitStrategy();
+  virtual ~SplitStrategy();
+
   virtual void getPivot(Term& pivot, Slice& slice) const = 0;
   virtual size_t getLabelSplitVariable(const Slice& slice) const = 0;
 
@@ -32,13 +35,10 @@ class SplitStrategy {
 
   virtual const char* getName() const = 0;
 
-  static const SplitStrategy* getStrategy(const string& name);
+  static auto_ptr<SplitStrategy> createStrategy(const string& name);
 
  protected:
-  virtual ~SplitStrategy();
-
   // To make these inaccessible.
-  SplitStrategy();
   SplitStrategy(const SplitStrategy&);
   SplitStrategy& operator=(const SplitStrategy&);
   bool operator==(const SplitStrategy&);

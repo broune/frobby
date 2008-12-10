@@ -59,8 +59,8 @@ class IOHandler {
 	(const TermTranslator* translator, FILE* out);
 
   // Returns null if name is unknown.
-  static IOHandler* getIOHandler(const string& name);
-  static const vector<IOHandler*>& getIOHandlers();
+  static auto_ptr<IOHandler> createIOHandler(const string& name);
+  static void addFormatNames(vector<string>& names);
 
   enum DataType {
 	None,

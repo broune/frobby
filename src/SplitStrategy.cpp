@@ -20,6 +20,7 @@
 #include "Slice.h"
 #include "Term.h"
 #include "Ideal.h"
+#include "NameFactory.h"
 
 SplitStrategy::SplitStrategy() {
 }
@@ -132,6 +133,10 @@ protected:
 class MaxLabelSplit : public LabelSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "maxlabel";
   }
 
@@ -143,7 +148,12 @@ public:
 
 // Use the first variable that is valid for a label split.
 class VarLabelSplit : public LabelSplit {
+public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "varlabel";
   }
 
@@ -161,7 +171,12 @@ class VarLabelSplit : public LabelSplit {
 // Among those variables with least number of exponents equal to one,
 // use the variable that divides the most minimal generators.
 class MinLabelSplit : public LabelSplit {
+public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "minlabel";
   }
 
@@ -194,6 +209,10 @@ public:
 class MinimumSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "minimum";
   }
 
@@ -207,6 +226,10 @@ public:
 class MedianSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "median";
   }
 
@@ -223,6 +246,10 @@ public:
 class MaximumSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "maximum";
   }
 
@@ -236,6 +263,10 @@ public:
 class IndependencePivotSplit : public MedianSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "indep";
   }
 
@@ -281,6 +312,10 @@ public:
 class GcdSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "gcd";
   }
 
@@ -319,6 +354,10 @@ public:
 class MinGenSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "mingen";
   }
 
@@ -350,6 +389,10 @@ public:
 class FrobeniusSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
 	return "frob";
   }
 
@@ -366,46 +409,27 @@ public:
   }
 };
 
-const SplitStrategy* SplitStrategy::getStrategy(const string& name) {
-  vector<SplitStrategy*> splits;
+namespace {
+  typedef NameFactory<SplitStrategy> SplitFactory;
 
-  if (splits.empty()) {
-	static MaxLabelSplit maxlabel;
-	splits.push_back(&maxlabel);
+  SplitFactory getSplitFactory() {
+	SplitFactory factory;
 
-	static MinLabelSplit minlabel;
-	splits.push_back(&minlabel);
+	nameFactoryRegister<MaxLabelSplit>(factory);
+	nameFactoryRegister<MinLabelSplit>(factory);
+	nameFactoryRegister<VarLabelSplit>(factory);
+	nameFactoryRegister<MinimumSplit>(factory);
+	nameFactoryRegister<MedianSplit>(factory);
+	nameFactoryRegister<MaximumSplit>(factory);
+	nameFactoryRegister<MinGenSplit>(factory);
+	nameFactoryRegister<IndependencePivotSplit>(factory);
+	nameFactoryRegister<GcdSplit>(factory);
+	nameFactoryRegister<FrobeniusSplit>(factory);
 
-	static VarLabelSplit varlabel;
-	splits.push_back(&varlabel);
-
-	static MinimumSplit minimum;
-	splits.push_back(&minimum);
-
-	static MedianSplit median;
-	splits.push_back(&median);
-
-	static MaximumSplit maximum;
-	splits.push_back(&maximum);
-
-	static MinGenSplit mingen;
-	splits.push_back(&mingen);
-
-	static IndependencePivotSplit indep;
-	splits.push_back(&indep);
-
-	static GcdSplit gcd;
-	splits.push_back(&gcd);
-
-	static FrobeniusSplit frob;
-	splits.push_back(&frob);
+	return factory;
   }
+}
 
-  for (vector<SplitStrategy*>::const_iterator it = splits.begin();
-	   it != splits.end(); ++it) {
-	if (name == (*it)->getName())
-	  return *it;
-  }
-
-  return 0;
+auto_ptr<SplitStrategy> SplitStrategy::createStrategy(const string& name) {
+  return getSplitFactory().create(name);
 }

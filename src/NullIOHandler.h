@@ -42,6 +42,8 @@ public:
   virtual CoefTermConsumer* createPolynomialWriter
 	(const TermTranslator* translator, FILE* out);
 
+  static const char* staticGetName();
+
  protected:
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,

@@ -113,10 +113,12 @@ void HelpAction::displayIOHelp() {
 		"The formats available in Frobby and the types of data they\n"
 		"support are as follows.\n\n", stderr);
 
-  const vector<IOHandler*> handlers = IOHandler::getIOHandlers();
-  for (vector<IOHandler*>::const_iterator handlerIt = handlers.begin();
-	   handlerIt != handlers.end(); ++handlerIt) {
-	IOHandler* handler = *handlerIt;
+  vector<string> names;
+  IOHandler::addFormatNames(names);
+  for (vector<string>::const_iterator name = names.begin();
+	   name != names.end(); ++name) {
+	auto_ptr<IOHandler> handler = IOHandler::createIOHandler(*name);
+	ASSERT(handler.get() != 0);
 
 	fprintf(stderr, "* The format %s: %s\n",
 			handler->getName(),

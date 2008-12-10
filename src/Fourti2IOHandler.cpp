@@ -24,12 +24,17 @@
 #include "BigPolynomial.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
-  IOHandler("4ti2", "Format used by the software package 4ti2.", true) {
+  IOHandler(staticGetName(),
+			"Format used by the software package 4ti2.", true) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
   registerOutput(MonomialIdeal);
   registerOutput(Polynomial);
+}
+
+const char* Fourti2IOHandler::staticGetName() {
+  return "4ti2";
 }
 
 void Fourti2IOHandler::writeTerm(const vector<mpz_class>& term,

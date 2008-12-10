@@ -66,7 +66,8 @@ void IntersectionAction::perform() {
 	idealFacade.sortGenerators(*intersection);
   }
 
-  ioFacade.writeIdeal(*intersection, _io.getOutputHandler(), stdout );
+  auto_ptr<IOHandler> output = _io.createOutputHandler();
+  ioFacade.writeIdeal(*intersection, output.get(), stdout );
 
   delete intersection;
   for (size_t i = 0; i < ideals.size(); ++i)

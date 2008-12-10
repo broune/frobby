@@ -67,7 +67,8 @@ void PolyTransformAction::perform() {
   if (_sortTerms || _canonicalize)
 	polyFacade.sortTerms(polynomial);
 
-  facade.writePolynomial(polynomial, _io.getOutputHandler(), stdout);
+  auto_ptr<IOHandler> output = _io.createOutputHandler();
+  facade.writePolynomial(polynomial, output.get(), stdout);
 }
 
 const char* PolyTransformAction::staticGetName() {

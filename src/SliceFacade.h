@@ -88,8 +88,8 @@ class SliceFacade : public Facade {
   void setIsMinimallyGenerated(bool isMinimallyGenerated);
 
   // It is an error to run an algorithm that does not support the
-  // specified label split strategy.
-  void setSplitStrategy(const SplitStrategy* split);
+  // specified split strategy.
+  void setSplitStrategy(auto_ptr<SplitStrategy> split);
 
   // TODO
   void setCanonicalOutput();
@@ -197,7 +197,7 @@ class SliceFacade : public Facade {
   TermConsumer* _generatedTermConsumer;
   CoefTermConsumer* _generatedCoefTermConsumer;
 
-  const SplitStrategy* _split;
+  auto_ptr<SplitStrategy> _split;
 
   // These are points to avoid including more headers than necessary.
   TermTranslator* _translator;

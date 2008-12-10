@@ -23,10 +23,15 @@
 #include <sstream>
 
 MonosIOHandler::MonosIOHandler():
-  IOHandler("monos", "Older format used by the program Monos.", false) {
+  IOHandler(staticGetName(),
+			"Older format used by the program Monos.", false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerOutput(MonomialIdeal);
+}
+
+const char* MonosIOHandler::staticGetName() {
+  return "monos";
 }
 
 void MonosIOHandler::writeTerm(const vector<mpz_class>& term,
