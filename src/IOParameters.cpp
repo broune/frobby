@@ -61,8 +61,9 @@ IOParameters::IOParameters(DataType input, DataType output):
 	  "The format \"autodetect\" instructs Frobby to guess the format.\n"
 	  "Type 'frobby help io' for more information on input formats.";
 
-	_inputFormat = new StringParameter("iformat", desc.c_str(),  "autodetect");
-	addParameter(_inputFormat);
+	_inputFormat.reset
+	  (new StringParameter("iformat", desc.c_str(), "autodetect"));
+	addParameter(_inputFormat.get());
   }
 
   if (output != IOHandler::None) {
@@ -75,30 +76,35 @@ IOParameters::IOParameters(DataType input, DataType output):
 	}
 	desc += "Type 'frobby help io' for more information on output formats.";
 
-	_outputFormat = new StringParameter("oformat", desc.c_str(),
-										defaultOutput);
-	addParameter(_outputFormat);
+	_outputFormat.reset
+	  (new StringParameter("oformat", desc.c_str(), defaultOutput));
+	addParameter(_outputFormat.get());
   }
 }
 
 void IOParameters::setOutputFormat(const string& format) {
   ASSERT(_inputType != IOHandler::None);
+  ASSERT(_outputFormat.get() != 0);
 
   *_outputFormat = format;
 }
 
 const string& IOParameters::getInputFormat() const {
   ASSERT(_inputType != IOHandler::None);
+  ASSERT(_inputFormat.get() != 0);
 
   return *_inputFormat;
 }
 
 const string& IOParameters::getOutputFormat() const {
   ASSERT(_outputType != IOHandler::None);
+  ASSERT(_outputFormat.get() != 0);
 
   if (_inputType != IOHandler::None &&
-	  _outputFormat->getValue() == "input")
+	  _outputFormat->getValue() == "input") {
+	ASSERT(_inputFormat.get() != 0);
 	return *_inputFormat;
+  }
 
   return *_outputFormat;
 }
@@ -117,6 +123,7 @@ auto_ptr<IOHandler> IOParameters::createOutputHandler() const {
 
 void IOParameters::autoDetectInputFormat(Scanner& in) {
   ASSERT(_inputType != IOHandler::None);
+  ASSERT(_inputFormat.get() != 0);
 
   if (_inputFormat->getValue() == "autodetect") {
 	// Get to the first non-whitespace character.
