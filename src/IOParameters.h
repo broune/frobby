@@ -51,8 +51,8 @@ class IOParameters : public ParameterGroup {
   DataType _inputType;
   DataType _outputType;
 
-  StringParameter* _inputFormat;
-  StringParameter* _outputFormat;
+  auto_ptr<StringParameter> _inputFormat;
+  auto_ptr<StringParameter> _outputFormat;
 };
 
 #endif
