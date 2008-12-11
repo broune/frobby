@@ -24,6 +24,7 @@
 #include "Scanner.h"
 
 #include <iterator>
+#include <cstdlib>
 
 IOFacade::IOFacade(bool printActions):
   Facade(printActions) {

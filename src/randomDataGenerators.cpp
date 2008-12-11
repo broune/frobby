@@ -22,6 +22,7 @@
 #include "Term.h"
 
 #include <sstream>
+#include <limits>
 
 void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount) {
   VarNames names(variableCount);

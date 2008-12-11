@@ -22,6 +22,8 @@
 #include "IdealFacade.h"
 #include "Scanner.h"
 
+#include <algorithm>
+
 TransformAction::TransformAction():
   Action
 (staticGetName(),

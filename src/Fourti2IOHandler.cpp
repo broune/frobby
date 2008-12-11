@@ -23,6 +23,8 @@
 #include "TermTranslator.h"
 #include "BigPolynomial.h"
 
+#include <cstdlib>
+
 Fourti2IOHandler::Fourti2IOHandler():
   IOHandler(staticGetName(),
 			"Format used by the software package 4ti2.", true) {

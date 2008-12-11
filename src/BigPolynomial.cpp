@@ -21,6 +21,8 @@
 #include "TermTranslator.h"
 #include "VarSorter.h"
 
+#include <algorithm>
+
 BigPolynomial::BigPolynomial() {
 }
 

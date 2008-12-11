@@ -16,6 +16,7 @@
 */
 
 #include "MyIdeal.h"
+#include <algorithm>
 
 MyPP makePP(int e1, int e2, int e3, int e4) {
   MyPP pp(4);
@@ -71,12 +72,16 @@ void printIdeals(MyIdeals ideals) {
 }
 
 Frobby::Ideal convertToFrobbyIdeal(const MyIdeal& ideal) {
+  ASSERT(!ideal.empty());
   size_t varCount = ideal[0].size();
 
   Frobby::Ideal frobbyIdeal(varCount);
   for (size_t generator = 0; generator < ideal.size(); ++generator) {
-	for (size_t var = 0; var < varCount || var == 0; ++var)
-	  frobbyIdeal.addExponent(ideal[generator][var]);
+    if (varCount == 0)
+      frobbyIdeal.addExponent(0);
+    else
+      for (size_t var = 0; var < varCount; ++var)
+        frobbyIdeal.addExponent(ideal[generator][var]);
   }
 
   return frobbyIdeal;

@@ -18,6 +18,8 @@
 #include "VarNames.h"
 
 #include <sstream>
+#include <limits>
+#include <cstdlib>
 
 VarNames::VarNames() {
 }

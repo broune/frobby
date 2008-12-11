@@ -21,6 +21,8 @@
 #include "GenerateDataFacade.h"
 #include "IOFacade.h"
 
+#include <cstdlib>
+
 GenerateIdealAction::GenerateIdealAction():
   Action
 (staticGetName(),

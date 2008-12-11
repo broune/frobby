@@ -57,7 +57,7 @@ namespace Frobby {
     FrobbyImpl::FrobbyIdealHelper* _data;
   };
 
-  // The consumer classes below provide way to get output from Frobby
+  // The consumer classes below provide a way to get output from Frobby
   // one term at a time. Most computations performed by Frobby can
   // produce output continously instead of having to wait for the
   // computation to be done to be able to produce any output. Often

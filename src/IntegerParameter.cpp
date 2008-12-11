@@ -18,6 +18,7 @@
 #include "IntegerParameter.h"
 
 #include <sstream>
+#include <cstdlib>
 
 IntegerParameter::IntegerParameter(const char* name, const char* description,
 				   unsigned int defaultValue):

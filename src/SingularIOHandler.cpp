@@ -23,6 +23,8 @@
 #include "CoefTermConsumer.h"
 #include "BigPolynomial.h"
 
+#include <cstdlib>
+
 SingularIOHandler::SingularIOHandler():
   IOHandler(staticGetName(),
 			"Format understandable by the program Singular.", false) {
