@@ -18,6 +18,7 @@
 #include "SliceParameters.h"
 
 #include "SliceFacade.h"
+#include <cstdlib>
 
 SliceParameters::SliceParameters(bool exposeBoundParam):
   _exposeBoundParam(exposeBoundParam),

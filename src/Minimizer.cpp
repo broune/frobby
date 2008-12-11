@@ -18,6 +18,7 @@
 #include "Minimizer.h"
 
 #include "Term.h"
+#include <algorithm>
 
 typedef vector<Exponent*>::iterator iterator;
 

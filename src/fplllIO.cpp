@@ -20,6 +20,8 @@
 #include "BigIdeal.h"
 #include "Scanner.h"
 
+#include <cstdlib>
+
 namespace fplll {
   void readLatticeBasis(Scanner& scanner, BigIdeal& basis) {
     vector<vector<mpz_class> > tmp;

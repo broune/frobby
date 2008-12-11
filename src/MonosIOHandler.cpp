@@ -19,7 +19,9 @@
 
 #include "BigIdeal.h"
 #include "Scanner.h"
+
 #include <cstdio>
+#include <cstdlib>
 #include <sstream>
 
 MonosIOHandler::MonosIOHandler():

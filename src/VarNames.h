@@ -20,10 +20,10 @@
 #include <vector>
 #include <string>
 
-// Use the GCC-provided hash_map class if compiling with GCC, and
+// Use the GCC-specific hash_map class if compiling with GCC, and
 // otherwise use a std::map, which is present in all compilers.
 #ifdef __GNUC__ // Only GCC defines this macro
-#include <ext/hash_map>
+#include "hash_map/hash_map"
 class StringEquals {
  public:
   bool operator()(const char* a, const char* b) const {

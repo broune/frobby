@@ -23,6 +23,8 @@
 #include "BigPolynomial.h"
 #include "TermTranslator.h"
 
+#include <cstdlib>
+
 Macaulay2IOHandler::Macaulay2IOHandler():
   IOHandler(staticGetName(),
 			"Format understandable by the program Macaulay 2.", false) {

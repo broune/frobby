@@ -18,6 +18,7 @@
 #include "dynamicFrobeniusAlgorithm.h"
 
 #include <set>
+#include <algorithm>
 
 mpz_class dynamicFrobeniusAlgorithm(const vector<mpz_class>& numbers) {
   if (numbers.size() == 2)

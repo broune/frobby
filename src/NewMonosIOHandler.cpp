@@ -21,6 +21,8 @@
 #include "BigIdeal.h"
 #include "VarNames.h"
 
+#include <cstdlib>
+
 NewMonosIOHandler::NewMonosIOHandler():
   IOHandler(staticGetName(),
 			"Newer format used by the program Monos.", false) {

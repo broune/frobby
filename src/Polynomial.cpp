@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "Polynomial.h"
 
+#include <algorithm>
+
 Polynomial::Polynomial(size_t varCount):
   _varCount(varCount) {
 }

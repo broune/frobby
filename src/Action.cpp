@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "Action.h"
 
+#include <cstdlib>
+
 #include "IrreducibleDecomAction.h"
 #include "TransformAction.h"
 #include "HelpAction.h"

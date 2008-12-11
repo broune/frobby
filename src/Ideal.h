@@ -18,6 +18,7 @@
 #define IDEAL_GUARD
 
 #include <vector>
+#include <algorithm>
 
 class Ideal {
   typedef vector<Exponent*> Cont;

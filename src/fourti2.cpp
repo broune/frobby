@@ -21,6 +21,8 @@
 #include "Scanner.h"
 #include "IOHandler.h"
 
+#include <cstdlib>
+
 namespace fourti2 {
   void readTerm(BigIdeal& ideal, Scanner& scanner) {
     ideal.newLastTerm();

@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "Parameter.h"
 
+#include <cstdlib>
+
 Parameter::Parameter(const char* name,
 					 const char* description):
   _name(name),

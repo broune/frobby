@@ -23,6 +23,8 @@
 #include "LatticeFacade.h"
 #include "Scanner.h"
 
+#include <cstdlib>
+
 LatticeFormatAction::LatticeFormatAction():
 Action
 (staticGetName(),

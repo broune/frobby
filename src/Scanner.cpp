@@ -20,6 +20,9 @@
 #include "VarNames.h"
 #include "IOHandler.h"
 
+#include <limits>
+#include <cstdlib>
+
 //#define ENABLE_SCANNER_LOG
 
 // This enables logging of what the scanner is reading and what it is
@@ -149,14 +152,14 @@ size_t Scanner::readIntegerString() {
   ASSERT(_tmpStringCapacity > 1);
 
   if (peek() == '-' || peek() == '+')
-	_tmpString[0] = getChar();
+    _tmpString[0] = static_cast<char>(getChar());
   else
 	_tmpString[0] = '+';
 
   size_t size = 1;
 
   while (isdigit(peek())) {
-	_tmpString[size] = getChar();
+    _tmpString[size] = static_cast<char>(getChar());
 	++size;
 	if (size == _tmpStringCapacity)
 	  growTmpString();
@@ -288,7 +291,7 @@ const char* Scanner::readIdentifier() {
 
   size_t size = 0;
   while (isalnum(peek())) {
-	_tmpString[size] = getChar();
+    _tmpString[size] = static_cast<char>(getChar());
 	++size;
 	if (size == _tmpStringCapacity)
 	  growTmpString();

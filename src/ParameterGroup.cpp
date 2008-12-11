@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "ParameterGroup.h"
 
+#include <cstdlib>
+
 ParameterGroup::ParameterGroup():
   Parameter("", "") {
 }

@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "BoolParameter.h"
 
+#include <cstdlib>
+
 BoolParameter::BoolParameter(const char* name,
 			     const char* description,
 			     bool defaultValue):

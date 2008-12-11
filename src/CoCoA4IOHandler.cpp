@@ -25,6 +25,8 @@
 #include "TermTranslator.h"
 #include "BigPolynomial.h"
 
+#include <cstdlib>
+
 CoCoA4IOHandler::CoCoA4IOHandler():
   IOHandler(staticGetName(),
 			"Format understandable by the program CoCoA 4.", false) {

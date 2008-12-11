@@ -19,7 +19,7 @@
 
 #include "Term.h"
 #include "Partition.h"
-
+#include <algorithm>
 
 size_t Projection::getRangeVarCount() const {
   return _offsets.size();

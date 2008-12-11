@@ -17,6 +17,7 @@
 #include "stdinc.h"
 #include "IOParameters.h"
 
+#include <cstdlib>
 #include "IOFacade.h"
 #include "MonosIOHandler.h"
 #include "Scanner.h"
