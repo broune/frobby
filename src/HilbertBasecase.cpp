@@ -20,6 +20,12 @@
 #include "Ideal.h"
 #include "Term.h"
 
+HilbertBasecase::~HilbertBasecase() {
+  vector<Ideal*>::iterator end = _idealCache.end();
+  for (vector<Ideal*>::iterator it = _idealCache.begin(); it != end; ++it)
+	delete *it;
+}
+
 void HilbertBasecase::computeCoefficient(Ideal& originalIdeal) {
   ASSERT(_todo.empty());
 
