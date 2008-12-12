@@ -22,9 +22,18 @@
 # status 0 zero even on failure. The intent of this is to get a
 # summary of all failing tests, instead of getting detailed
 # information on the first failure.
+#
+# If $4 is _valgrind, then frobby will be run under valgrind. If
+# valgrind reports no errors and no memory leaks, then a 'v' is
+# printed to indicate this, and the exist status is 0. If valgrind
+# does report an issue, then the valgrind output is displayed and the
+# exit status is 1. In either case the actual output of Frobby is
+# ignored and is thus not compared to the correct reference output.
 
 # This script is designed to be run from a sub-directory of where it
 # resides.
+
+origParams="$*" # used for debug output below
 frobby=../../bin/frobby
 action="$1"
 inputFile="$2"
@@ -48,7 +57,30 @@ then
   shift;
 fi
 
+valg=0
+if [ "$1" = "_valgrind" ];
+then
+  valg=1;
+  shift;
+fi
+
 params="$*"
+
+printDebugOutput=0
+if [ "$printDebugOutput" == "1" ];
+then
+  echo "------ debug output ------"
+  echo "frobby is \"$frobby\""
+  echo "origParams is \"$origParams\""
+  echo "action is \"$action\""
+  echo "inputFile is \"$inputFile\""
+  echo "params is \"$params\""
+  echo "referenceOutputFile is \"$referenceOutputFile\""
+  echo "generate is $generate"
+  echo "summary is $summary"
+  echo "valg is $valg"
+fi
+
 
 if [ $generate = 1 ]
 then
@@ -59,6 +91,22 @@ then
   echo "***** Generating $referenceOutputFile";
   $frobby $action $params < $inputFile > $referenceOutputFile;
   exit 0
+fi
+
+if [ $valg = 1 ];
+then
+  errs=`valgrind $frobby $action $params < $inputFile 2>&1 |
+        grep -e "ERROR SUMMARY: [^0].* error" -e "--leak-check=full"`;
+  if [ "$errs" == "" ];
+  then
+    echo -n v
+    exit 0;
+  else
+    echo "valgrind reports issue on $action $params < $inputFile";
+    echo ;
+    valgrind --leak-check=full $frobby $action $params < $inputFile;
+    exit 1;
+  fi
 fi
 
 $frobby $action $params < $inputFile 2> /dev/null | \

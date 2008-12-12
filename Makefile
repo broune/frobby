@@ -117,7 +117,15 @@ ifdef TESTCASE
 	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
 	cd test/$(TESTCASE); ./runtests $(TESTARGS); cd ../..
 else
-	export frobby=bin/$(program); ./test/runfulltests
+	export frobby=bin/$(program); ./test/runfulltests $(TESTARGS) 
+endif
+
+valgrind: all
+ifdef TESTCASE
+	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
+	cd test/$(TESTCASE); ./runtests _valgrind $(TESTARGS); cd ../..
+else
+	export frobby=bin/$(program); ./test/runfulltests _valgrind  $(TESTARGS) 
 endif
 
 bench: all
