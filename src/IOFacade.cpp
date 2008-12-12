@@ -22,6 +22,7 @@
 #include "BigIdeal.h"
 #include "fplllIO.h"
 #include "Scanner.h"
+#include "ElementDeleter.h"
 
 #include <iterator>
 #include <cstdlib>
@@ -53,19 +54,28 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
 }
 
 void IOFacade::readIdeals(Scanner& in, vector<BigIdeal*>& ideals) {
+  ASSERT(ideals.empty());
   beginAction("Reading monomial ideals.");
+
+  ElementDeleter<vector<BigIdeal*> > idealsDeleter(ideals);
 
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
   while (handler->hasMoreInput(in)) {
-    BigIdeal* ideal = new BigIdeal();
+    auto_ptr<BigIdeal> ideal(new BigIdeal());
 	handler->readIdeal(in, *ideal);
-    ideals.push_back(ideal);
+
+	// We have to call release *after* push_back since
+	// push_back(release()) leaks memory in case of push_back throwing
+	// an exception.
+    ideals.push_back(ideal.get());
+	ideal.release();
   }
   in.expectEOF();
 
   endAction();
+  idealsDeleter.release();
 }
 
 void IOFacade::writeIdeal(const BigIdeal& ideal,

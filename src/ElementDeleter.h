@@ -1,0 +1,99 @@
+/* Frobby: Software for monomial ideal computations.
+   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see http://www.gnu.org/licenses/.
+*/
+#ifndef ELEMENT_DELETER_GUARD
+#define ELEMENT_DELETER_GUARD
+
+// The purpose of this class is to call delete on the elements of a
+// standard library container which holds pointers. It removes the
+// elements from the container as they are being deleted, but it does
+// not delete the container itself. Do not use this class to
+// deallocate a vector of built-in arrays, since those require
+// deallocation using delete[] rather than delete.
+//
+// This can be a convenience when coding, but the real purpose is to
+// avoid memory leaks in the face of an exception being thrown. When a
+// standard library container goes out of scope, its destructor is
+// called, but the destructor does not deallocate pointer elements, so
+// they will leak unless special care is taken to aovid that, such as
+// using this class.
+//
+// The most straight-forward solution may seem to use
+// e.g. vector<auto_ptr<T>> in place of vector<T*>, but this does not
+// work because storing auto_ptr<T> in a standard library container is
+// never safe (look this up on the internet to get the details).
+//
+// The reference counting smart pointer class shared_ptr from Boost or
+// TR1 would solve this issue even better by using
+// vector<shared_ptr<T>> instead of vector<T*>, but that would require
+// a dependency on Boost or on having a very recent compiler which
+// incorporates TR1.
+
+// Container::value_type is required to be a pointer type.
+template<class Container>
+class ElementDeleter {
+ public:
+  // Only the constructor can attach an ElementDeleter to a container,
+  // and this helps ensure (but does not guarantee) the precondition
+  // of the destructor of ElementDeleter.
+  ElementDeleter(Container& container): _container(&container) {
+  }
+
+  // Calls deleteElements() and shares its precondition.
+  ~ElementDeleter() {
+	deleteElements();
+  }
+
+  // Call release() to prevent this ElementDeleter from manipulating
+  // the container in any way.
+  void release() {
+	_container = 0;
+  }
+
+  // If release has been called, this method does nothing. Otherwise
+  // the container must still be valid, and then delete is called on
+  // each element of the array and clear is called on the container.
+  void deleteElements() {
+	if (_container == 0)
+	  return;
+
+	// The code below may seem obviously correct, but it is a
+	// non-trivial fact that it works in the face of exceptions.
+	//
+	// First of all, we are allowed to assume that destructors do not
+	// throw exceptions, so the loop will run to completion.
+	//
+	// Normally clear() *can* throw an exception according to the
+	// standard (which is weird), but if the copy constructor and
+	// assignment operator do not throw exceptions, then it does
+	// not. In our case, we require the element type to be a pointer
+	// type, so for this reason only do we know that clear will not
+	// throw an exception. Thus we do not have to worry about leaving
+	// around a container full of invalid pointers if clear() should
+	// throw an exception.
+
+	typename Container::iterator end = _container->end();
+	typename Container::iterator it = _container->begin();
+	for (; it != end; ++it)
+	  delete *it;
+	_container->clear();
+  }
+
+ private:
+  Container* _container;
+};
+
+#endif

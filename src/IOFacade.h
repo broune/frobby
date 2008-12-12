@@ -32,8 +32,11 @@ class IOFacade : private Facade {
 
   bool isValidMonomialIdealFormat(const string& format);
   void readIdeal(Scanner& in, BigIdeal& ideal);
+
+  // Insert the ideals that are read into the parameter ideals. The
+  // parameter ideals is required to be empty.
   void readIdeals(Scanner& in,
-				  vector<BigIdeal*>& ideal); // inserts the read ideals
+				  vector<BigIdeal*>& ideals);
   void writeIdeal(const BigIdeal& ideal, IOHandler* handler, FILE* out);
 
   void readPolynomial(Scanner& in, BigPolynomial& polynomial);
