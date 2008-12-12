@@ -21,6 +21,7 @@
 #include "IOFacade.h"
 #include "IdealFacade.h"
 #include "Scanner.h"
+#include "ElementDeleter.h"
 
 #include <algorithm>
 
@@ -91,22 +92,27 @@ void TransformAction::perform() {
   IOFacade facade(_printActions);
 
   vector<BigIdeal*> ideals;
+  ElementDeleter<vector<BigIdeal*> > idealsDeleter(ideals);
+
   facade.readIdeals(in, ideals);
 
   if (_product) {
-	BigIdeal* ideal;
+	auto_ptr<BigIdeal> ideal;
 	if (ideals.empty())
-	  ideal = new BigIdeal();
+	  ideal.reset(new BigIdeal());
 	else
-	  ideal = new BigIdeal(ideals[0]->getNames());
+	  ideal.reset(new BigIdeal(ideals[0]->getNames()));
 
 	IdealFacade idealFacade(_printActions);
 	idealFacade.takeProducts(ideals, *ideal);
 
-	for (size_t i = 0; i < ideals.size(); ++i)
-	  delete ideals[i];
-	ideals.clear();
-	ideals.push_back(ideal);
+	idealsDeleter.deleteElements();
+
+	// We have to call release *after* push_back since
+	// push_back(release()) leaks memory in case of push_back throwing
+	// an exception.
+	ideals.push_back(ideal.get());
+	ideal.release();
   }
 
   for (size_t i = 0; i < ideals.size(); ++i) {
@@ -134,7 +140,7 @@ void TransformAction::perform() {
   if (_canonicalize)
 	sort(ideals.begin(), ideals.end(), compareIdeals);
 
-  auto_ptr<IOHandler> output = _io.createOutputHandler();
+  auto_ptr<IOHandler> output(_io.createOutputHandler());
   for (size_t i = 0; i < ideals.size(); ++i)
 	facade.writeIdeal(*(ideals[i]), output.get(), stdout);
 }
