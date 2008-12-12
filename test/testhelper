@@ -103,9 +103,16 @@ then
     exit 0;
   else
     echo
-    echo "valgrind reports issue on $action $params < $inputFile";
-    echo ;
-    valgrind --leak-check=full $frobby $action $params < $inputFile;
+    echo
+    echo "valgrind reports issue on running:"
+    echo "  $frobby $action $params < $inputFile"
+    echo "Re-running to show full details:"
+    echo
+    valgrind --leak-check=full --show-reachable=yes $frobby $action $params < $inputFile;
+    echo
+    echo "Re-running to show limited details:"
+    valgrind --leak-check=full --show-reachable=no $frobby $action $params < $inputFile > /dev/null;
+
     exit 1;
   fi
 fi
