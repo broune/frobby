@@ -25,6 +25,8 @@ class Ideal;
 
 class HilbertBasecase {
  public:
+  ~HilbertBasecase();
+
   void computeCoefficient(Ideal& ideal);
 
   const mpz_class& getLastCoefficient();

@@ -102,6 +102,7 @@ then
     echo -n v
     exit 0;
   else
+    echo
     echo "valgrind reports issue on $action $params < $inputFile";
     echo ;
     valgrind --leak-check=full $frobby $action $params < $inputFile;
