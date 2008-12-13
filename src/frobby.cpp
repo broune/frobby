@@ -182,8 +182,14 @@ Frobby::Ideal::~Ideal() {
 }
 
 Frobby::Ideal& Frobby::Ideal::operator=(const Ideal& ideal) {
+  // Allocate new object before deleting old object to leave *this
+  // in a valid state in case of new throwing an exception.
+  FrobbyImpl::FrobbyIdealHelper* newValue =
+	new FrobbyImpl::FrobbyIdealHelper(*ideal._data);
+
   delete _data;
-  _data = new FrobbyImpl::FrobbyIdealHelper(*ideal._data);
+  _data = newValue;
+
   return *this;
 }
 
