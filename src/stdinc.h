@@ -42,6 +42,9 @@ _noInline();_noInline();_noInline();_noInline();_noInline();}}
 #define IF_DEBUG(X) X
 #include <cassert>
 #define ASSERT(X) assert(X);
+void* operator new(size_t s, const char* file, size_t line) throw (std::bad_alloc);
+void* operator new[](size_t s, const char* file, size_t line) throw (std::bad_alloc);
+#define new new (__FILE__, __LINE__)
 #else
 #define IF_DEBUG(X)
 #define ASSERT(X)
