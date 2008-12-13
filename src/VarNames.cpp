@@ -44,16 +44,17 @@ VarNames::~VarNames() {
 bool VarNames::addVar(const string& name) {
   ASSERT(name != "");
 
-  char* str = new char[name.size() + 1];
-  strcpy(str, name.c_str());
   pair<VarNameMap::iterator, bool> p =_nameToIndex.insert
-	(make_pair(str, _indexToName.size()));
-  if (!p.second) {
-	delete[] str;
+	(make_pair(name, _indexToName.size()));
+  if (!p.second)
 	return false;
-  }
 
-  _indexToName.push_back(new string(name));
+  try {
+	_indexToName.push_back(&(p.first->first)); // TODO: fix to vector of iters
+  } catch (...) {
+	_nameToIndex.erase(p.first);
+	throw;
+  }
 
   if (getVarCount() == getInvalidIndex()) {
     fputs("ERROR: Too many variable names.\n", stderr);
@@ -72,10 +73,6 @@ bool VarNames::operator<(const VarNames& names) const {
 }
 
 size_t VarNames::getIndex(const string& name) const {
-  return getIndex(name.c_str());
-}
-
-size_t VarNames::getIndex(const char* name) const {
   VarNameMap::const_iterator it = _nameToIndex.find(name);
   if (it == _nameToIndex.end())
     return getInvalidIndex();
@@ -103,17 +100,7 @@ size_t VarNames::getVarCount() const {
 }
 
 void VarNames::clear() {
-  vector<const char*> ptrs;
-  for (VarNameMap::const_iterator it = _nameToIndex.begin();
-	   it != _nameToIndex.end(); ++it)
-	ptrs.push_back(it->first);
   _nameToIndex.clear();
-  
-  for (size_t i = 0; i < ptrs.size(); ++i)
-	delete[] ptrs[i];
-  
-  for (size_t i = 0; i < _indexToName.size(); ++i)
-	delete _indexToName[i];
   _indexToName.clear();
 }
 

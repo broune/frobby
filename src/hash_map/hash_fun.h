@@ -62,6 +62,7 @@
 #define _HASH_FUN_H 1
 
 #include <cstddef>
+#include <string>
 
 namespace __gnu_cxx {
   using std::size_t;
@@ -92,6 +93,14 @@ namespace __gnu_cxx {
       size_t
       operator()(const char* __s) const
       { return __stl_hash_string(__s); }
+    };
+
+  template<>
+    struct hash<string>
+    {
+      size_t
+      operator()(const string& str) const
+      { return __stl_hash_string(str.c_str()); }
     };
 
   template<>
