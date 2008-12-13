@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+../testhelper test /dev/null reference $*
+if [ $? != 0 ]; then exit 1; fi
+
+cat reference
