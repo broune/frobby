@@ -30,9 +30,8 @@ class StringEquals {
 	return strcmp(a, b) == 0;
   }
 };
-typedef __gnu_cxx::hash_map<const char*, size_t,
-							__gnu_cxx::hash<const char*>,
-							StringEquals> VarNameMap;
+typedef __gnu_cxx::hash_map<string, size_t,
+							__gnu_cxx::hash<string> > VarNameMap;
 #else
 #include <map>
 class StringLessThan {
@@ -41,7 +40,7 @@ class StringLessThan {
 	return strcmp(a, b) < 0;
   }
 };
-typedef map<const char*, size_t, StringLessThan> VarNameMap;
+typedef map<string, size_t> VarNameMap;
 #endif
 
 
@@ -59,7 +58,6 @@ public:
 
   // Returns VarNames::getInvalidIndex() if name is not known.
   size_t getIndex(const string& name) const;
-  size_t getIndex(const char* name) const;
 
   bool contains(const string& name) const;
 
@@ -89,7 +87,7 @@ private:
   static bool compareNames(const string* a, const string* b);
 
   VarNameMap _nameToIndex;
-  vector<string*> _indexToName;
+  vector<const string*> _indexToName;
 };
 
 #endif
