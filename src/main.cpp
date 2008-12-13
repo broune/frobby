@@ -61,6 +61,28 @@ void* operator new[](size_t s, const char* file, size_t line) throw (std::bad_al
   return myOperatorNew(s, true, file, line);
 }
 
+// Note that these overloads to operator delete are strictly
+// necessary, even though they will only be called in the very special
+// circumstance where an exception gets thrown while an object
+// allocated using the new above has been *partially* constructed.
+//
+// However, when that happens, this overload gets called. The compiler
+// will happily substitute its own automatically generated version,
+// which does *not* deallocate the memory, leading to a memory leak.
+//
+// It is also important that these overloads are declared in each
+// translation unit, as otherwise the compiler generated do-nothing
+// version will be used in those translation units that have no such
+// declaration. To me this all falls into the category of "Insane but
+// true".
+void operator delete(void* s, const char* file, size_t line) {
+  operator delete(s);
+}
+
+void operator delete[](void* s, const char* file, size_t line) {
+  operator delete[](s);
+}
+
 #endif
 
 int normalMain(int argc, const char** argv) {
