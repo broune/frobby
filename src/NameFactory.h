@@ -34,7 +34,7 @@ class NameFactory {
   // function registered to that name and returns the result.
   auto_ptr<AbstractProduct> create(const string& name);
 
-  typedef AbstractProduct* (*FactoryFunction)();
+  typedef auto_ptr<AbstractProduct> (*FactoryFunction)();
   void registerProduct(const string& name, FactoryFunction function);
 
   // Returns null if no name is uniquely determined by the
@@ -66,7 +66,7 @@ class NameFactory {
 
 	auto_ptr<AbstractProduct> create() const {
 	  ASSERT(_function != 0);
-	  return auto_ptr<AbstractProduct>(_function());
+	  return _function();
 	}
 
   private:
@@ -97,7 +97,7 @@ create(const string& name) {
   for (typename vector<Pair>::const_iterator it = _pairs.begin();
 	   it != _pairs.end(); ++it)
 	if (it->getName() == name)
-	  return auto_ptr<AbstractProduct>(it->create());
+	  return it->create();
   return auto_ptr<AbstractProduct>();
 }
 
@@ -117,7 +117,7 @@ createWithPrefix(const string& prefix) {
   if (match == _pairs.end())
 	return auto_ptr<AbstractProduct>();
   else
-	return auto_ptr<AbstractProduct>(match->create());
+	return match->create();
 }
 
 template<class AbstractProduct>
@@ -154,10 +154,10 @@ bool NameFactory<AbstractProduct>::isEmpty() const {
 namespace {
   // Helper function for nameFactoryRegister.
   template<class AbstractProduct, class ConcreteProduct>
-  AbstractProduct* createConcreteProductHelper() {
-	return new ConcreteProduct();
+  auto_ptr<AbstractProduct> createConcreteProductHelper() {
+	return auto_ptr<AbstractProduct>(new ConcreteProduct());
   }
-}					 
+}
 
 template<class ConcreteProduct, class AbstractProduct>
   void nameFactoryRegister(NameFactory<AbstractProduct>& factory) {
