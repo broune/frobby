@@ -96,7 +96,6 @@ public:
   }
 
   virtual ~ExternalPolynomialConsumerWrapper() {
-    delete[] _term;
 	_consumer->polynomialEnd();
   }
 
@@ -230,9 +229,9 @@ void Frobby::alexanderDual(const Ideal& ideal,
   // terms to the consumer.
   exponentVector = 0;
 
-  BigTermConsumer* wrappedConsumer = 
-    new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  ExternalIdealConsumerWrapper wrappedConsumer
+    (&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
@@ -243,9 +242,9 @@ void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
 											  PolynomialConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  CoefBigTermConsumer* wrappedConsumer = 
-    new ExternalPolynomialConsumerWrapper(&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  ExternalPolynomialConsumerWrapper wrappedConsumer
+    (&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
@@ -256,9 +255,8 @@ void Frobby::univariateHilbertPoincareSeries(const Ideal& ideal,
 											 PolynomialConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  CoefBigTermConsumer* wrappedConsumer =
-	new ExternalPolynomialConsumerWrapper(&consumer, 1);
-  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  ExternalPolynomialConsumerWrapper wrappedConsumer(&consumer, 1);
+  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
@@ -276,6 +274,10 @@ public:
 	mpz_init_set_ui(_zero, 0);
   }
 
+  ~IrreducibleIdealDecoder() {
+	mpz_clear(_zero);
+  }
+
   virtual void idealBegin(size_t varCount) {
 	ASSERT(_term == 0);
 
@@ -285,7 +287,13 @@ public:
 	  _term[var] = _zero;
   }
 
+  virtual void idealEnd() {
+    ASSERT(_term != 0);
+	delete[] _term;
+  }
+
   virtual void consume(mpz_ptr* exponentVector) {
+	ASSERT(_term != 0);
 	_consumer->idealBegin(_varCount);
 
 	bool isIdentity = true;
@@ -335,9 +343,9 @@ bool Frobby::irreducibleDecompositionAsMonomials(const Ideal& ideal,
 	return true;
   }
 
-  BigTermConsumer* wrappedConsumer =
-	new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  ExternalIdealConsumerWrapper wrappedConsumer
+    (&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
@@ -349,9 +357,9 @@ void Frobby::maximalStandardMonomials(const Ideal& ideal,
 									  IdealConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  BigTermConsumer* wrappedConsumer =
-	new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  ExternalIdealConsumerWrapper wrappedConsumer
+    (&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
@@ -365,9 +373,9 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  BigTermConsumer* wrappedConsumer =
-	new ExternalIdealConsumerWrapper(&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, wrappedConsumer, false);
+  ExternalIdealConsumerWrapper wrappedConsumer
+    (&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
