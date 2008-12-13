@@ -23,6 +23,11 @@ const unsigned int ObjectPoolSize = 1000;
 struct ObjectPool {
   ObjectPool(): objectsStored(0), objects(0) {}
 
+  void ensureInit() {
+	if (objects == 0)
+	  objects = new Exponent*[ObjectPoolSize];
+  }
+
   bool empty() const {
     return objectsStored == 0;
   }
@@ -39,9 +44,8 @@ struct ObjectPool {
 
   void addObject(Exponent* object) {
     ASSERT(canStoreMore());
+	ASSERT(objects != 0);
 
-    if (objects == 0)
-      objects = new Exponent*[ObjectPoolSize];
     objects[objectsStored] = object;
     ++objectsStored;
   }
@@ -61,10 +65,13 @@ struct ObjectPool {
 Exponent* Term::allocate(size_t size) {
   ASSERT(size > 0);
 
-  if (size < PoolCount && !pools[size].empty())
-    return pools[size].removeObject();
-  else
-    return new Exponent[size];  
+  if (size < PoolCount) {
+	pools[size].ensureInit();
+	if (!pools[size].empty())
+	  return pools[size].removeObject();
+  }
+
+  return new Exponent[size];  
 }
 
 void Term::deallocate(Exponent* p, size_t size) {
