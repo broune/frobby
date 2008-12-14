@@ -20,6 +20,7 @@
 #include "BigIdeal.h"
 #include "Scanner.h"
 #include "IOHandler.h"
+#include "error.h"
 
 #include <cstdlib>
 
@@ -30,12 +31,10 @@ namespace fourti2 {
     mpz_class tmp;
     scanner.readIntegerAndNegativeAsZero(tmp);
 
-    if (tmp > 0) {
-      fputs("ERROR: Encountered positive entry as first entry in term.\n"
-	    "This is impossible if using the required degree reverse "
-	    "lexicographic term order.\n", stderr);
-      exit(1);
-    }
+    if (tmp > 0)
+	  reportError("Encountered positive entry as first entry in term. "
+				  "This is impossible if using the required degree reverse "
+				  "lexicographic term order.\n");
 
     for (size_t i = 0; i < ideal.getVarCount(); ++i) {
       scanner.readIntegerAndNegativeAsZero(tmp);

@@ -18,6 +18,8 @@
 #include "SliceParameters.h"
 
 #include "SliceFacade.h"
+#include "error.h"
+
 #include <cstdlib>
 
 SliceParameters::SliceParameters(bool exposeBoundParam):
@@ -92,23 +94,16 @@ void SliceParameters::validateSplit(bool allowLabel,
   auto_ptr<SplitStrategy>
 	split(SplitStrategy::createStrategy(_split.getValue().c_str()));
 
-  if (split.get() == 0) {
-	fprintf(stderr, "ERROR: Unknown split strategy \"%s\".\n",
-			_split.getValue().c_str());
-	exit(1);
-  }
+  if (split.get() == 0)
+	reportError("Unknown split strategy \"" + _split.getValue() + "\".");
 
-  if (split->isFrobeniusSplit() && !allowFrob) {
-	fputs("ERROR: Frobenius split strategy is not appropriate\n"
-		  "in this context.\n", stderr);
-	exit(1);
-  }
+  if (split->isFrobeniusSplit() && !allowFrob)
+	reportError("Frobenius split strategy is not appropriate "
+				"in this context.");
 
-  if (!allowLabel && split->isLabelSplit()) {
-	fputs("ERROR: Label split strategy is not appropriate\n"
-		  "in this context.\n", stderr);
-	exit(1);
-  }
+  if (!allowLabel && split->isLabelSplit())
+	reportError("Label split strategy is not appropriate "
+				"in this context.");
 }
 
 void SliceParameters::apply(SliceFacade& facade) const {
