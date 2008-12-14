@@ -17,9 +17,10 @@
 #include "stdinc.h"
 #include "VarNames.h"
 
+#include "error.h"
+
 #include <sstream>
 #include <limits>
-#include <cstdlib>
 
 VarNames::VarNames() {
 }
@@ -56,10 +57,8 @@ bool VarNames::addVar(const string& name) {
 	throw;
   }
 
-  if (getVarCount() == getInvalidIndex()) {
-    fputs("ERROR: Too many variable names.\n", stderr);
-    exit(1);
-  }
+  if (getVarCount() == getInvalidIndex())
+	reportError("Too many variable names");
 
   return true;
 }
@@ -141,6 +140,14 @@ void VarNames::swapVariables(size_t a, size_t b) {
   _nameToIndex[_indexToName[b]->c_str()] = a;
 
   std::swap(_indexToName[a], _indexToName[b]);
+}
+
+void VarNames::toString(string& str) const {
+  for (size_t i = 0; i < getVarCount(); ++i) {
+    if (i != 0)
+	  str += ", ";
+	str += getName(i);
+  }
 }
 
 void VarNames::print(FILE* file) const {

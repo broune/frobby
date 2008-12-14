@@ -18,6 +18,7 @@
 #include "GenerateDataFacade.h"
 
 #include "randomDataGenerators.h"
+#include "error.h"
 
 GenerateDataFacade::GenerateDataFacade(bool printActions):
   Facade(printActions) {
@@ -61,8 +62,8 @@ void GenerateDataFacade::generateIdeal(BigIdeal& ideal,
 	::generateRandomIdeal(ideal, exponentRange, variableCount, generatorCount);
 
   if (!fullSize)
-	fputs("NOTE: Generated ideal has fewer minimal "
-		  "generators than requested.\n", stderr);
+	displayNote("Generated ideal has fewer minimal "
+				"generators than requested.\n");
 
   endAction();  
 }

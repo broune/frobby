@@ -25,6 +25,9 @@
 #include "IOFacade.h"
 #include "Macaulay2IOHandler.h"
 #include "CanonicalCoefTermConsumer.h"
+#include "error.h"
+
+#include <sstream>
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -67,12 +70,17 @@ void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,
 	ASSERT(ideals[i] != 0);
 
 	if (!(ideal.getNames() == ideals[i]->getNames())) {
-	  fputs
-		("ERROR: Taking products of ideals with different variable lists.\n",
-		 stderr);
-	  ideal.getNames().print(stderr);
-	  ideals[i]->getNames().print(stderr);
-	  exit(1);
+	  stringstream errorMsg;
+	  errorMsg << "Taking products of ideals with different variable lists.\n";
+	  
+	  string list;
+	  ideal.getNames().toString(list);
+	  errorMsg << "One ring has variables\n  " << list << ",\n";
+	  
+	  ideals[i]->getNames().toString(list);
+	  errorMsg << "while another has variables\n  " << list << '.';
+
+	  reportError(errorMsg.str());
 	}
 
 	size_t genCount = ideals[i]->getGeneratorCount();

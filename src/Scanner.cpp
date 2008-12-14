@@ -19,9 +19,10 @@
 
 #include "VarNames.h"
 #include "IOHandler.h"
+#include "error.h"
 
 #include <limits>
-#include <cstdlib>
+#include <sstream>
 
 //#define ENABLE_SCANNER_LOG
 
@@ -95,26 +96,22 @@ void Scanner::expect(char expected) {
   SCANNER_LOG1("Expecting the character '%c'.\n", expected);
 
   eatWhite();
-  if (getChar() != expected) {
-    string str;
-    str += expected;
-    error(str);
+  char got = getChar();
+  if (got != expected) {
+	ostringstream gotDescription;
+	if (got == EOF)
+	  gotDescription << "no more input";
+	else
+	  gotDescription << '\'' << static_cast<char>(got)<< '\'';
+
+	string expectedStr;
+	expectedStr += expected;
+	reportErrorUnexpectedToken(expectedStr, gotDescription.str());
   }
 }
 
 unsigned int Scanner::getLineNumber() const {
   return _lineNumber;
-}
-
-void Scanner::printError(const char* errorMsg) {
-  if (_formatName != "")
-	fprintf(stderr, "ERROR (format %s, line %lu): ",
-			_formatName.c_str(), _lineNumber);
-  else
-	fprintf(stderr, "ERROR (line %lu): ",_lineNumber);
-
-  if (errorMsg != 0)
-	fputs(errorMsg, stderr);
 }
 
 void Scanner::expect(const char* str) {
@@ -125,9 +122,26 @@ void Scanner::expect(const char* str) {
 
   const char* it = str;
   while (*it != '\0') {
-    if (*it != getChar())
-      error(str);
-    ++it;
+	int character = getChar();
+    if (*it == character) {
+	  ++it;
+	  continue;
+	}
+
+	// Read the rest of what is there to improve error message.
+	ostringstream got;
+	if (character == EOF && it == str)
+	  got << "no more input";
+	else {
+	  got << '\"' << string(str, it);
+	  if (character != EOF)
+		got << character;
+	  while (isalnum(peek()))
+		got << static_cast<char>(getChar());
+	  got << '\"';
+	}
+
+	reportErrorUnexpectedToken(str, got.str());
   }
 }
 
@@ -138,12 +152,13 @@ void Scanner::expect(const string& str) {
 void Scanner::expectEOF() {
   SCANNER_LOG("Expecting End-Of-File.\n");
 
-  if (_formatName == "null") // get this moved into the null format itself
+  // TODO: get this moved into the null format itself
+  if (_formatName == "null")
 	return;
 
   eatWhite();
   if (getChar() != EOF)
-    error("end of input");
+	reportErrorUnexpectedToken("no more input.", "");
 }
 
 size_t Scanner::readIntegerString() {
@@ -167,7 +182,7 @@ size_t Scanner::readIntegerString() {
   _tmpString[size] = '\0';
 
   if (size == 1)
-	error("an integer");
+	reportErrorUnexpectedToken("an integer", "");
 
   return size;
 }
@@ -233,38 +248,34 @@ void Scanner::readSizeT(size_t& size) {
   // Deal with different possibilities for how large size_t is.
   if (sizeof(size_t) == sizeof(unsigned int)) {
 	if (!_integer.fits_uint_p()) {
-	  printError();
-	  gmp_fprintf
-		(stderr,
-		 "expected non-negative integer of size at most %u but got %Zd.\n",
-		 numeric_limits<unsigned int>::max(), _integer.get_mpz_t());
-	  exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "expected non-negative integer of size at most "
+			   << numeric_limits<unsigned int>::max()
+			   << " but got " << _integer << '.';
+	  reportSyntaxError(*this, errorMsg.str());
 	}
 	size = (unsigned int)_integer.get_ui();
   } else if (sizeof(size_t) == sizeof(unsigned long)) {
 	if (!_integer.fits_ulong_p()) {
-	  printError();
-	  gmp_fprintf
-		(stderr,
-		 "expected non-negative integer less than %lu but got %Zd.\n",
-		 numeric_limits<unsigned long>::max(), _integer.get_mpz_t());
-	  exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "expected non-negative integer of size at most "
+			   << numeric_limits<unsigned long>::max()
+			   << " but got " << _integer << '.';
 	}
 	size = _integer.get_ui(); // returns an unsigned long despite the name.
   } else {
-	fprintf(stderr,
-			"Frobby does not work on this machine due to an unexpected technical issue.\n"
-			"Please contact the developers of Frobby about this.\n"
-			"\n"
-			"Details that will be useful to the developers:\n"
-			" error location: Scanner::readSizeT\n"
-			" sizeof(size_t) = %i\n"
-			" sizeof(unsigned int) = %i\n"
-			" sizeof(unsigned long) = %i\n",
-			(int)sizeof(size_t),
-			(int)sizeof(unsigned int),
-			(int)sizeof(unsigned long));
-	exit(1);
+	ostringstream errorMsg;
+	errorMsg << 
+	  "Frobby does not work on this machine due to an "
+	  "unexpected technical issue.\n"
+	  "Please contact the developers of Frobby about this.\n"
+	  "\n"
+	  "Details that will be useful to the developers:\n"
+	  " error location: Scanner::readSizeT\n"
+	  " sizeof(size_t) = " << sizeof(size_t) << "\n"
+	  " sizeof(unsigned int) = " << sizeof(unsigned int) << "\n"
+	  " sizeof(unsigned long) = " << sizeof(unsigned long) << "\n";
+	reportInternalError(errorMsg.str());
   }
 }
 
@@ -285,7 +296,7 @@ const char* Scanner::readIdentifier() {
 
   eatWhite();
   if (!isalpha(peek()))
-	error("an identifier");
+	reportErrorUnexpectedToken("an identifier", "");
 
   ASSERT(_tmpStringCapacity > 0);
 
@@ -308,9 +319,9 @@ size_t Scanner::readVariable(const VarNames& names) {
   const char* name = readIdentifier();
   size_t var = names.getIndex(name);
   if (var == VarNames::getInvalidIndex()) {
-	printError();
-    fprintf(stderr, "Unknown variable \"%s\". Maybe you forgot a *.\n", name);
-    exit(1);
+	ostringstream errorMsg;
+	errorMsg << "Unknown variable \"" << name << "\". Maybe you forgot a *.";
+	reportSyntaxError(*this, errorMsg.str());
   }
   return var;
 }
@@ -343,10 +354,14 @@ int Scanner::peek() {
   return _char;
 }
 
-void Scanner::error(const string& expected) {
-  printError();
-  fprintf(stderr, "Expected %s.\n", expected.c_str());
-  exit(1);
+void Scanner::reportErrorUnexpectedToken
+(const string& expected, const string& got) {
+  stringstream errorMsg;
+  errorMsg << "Expected \"" << expected << "\"";
+  if (got != "")
+	errorMsg << ", but got \"" << got << "\"";
+  errorMsg << '.';
+  reportSyntaxError(*this, errorMsg.str());
 }
 
 void Scanner::eatWhite() {

@@ -22,8 +22,10 @@
 #include "VarNames.h"
 #include "CoefTermConsumer.h"
 #include "BigPolynomial.h"
+#include "error.h"
 
-#include <cstdlib>
+#include <sstream>
+#include <cstdio>
 
 SingularIOHandler::SingularIOHandler():
   IOHandler(staticGetName(),
@@ -155,11 +157,9 @@ void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
   names.clear();
   do {
 	const char* varName = in.readIdentifier();
-	if (names.contains(varName)) {
-	  in.printError();
-	  fprintf(stderr, "The variable %s is declared twice.\n", varName);
-	  exit(1);
-	}
+	if (names.contains(varName))
+	  reportSyntaxError
+		(in, "The variable " + string(varName) + " is declared twice.");
 	names.addVar(varName);
   } while (in.match(','));
 
@@ -174,16 +174,22 @@ void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
   if (in.match('1')) {
 	if (names.getVarCount() != 1 ||
 		names.getName(0) != string("dummy")) {
-	  fputs("ERROR: Encountered variable name other than \"dummy\" in\n"
-			"Singular ring with no variables.\n", stderr);
-	  exit(1);
+	  stringstream errorMsg;
+	  errorMsg <<
+		"A singular ring with no actual variables must have a single "
+		"place-holder variable named \"dummy\", and in this case ";
+	  if (names.getVarCount() != 1)
+		errorMsg << "there are " << names.getVarCount()
+				 << " place-holder variables.";
+	  else
+		errorMsg << "it has the name \"" << names.getName(0) << '.';
+
+	  reportSyntaxError(in, errorMsg.str());
 	}
 	names.clear();
-  }
-  else if (!in.match('0')) {
-	in.printError("Expected 0 or 1.\n");
-	exit(1);
-  }
+  } else if (!in.match('0'))
+	reportSyntaxError(in, "noVars must be either 0 or 1.");
+
   in.expect(';');
 }
 

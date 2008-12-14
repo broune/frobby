@@ -20,8 +20,9 @@
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "VarNames.h"
+#include "error.h"
 
-#include <cstdlib>
+#include <cstdio>
 
 NewMonosIOHandler::NewMonosIOHandler():
   IOHandler(staticGetName(),
@@ -88,11 +89,9 @@ void NewMonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner)
   VarNames names;
   while (!scanner.match(')')) {
 	const char* varName = scanner.readIdentifier();
-    if (names.contains(varName)) {
-	  scanner.printError();
-      fprintf(stderr, "The variable %s is declared twice.\n", varName);
-      exit(1);
-    }
+    if (names.contains(varName))
+	  reportSyntaxError
+		(scanner, "The variable " + string(varName) + " is declared twice.");
     names.addVar(varName);
   }
 

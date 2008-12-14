@@ -22,8 +22,7 @@
 #include "fplllIO.h"
 #include "LatticeFacade.h"
 #include "Scanner.h"
-
-#include <cstdlib>
+#include "error.h"
 
 LatticeFormatAction::LatticeFormatAction():
 Action
@@ -65,15 +64,10 @@ void LatticeFormatAction::perform() {
 
   IOFacade facade(_printActions);
 
-  if (!facade.isValidLatticeFormat(iformat)) {
-    fprintf(stderr, "ERROR: Unknown input format \"%s\".\n", iformat.c_str());
-    exit(1);
-  }
-
-  if (!facade.isValidLatticeFormat(oformat)) {
-    fprintf(stderr, "ERROR: Unknown output format \"%s\".\n", oformat.c_str());
-    exit(1);
-  }
+  if (!facade.isValidLatticeFormat(iformat))
+	reportError("Unknown lattice input format \"" + iformat + "\".");
+  if (!facade.isValidLatticeFormat(oformat))
+	reportError("Unknown lattice output format \"" + oformat + "\".");
 
   BigIdeal basis;
   Scanner in(iformat, stdin);

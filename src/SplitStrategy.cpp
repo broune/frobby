@@ -39,12 +39,9 @@ public:
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
-	fputs
-	  ("INTERNAL ERROR: Requested label split of non-label split strategy.\n",
-	   stderr);
 	ASSERT(false);
-	exit(1);
-	return 0;
+	reportInternalError("Requested label split of non-label split strategy.");
+	return 0; // To avoid spurious warnings from static analyses.
   }
 
   virtual bool isPivotSplit() const {
@@ -400,11 +397,7 @@ public:
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	fputs
-	  ("INTERNAL ERROR: Called getPivot directly on FrobeniusSplit.\n",
-	   stderr);
-	ASSERT(false);
-	exit(1);
+	reportInternalError("Called getPivot directly on FrobeniusSplit.");
   }
 };
 

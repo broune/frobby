@@ -19,10 +19,9 @@
 
 #include "BigIdeal.h"
 #include "Scanner.h"
+#include "error.h"
 
 #include <cstdio>
-#include <cstdlib>
-#include <sstream>
 
 MonosIOHandler::MonosIOHandler():
   IOHandler(staticGetName(),
@@ -100,11 +99,9 @@ void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
   if (!scanner.match(';')) {
 	do {
 	  const char* varName = scanner.readIdentifier();
-	  if (!ideal.addVarToClearedIdeal(varName)) {
-		scanner.printError();
-		fprintf(stderr, "The variable %s is declared twice.\n", varName);
-		exit(1);
-	  }
+	  if (!ideal.addVarToClearedIdeal(varName))
+		reportSyntaxError
+		  (scanner, "The variable " + string(varName) + " is declared twice.");
 	} while (scanner.match(','));
 
 	scanner.expect(';');

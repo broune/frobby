@@ -25,7 +25,7 @@ class HelpAction : public Action {
   HelpAction();
   virtual void obtainParameters(vector<Parameter*>& parameters);
 
-  virtual bool processNonParameter(const char* str);
+  virtual void processNonParameter(const char* str);
 
   virtual void perform();
 

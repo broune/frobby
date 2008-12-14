@@ -17,8 +17,9 @@
 #include "stdinc.h"
 #include "IntegerParameter.h"
 
+#include "error.h"
+
 #include <sstream>
-#include <cstdlib>
 
 IntegerParameter::IntegerParameter(const char* name, const char* description,
 				   unsigned int defaultValue):
@@ -57,11 +58,14 @@ void IntegerParameter::processParameters
 
   for (const char* it = param; *it != '\0'; ++it) {
     if (!isdigit(*it)) {
-      fprintf(stderr, "ERROR: Option -%s was given the parameter \"%s\".\n"
-	      "The only valid parameters are integers "
-	      "between 0 and 2^32-1.\n",
-	      getName(), params[0]);
-      exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "Option -"
+			   << getName()
+			   << " was given the parameter \""
+			   << params[0]
+			   << "\", and the only valid parameters are integers "
+			   << "between 0 and 2^32-1.";
+	  reportError(errorMsg.str());
     }
   }
 
@@ -70,10 +74,13 @@ void IntegerParameter::processParameters
   in >> integer;
 
   if (!integer.fits_uint_p()) {
-    fprintf(stderr, "ERROR: Option -%s was given the parameter %s.\n"
-	    "This is outside the allowed range [0, 2^32-1].\n",
-	    getName(), params[0]);
-    exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "Option -"
+			   << getName()
+			   << " was given the parameter "
+			   << params[0]
+			   << ", and this is outside the allowed range [0, 2^32-1].";
+	  reportError(errorMsg.str());
   }
 
   _value = integer.get_ui();

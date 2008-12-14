@@ -17,10 +17,12 @@
 #include "stdinc.h"
 #include "IOParameters.h"
 
-#include <cstdlib>
 #include "IOFacade.h"
 #include "MonosIOHandler.h"
 #include "Scanner.h"
+#include "error.h"
+
+#include <sstream>
 
 IOParameters::IOParameters(DataType input, DataType output):
   _inputType(input),
@@ -160,33 +162,33 @@ void IOParameters::validateFormats() const {
 
   if (_inputType != IOHandler::None) {
 	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getInputFormat()));
-	if (handler.get() == 0) {
-	  fprintf(stderr, "ERROR: Unknown input format \"%s\".\n",
-			  getInputFormat().c_str());
-	  exit(1);
-	}
+	if (handler.get() == 0)
+	  reportError("Unknown input format \"" + getInputFormat() + "\".");
 
 	if (!handler->supportsInput(_inputType)) {
-	  fprintf(stderr, "ERROR: The %s format does not support input of %s.",
-			  handler->getName(),
-			  IOHandler::getDataTypeName(_inputType));
-	  exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "The "
+			   << handler->getName()
+			   << " format does not support input of "
+			   << IOHandler::getDataTypeName(_inputType)
+			   << '.';
+	  reportError(errorMsg.str());
 	}
   }
 
   if (_outputType != IOHandler::None) {
 	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getOutputFormat()));
-	if (handler.get() == 0) {
-	  fprintf(stderr, "ERROR: Unknown output format \"%s\".\n",
-			  getOutputFormat().c_str());
-	  exit(1);
-	}
+	if (handler.get() == 0)
+	  reportError("Unknown output format \"" + getOutputFormat() + "\".");
 
 	if (!handler->supportsOutput(_outputType)) {
-	  fprintf(stderr, "ERROR: The %s format does not support output of %s.",
-			  handler->getName(),
-			  IOHandler::getDataTypeName(_outputType));
-	  exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "The "
+			   << handler->getName()
+			   << " format does not support output of "
+			   << IOHandler::getDataTypeName(_outputType)
+			   << '.';
+	  reportError(errorMsg.str());
 	}
   }
 }

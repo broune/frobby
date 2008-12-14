@@ -17,15 +17,19 @@
 #ifndef ERROR_GUARD
 #define ERROR_GUARD
 
-// These methods throw exceptions.
-
 class Scanner;
 
 class FrobbyException {
 };
 
+// These methods throw exceptions.
 void reportError(const string& errorMsg);
 void reportInternalError(const string& errorMsg);
 void reportSyntaxError(const Scanner& scanner, const string& errorMsg);
+
+// These methods return normally.
+void displayNote(const string& msg);
+void reportErrorNoThrow(const string& errorMsg);
+
 
 #endif

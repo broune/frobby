@@ -20,8 +20,7 @@
 #include "BigIdeal.h"
 #include "GenerateDataFacade.h"
 #include "IOFacade.h"
-
-#include <cstdlib>
+#include "error.h"
 
 GenerateIdealAction::GenerateIdealAction():
   Action
@@ -78,10 +77,8 @@ void GenerateIdealAction::perform() {
 	generator.generateKingChessIdeal(ideal, _variableCount);
   else if (type == "knight")
 	generator.generateKnightChessIdeal(ideal, _variableCount);
-  else {
-	fprintf(stderr, "ERROR: Unknown ideal type \"%s\".", type.c_str());
-	exit(1);
-  }
+  else
+	reportError("Unknown ideal type \"" + type + "\".");
 
   IOFacade ioFacade(_printActions);
   auto_ptr<IOHandler> output = _io.createOutputHandler();

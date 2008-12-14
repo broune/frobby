@@ -20,6 +20,7 @@
 #include "BigIdeal.h"
 #include "Ideal.h"
 #include "Term.h"
+#include "error.h"
 
 #include <sstream>
 #include <limits>
@@ -42,11 +43,8 @@ void generateChessIdeal(BigIdeal& bigIdeal,
 						int deltaColumn[],
 						size_t deltaCount) {
   if (mpz_class(rowCount) * mpz_class(columnCount) >
-	  numeric_limits<size_t>::max()) {
-	fputs("ERROR: Number of positions on requested chess board too large.\n",
-		  stderr);
-	exit(1);
-  }
+	  numeric_limits<size_t>::max())
+	reportError("Number of positions on requested chess board too large.");
 
   // Generate names
   VarNames names;

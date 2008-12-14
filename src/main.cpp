@@ -15,18 +15,15 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "Action.h"
 
-#include <cstdlib>
-#include <memory>
-#include <new>
+#include "Action.h"
+#include "error.h"
 
 #ifdef DEBUG
 
 bool detailAllocation = false;
 bool debuggingAllocation = false;
 size_t goodAllocationsLeft = 0;
-
 
 #undef new
 void* myOperatorNew(size_t s, bool array,
@@ -109,10 +106,10 @@ int normalMain(int argc, const char** argv) {
 	if (debuggingAllocation && goodAllocationsLeft == 0)
 	  throw;
 #endif
-	fputs("ERROR: Ran out of memory.", stderr);
+	reportErrorNoThrow("Not enough memory.");
 	return 1;
   } catch (...) {
-	fputs("ERROR: An unexpected error occured.", stderr);
+	reportErrorNoThrow("An unexpected error occured.");
 	return 1;
   }
 }
@@ -149,14 +146,14 @@ int main(int argc, const char** argv) {
 	else if (option == "input") {
 	  optionFileInput = true;
 	  if (argc <= 1) {
-		fputs("ERROR: Debug option _input requries an argument.\n", stderr);
+		reportErrorNoThrow("Debug option _input requries an argument.");
 		return 1;
 	  }
 	  inputFile = argv[1];
 	  argv += 1;
 	  argc -= 1;
 	} else {
-	  fprintf(stderr, "ERORR: Unknown debug option \"_%s\"", option.c_str());
+	  reportErrorNoThrow("Unknown debug option \"" + option + "\".");
 	  return 1;
 	}
   }
@@ -168,11 +165,12 @@ int main(int argc, const char** argv) {
 	fclose(stdout);
 
 	for (size_t goodAllocations = 0; true; ++goodAllocations) {
-	  fprintf(stderr, "DEBUG: Trying allocation limit of %i.\n", (int)goodAllocations);
+	  fprintf(stderr, "DEBUG: Trying allocation limit of %i.\n",
+			  (int)goodAllocations);
 
 	  if (optionFileInput && !freopen(inputFile.c_str(), "r", stdin)) {
-		fprintf(stderr, "DEBUG ERROR: Could not open file \"%s\" for input.",
-				inputFile.c_str());
+		reportErrorNoThrow
+		  ("Could not open file \"" + inputFile + "\" for input.");
 		return 1;
 	  }
 
@@ -195,8 +193,8 @@ int main(int argc, const char** argv) {
 
   if (optionFileInput) {
 	if (optionFileInput && !freopen(inputFile.c_str(), "r", stdin)) {
-	  fprintf(stderr, "DEBUG ERROR: Could not open file \"%s\" for input.",
-			  inputFile.c_str());
+	  reportErrorNoThrow
+		("Could not open file \"" + inputFile + "\" for input.");
 	  return 1;
 	}
   }

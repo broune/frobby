@@ -38,7 +38,7 @@ class Action {
   // processNonParameter() can be called at most once, and only if
   // acceptsNonParameter() returns true.
   bool acceptsNonParameter() const;
-  virtual bool processNonParameter(const char* str);
+  virtual void processNonParameter(const char* str);
 
   virtual void obtainParameters(vector<Parameter*>& parameters) = 0;
 

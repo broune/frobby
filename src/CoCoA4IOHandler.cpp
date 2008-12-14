@@ -24,8 +24,10 @@
 #include "Term.h"
 #include "TermTranslator.h"
 #include "BigPolynomial.h"
+#include "error.h"
 
-#include <cstdlib>
+#include <sstream>
+#include <cstdio>
 
 CoCoA4IOHandler::CoCoA4IOHandler():
   IOHandler(staticGetName(),
@@ -203,23 +205,18 @@ void CoCoA4IOHandler::readVars(VarNames& names, Scanner& in) {
   names.clear();
   for (size_t var = 0; var < varCount; ++var) {
 	in.expect('\"');
-	if (in.peekWhite()) {
-	  fputs("ERROR: Variable name contains space.", stderr);
-	  exit(1);
-	}
+	if (in.peekWhite())
+	  reportError("Variable name contains space.");
 
 	const char* varName = in.readIdentifier();
-	if (names.contains(varName)) {
-	  in.printError();
-		fprintf(stderr, "The variable %s is declared twice.\n", varName);
-		exit(1);
-	}
+	if (names.contains(varName))
+	  reportSyntaxError
+		(in, "The variable " + string(varName) + " is declared twice.");
 	names.addVar(varName);
 
-	if (in.peekWhite()) {
-	  fputs("ERROR: Variable name contains space.", stderr);
-	  exit(1);
-	}
+	if (in.peekWhite())
+	  reportError("Variable name contains space.");
+
 	in.expect('\"');
 	if (var < varCount - 1)
 	  in.expect(',');
@@ -310,27 +307,27 @@ void CoCoA4IOHandler::readCoCoA4VarPower(vector<mpz_class>& term,
   size_t var;
   in.readSizeT(var);
   if (var > term.size()) {
-	fprintf(stderr, "ERROR: No variable x[%lu].\n", (unsigned long)var);
-	exit(1);
+	ostringstream errorMsg;
+	errorMsg << "There is no variable x[" << var << "].";
+	reportSyntaxError(in, errorMsg.str());
   }
   --var;
 
   in.expect(']');
 
   if (term[var] != 0) {
-	in.printError();
-	fputs("A variable appears twice.\n", stderr);
-	exit(1);
+	ostringstream errorMsg;
+	errorMsg << "The variable x[" << var << "] appears twice.";
+	reportSyntaxError(in, errorMsg.str());
   }
 
   if (in.match('^')) {
 	in.readInteger(term[var]);
 	if (term[var] <= 0) {
-	  in.printError();
-	  gmp_fprintf
-		(stderr, "Expected positive integer as exponent but got %Zd.\n",
-		 term[var].get_mpz_t());
-	  exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "Expected positive integer as exponent but got "
+			   << term[var] << '.';
+	  reportSyntaxError(in, errorMsg.str());
 	}
   } else
 	term[var] = 1;
@@ -352,10 +349,8 @@ void CoCoA4IOHandler::readCoCoA4CoefTerm(BigPolynomial& polynomial,
 	in.expect('+');
 	return;
   }
-  if (in.match('+') || in.match('-')) {
-	fputs("ERROR: Too many signs.\n", stderr);
-	exit(1);
-  }
+  if (in.match('+') || in.match('-'))
+	reportSyntaxError(in, "Too many adjacent signs.");
 
   if (in.peekIdentifier()) {
 	coef = 1;

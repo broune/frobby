@@ -17,8 +17,6 @@
 #include "stdinc.h"
 #include "Action.h"
 
-#include <cstdlib>
-
 #include "IrreducibleDecomAction.h"
 #include "TransformAction.h"
 #include "HelpAction.h"
@@ -124,9 +122,9 @@ bool Action::acceptsNonParameter() const {
   return _acceptsNonParameter;
 }
 
-bool Action::processNonParameter(const char* str) {
+void Action::processNonParameter(const char* str) {
   ASSERT(false);
-  return false;
+  reportInternalError("Action::processNonParameter called.");
 }
 
 void Action::obtainParameters(vector<Parameter*>& parameters) {
@@ -148,8 +146,7 @@ void Action::processOption(const string& optionName,
 
 void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
   if (acceptsNonParameter() && tokenCount > 0 && tokens[0][0] != '-') {
-    if (!processNonParameter(tokens[0]))
-      exit(1); // TODO: get rid of bool return and throw exception
+    processNonParameter(tokens[0]);
     --tokenCount;
     ++tokens;
   }

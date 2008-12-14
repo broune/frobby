@@ -281,7 +281,7 @@ void BigIdeal::sortVariables() {
 }
 
 void BigIdeal::print(FILE* file) const {
-  fprintf(stderr, "/---- BigIdeal of %lu terms:\n",
+  fprintf(file, "/---- BigIdeal of %lu terms:\n",
 	  (unsigned long)_terms.size());
   for (vector<vector<mpz_class> >::const_iterator it = _terms.begin();
        it != _terms.end(); ++it) {
