@@ -51,9 +51,6 @@ public:
 
   unsigned int getLineNumber() const;
 
-  // Writes "ERROR (line ?):" to standard error
-  void printError(const char* str = 0);
-
   int peek();
   void eatWhite();
 
@@ -64,7 +61,7 @@ private:
 
   int getChar();
 
-  void error(const string& expected);
+  void reportErrorUnexpectedToken(const string& expected, const string& got);
 
   void growTmpString();
 

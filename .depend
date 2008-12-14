@@ -9,7 +9,7 @@ $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h 
   src/FrobeniusAction.h src/AnalyzeAction.h src/LatticeFormatAction.h \
   src/IntersectionAction.h src/AssociatedPrimesAction.h \
   src/AlexanderDualAction.h src/HilbertAction.h src/PolyTransformAction.h \
-  src/TestAction.h src/NameFactory.h
+  src/TestAction.h src/NameFactory.h src/error.h
 $(outdir)IOParameters.o: src/IOParameters.cpp src/stdinc.h src/IOParameters.h \
   src/ParameterGroup.h src/Parameter.h src/StringParameter.h \
   src/IOHandler.h src/IOFacade.h src/Facade.h src/Timer.h \
@@ -29,13 +29,13 @@ $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h src/Scanner
   src/BigIdeal.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h src/TermTranslator.h \
   src/Ideal.h src/Term.h src/TermConsumer.h src/CoefTermConsumer.h \
-  src/Polynomial.h src/BigPolynomial.h src/NameFactory.h \
+  src/Polynomial.h src/BigPolynomial.h src/NameFactory.h src/error.h \
   src/NewMonosIOHandler.h src/MonosIOHandler.h src/Macaulay2IOHandler.h \
   src/Fourti2IOHandler.h src/NullIOHandler.h src/CoCoA4IOHandler.h \
   src/SingularIOHandler.h
 $(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
-  src/hash_map/hash_fun.h src/Scanner.h src/IOHandler.h
+  src/hash_map/hash_fun.h src/Scanner.h src/IOHandler.h src/error.h
 $(outdir)randomDataGenerators.o: src/randomDataGenerators.cpp src/stdinc.h \
   src/randomDataGenerators.h src/BigIdeal.h src/VarNames.h \
   src/hash_map/hash_map src/hash_map/hashtable.h src/hash_map/hash_fun.h \
@@ -123,7 +123,7 @@ $(outdir)IntegerParameter.o: src/IntegerParameter.cpp src/stdinc.h \
 $(outdir)SliceParameters.o: src/SliceParameters.cpp src/stdinc.h \
   src/SliceParameters.h src/ParameterGroup.h src/Parameter.h \
   src/BoolParameter.h src/StringParameter.h src/SliceFacade.h \
-  src/SplitStrategy.h src/Facade.h src/Timer.h
+  src/SplitStrategy.h src/Facade.h src/Timer.h src/error.h
 $(outdir)BoolParameter.o: src/BoolParameter.cpp src/stdinc.h src/BoolParameter.h \
   src/Parameter.h
 $(outdir)Scanner.o: src/Scanner.cpp src/stdinc.h src/Scanner.h src/VarNames.h \
@@ -338,7 +338,7 @@ $(outdir)HilbertIndependenceConsumer.o: src/HilbertIndependenceConsumer.cpp \
   src/HilbertStrategy.h src/SliceStrategyCommon.h src/SliceStrategy.h \
   src/SplitStrategy.h
 $(outdir)SplitStrategy.o: src/SplitStrategy.cpp src/stdinc.h src/SplitStrategy.h \
-  src/Slice.h src/Ideal.h src/Term.h src/NameFactory.h
+  src/Slice.h src/Ideal.h src/Term.h src/NameFactory.h src/error.h
 $(outdir)CanonicalTermConsumer.o: src/CanonicalTermConsumer.cpp src/stdinc.h \
   src/CanonicalTermConsumer.h src/TermConsumer.h src/Ideal.h \
   src/TermTranslator.h src/VarNames.h src/hash_map/hash_map \
@@ -366,3 +366,4 @@ $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/../example/MyIdealCreators.cpp \
   src/../example/MyPolynomialCreators.cpp src/../example/example.cpp
 $(outdir)NameFactory.o: src/NameFactory.cpp src/stdinc.h src/NameFactory.h
+$(outdir)error.o: src/error.cpp src/stdinc.h src/error.h src/Scanner.h

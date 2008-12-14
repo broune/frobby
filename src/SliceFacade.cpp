@@ -40,6 +40,7 @@
 #include "CanonicalTermConsumer.h"
 #include "VarSorter.h"
 #include "StatisticsStrategy.h"
+#include "error.h"
 
 SliceFacade::SliceFacade(const BigIdeal& ideal,
 						 BigTermConsumer* consumer,
@@ -262,11 +263,9 @@ void SliceFacade::computeAlexanderDual(const vector<mpz_class>& point) {
   for (size_t var = 0; var < lcm.size(); ++var) {
 	if (lcm[var] > point[var]) {
 	  endAction();
-	  fputs("ERROR: The specified point to dualize on"
-			"is not divisible by the\n"
-			"least common multiple of the minimal"
-			"generators of the ideal.\n", stderr);
-	  exit(1);
+	  reportError
+		("The specified point to dualize on is not divisible by the "
+		 "least common multiple of the minimal generators of the ideal.");
 	}
   }
 

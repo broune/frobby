@@ -79,7 +79,8 @@ public:
 
   void swapVariables(size_t a, size_t b);
 
-  void print(FILE* file) const;
+  void toString(string& str) const;
+  void print(FILE* file) const; // For debug
 
   static size_t getInvalidIndex();
 

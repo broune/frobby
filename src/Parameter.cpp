@@ -16,8 +16,9 @@
 */
 #include "stdinc.h"
 #include "Parameter.h"
+#include "error.h"
 
-#include <cstdlib>
+#include <sstream>
 
 Parameter::Parameter(const char* name,
 					 const char* description):
@@ -54,38 +55,44 @@ void Parameter::checkCorrectParameterCount(unsigned int from,
 										   unsigned int paramCount) {
   if (from <= paramCount && paramCount <= to)
     return;
-  
-  fprintf(stderr, "ERROR: Option -%s takes ", getName());
+
+  ostringstream errorMsg;
+
+  errorMsg << "Option -" << getName() << " takes ";
   if (from == to) {
     if (from == 1)
-      fputs("one parameter, ", stderr);
+	  errorMsg << "one parameter, ";
     else
-      fprintf(stderr, "%u parameters, ", from);
+      errorMsg << from << " parameters, ";
   } else
-    fprintf(stderr, "from %u to %u parameters, ", from, to);
-  
+	errorMsg << "from " << from << " to " << to << " parameters, ";
+
   if (paramCount == 0)
-    fputs("but no parameters were provided.\n", stderr);
+	errorMsg << "but no parameters were provided.\n";
   else {
     if (paramCount == 1)
-      fputs("but one parameter was provided.\n", stderr);
+      errorMsg << "but one parameter was provided.";
     else
-      fprintf(stderr, "but %u parameters were provided.\n", paramCount);
-	
-    fputs("The provided parameters were: ", stderr);
-    const char* prefix = "\"";
+	  errorMsg << "but " << paramCount << " parameters were provided.";
+	errorMsg << '\n';
+
+	errorMsg << "The provided parameters were: ";
+    const char* prefix = "";
     for (unsigned int i = 0; i < paramCount; ++i) {
-      fprintf(stderr, "%s%s\"", prefix, params[i]);
-      prefix = ", \"";
+	  errorMsg << prefix << params[i];
+      prefix = ", ";
     }
-    fputc('\n', stderr);
+	errorMsg << ".\n";
 	
     if (paramCount > to)
-      fputs("(Did you forget to put a - in front of one of the options?)\n",
-			stderr);
+	  errorMsg <<
+		"(Did you forget to put a - in front of one of the options?)\n";
   }
   
-  fprintf(stderr, "\nThe option -%s has the following description:\n%s\n",
-		  getName(), getDescription());
-  exit(1);
+  errorMsg << "The option -"
+		   << getName()
+		   << " has the following description:\n "
+		   << getDescription();
+
+  reportError(errorMsg.str());
 }

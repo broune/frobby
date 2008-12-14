@@ -16,8 +16,7 @@
 */
 #include "stdinc.h"
 #include "ParameterGroup.h"
-
-#include <cstdlib>
+#include "error.h"
 
 ParameterGroup::ParameterGroup():
   Parameter("", "") {
@@ -40,10 +39,9 @@ bool ParameterGroup::process(const char** params, unsigned int paramCount) {
 }
 
 void ParameterGroup::processParameters(const char** params,
-				       unsigned int paramCount) {
-  fputs("INTERNAL ERROR: Called ParameterGroup::processParameters.\n", stderr);
+									   unsigned int paramCount) {
   ASSERT(false);
-  exit(1);
+  reportInternalError("Called ParameterGroup::processParameters.");
 }
 
 void ParameterGroup::addParameter(Parameter* parameter) {

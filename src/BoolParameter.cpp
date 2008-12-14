@@ -17,7 +17,9 @@
 #include "stdinc.h"
 #include "BoolParameter.h"
 
-#include <cstdlib>
+#include "error.h"
+
+#include <sstream>
 
 BoolParameter::BoolParameter(const char* name,
 			     const char* description,
@@ -62,9 +64,12 @@ processParameters(const char** params, unsigned int paramCount) {
   else if (param == "on")
     _value = true;
   else {
-    fprintf(stderr, "ERROR: Option -%s was given the parameter \"%s\".\n"
-			"The only valid parameters are \"on\" and \"off\".\n",
-			getName(), param.c_str());
-    exit(1);
+	ostringstream errorMsg;
+	errorMsg << "Option -"
+			 << getName()
+			 << " was given the parameter \""
+			 << param
+			 << "\". The only valid parameters are \"on\" and \"off\".";
+	reportError(errorMsg.str());
   }
 }

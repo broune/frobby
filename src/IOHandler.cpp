@@ -28,6 +28,7 @@
 #include "Polynomial.h"
 #include "BigPolynomial.h"
 #include "NameFactory.h"
+#include "error.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -36,6 +37,8 @@
 #include "NullIOHandler.h"
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
+
+#include <sstream>
 
 bool IOHandler::supportsInput(DataType type) const {
   return std::find(_supportedInputs.begin(), _supportedInputs.end(),
@@ -62,11 +65,9 @@ const char* IOHandler::getDataTypeName(DataType type) {
 	return "a list of monomial ideals";
 
   default:
-	fputs("INTERNAL ERROR: Unknown DataType enum in getDataTypeName.\n",
-		  stderr);
 	ASSERT(false);
-	exit(1);
-	return 0;
+	reportInternalError("Unknown DataType enum in getDataTypeName.");
+	return 0; // To ensure that a static analysis does not report an issue.
   }
 }
 
@@ -241,9 +242,8 @@ void IOHandler::readTerm(Scanner& in,
 }
 
 void IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
-  fputs("INTERNAL ERROR: Called IOHandler::readPolynomial.\n", stderr);
   ASSERT(false);
-  exit(1); 
+  reportInternalError("Called IOHandler::readPolynomial.");
 }
 
 IOHandler::~IOHandler() {
@@ -294,11 +294,13 @@ TermConsumer* IOHandler::createIdealWriter(const TermTranslator* translator,
   ASSERT(supportsOutput(MonomialIdeal));
 
   if (_requiresSizeForIdealOutput) {
-	fprintf(stderr,
-			"NOTE: Using the format %s makes it necessary to store all of\n"
-			"the output in memory before writing it out. This increases\n"
-			"memory consumption and decreases performance.\n",
-			getName());
+	ostringstream msg;
+	msg << "Using the format " << getName() <<
+	  " makes it necessary to store all of the output in "
+	  "memory before writing it out. This increases "
+	  "memory consumption and decreases performance.";
+	displayNote(msg.str());
+
 	return new DelayedIdealWriter(this, translator, out);
   }
   else
@@ -433,11 +435,9 @@ void IOHandler::readCoefTerm(BigPolynomial& polynomial,
 	in.expect('+');
 	return;
   }
-  if (in.match('+') || in.match('-')) {
-	fputs("ERROR: Too many signs.\n", stderr);
-	exit(1);
-  }
-	  
+  if (in.match('+') || in.match('-'))
+	reportSyntaxError(in, "Too many adjacent signs.");
+
   if (in.peekIdentifier()) {
 	coef = 1;
 	readVarPower(term, polynomial.getNames(), in);
@@ -456,19 +456,17 @@ void IOHandler::readVarPower(vector<mpz_class>& term,
   size_t var = in.readVariable(names);
 
   if (term[var] != 0) {
-	in.printError();
-	fputs("A variable appears twice.\n", stderr);
-	exit(1);
+	const string& name = names.getName(var);
+	reportSyntaxError(in, "The variable " + name + " appears more than once.");
   }
 
   if (in.match('^')) {
     in.readInteger(term[var]);
     if (term[var] <= 0) {
-	  in.printError();
-      gmp_fprintf
-		(stderr, "Expected positive integer as exponent but got %Zd.\n",
-		 term[var].get_mpz_t());
-      exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "Expected positive integer as exponent but got "
+			   << term[var] << ".";
+	  reportSyntaxError(in, errorMsg.str());
     }
   } else
     term[var] = 1;
@@ -501,9 +499,8 @@ void IOHandler::addFormatNames(vector<string>& names) {
 }
 
 void IOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
-  fputs("INTERNAL ERROR: Called IOHandler::writePolynomialHeader.\n", stderr);
   ASSERT(false);
-  exit(1);
+  reportInternalError("Called IOHandler::writePolynomialHeader.");
 }
 
 void IOHandler::writePolynomialHeader(const VarNames& names,
@@ -517,10 +514,8 @@ void IOHandler::writeTermOfPolynomial(const mpz_class& coef,
 									  const TermTranslator* translator,
 									  bool isFirst,
 									  FILE* out) {
-  fputs("INTERNAL ERROR: Called IOHandler::writeTermOfPolynomial (small).\n",
-		stderr);
   ASSERT(false);
-  exit(1);
+  reportInternalError("Called IOHandler::writeTermOfPolynomial (small).");
 }
 
 void IOHandler::writeTermOfPolynomial(const mpz_class& coef,
@@ -528,18 +523,15 @@ void IOHandler::writeTermOfPolynomial(const mpz_class& coef,
 									  const VarNames& names,
 									  bool isFirst,
 									  FILE* out) {
-  fputs("INTERNAL ERROR: Called IOHandler::writeTermOfPolynomial (big).\n",
-		stderr);
   ASSERT(false);
-  exit(1);
+  reportInternalError("Called IOHandler::writeTermOfPolynomial (big).");
 }
 
 void IOHandler::writePolynomialFooter(const VarNames& names,
 									  bool wroteAnyGenerators,
 									  FILE* out) {
-  fputs("INTERNAL ERROR: Called IOHandler::writePolynomialFooter.\n", stderr);
   ASSERT(false);
-  exit(1);
+  reportInternalError("Called IOHandler::writePolynomialFooter.\n");
 }
 
 void IOHandler::writeIdealHeader(const VarNames& names,
@@ -635,11 +627,13 @@ CoefTermConsumer* IOHandler::createPolynomialWriter
   ASSERT(supportsOutput(Polynomial));
 
   if (_requiresSizeForIdealOutput) {
-	fprintf(stderr,
-			"NOTE: Using the format %s makes it necessary to store all of\n"
-			"the output in memory before writing it out. This increases\n"
-			"memory consumption and decreases performance.\n",
-			getName());
+	ostringstream msg;
+	msg << "Using the format " << getName() <<
+	  " makes it necessary to store all of the output in "
+	  "memory before writing it out. This increases "
+	  "memory consumption and decreases performance.";
+	displayNote(msg.str());
+
 	return new DelayedPolynomialWriter(this, translator, out);
   }
   else
@@ -655,32 +649,31 @@ void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
 	in.readInteger(n);
 
     if (n <= 1) {
-	  in.printError();
-      gmp_fprintf(stderr,
-				  "Read the number %Zd while reading Frobenius instance.\n"
-				  "Only integers strictly larger than 1 are valid.\n",
-				  n.get_mpz_t());
-      exit(1);
+	  ostringstream errorMsg;
+	  errorMsg << "Read the number " << n
+			   << " while reading Frobenius instance. "
+			   << "Only integers strictly larger than 1 are valid.";
+	  reportSyntaxError(in, errorMsg.str());
     }
 
     numbers.push_back(n);
   }
 
-  if (numbers.empty()) {
-	in.printError();
-    fputs("Read empty Frobenius instance, which is not allowed.\n", stderr);
-    exit(1);
-  }
+  if (numbers.empty())
+	reportSyntaxError
+	  (in, "Read empty Frobenius instance, which is not allowed.");
 
   mpz_class gcd = numbers[0];
   for (size_t i = 1; i < numbers.size(); ++i)
     mpz_gcd(gcd.get_mpz_t(), gcd.get_mpz_t(), numbers[i].get_mpz_t());
 
   if (gcd != 1) {
-    gmp_fprintf(stderr,
-				"ERROR: The numbers in the Frobenius instance are not "
-				"relatively prime.\nThey are all divisible by %Zd.\n",
-				gcd.get_mpz_t());
-    exit(1);
+	// Maybe not strictly speaking a syntax error, but that category
+	// of errors still fits best.
+	ostringstream errorMsg;
+	errorMsg << "The numbers in the Frobenius instance are not "
+			 << "relatively prime. They are all divisible by "
+			 << gcd << '.';
+	reportSyntaxError(in, errorMsg.str());
   }
 }

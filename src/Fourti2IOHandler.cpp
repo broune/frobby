@@ -22,8 +22,7 @@
 #include "Term.h"
 #include "TermTranslator.h"
 #include "BigPolynomial.h"
-
-#include <cstdlib>
+#include "error.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
   IOHandler(staticGetName(),
@@ -162,19 +161,17 @@ void Fourti2IOHandler::writeIdealFooter(const VarNames& names,
 
 void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,
 											 FILE* out) {
-  fputs("INTERNAL ERROR: writePolynomialHeader called on object of type\n"
-		"Fourti2IOHandler using the overload that does not specify size.\n",
-		stderr);
   ASSERT(false);
-  exit(1);
+  reportInternalError
+	("The method writePolynomialHeader called on object of type "
+	 "Fourti2IOHandler using the overload that does not specify size.");
 }
 
 void Fourti2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
-  fputs("INTERNAL ERROR: writeIdealHeader called on object of type\n"
-		"Fourti2IOHandler using the overload that does not specify size.\n",
-		stderr);
   ASSERT(false);
-  exit(1);
+  reportInternalError
+	("The method writeIdealHeader called on object of type "
+	 "Fourti2IOHandler using the overload that does not specify size.");
 }
 
 void Fourti2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
@@ -217,12 +214,11 @@ void Fourti2IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
   in.readSizeT(termCount);
   in.readSizeT(varCount);
 
-  if (varCount == 0) {
-	fputs("ERROR: A polynomial has at least one column in the matrix.\n",
-		  stderr);
-	exit(1);
-	return;
-  }
+  if (varCount == 0)
+	reportError
+	  ("A polynomial has at least one column in the matrix,"
+	   "but this matrix has no columns.");
+
   --varCount; // One of columns is the coefficient.
 
   polynomial.clearAndSetNames(VarNames(varCount));

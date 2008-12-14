@@ -23,9 +23,10 @@
 #include "fplllIO.h"
 #include "Scanner.h"
 #include "ElementDeleter.h"
+#include "error.h"
 
 #include <iterator>
-#include <cstdlib>
+#include <sstream>
 
 IOFacade::IOFacade(bool printActions):
   Facade(printActions) {
@@ -165,13 +166,21 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
 
   if (instance.size() != ideal.getVarCount() + 1) {
     if (instance.empty())
-      fputs("ERROR: There is no Frobenius instance at end of input.\n",
-			stderr);
-    else
-      fputs("ERROR: The Frobenius instance at end of input does not have the\n"
-			"amount of numbers that the first part of the input indicates.\n",
-			stderr);
-    exit(1);
+	  reportSyntaxError
+		(in, "The Grobner basis is not followed by a Frobenius instance.");
+    else {
+	  // Note that we add one since the first entry of the rows encoding
+	  // the Grobner basis is chopped off.
+	  ostringstream errorMsg;
+	  errorMsg << "The Grobner basis has "
+			   << ideal.getVarCount() + 1
+			   << " entries, and the Frobenius instance should then also have "
+			   << ideal.getVarCount() + 1
+			   << " entries, but in fact it has "
+			   << instance.size() 
+			   << " entries.";
+		reportSyntaxError(in, errorMsg.str());
+	}
   }
 
   endAction();

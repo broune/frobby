@@ -19,8 +19,7 @@
 
 #include "Parameter.h"
 #include "IOHandler.h"
-
-#include <memory>
+#include "error.h"
 
 HelpAction::HelpAction():
   Action
@@ -38,22 +37,17 @@ HelpAction::HelpAction():
 void HelpAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
-bool HelpAction::processNonParameter(const char* str) {
+void HelpAction::processNonParameter(const char* str) {
   ASSERT(_topic == "");
 
   _topic = str;
 
-  if (_topic == "io")
-	return true;
-
-  vector<string> names;
-  Action::addNamesWithPrefix(str, names);
-  if (names.empty()) {
-    fprintf(stderr, "ERROR: Unknown help topic \"%s\".\n", str);
-    return false;
+  if (_topic != "io") {
+	vector<string> names;
+	Action::addNamesWithPrefix(str, names);
+	if (names.empty())
+	  reportError("Unknown help topic \"" + _topic + "\".");
   }
-
-  return true;
 }
 
 void HelpAction::displayActionHelp(Action* action) {

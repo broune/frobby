@@ -22,8 +22,9 @@
 #include "VarNames.h"
 #include "BigPolynomial.h"
 #include "TermTranslator.h"
+#include "error.h"
 
-#include <cstdlib>
+#include <cstdio>
 
 Macaulay2IOHandler::Macaulay2IOHandler():
   IOHandler(staticGetName(),
@@ -148,9 +149,9 @@ void Macaulay2IOHandler::readVars(VarNames& names, Scanner& in) {
 
   in.eatWhite();
   if (in.peek() == 'Z') {
-	fputs("WARNING (m2 format): Writing ZZ as the ground field\n"
-		  "instead of QQ is deprecated.\n",
-		  stderr);
+	displayNote("In the Macaulay 2 format, writing ZZ as the ground field "
+				"instead of QQ is deprecated and may not work in future "
+				"releases of Frobby.");
 	in.expect("ZZ");
   } else
 	in.expect("QQ");
@@ -160,19 +161,17 @@ void Macaulay2IOHandler::readVars(VarNames& names, Scanner& in) {
   // there, then the end brace should be there too.
   bool readBrace = in.match('{'); 
   if (readBrace) {
-	fputs("WARNING (m2 format): Putting braces { } around the variables "
-		  "is deprecated.\n",
-		  stderr);
+	displayNote("In the Macaulay 2 format, putting braces { } around the "
+				"variables is deprecated and may not work in future "
+				"releases of Frobby.");
   }
 
   if (in.peekIdentifier()) {
 	do {
 	  const char* varName = in.readIdentifier();
-	  if (names.contains(varName)) {
-		in.printError();
-		fprintf(stderr, "The variable %s is declared twice.\n", varName);
-		exit(1);
-	  }
+	  if (names.contains(varName))
+		reportSyntaxError
+		  (in, "The variable " + string(varName) + " is declared twice.");
 	  names.addVar(varName);
 	} while (in.match(','));
   }
@@ -234,11 +233,11 @@ void Macaulay2IOHandler::writeRing(const VarNames& names, FILE* out) {
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
 	fputs(pre, out);
 	if (names.getName(i) == "R") {
-	  fputs("WARNING (m2 format): Using R as a variable name is supported by\n"
-			"Frobby, but even though this data is being written in\n"
-			"Macaulay 2 format, Macaulay 2 will likely not be able to read\n"
-			"it since it will confuse the variable R with the polynomial\n"
-			"ring R.\n", stderr);
+	  displayNote
+		("Using R as a variable name is supported by Frobby, but even though "
+		 "this data is being written in Macaulay 2 format, Macaulay 2 will "
+		 "likely not be able to read it since it will confuse the variable R "
+		 "with the polynomial ring R.");
 	}
 
 	fputs(names.getName(i).c_str(), out);

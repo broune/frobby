@@ -19,8 +19,9 @@
 
 #include "BigIdeal.h"
 #include "Scanner.h"
+#include "error.h"
 
-#include <cstdlib>
+#include <sstream>
 
 namespace fplll {
   void readLatticeBasis(Scanner& scanner, BigIdeal& basis) {
@@ -37,13 +38,15 @@ namespace fplll {
       }
 
       if (tmp.front().size() != tmp.back().size()) {
-		fprintf
-		  (stderr, 
-		   "ERROR: Row 1 has %lu entries, while row %lu has %lu entries.\n",
-		   (unsigned long)tmp.front().size(),
-		   (unsigned long)tmp.size(),
-		   (unsigned long)tmp.back().size());
-		exit(1);
+		ostringstream errorMsg;
+		errorMsg << "Row 1 has "
+				 << tmp.front().size()
+				 << " entries, while row "
+				 << tmp.size()
+				 << " has "
+				 << tmp.back().size()
+				 << " entries.";
+		reportSyntaxError(scanner, errorMsg.str());
       }
     }
 

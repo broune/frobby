@@ -20,11 +20,11 @@
 #include "Scanner.h"
 
 void reportError(const string& errorMsg) {
-  fprintf(stderr, "ERROR: %s", errorMsg.c_str());
+  reportErrorNoThrow(errorMsg);
   throw FrobbyException();
 }
 
-void reportInternalErorr(const string& errorMsg) {
+void reportInternalError(const string& errorMsg) {
   fprintf(stderr, "INTERNAL ERROR: %s", errorMsg.c_str());
   throw FrobbyException();
 }
@@ -37,4 +37,12 @@ void reportSyntaxError(const Scanner& scanner, const string& errorMsg) {
   err += scanner.getLineNumber();
   err += ":";
   err += errorMsg;
+}
+
+void displayNote(const string& msg) {
+  fprintf(stderr, "NOTE: %s\n", msg.c_str());
+}
+
+void reportErrorNoThrow(const string& errorMsg) {
+  fprintf(stderr, "ERROR: %s\n", errorMsg.c_str());
 }

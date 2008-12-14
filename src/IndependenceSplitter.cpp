@@ -86,12 +86,6 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
   }
   ASSERT(_partition.getSetCount() == 2);
 
-  /*
-  slice.print(stderr);
-  fprintf(stderr, "%i %i\n", _partition.getSetSize(0), _partition.getSetSize(1));
-  _partition.print(stderr);
-  */
-
   if (_partition.getSetSize(0) > _partition.getSetSize(1))
 	_bigSet = 0;
   else
