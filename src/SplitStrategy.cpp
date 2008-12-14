@@ -21,6 +21,7 @@
 #include "Term.h"
 #include "Ideal.h"
 #include "NameFactory.h"
+#include "error.h"
 
 SplitStrategy::SplitStrategy() {
 }
@@ -33,11 +34,8 @@ SplitStrategy::~SplitStrategy() {
 class SplitStrategyCommon : public SplitStrategy {
 public:
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	fputs
-	  ("INTERNAL ERROR: Requested pivot split of non-pivot split strategy.\n",
-	   stderr);
 	ASSERT(false);
-	exit(1);
+	reportInternalError("Requested pivot split of non-pivot split strategy.\n");
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {

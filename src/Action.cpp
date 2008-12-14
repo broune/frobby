@@ -36,6 +36,7 @@
 #include "HelpAction.h"
 #include "TestAction.h"
 #include "NameFactory.h"
+#include "error.h"
 
 Action::Action(const char* name,
 			   const char* shortDescription,
@@ -88,22 +89,18 @@ auto_ptr<Action> Action::createActionWithPrefix(const string& prefix) {
   vector<string> names;
   addNamesWithPrefix(prefix, names);
 
-  if (names.empty()) {
-    fprintf(stderr, "ERROR: No action has the prefix \"%s\".\n",
-			prefix.c_str());
-	exit(1);
-  }
+  if (names.empty())
+	reportError("No action has the prefix \"" + prefix + "\".\n");
 
   if (names.size() >= 2) {
-    fprintf(stderr, "ERROR: Prefix \"%s\" is ambigous.\nPossibilities are:",
-			prefix.c_str());
+	string err = "Prefix \"" + prefix + "\" is ambigous.\nPossibilities are:";
 	for (vector<string>::iterator name = names.begin();
 		 name != names.end(); ++name) {
-	  fputc(' ', stderr);
-	  fputs(name->c_str(), stderr);
+	  err += ' ';
+	  err += *name;
 	}
-	fputc('\n', stderr);
-    exit(1);
+	err += '\n';
+	reportError(err);
   }
 
   ASSERT(names.size() == 1);
@@ -146,15 +143,13 @@ void Action::processOption(const string& optionName,
       return;
   }
 
-  fprintf(stderr, "ERROR: Unknown option \"-%s\".\n",
-		  optionName.c_str());
-  exit(1);
+  reportError("Unknown option \"-" + optionName + "\".\n");
 }
 
 void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
   if (acceptsNonParameter() && tokenCount > 0 && tokens[0][0] != '-') {
     if (!processNonParameter(tokens[0]))
-      exit(1);
+      exit(1); // TODO: get rid of bool return and throw exception
     --tokenCount;
     ++tokens;
   }
@@ -165,12 +160,9 @@ void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
   while (i < tokenCount) {
     ASSERT(tokens[i][0] != '\0');
 
-    if (tokens[i][0] != '-') {
-      fprintf(stderr, "ERROR: Expected an option when reading "
-	      "\"%s\", but options start with a dash (-).\n",
-	      tokens[i]);
-      exit(1);
-    }
+    if (tokens[i][0] != '-')
+	  reportError(string("Expected an option when reading \"") +
+				  tokens[i] + "\", but options start with a dash (-).\n");
 
     unsigned int paramCount = 0;
     while (i + 1 + paramCount < tokenCount &&

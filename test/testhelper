@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # This runs a test while providing diagnostic output on error.
 # $1  The Frobby action to run (e.g. alexdual)
@@ -133,7 +133,7 @@ if [ $? = 0 ];
 then
   if [ $summary = 0 ];
   then
-    echo -n .
+    echo -n "."
   fi
   exit 0;
 fi
