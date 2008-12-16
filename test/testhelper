@@ -188,7 +188,7 @@ if [ $useDebugAlloc = 1 ];
 then
   # otherwise we would always get a mismatch, since _debug-alloc supresses
   # output.
-  referenceMatch=1;
+  referenceMatch=0;
 fi
 
 if [ $generate = 1 ];
