@@ -1,0 +1,8 @@
+ERROR: Option -oformat takes one parameter, but 2 parameters were provided.
+The provided parameters were: o1, o2.
+(Did you forget to put a - in front of one of the options?)
+The option -oformat has the following description:
+ The format used to write the output. This action supports the formats:
+  m2 cocoa4 singular monos newmonos 4ti2 null.
+The format "input" instructs Frobby to use the input format.
+Type 'frobby help io' for more information on output formats.

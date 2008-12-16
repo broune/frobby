@@ -1,0 +1,1 @@
+ERROR: The matrix defining the Frobenius-related Grobner basis must have at least one column, and this one has none.

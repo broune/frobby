@@ -1,0 +1,3 @@
+ERROR: Option -varCount takes one parameter, but no parameters were provided.
+The option -varCount has the following description:
+ The number of variables.

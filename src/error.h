@@ -17,9 +17,24 @@
 #ifndef ERROR_GUARD
 #define ERROR_GUARD
 
+#include <exception>
+#include <string>
+#include <string.h>
+
 class Scanner;
 
-class FrobbyException {
+// This class is pure virtual to ensure that it is catch'ed by
+// reference. This is necessary to prevent object slicing, since the
+// actual exceptions thrown have more data members and it is
+// undesirable to expose those in this header.
+class FrobbyException : public std::runtime_error {
+ public:
+  FrobbyException(const string& str): runtime_error(str) {}
+};
+
+class InternalFrobbyException : public std::logic_error {
+ public:
+  InternalFrobbyException(const string& str): logic_error(str) {}
 };
 
 // These methods throw exceptions.
@@ -30,6 +45,7 @@ void reportSyntaxError(const Scanner& scanner, const string& errorMsg);
 // These methods return normally.
 void displayNote(const string& msg);
 void reportErrorNoThrow(const string& errorMsg);
-
+void reportErrorNoThrow(const FrobbyException& e);
+void reportErrorNoThrow(const InternalFrobbyException& e);
 
 #endif

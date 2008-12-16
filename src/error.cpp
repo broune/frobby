@@ -19,24 +19,29 @@
 
 #include "Scanner.h"
 
+#include <sstream>
+
 void reportError(const string& errorMsg) {
-  reportErrorNoThrow(errorMsg);
-  throw FrobbyException();
+  ostringstream err;
+  err << "ERROR: " << errorMsg << '\n';
+  throw FrobbyException(err.str());
 }
 
 void reportInternalError(const string& errorMsg) {
-  fprintf(stderr, "INTERNAL ERROR: %s", errorMsg.c_str());
-  throw FrobbyException();
+  ostringstream err;
+  err << "INTERNAL ERROR: " << errorMsg << '\n';
+  throw InternalFrobbyException(err.str());
 }
 
 void reportSyntaxError(const Scanner& scanner, const string& errorMsg) {
-  string err = "SYNTAX ERROR (";
+  ostringstream err;
+  err << "SYNTAX ERROR (";
   if (scanner.getFormat() != "")
-	err += "format " + scanner.getFormat() + ", ";
-  err += "line ";
-  err += scanner.getLineNumber();
-  err += ":";
-  err += errorMsg;
+	err << "format " << scanner.getFormat() << ", ";
+  err << "line " << scanner.getLineNumber() << "):\n  "
+	  << errorMsg << '\n';
+
+  throw FrobbyException(err.str());
 }
 
 void displayNote(const string& msg) {
@@ -45,4 +50,12 @@ void displayNote(const string& msg) {
 
 void reportErrorNoThrow(const string& errorMsg) {
   fprintf(stderr, "ERROR: %s\n", errorMsg.c_str());
+}
+
+void reportErrorNoThrow(const FrobbyException& e) {
+  fputs(e.what(), stderr);
+}
+
+void reportErrorNoThrow(const InternalFrobbyException& e) {
+  fputs(e.what(), stderr);
 }

@@ -26,28 +26,48 @@ bool debuggingAllocation = false;
 size_t goodAllocationsLeft = 0;
 
 #undef new
+
 void* myOperatorNew(size_t s, bool array,
 					const char* file, size_t line) {
   if (detailAllocation) {
-	fprintf(stderr, "Allocating %i bytes at %s:%i.\n",
-			(int)s, file, (int)line);
+	if (file != 0)
+	  fprintf(stderr, "Allocating %i bytes at %s:%i.\n",
+			  (int)s, file, (int)line);
+	if (file == 0)
+	  fprintf(stderr, "Allocating %i bytes at an unknown point.\n",
+			  (int)s);
   }
 
   if (debuggingAllocation && goodAllocationsLeft == 0) {
 	if (detailAllocation)
 	  fputs("Throwing bad_alloc due to artifically imposed limit.\n", stderr);
-	detailAllocation = true;
 	throw bad_alloc();
   }
 
   void* p;
   if (array)
-	p = operator new[](s);
+	p = malloc(s);
   else
-	p = operator new(s);
+	p = malloc(s);
   if (debuggingAllocation)
 	--goodAllocationsLeft;
   return p;
+}
+
+void* operator new(size_t s) throw (std::bad_alloc) {
+  return myOperatorNew(s, false, 0, 0);
+}
+
+void* operator new[](size_t s) throw (std::bad_alloc) {
+  return myOperatorNew(s, true, 0, 0);
+}
+
+void operator delete(void* s) throw() {
+  free(s);
+}
+
+void operator delete[](void* s) throw() {
+  free(s);
 }
 
 void* operator new(size_t s, const char* file, size_t line) throw (std::bad_alloc) {
@@ -101,12 +121,18 @@ int normalMain(int argc, const char** argv) {
 	action->perform();
 
 	return 0;
-  } catch (bad_alloc e) {
+  } catch (const bad_alloc& e) {
 #ifdef DEBUG
 	if (debuggingAllocation && goodAllocationsLeft == 0)
 	  throw;
 #endif
-	reportErrorNoThrow("Not enough memory.");
+	reportErrorNoThrow("Ran out of memory.");
+	return 1;
+  } catch (const InternalFrobbyException& e) {
+	reportErrorNoThrow(e);
+	return 2;
+  } catch (const FrobbyException& e) {
+	reportErrorNoThrow(e);
 	return 1;
   } catch (...) {
 	reportErrorNoThrow("An unexpected error occured.");
@@ -114,7 +140,30 @@ int normalMain(int argc, const char** argv) {
   }
 }
 
+// A replacement for the default C++ built-in terminate() function. Do
+// not call this method or cause it to be called.
+void frobbyTerminate() {
+  fputs("INTERNAL ERROR: Something caused terminate() to be called. "
+		"This should never happen - please contact the Frobby developers.\n",
+		stderr);
+  fflush(stderr);
+  abort();
+}
+
+// A replacement for the default C++ built-in unexpected()
+// function. Do not call this method or cause it to be called.
+void frobbyUnexpected() {
+  fputs("INTERNAL ERROR: Something caused unexpected() to be called. "
+		"This should never happen - please contact the Frobby developers.\n",
+		stderr);
+  fflush(stderr);
+  abort();
+}
+
 int main(int argc, const char** argv) {
+  set_terminate(frobbyTerminate);
+  set_unexpected(frobbyUnexpected);
+
 #ifdef DEBUG
   fputs("This is a DEBUG build of Frobby. It is therefore SLOW.\n", stderr);
   fflush(stderr);
@@ -165,8 +214,9 @@ int main(int argc, const char** argv) {
 	fclose(stdout);
 
 	for (size_t goodAllocations = 0; true; ++goodAllocations) {
-	  fprintf(stderr, "DEBUG: Trying allocation limit of %i.\n",
-			  (int)goodAllocations);
+	  if (goodAllocations % 100 == 0)
+		fprintf(stderr, "DEBUG: Trying allocation limits %i-%i.\n",
+				(int)goodAllocations, (int)(goodAllocations + 99));
 
 	  if (optionFileInput && !freopen(inputFile.c_str(), "r", stdin)) {
 		reportErrorNoThrow
@@ -182,6 +232,9 @@ int main(int argc, const char** argv) {
 		int exitValue = normalMain(argc, argv);
 		detailAllocation = optionDetailAlloc;
 		debuggingAllocation = false;
+		fprintf(stderr,
+				"DEBUG: normal return from main with exit value of %i.",
+				(int)exitValue);
 		return exitValue;
 	  } catch (bad_alloc) {
 		detailAllocation = false;

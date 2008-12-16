@@ -1,0 +1,27 @@
+Displaying information on action: ptransform
+
+By default, transform simply writes the input polynomial to output. A
+number of parameters allow to transform the input polynomial in various ways.
+
+The parameters accepted by ptransform are as follows.
+
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.
+
+ -iformat STRING   (default is autodetect)
+   The format used to read the input. This action supports the formats:
+     m2 cocoa4 singular 4ti2 null.
+   The format "autodetect" instructs Frobby to guess the format.
+   Type 'frobby help io' for more information on input formats.
+
+ -oformat STRING   (default is input)
+   The format used to write the output. This action supports the formats:
+     m2 cocoa4 singular 4ti2 null.
+   The format "input" instructs Frobby to use the input format.
+   Type 'frobby help io' for more information on output formats.
+
+ -canon [BOOL]   (default is off)
+   Sort variables and generators to get a canonical representation.
+
+ -sort [BOOL]   (default is off)
+   Sort the terms.

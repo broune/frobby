@@ -71,14 +71,16 @@ void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,
 
 	if (!(ideal.getNames() == ideals[i]->getNames())) {
 	  stringstream errorMsg;
-	  errorMsg << "Taking products of ideals with different variable lists.\n";
+	  errorMsg <<
+		"Taking products of ideals in rings with different variable lists.\n";
 	  
 	  string list;
 	  ideal.getNames().toString(list);
 	  errorMsg << "One ring has variables\n  " << list << ",\n";
 	  
 	  ideals[i]->getNames().toString(list);
-	  errorMsg << "while another has variables\n  " << list << '.';
+	  errorMsg << "while another has variables\n  " << list <<
+		".\nContact the Frobby developers if you need this functionality.";
 
 	  reportError(errorMsg.str());
 	}

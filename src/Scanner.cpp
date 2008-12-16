@@ -102,7 +102,7 @@ void Scanner::expect(char expected) {
 	if (got == EOF)
 	  gotDescription << "no more input";
 	else
-	  gotDescription << '\'' << static_cast<char>(got)<< '\'';
+	  gotDescription << '\"' << static_cast<char>(got)<< '\"';
 
 	string expectedStr;
 	expectedStr += expected;
@@ -134,10 +134,10 @@ void Scanner::expect(const char* str) {
 	  got << "no more input";
 	else {
 	  got << '\"' << string(str, it);
-	  if (character != EOF)
-		got << character;
+	  if (isalnum(character))
+		got.put(character);
 	  while (isalnum(peek()))
-		got << static_cast<char>(getChar());
+		got.put(static_cast<char>(getChar()));
 	  got << '\"';
 	}
 
@@ -158,7 +158,7 @@ void Scanner::expectEOF() {
 
   eatWhite();
   if (getChar() != EOF)
-	reportErrorUnexpectedToken("no more input.", "");
+	reportErrorUnexpectedToken("no more input", "");
 }
 
 size_t Scanner::readIntegerString() {
@@ -357,9 +357,9 @@ int Scanner::peek() {
 void Scanner::reportErrorUnexpectedToken
 (const string& expected, const string& got) {
   stringstream errorMsg;
-  errorMsg << "Expected \"" << expected << "\"";
+  errorMsg << "Expected " << expected;
   if (got != "")
-	errorMsg << ", but got \"" << got << "\"";
+	errorMsg << ", but got " << got;
   errorMsg << '.';
   reportSyntaxError(*this, errorMsg.str());
 }

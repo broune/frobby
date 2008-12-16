@@ -1,0 +1,11 @@
+Displaying information on action: frobdyn
+
+Compute the Frobenius number of the input Frobenius instance using a simple
+and quite slow dynamic programming algorithm. This functionality has mainly
+been implemented to check the answers of the Grobner basis-based Frobenius
+solver.
+
+The parameters accepted by frobdyn are as follows.
+
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.

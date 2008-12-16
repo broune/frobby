@@ -1,0 +1,26 @@
+Frobby version 0.7.7 Copyright (C) 2007 Bjarke Hammersholt Roune
+Frobby performs a number of computations related to monomial ideals. You
+run it by typing `frobby ACTION', where ACTION is one of the following.
+
+ hilbert      - Compute the Hilbert-Poincare series of the input ideal.
+ irrdecom     - Compute the irreducible decomposition of the input ideal.
+ alexdual     - Compute the Alexander dual of the input ideal.
+ assoprimes   - Compute the associated primes of the input ideal.
+ transform    - Change the representation of the input ideal.
+ ptransform   - Change the representation of the input polynomial.
+ intersection - Intersect the input ideals.
+ genideal     - Generate a random monomial ideal.
+ frobgrob     - Compute Frobenius number using a Grobner basis algorithm.
+ frobdyn      - Compute Frobenius number using dynamic programming.
+ genfrob      - Generate a random Frobenius problem instance.
+ analyze      - Display information about the input ideal.
+ latformat    - Change the representation of the input lattice.
+
+Type 'frobby help ACTION' to get more details on a specific action.
+Note that all input and output is done via the standard streams.
+Type 'frobby help io' for more information on input and output formats.
+See www.broune.com for further information and new versions of Frobby.
+
+Frobby is free software and you are welcome to redistribute it under certain
+conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General
+Public License version 2.0 in the file COPYING for details.

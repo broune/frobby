@@ -1,0 +1,7 @@
+Displaying information on action: help
+
+Typing `frobby help' displays a list of the available actions.
+Typing `frobby help ACTION' displays a detailed description of that action.
+
+As an example, typing `frobby help irrdecom' will yield detailed information
+about the irrdecom action.

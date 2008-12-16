@@ -42,9 +42,9 @@ const char* Parameter::getParameterName() const {
 }
 
 bool Parameter::process(const char** params, unsigned int paramCount) {
-  if (string(_name) != params[0])
+  if ('-' + string(_name) != params[0])
     return false;
-  
+
   processParameters(params + 1, paramCount - 1);
   return true;
 }

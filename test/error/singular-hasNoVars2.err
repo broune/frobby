@@ -1,0 +1,2 @@
+SYNTAX ERROR (format singular, line 1):
+  A singular ring with no actual variables must have a single place-holder variable named "dummy", and in this case it has the name "a".

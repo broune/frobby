@@ -206,7 +206,7 @@ void CoCoA4IOHandler::readVars(VarNames& names, Scanner& in) {
   for (size_t var = 0; var < varCount; ++var) {
 	in.expect('\"');
 	if (in.peekWhite())
-	  reportError("Variable name contains space.");
+	  reportSyntaxError(in, "Variable name contains space.");
 
 	const char* varName = in.readIdentifier();
 	if (names.contains(varName))
@@ -215,7 +215,7 @@ void CoCoA4IOHandler::readVars(VarNames& names, Scanner& in) {
 	names.addVar(varName);
 
 	if (in.peekWhite())
-	  reportError("Variable name contains space.");
+	  reportSyntaxError(in, "Variable name contains space.");
 
 	in.expect('\"');
 	if (var < varCount - 1)
@@ -317,7 +317,9 @@ void CoCoA4IOHandler::readCoCoA4VarPower(vector<mpz_class>& term,
 
   if (term[var] != 0) {
 	ostringstream errorMsg;
-	errorMsg << "The variable x[" << var << "] appears twice.";
+	errorMsg << "The variable x["
+			 << (var + 1)
+			 << "] appears twice in the same monomial.";
 	reportSyntaxError(in, errorMsg.str());
   }
 

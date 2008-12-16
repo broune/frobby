@@ -73,7 +73,7 @@ class IOHandler {
   bool supportsOutput(DataType type) const;
 
   static const char* getDataTypeName(DataType type);
-  static void addDataTypes(vector<DataType> types);
+  static void addDataTypes(vector<DataType>& types);
 
  protected:
   // Output of polynomials.
