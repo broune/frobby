@@ -102,7 +102,6 @@ void NullIOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
   polynomial.clearAndSetNames(VarNames());
 }
 
-
 bool NullIOHandler::hasMoreInput(Scanner& scanner) const {
   return false;
 }

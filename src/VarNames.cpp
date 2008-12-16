@@ -34,8 +34,7 @@ VarNames::VarNames(size_t varCount) {
 }
 
 VarNames::VarNames(const VarNames& names) {
-  for (size_t var = 0; var < names.getVarCount(); ++var)
-	addVar(names.getName(var));
+  *this = names;
 }
 
 VarNames::~VarNames() {
@@ -132,14 +131,19 @@ bool VarNames::operator==(const VarNames& names) const {
 void VarNames::swapVariables(size_t a, size_t b) {
   ASSERT(a < getVarCount());
   ASSERT(b < getVarCount());
+  
+  ASSERT(_nameToIndex[*_indexToName[a]] == a);
+  ASSERT(_nameToIndex[*_indexToName[b]] == b);
 
   if (a == b)
 	return;
 
-  _nameToIndex[_indexToName[a]->c_str()] = b;
-  _nameToIndex[_indexToName[b]->c_str()] = a;
-
   std::swap(_indexToName[a], _indexToName[b]);
+  _nameToIndex[*_indexToName[a]] = a;
+  _nameToIndex[*_indexToName[b]] = b;
+
+  ASSERT(_nameToIndex[*_indexToName[a]] == a);
+  ASSERT(_nameToIndex[*_indexToName[b]] == b);
 }
 
 void VarNames::toString(string& str) const {
