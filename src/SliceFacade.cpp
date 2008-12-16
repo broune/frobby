@@ -341,8 +341,10 @@ void SliceFacade::computeAssociatedPrimes() {
 	for (size_t var = 0; var < varCount; ++var)
 	  zeroOneIdeal.getLastTermExponentRef(var) = 1;
 
+	TermTranslator* newTranslator =
+	  new TermTranslator(zeroOneIdeal, *_ideal, false);
 	delete _translator;
-	_translator = new TermTranslator(zeroOneIdeal, *_ideal, false);
+	_translator = newTranslator;
   }
 
   // Output associated primes.
