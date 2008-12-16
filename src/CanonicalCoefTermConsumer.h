@@ -26,13 +26,15 @@ class Term;
 // storing all items before any can be passed on.
 class CanonicalCoefTermConsumer : public CoefTermConsumer {
  public:
-  CanonicalCoefTermConsumer(CoefTermConsumer* consumer, size_t varCount);
-  virtual ~CanonicalCoefTermConsumer();
+  CanonicalCoefTermConsumer(auto_ptr<CoefTermConsumer> consumer,
+							size_t varCount);
 
+  virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
+  virtual void doneConsuming();
 
  private:
-  CoefTermConsumer* _consumer;
+  auto_ptr<CoefTermConsumer> _consumer;
   Polynomial _polynomial;
 };
 

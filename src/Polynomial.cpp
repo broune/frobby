@@ -30,8 +30,13 @@ void Polynomial::add(const mpz_class& coef, const Term& term) {
 	return;
 
   _terms.resize(_terms.size() + 1);
-  _terms.back().coef = coef;
-  _terms.back().term = term;
+  try {
+	_terms.back().coef = coef;
+	_terms.back().term = term;
+  } catch (std::bad_alloc) {
+	_terms.pop_back();
+	throw;
+  }
 }
 
 void Polynomial::sortTermsLex(bool collect) {
@@ -68,3 +73,6 @@ bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {
   return coefTerm.term < term;
 }
 
+void Polynomial::clear() {
+  _terms.clear();
+}

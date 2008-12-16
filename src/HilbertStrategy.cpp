@@ -144,10 +144,13 @@ bool HilbertStrategy::independenceSplit(HilbertSlice* slice,
 }
 
 HilbertIndependenceConsumer* HilbertStrategy::newConsumer() {
+  HilbertIndependenceConsumer* consumer;
   if (_consumerCache.empty())
-	return new HilbertIndependenceConsumer(this);
+	consumer = new HilbertIndependenceConsumer(this);
+  else {
+	consumer = _consumerCache.back();
+	_consumerCache.pop_back();
+  }
 
-  HilbertIndependenceConsumer* consumer = _consumerCache.back();
-  _consumerCache.pop_back();
   return consumer;
 }
