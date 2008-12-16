@@ -385,7 +385,13 @@ public:
   }
 
   void deallocate(Exponent* chunk) {
-    _chunks.push_back(chunk);
+	// deallocate can be called from a destructor, so no exceptions
+	// can be allowed to escape from it.
+	try {
+	  _chunks.push_back(chunk);
+	} catch (const bad_alloc&) {
+	  delete chunk;
+	}
   }
   
   ~ChunkPool() {
