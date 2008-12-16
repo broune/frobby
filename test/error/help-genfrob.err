@@ -1,0 +1,8 @@
+Displaying information on action: genfrob
+
+Generate a random Frobenius problem instance.
+
+The parameters accepted by genfrob are as follows.
+
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.

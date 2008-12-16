@@ -48,6 +48,11 @@ namespace fourti2 {
     scanner.readSizeT(termCount);
     scanner.readSizeT(varCount);
 
+	if (varCount == 0)
+	  reportError
+		("The matrix defining the Frobenius-related Grobner basis must "
+		 "have at least one column, and this one has none.");
+
     VarNames names(varCount - 1);
     basis.clearAndSetNames(names);
 

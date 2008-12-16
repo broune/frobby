@@ -1,0 +1,2 @@
+SYNTAX ERROR (line 2):
+  The Grobner basis has 1 entries, and the Frobenius instance should then also have 1 entries, but in fact it has 2 entries.

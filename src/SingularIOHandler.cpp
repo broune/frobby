@@ -182,7 +182,7 @@ void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
 		errorMsg << "there are " << names.getVarCount()
 				 << " place-holder variables.";
 	  else
-		errorMsg << "it has the name \"" << names.getName(0) << '.';
+		errorMsg << "it has the name \"" << names.getName(0) << "\".";
 
 	  reportSyntaxError(in, errorMsg.str());
 	}

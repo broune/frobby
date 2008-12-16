@@ -143,6 +143,7 @@ void VarNames::swapVariables(size_t a, size_t b) {
 }
 
 void VarNames::toString(string& str) const {
+  str.clear();
   for (size_t i = 0; i < getVarCount(); ++i) {
     if (i != 0)
 	  str += ", ";

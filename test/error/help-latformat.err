@@ -1,0 +1,18 @@
+Displaying information on action: latformat
+
+By default, latformat simply writes the input lattice to output.
+The main functionality is to change the format.
+
+The parameters accepted by latformat are as follows.
+
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.
+
+ -iformat STRING   (default is 4ti2)
+   The input format. The available formats are 4ti2 and fplll.
+
+ -oformat STRING   (default is input)
+   The output format. The additional format "input" means use input format.
+
+ -zero [BOOL]   (default is off)
+   Adjust lattice basis to increase the number of zero entries.

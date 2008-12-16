@@ -132,16 +132,15 @@ void Action::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void Action::processOption(const string& optionName,
-			   const char** params,
-			   unsigned int paramCount) {
-  params[-1] += 1;
+						   const char** params,
+						   unsigned int paramCount) {
   for (vector<Parameter*>::iterator it = _parameters.begin();
        it != _parameters.end(); ++it) {
     if ((*it)->process(params - 1, paramCount + 1))
       return;
   }
 
-  reportError("Unknown option \"-" + optionName + "\".\n");
+  reportError("Unknown option \"-" + optionName + "\".");
 }
 
 void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {

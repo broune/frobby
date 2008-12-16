@@ -1,0 +1,26 @@
+Displaying information on action: intersection
+
+Computes the intersection of the input ideals. Simply concatenate the textual
+representations of the ideals in order to intersect them.
+
+Note that this operation is currently implemented in a rather slow way.
+
+The parameters accepted by intersection are as follows.
+
+ -iformat STRING   (default is autodetect)
+   The format used to read the input. This action supports the formats:
+     m2 cocoa4 singular monos newmonos 4ti2 null.
+   The format "autodetect" instructs Frobby to guess the format.
+   Type 'frobby help io' for more information on input formats.
+
+ -oformat STRING   (default is input)
+   The format used to write the output. This action supports the formats:
+     m2 cocoa4 singular monos newmonos 4ti2 null.
+   The format "input" instructs Frobby to use the input format.
+   Type 'frobby help io' for more information on output formats.
+
+ -canon [BOOL]   (default is off)
+   Sort the generators and variables to get a canonical output.
+
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.

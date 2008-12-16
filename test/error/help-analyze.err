@@ -1,0 +1,31 @@
+Displaying information on action: analyze
+
+Display information about input ideal. This is useful for getting a quick
+impression of how the ideal looks like, and it can be used in scripts
+that need information about the ideal.
+
+The parameters accepted by analyze are as follows.
+
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.
+
+ -iformat STRING   (default is autodetect)
+   The format used to read the input. This action supports the formats:
+     m2 cocoa4 singular monos newmonos 4ti2 null.
+   The format "autodetect" instructs Frobby to guess the format.
+   Type 'frobby help io' for more information on input formats.
+
+ -lcm [BOOL]   (default is off)
+   Print the least common multiple of the generators.
+
+ -varCount [BOOL]   (default is off)
+   Print the number of variables.
+
+ -genCount [BOOL]   (default is off)
+   Print the number of generators.
+
+ -maxExp [BOOL]   (default is off)
+   Print the largest exponent that appears in the input file
+
+ -minimal [BOOL]   (default is off)
+   Print 1 if the ideal has no non-minimal generators. Print 0 otherwise.

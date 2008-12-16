@@ -1,0 +1,209 @@
+# Makes Frobby report all error messages and other messages and
+# compare this to reference outputs. Parameters to this script should
+# only be parameters of ../testHelper, e.g. _generate or _valgrind,
+# not options for Frobby.
+
+t="./runtest"
+
+
+#######################################
+# The help action
+helpTopics="help hilbert irrdecom alexdual assoprimes transform ptransform io
+            intersection genideal  frobgrob frobdyn genfrob analyze latformat";
+for topic in $helpTopics;
+do
+  $t help "blah" help-$topic _expectExitCode 0 $* $topic
+  if [ $? != 0 ]; then exit 1; fi
+done
+
+$t help "blah" help-unknownTopic $* unknownTopic
+if [ $? != 0 ]; then exit 1; fi
+
+$t help "blah" help-noparam $* _expectExitCode 0 # no help topic
+if [ $? != 0 ]; then exit 1; fi
+
+$t help "blah" help-twoparams $* help topic2 $* # two topics
+if [ $? != 0 ]; then exit 1; fi
+
+#######################################
+# Processing of options
+
+$t alexdual "blah" option-nodash $* time $* # no dash (-) on option
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "blah" option-unknown $* -unknownOption
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "blah" option-unknownSplit $* -split unknownSplit
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "blah" option-frobNotHere $* -split frob
+if [ $? != 0 ]; then exit 1; fi
+
+$t hilbert "blah" option-labelNotHere $* -split varlabel
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "blah" option-notonoff $* -time not_on_or_off
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "blah" option-unknownInput $* -iformat unknownFormat
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "blah" option-unknownOutput $* -oformat unknownFormat
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "blah" option-tooManyParams $* -oformat o1 o2
+if [ $? != 0 ]; then exit 1; fi
+
+$t hilbert "blah" option-noPolyOutput $* -oformat monos -iformat null
+if [ $? != 0 ]; then exit 1; fi
+
+$t ptransform "blah" option-noPolyInput $* -oformat null -iformat monos
+if [ $? != 0 ]; then exit 1; fi
+
+$t genideal "blah" option-notInteger $* -varCount notInteger
+if [ $? != 0 ]; then exit 1; fi
+
+# This does not actually get interpreted as a negative integer, since
+# the minus in front makes it look like another option entirely.
+$t genideal "blah" option-negative $* -varCount -1
+if [ $? != 0 ]; then exit 1; fi
+
+$t genideal "blah" option-tooBig $* -varCount 4294967296
+if [ $? != 0 ]; then exit 1; fi
+
+$t genideal "blah" option-unknownIdealType $* -type unknownType
+if [ $? != 0 ]; then exit 1; fi
+
+$t latformat "blah" latformat-unknownInput $* -iformat unknownFormat
+if [ $? != 0 ]; then exit 1; fi
+
+$t latformat "blah" latformat-unknownOutput $* -oformat unknownFormat
+if [ $? != 0 ]; then exit 1; fi
+
+$t genideal "blah" genideal-tooLargeBoard $* -type king -varCount 100000
+if [ $? != 0 ]; then exit 1; fi
+
+
+#######################################
+# action prefixes
+$t unknownAction "blah" action-unknown $* # Unknown action
+if [ $? != 0 ]; then exit 1; fi
+
+$t a "blah" action-ambigous $* # Ambigous prefix
+if [ $? != 0 ]; then exit 1; fi
+
+
+#######################################
+# Syntax errors
+
+$t transform "Use R::=Q[x[1..1]];Names:=[\" x\"];I:=Ideal();" \
+  cocoa4-varSpace1 $* -iformat cocoa4
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "Use R::=Q[x[1..1]];Names:=[\"x \"];I:=Ideal();" \
+  cocoa4-varSpace2 $* -iformat cocoa4
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "Use R::=Q[x[1..2]];Names:=[\"x\",\"x\"];I:=Ideal();" \
+  cocoa4-doubleVar $* -iformat cocoa4
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "Use R::=Q[x[1..1]];Names:=[\"x\"];I:=Ideal(x[2]);" \
+  cocoa4-unknownVar $* -iformat cocoa4
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "Use R::=Q[x[1..1]];Names:=[\"x\"];I:=Ideal(x[1]x[1]);" \
+  cocoa4-doubleVar2 $* -iformat cocoa4
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "Use R::=Q[x[1..1]];Names:=[\"x\"];I:=Ideal(x[1]^-1);" \
+  cocoa4-negativeExponent $* -iformat cocoa4
+if [ $? != 0 ]; then exit 1; fi
+
+$t ptransform "Use R::=Q[x[1..1]];Names:=[\"x\"];p:=++1;" \
+  cocoa4-tooManySigns $* -iformat cocoa4
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "ring R=0,(x1,x1)" \
+  singular-doubleVar $* -iformat singular
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "ring R=0,(a,b),lp;int noVars=1;" \
+  singular-hasNoVars $* -iformat singular
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "ring R=0,(a),lp;int noVars=1;" \
+  singular-hasNoVars2 $* -iformat singular
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "ring R=0,(a,b),lp;int noVars=2;" \
+  singular-invalidNoVars $* -iformat singular
+if [ $? != 0 ]; then exit 1; fi
+
+$t latformat "[[1][]]" \
+  latformat-unevenRows $* -iformat fplll
+
+$t transform "R=QQ[a,a];" \
+  macaulay2-doubleVar $* -iformat m2
+
+$t transform "vars a,a;" \
+  monos-doubleVar $* -iformat monos
+
+$t transform "(monomial-ideal-with-order(lex-order a a))" \
+  newmonos-doubleVar $* -iformat newmonos
+
+$t ptransform "0 0" 4ti2-invalidPoly $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t frobgrob "0 0" frobgrob-notEnoughColumns $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t frobgrob "1 1 1" frobgrob-firstPositive $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t frobgrob "1 1 -1" frobgrob-noFrob $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t frobgrob "1 1 -1 2 3" frobgrob-frobMismatch $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t frobgrob "1 1 -1 1" frobgrob-frobHasOne $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t frobgrob "1 1 -1 2 2" frobgrob-frobNotPrime $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t alexdual "R=QQ[a];I=monomialIdeal(a^2);a" alexdual-invalidPoint $*
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "R=QQ[a];I=monomialIdeal(a);R=QQ[b];I=monomialIdeal(b);" \
+  transform-mismatchedProduct $* -product
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "q" m2-invalidChar1 $* -iformat m2
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "R" m2-invalidChar2 $* -iformat m2
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "R=Qxx x" m2-invalidString1 $* -iformat m2
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "R=" m2-invalidString2 $* -iformat m2
+if [ $? != 0 ]; then exit 1; fi
+
+$t hilbert "R=QQ[a];I=monomialIdeal(a);extra" m2-extra $* -iformat m2
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "1 1" 4ti2-noInteger $* -iformat 4ti2
+if [ $? != 0 ]; then exit 1; fi
+
+$t transform "1 1234567890123456" 4ti2-tooLarge $* -iformat 4ti2
+if [ $? != 0 ]; then exit 1; fi
+
+$t hilbert "R=QQ[a];I=monomialIdeal(" m2-noIdentifier $* -iformat m2
+if [ $? != 0 ]; then exit 1; fi
+
+$t hilbert "R=QQ[a,b];I=monomialIdeal(ab" m2-unknownVariable $* -iformat m2
+if [ $? != 0 ]; then exit 1; fi

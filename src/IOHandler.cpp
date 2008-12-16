@@ -71,7 +71,7 @@ const char* IOHandler::getDataTypeName(DataType type) {
   }
 }
 
-void IOHandler::addDataTypes(vector<DataType> types) {
+void IOHandler::addDataTypes(vector<DataType>& types) {
   types.push_back(MonomialIdeal);
   types.push_back(MonomialIdealList);
   types.push_back(Polynomial);
@@ -457,7 +457,8 @@ void IOHandler::readVarPower(vector<mpz_class>& term,
 
   if (term[var] != 0) {
 	const string& name = names.getName(var);
-	reportSyntaxError(in, "The variable " + name + " appears more than once.");
+	reportSyntaxError(in, "The variable " + 
+					  name + " appears more than once in monomial.");
   }
 
   if (in.match('^')) {
