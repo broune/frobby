@@ -41,6 +41,11 @@
 # standard out. Lines containing the word DEBUG is removed from this
 # output.
 #
+# If $4 is _debug-alloc, then Frobby will be run with the _debug-alloc
+# option, which will make it run through every scenario of runnning
+# out of memory and recovering, which can take a long time. This only
+# works for the debug versions of Frobby.
+
 # These options can all be combined by adding them one after each
 # other, in which case the last setting of some options is used,
 # and then of course the options will be further along than $4.
@@ -75,6 +80,7 @@ generate=0;
 expectedExitCode=0;
 matchErr=0;
 useValgrind=0;
+useDebugAlloc=0
 summary=0;
 
 changed=1;
@@ -101,7 +107,13 @@ do
   then
     changed=1;
     useValgrind=1;
-    frobby="valgrind $frobby"
+    shift;
+  fi
+
+  if [ "$1" = "_debug-alloc" ];
+  then
+    changed=1;
+    useDebugAlloc=1;
     shift;
   fi
 
@@ -121,6 +133,22 @@ do
   fi
 done
 
+if [ $useDebugAlloc = 1 ];
+then
+  # note that we have to use the _input option, since Frobby starts
+  # the computation over after each simulated recory, so it needs to be
+  # able to rewind the input too, which is not possible using pipes.
+  origFrobby="$frobby _debug-alloc _input $inputFile";
+  frobby="$origFrobby"
+  # OK, I change origFrobby, so it is not quite original. So shoot me.
+fi
+
+
+if [ $useValgrind = 1 ];
+then
+  frobby="valgrind $frobby";
+fi
+
 params="$*"
 
 if [ "$printDebugOutput" == 1 ];
@@ -136,8 +164,9 @@ then
   echo "generate is $generate"
   echo "summary is $summary"
   echo "useValgrind is $useValgrind"
+  echo "useDebugAlloc is $useDebugAlloc"
   echo "expectedExitCode is $expectedExitCode"
-  echo "$matchErr is $matchErr"
+  echo "matchErr is $matchErr"
 fi
 
 # This is where we actually run Frobby
@@ -148,7 +177,7 @@ if [ $matchErr = 1 ];
 then
   # Use a new file to remove lines containing the words DEBUG
   frobbyOut="$frobbyChangedErr";
-  sed /DEBUG/d < $frobbyErr > $frobbyOut
+  sed /DEBUG/d < $frobbyErr|sed /^==/d > $frobbyOut
 fi
 
 # Check if Frobby's output matches the reference output file.
@@ -180,7 +209,7 @@ fi
 
 if [ $useValgrind = 1 ];
 then
-  errs=`grep -e "ERROR SUMMARY: [^0].* error"
+  errs=`grep -e "ERROR SUMMARY: [^0].* error" \
              -e "--leak-check=full" $frobbyErr`;
   if [ "$errs" == "" ];
   then
@@ -192,6 +221,7 @@ then
     echo "  cat $inputFile|$frobby $action $params"
     echo "Re-running to show full details:"
     echo
+    
     cat $inputFile|valgrind --leak-check=full --show-reachable=yes $origFrobby $action $params;
     echo
     echo "Re-running to show limited details:"

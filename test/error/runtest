@@ -1,5 +1,5 @@
 # This runs a test while providing diagnostic output on error. It is a
-# convenience script that wraps around ../testHelper to provide some
+# convenience script that wraps around ../testhelper to provide some
 # often-used options. The usage is the same, except that $2 is the
 # actual input used as a string, not a filename.
 #
@@ -14,4 +14,4 @@ shift
 outputFile="$1.err"
 shift
 
-../testHelper $action $tmpFile $outputFile  _expectExitCode 1 _matchError $*
+../testhelper $action $tmpFile $outputFile  _expectExitCode 1 _matchError $*
