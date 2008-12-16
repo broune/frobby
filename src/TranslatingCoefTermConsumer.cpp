@@ -29,7 +29,8 @@ TranslatingCoefTermConsumer::TranslatingCoefTermConsumer
   ASSERT(translator != 0);
 }
 
-TranslatingCoefTermConsumer::~TranslatingCoefTermConsumer() {
+void TranslatingCoefTermConsumer::beginConsuming() {
+  _consumer->beginConsuming();
 }
 
 void TranslatingCoefTermConsumer::
@@ -37,4 +38,8 @@ consume(const mpz_class& coef, const Term& term) {
   ASSERT(term.getVarCount() == _translator->getVarCount());
 
   _consumer->consume(coef, term, _translator);
+}
+
+void TranslatingCoefTermConsumer::doneConsuming() {
+  _consumer->doneConsuming();
 }

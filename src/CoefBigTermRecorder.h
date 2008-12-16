@@ -25,16 +25,17 @@ class BigPolynomial;
 class CoefBigTermRecorder : public CoefBigTermConsumer {
  public:
   CoefBigTermRecorder(BigPolynomial* recordInto);
-  virtual ~CoefBigTermRecorder();
+
+  virtual void beginConsuming();
 
   virtual void consume(const mpz_class& coef,
 					   const Term& term,
 					   TermTranslator* translator);
-
   virtual void consume(const mpz_class& coef, mpz_ptr* term);
-
   virtual void consume(const mpz_class& coef,
 					   const vector<mpz_class>& term);
+
+  virtual void doneConsuming();
 
  private:
   BigPolynomial* _recordInto;

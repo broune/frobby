@@ -42,8 +42,10 @@ public:
   virtual void raiseEvent();
 
   CoefTermConsumer* getLeftConsumer();
-
+  
+  virtual void beginConsuming(); // Does nothing.
   virtual void consume(const mpz_class& coef, const Term& term);
+  virtual void doneConsuming(); // Does nothing.
 
   CoefTermConsumer* getRightConsumer();
 
@@ -55,8 +57,10 @@ private:
   class RightConsumer : public CoefTermConsumer {
   public:
 	RightConsumer(HilbertIndependenceConsumer* parent);
-
+	
+	virtual void beginConsuming(); // Does nothing.
 	virtual void consume(const mpz_class& coef, const Term& term);
+	virtual void doneConsuming(); // Does nothing.
 
   private:
 	HilbertIndependenceConsumer* _parent;

@@ -27,9 +27,10 @@ class TranslatingCoefTermConsumer : public CoefTermConsumer {
  public:
   TranslatingCoefTermConsumer(CoefBigTermConsumer* consumer,
 							  TermTranslator* translator);
-  virtual ~TranslatingCoefTermConsumer();
 
+  virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
+  virtual void doneConsuming();
 
  private:
   CoefBigTermConsumer* _consumer;

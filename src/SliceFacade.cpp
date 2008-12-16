@@ -110,10 +110,8 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
   initialize(ideal);
 }
 
-
 SliceFacade::~SliceFacade() {
   delete _generatedTermConsumer;
-  delete _generatedCoefTermConsumer;
   delete _translator;
   delete _ideal;
 }
@@ -160,8 +158,10 @@ void SliceFacade::computeMultigradedHilbertSeries() {
 
   CoefTermConsumer* consumer = getCoefTermConsumer();
 
+  consumer->beginConsuming();
   SliceStrategy* strategy = new HilbertStrategy(consumer, _split.get());
   runSliceAlgorithmAndDeleteStrategy(strategy);
+  consumer->doneConsuming();
 
   endAction();
 }
@@ -177,17 +177,17 @@ void SliceFacade::computeUnivariateHilbertSeries() {
   names.addVar("t");
 
   BigPolynomial polynomial(names);
-  _generatedCoefTermConsumer = new TotalDegreeCoefTermConsumer
-	(new CoefBigTermRecorder(&polynomial), _translator);
+  _generatedCoefTermConsumer.reset
+	(new TotalDegreeCoefTermConsumer
+	 (auto_ptr<CoefBigTermConsumer>(new CoefBigTermRecorder(&polynomial)),
+	  _translator));
 
   endAction();
 
   computeMultigradedHilbertSeries();
+  _generatedCoefTermConsumer.reset();
 
   beginAction("Output of computed univariate Hilbert-Poincare series.");
-
-  delete _generatedCoefTermConsumer;
-  _generatedCoefTermConsumer = 0;
 
   if (_out != 0) {
 	ASSERT(_ioHandler != 0);
@@ -195,10 +195,12 @@ void SliceFacade::computeUnivariateHilbertSeries() {
   } else {
 	ASSERT(_coefTermConsumer != 0);
 
+	_coefTermConsumer->beginConsuming();
 	size_t termCount = polynomial.getTermCount();
 	for (size_t term = 0; term < termCount; ++term)
 	  _coefTermConsumer->consume(polynomial.getCoef(term),
 								 polynomial.getTerm(term));
+	_coefTermConsumer->doneConsuming();
   }
 
   endAction();
@@ -488,21 +490,22 @@ CoefTermConsumer* SliceFacade::getCoefTermConsumer() {
   ASSERT(_ideal != 0);
   ASSERT(_translator != 0);
 
-  if (_generatedCoefTermConsumer == 0) {
+  if (_generatedCoefTermConsumer.get() == 0) {
 	if (_coefTermConsumer != 0) {
-	  _generatedCoefTermConsumer =
-		new TranslatingCoefTermConsumer(_coefTermConsumer, _translator);
+	  _generatedCoefTermConsumer.reset
+		(new TranslatingCoefTermConsumer(_coefTermConsumer, _translator));
 	} else {
 	  ASSERT(_ioHandler != 0);
 	  ASSERT(_out != 0);
-	  _generatedCoefTermConsumer =
-		_ioHandler->createPolynomialWriter(_translator, _out);
+	  _generatedCoefTermConsumer.reset
+		(_ioHandler->createPolynomialWriter(_translator, _out));
 	}
 
 	if (_canonicalOutput)
-	  _generatedCoefTermConsumer = new CanonicalCoefTermConsumer
-		(_generatedCoefTermConsumer, _ideal->getVarCount());
+	  _generatedCoefTermConsumer.reset
+		(new CanonicalCoefTermConsumer
+		 (_generatedCoefTermConsumer, _ideal->getVarCount()));
   }
 
-  return _generatedCoefTermConsumer;
+  return _generatedCoefTermConsumer.get();
 }

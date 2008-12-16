@@ -43,6 +43,8 @@ class Polynomial {
   // terms and removes zero coefficients if collect is true.
   void sortTermsLex(bool collect = true);
 
+  void clear();
+
  private:
   struct CoefTerm {
 	bool operator<(const CoefTerm& coefTerm) const;

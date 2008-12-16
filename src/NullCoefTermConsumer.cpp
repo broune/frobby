@@ -20,5 +20,11 @@
 NullCoefTermConsumer::~NullCoefTermConsumer() {
 }
 
+void NullCoefTermConsumer::beginConsuming() {
+}
+
 void NullCoefTermConsumer::consume(const mpz_class& coef, const Term& term) {
+}
+
+void NullCoefTermConsumer::doneConsuming() {
 }

@@ -31,14 +31,15 @@ class TermTranslator;
 // be passed on.
 class TotalDegreeCoefTermConsumer : public CoefTermConsumer {
  public:
-  TotalDegreeCoefTermConsumer(CoefBigTermConsumer* consumer,
+  TotalDegreeCoefTermConsumer(auto_ptr<CoefBigTermConsumer> consumer,
 							  TermTranslator* translator);
-  virtual ~TotalDegreeCoefTermConsumer();
 
+  virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
+  virtual void doneConsuming();
 
  private:
-  CoefBigTermConsumer* _consumer;
+  auto_ptr<CoefBigTermConsumer> _consumer;
   TermTranslator* _translator;
   mpz_class _tmp;
 

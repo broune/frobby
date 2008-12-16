@@ -22,7 +22,9 @@
 class NullCoefTermConsumer : public CoefTermConsumer {
   virtual ~NullCoefTermConsumer();
 
+  virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
+  virtual void doneConsuming();
 };
 
 #endif

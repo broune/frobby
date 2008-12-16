@@ -22,25 +22,20 @@
 #include "Term.h"
 
 TotalDegreeCoefTermConsumer::
-TotalDegreeCoefTermConsumer(CoefBigTermConsumer* consumer,
+TotalDegreeCoefTermConsumer(auto_ptr<CoefBigTermConsumer> consumer,
 							TermTranslator* translator):
   _consumer(consumer),
   _translator(translator),
   _tmp(0) {
-  ASSERT(consumer != 0);
+  ASSERT(_consumer.get() != 0);
   ASSERT(_translator != 0);
   ASSERT(_tmp == 0); // This is an invariant.
+
+  // TODO: This class has an invarint of _tmp == 0. Find out if that
+  // actually serves any purpose. It seems not at first glance.
 }
 
-TotalDegreeCoefTermConsumer::~TotalDegreeCoefTermConsumer() {
-  map<mpz_class, mpz_class>::reverse_iterator stop = _polynomial.rend();
-  for (map<mpz_class, mpz_class>::reverse_iterator it = _polynomial.rbegin();
-	   it != stop; ++it) {
-	ASSERT(it->second != 0);
-	mpz_ptr ptr = const_cast<mpz_ptr>(it->first.get_mpz_t());
-	_consumer->consume(it->second, &ptr);
-  }
-  delete _consumer;
+void TotalDegreeCoefTermConsumer::beginConsuming() {
 }
 
 void TotalDegreeCoefTermConsumer::consume(const mpz_class& coef,
@@ -67,4 +62,18 @@ void TotalDegreeCoefTermConsumer::consume(const mpz_class& coef,
   }
 
   ASSERT(_tmp == 0);
+}
+
+void TotalDegreeCoefTermConsumer::doneConsuming() {
+  _consumer->beginConsuming();
+
+  map<mpz_class, mpz_class>::reverse_iterator stop = _polynomial.rend();
+  for (map<mpz_class, mpz_class>::reverse_iterator it = _polynomial.rbegin();
+	   it != stop; ++it) {
+	ASSERT(it->second != 0);
+	mpz_ptr ptr = const_cast<mpz_ptr>(it->first.get_mpz_t());
+	_consumer->consume(it->second, &ptr);
+  }
+
+  _consumer->doneConsuming();
 }

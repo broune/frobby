@@ -23,7 +23,9 @@ class CoefTermConsumer {
  public:
   virtual ~CoefTermConsumer();
 
+  virtual void beginConsuming() = 0;
   virtual void consume(const mpz_class& coef, const Term& term) = 0;
+  virtual void doneConsuming() = 0;
 };
 
 #endif

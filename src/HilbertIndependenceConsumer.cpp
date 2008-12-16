@@ -61,6 +61,12 @@ CoefTermConsumer* HilbertIndependenceConsumer::getLeftConsumer() {
   return this;
 }
 
+void HilbertIndependenceConsumer::beginConsuming() {
+}
+
+void HilbertIndependenceConsumer::doneConsuming() {
+}
+
 void HilbertIndependenceConsumer::consume(const mpz_class& coef,
 										  const Term& term) {
   ASSERT(_parent != 0);
@@ -87,10 +93,17 @@ RightConsumer(HilbertIndependenceConsumer* parent):
   _parent(parent) {
 }
 
+void HilbertIndependenceConsumer::RightConsumer::beginConsuming() {
+}
+
 void HilbertIndependenceConsumer::RightConsumer::
 consume(const mpz_class& coef, const Term& term) {
   _parent->consumeRight(coef, term);
 }
+
+void HilbertIndependenceConsumer::RightConsumer::doneConsuming() {
+}
+
 
 void HilbertIndependenceConsumer::consumeLeft(const mpz_class& leftCoef,
 											  const Term& leftTerm) {

@@ -24,7 +24,7 @@ CoefBigTermRecorder::CoefBigTermRecorder(BigPolynomial* recordInto):
   ASSERT(recordInto != 0);
 }
 
-CoefBigTermRecorder::~CoefBigTermRecorder() {
+void CoefBigTermRecorder::beginConsuming() {
 }
 
 void CoefBigTermRecorder::consume(const mpz_class& coef,
@@ -40,4 +40,7 @@ void CoefBigTermRecorder::consume(const mpz_class& coef, mpz_ptr* term) {
 void CoefBigTermRecorder::consume(const mpz_class& coef,
 								  const vector<mpz_class>& term) {
   _recordInto->add(coef, term);
+}
+
+void CoefBigTermRecorder::doneConsuming() {
 }

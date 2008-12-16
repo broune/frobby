@@ -90,13 +90,13 @@ public:
   ExternalPolynomialConsumerWrapper(Frobby::PolynomialConsumer* consumer,
 									size_t varCount):
 	ConsumerWrapper(varCount),
-	_consumer(consumer) {
+	_consumer(consumer),
+	_varCount(varCount) {
 	ASSERT(consumer != 0);
-	consumer->polynomialBegin(varCount);
   }
 
-  virtual ~ExternalPolynomialConsumerWrapper() {
-	_consumer->polynomialEnd();
+  virtual void beginConsuming() {
+	_consumer->polynomialBegin(_varCount);
   }
 
   virtual void consume(const mpz_class& coef,
@@ -125,8 +125,17 @@ public:
 	_consumer->consume(coef.get_mpz_t(), _term);
   }
 
+  // TODO: make a note somewhere that in case of an exception,
+  // polynomialEnd might not get called, this being because it is too
+  // much of a burden to require it not to throw any
+  // exceptions. Hmm... maybe there is an alternative solution.
+  virtual void doneConsuming() {
+	_consumer->polynomialEnd();
+  }
+
 private:
   Frobby::PolynomialConsumer* _consumer;
+  size_t _varCount;
 };
 
 Frobby::IdealConsumer::~IdealConsumer() {

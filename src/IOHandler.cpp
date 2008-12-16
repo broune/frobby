@@ -553,8 +553,6 @@ public:
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
-
-	_handler->writePolynomialHeader(_translator->getNames(), _out);
   }
 
   PolynomialWriter(IOHandler* handler,
@@ -564,16 +562,19 @@ public:
 	_handler(handler),
 	_translator(translator),
 	_out(out),
-	_first(true) {
+	_first(true),
+	_termCount(new size_t(termCount)) {
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
-
-	_handler->writePolynomialHeader(_translator->getNames(), termCount, _out);
   }
 
-  virtual ~PolynomialWriter() {
-	_handler->writePolynomialFooter(_translator->getNames(), !_first, _out);
+  virtual void beginConsuming() {
+	if (_termCount.get() == 0)
+	  _handler->writePolynomialHeader(_translator->getNames(), _out);
+	else
+	  _handler->writePolynomialHeader(_translator->getNames(),
+									  *_termCount, _out);
   }
 
   virtual void consume(const mpz_class& coef, const Term& term) {
@@ -582,11 +583,16 @@ public:
 	_first = false;
   }
 
+  virtual void doneConsuming() {
+	_handler->writePolynomialFooter(_translator->getNames(), !_first, _out);
+  }
+
 private:
   IOHandler* _handler;
   const TermTranslator* _translator;
   FILE* _out;
   bool _first;
+  auto_ptr<size_t> _termCount;
 };
 
 class DelayedPolynomialWriter : public CoefTermConsumer {
@@ -603,17 +609,23 @@ class DelayedPolynomialWriter : public CoefTermConsumer {
 	ASSERT(out != 0);
   }
 
-  virtual ~DelayedPolynomialWriter() {
-	size_t termCount = _polynomial.getTermCount();
-	PolynomialWriter writer(_handler, _translator, termCount,_out);
-	for (size_t term = 0; term < termCount; ++term)
-	  writer.consume(_polynomial.getCoef(term), _polynomial.getTerm(term));
+  virtual void beginConsuming() {
   }
 
   virtual void consume(const mpz_class& coef, const Term& term) {
 	ASSERT(term.getVarCount() == _polynomial.getVarCount());
 
 	_polynomial.add(coef, term);
+  }
+
+  virtual void doneConsuming() {
+	size_t termCount = _polynomial.getTermCount();
+	PolynomialWriter writer(_handler, _translator, termCount,_out);
+	writer.beginConsuming();
+	for (size_t term = 0; term < termCount; ++term)
+	  writer.consume(_polynomial.getCoef(term), _polynomial.getTerm(term));
+	writer.doneConsuming();
+	_polynomial.clear();
   }
 
 private:

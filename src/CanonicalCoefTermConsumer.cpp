@@ -20,18 +20,14 @@
 #include "Term.h"
 
 CanonicalCoefTermConsumer::
-CanonicalCoefTermConsumer(CoefTermConsumer* consumer, size_t varCount):
+CanonicalCoefTermConsumer(auto_ptr<CoefTermConsumer> consumer,
+						  size_t varCount):
   _consumer(consumer),
   _polynomial(varCount) {
-  ASSERT(consumer != 0);
+  ASSERT(_consumer.get() != 0);
 }
 
-CanonicalCoefTermConsumer::~CanonicalCoefTermConsumer() {
-  _polynomial.sortTermsLex();
-  for (size_t index = 0; index < _polynomial.getTermCount(); ++index)
-	_consumer->consume(_polynomial.getCoef(index), _polynomial.getTerm(index));
-
-  delete _consumer;
+void CanonicalCoefTermConsumer::beginConsuming() {
 }
 
 void CanonicalCoefTermConsumer::
@@ -39,4 +35,13 @@ consume(const mpz_class& coef, const Term& term) {
   ASSERT(term.getVarCount() == _polynomial.getVarCount());
 
   _polynomial.add(coef, term);
+}
+
+void CanonicalCoefTermConsumer::doneConsuming() {
+  _consumer->beginConsuming();
+  _polynomial.sortTermsLex();
+  for (size_t index = 0; index < _polynomial.getTermCount(); ++index)
+	_consumer->consume(_polynomial.getCoef(index), _polynomial.getTerm(index));
+  _consumer->doneConsuming();
+  _polynomial.clear();
 }
