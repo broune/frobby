@@ -184,6 +184,13 @@ fi
 diff $frobbyOut $referenceOutputFile > /dev/null 2> /dev/null
 referenceMatch="$?"
 
+if [ $useDebugAlloc = 1 ];
+then
+  # otherwise we would always get a mismatch, since _debug-alloc supresses
+  # output.
+  referenceMatch=1;
+fi
+
 if [ $generate = 1 ];
 then
   if [ $frobbyExitCode != $expectedExitCode ];
@@ -237,7 +244,12 @@ if [[ $referenceMatch = 0 && $frobbyExitCode = $expectedExitCode ]];
 then
   if [ $summary = 0 ];
   then
-    echo -n "."
+    if [ $useDebugAlloc = 1 ];
+    then
+      echo -n "d"
+    else
+      echo -n "."
+    fi
   fi
   exit 0;
 fi
