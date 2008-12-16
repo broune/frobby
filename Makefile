@@ -128,6 +128,14 @@ else
 	export frobby=bin/$(program); ./test/runfulltests _valgrind  $(TESTARGS) 
 endif
 
+bake: all
+ifdef TESTCASE
+	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
+	cd test/$(TESTCASE); ./runtests _valgrind _debug-alloc $(TESTARGS); cd ../..
+else
+	export frobby=bin/$(program); ./test/runfulltests _valgrind _debug-alloc  $(TESTARGS) 
+endif
+
 bench: all
 	cd data;time ./runbench $(OPTS)
 

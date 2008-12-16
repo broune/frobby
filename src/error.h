@@ -17,9 +17,8 @@
 #ifndef ERROR_GUARD
 #define ERROR_GUARD
 
-#include <exception>
+#include <stdexcept>
 #include <string>
-#include <string.h>
 
 class Scanner;
 
