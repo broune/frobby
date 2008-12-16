@@ -59,6 +59,7 @@ origFrobby="../../bin/frobby"
 origFrobbyOut="/tmp/frobbyTestScriptTemporary_standardOutput"
 origFrobbyErr="/tmp/frobbyTestScriptTemporary_standardError"
 frobbyChangedErr="/tmp/frobbyTestScriptTemporary_standardErrorChanged"
+frobbyChangedInput="/tmp/frobbyTestScriptTemporary_standardInput"
 
 frobby="$origFrobby"
 frobbyOut="$origFrobbyOut"
@@ -138,7 +139,11 @@ then
   # note that we have to use the _input option, since Frobby starts
   # the computation over after each simulated recory, so it needs to be
   # able to rewind the input too, which is not possible using pipes.
-  origFrobby="$frobby _debug-alloc _input $inputFile";
+  # Also, since the _input notation only supports a single file, we have
+  # to collect all the input into a single file, in case $inputFile
+  # contains more than a single filename.
+  cat $inputFile > $frobbyChangedInput
+  origFrobby="$frobby _debug-alloc _input $frobbyChangedInput";
   frobby="$origFrobby"
   # OK, I change origFrobby, so it is not quite original. So shoot me.
 fi
@@ -183,13 +188,6 @@ fi
 # Check if Frobby's output matches the reference output file.
 diff $frobbyOut $referenceOutputFile > /dev/null 2> /dev/null
 referenceMatch="$?"
-
-if [ $useDebugAlloc = 1 ];
-then
-  # otherwise we would always get a mismatch, since _debug-alloc supresses
-  # output.
-  referenceMatch=0;
-fi
 
 if [ $generate = 1 ];
 then
@@ -246,7 +244,7 @@ then
   then
     if [ $useDebugAlloc = 1 ];
     then
-      echo -n "d"
+      echo -n ".d"
     else
       echo -n "."
     fi
