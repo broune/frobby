@@ -99,6 +99,9 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
 }
 
 void DebugAllocator::runWithLimit(int argc, const char** argv, size_t limit) {
+  if (_detailAllocation)
+	fprintf(stderr, "DEBUG: Trying allocation limit of %i\n", (int)limit);
+
   _limitAllocation = true;
   _allocationLimit = limit;
   _allocationCount = 0;
@@ -154,10 +157,10 @@ void* DebugAllocator::allocate(size_t size,
 							   size_t lineNumber) {
   if (_detailAllocation) {
 	if (file != 0)
-	  fprintf(stderr, "Allocating %i bytes at %s:%i.\n",
+	  fprintf(stderr, "DEBUG: Allocating %i bytes at %s:%i.\n",
 			  (int)size, file, (int)lineNumber);
 	if (file == 0)
-	  fprintf(stderr, "Allocating %i bytes at an unknown point.\n",
+	  fprintf(stderr, "DEBUG: Allocating %i bytes at an unknown point.\n",
 			  (int)size);
   }
 

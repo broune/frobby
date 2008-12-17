@@ -18,30 +18,34 @@
 #include "error.h"
 
 #include "Scanner.h"
-
-#include <sstream>
+#include "FrobbyStringStream.h"
 
 void reportError(const string& errorMsg) {
-  ostringstream err;
+  FrobbyStringStream err;
   err << "ERROR: " << errorMsg << '\n';
   throw FrobbyException(err.str());
 }
 
 void reportInternalError(const string& errorMsg) {
-  ostringstream err;
+  FrobbyStringStream err;
   err << "INTERNAL ERROR: " << errorMsg << '\n';
   throw InternalFrobbyException(err.str());
 }
 
 void reportSyntaxError(const Scanner& scanner, const string& errorMsg) {
-  ostringstream err;
+  FrobbyStringStream err;
   err << "SYNTAX ERROR (";
+
   if (scanner.getFormat() != "")
 	err << "format " << scanner.getFormat() << ", ";
-  err << "line " << scanner.getLineNumber() << "):\n  "
-	  << errorMsg << '\n';
 
-  throw FrobbyException(err.str());
+  err << "line "
+	  << scanner.getLineNumber()
+	  << "):\n  "
+	  << errorMsg
+	  << '\n';
+
+  throw FrobbyException(err);
 }
 
 void displayNote(const string& msg) {
