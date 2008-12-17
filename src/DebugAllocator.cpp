@@ -110,6 +110,8 @@ void DebugAllocator::runWithLimit(int argc, const char** argv, size_t limit) {
   // our artificial limit-induced throwing of bad_alloc.
   _expectBadAllocException = false;
 
+  rewindInput();
+
   try {
 	frobbyMain(argc, argv);
   } catch (const bad_alloc&) {
@@ -166,7 +168,8 @@ void* DebugAllocator::allocate(size_t size,
 
   if (_limitAllocation && _allocationCount >= _allocationLimit) {
 	if (_detailAllocation)
-	  fputs("Throwing bad_alloc due to artifically imposed limit.\n", stderr);
+	  fputs("DEBUG: Throwing bad_alloc due to artifically imposed limit.\n",
+			stderr);
 	_expectBadAllocException = true;
 	throw bad_alloc();
   }
