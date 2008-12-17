@@ -21,8 +21,7 @@
 #include "MonosIOHandler.h"
 #include "Scanner.h"
 #include "error.h"
-
-#include <sstream>
+#include "FrobbyStringStream.h"
 
 IOParameters::IOParameters(DataType input, DataType output):
   _inputType(input),
@@ -166,13 +165,13 @@ void IOParameters::validateFormats() const {
 	  reportError("Unknown input format \"" + getInputFormat() + "\".");
 
 	if (!handler->supportsInput(_inputType)) {
-	  ostringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg << "The "
 			   << handler->getName()
 			   << " format does not support input of "
 			   << IOHandler::getDataTypeName(_inputType)
 			   << '.';
-	  reportError(errorMsg.str());
+	  reportError(errorMsg);
 	}
   }
 
@@ -182,13 +181,13 @@ void IOParameters::validateFormats() const {
 	  reportError("Unknown output format \"" + getOutputFormat() + "\".");
 
 	if (!handler->supportsOutput(_outputType)) {
-	  ostringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg << "The "
 			   << handler->getName()
 			   << " format does not support output of "
 			   << IOHandler::getDataTypeName(_outputType)
 			   << '.';
-	  reportError(errorMsg.str());
+	  reportError(errorMsg);
 	}
   }
 }

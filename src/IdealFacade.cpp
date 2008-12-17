@@ -26,8 +26,7 @@
 #include "Macaulay2IOHandler.h"
 #include "CanonicalCoefTermConsumer.h"
 #include "error.h"
-
-#include <sstream>
+#include "FrobbyStringStream.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -70,7 +69,7 @@ void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,
 	ASSERT(ideals[i] != 0);
 
 	if (!(ideal.getNames() == ideals[i]->getNames())) {
-	  stringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg <<
 		"Taking products of ideals in rings with different variable lists.\n";
 	  
@@ -82,7 +81,7 @@ void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,
 	  errorMsg << "while another has variables\n  " << list <<
 		".\nContact the Frobby developers if you need this functionality.";
 
-	  reportError(errorMsg.str());
+	  reportError(errorMsg);
 	}
 
 	size_t genCount = ideals[i]->getGeneratorCount();

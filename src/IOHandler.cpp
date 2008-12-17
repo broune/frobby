@@ -29,6 +29,7 @@
 #include "BigPolynomial.h"
 #include "NameFactory.h"
 #include "error.h"
+#include "FrobbyStringStream.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -37,8 +38,6 @@
 #include "NullIOHandler.h"
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
-
-#include <sstream>
 
 bool IOHandler::supportsInput(DataType type) const {
   return std::find(_supportedInputs.begin(), _supportedInputs.end(),
@@ -294,12 +293,12 @@ TermConsumer* IOHandler::createIdealWriter(const TermTranslator* translator,
   ASSERT(supportsOutput(MonomialIdeal));
 
   if (_requiresSizeForIdealOutput) {
-	ostringstream msg;
+	FrobbyStringStream msg;
 	msg << "Using the format " << getName() <<
 	  " makes it necessary to store all of the output in "
 	  "memory before writing it out. This increases "
 	  "memory consumption and decreases performance.";
-	displayNote(msg.str());
+	displayNote(msg);
 
 	return new DelayedIdealWriter(this, translator, out);
   }
@@ -464,10 +463,10 @@ void IOHandler::readVarPower(vector<mpz_class>& term,
   if (in.match('^')) {
     in.readInteger(term[var]);
     if (term[var] <= 0) {
-	  ostringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg << "Expected positive integer as exponent but got "
 			   << term[var] << ".";
-	  reportSyntaxError(in, errorMsg.str());
+	  reportSyntaxError(in, errorMsg);
     }
   } else
     term[var] = 1;
@@ -640,12 +639,12 @@ CoefTermConsumer* IOHandler::createPolynomialWriter
   ASSERT(supportsOutput(Polynomial));
 
   if (_requiresSizeForIdealOutput) {
-	ostringstream msg;
+	FrobbyStringStream msg;
 	msg << "Using the format " << getName() <<
 	  " makes it necessary to store all of the output in "
 	  "memory before writing it out. This increases "
 	  "memory consumption and decreases performance.";
-	displayNote(msg.str());
+	displayNote(msg);
 
 	return new DelayedPolynomialWriter(this, translator, out);
   }
@@ -662,11 +661,11 @@ void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
 	in.readInteger(n);
 
     if (n <= 1) {
-	  ostringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg << "Read the number " << n
 			   << " while reading Frobenius instance. "
 			   << "Only integers strictly larger than 1 are valid.";
-	  reportSyntaxError(in, errorMsg.str());
+	  reportSyntaxError(in, errorMsg);
     }
 
     numbers.push_back(n);
@@ -683,10 +682,10 @@ void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
   if (gcd != 1) {
 	// Maybe not strictly speaking a syntax error, but that category
 	// of errors still fits best.
-	ostringstream errorMsg;
+	FrobbyStringStream errorMsg;
 	errorMsg << "The numbers in the Frobenius instance are not "
 			 << "relatively prime. They are all divisible by "
 			 << gcd << '.';
-	reportSyntaxError(in, errorMsg.str());
+	reportSyntaxError(in, errorMsg);
   }
 }

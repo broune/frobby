@@ -18,6 +18,7 @@
 #include "FrobbyStringStream.h"
 
 #include <algorithm>
+#include <exception>
 
 // This is a replacement for stringstream, which may seem weird since
 // stringstream should work perfectly fine for any purpose where
@@ -34,34 +35,6 @@
 //
 // The advantage of FrobbyStringStream is that it does not try to be
 // clever in any way, and so it avoids these issues.
-
-void FrobbyStringStream::appendIntegerToString(string& str,
-											   unsigned long integer) {
-  unsigned long initialLength = str.size();
-
-  // Append string representation of integer with digits in reverse
-  // order.
-  do {
-	unsigned long quotient = integer / 10;
-	unsigned long remainder = integer - quotient * 10; // faster than %
-
-	char digit = static_cast<char>(remainder) + '0';
-	str += digit;
-
-	integer = quotient;
-
-	// condition at end so that zero maps to "0" rather than "".
-  } while (integer != 0);
-
-  // Reverse the digits (and only the digits) to get the correct
-  // order.
-  reverse(str.begin() + initialLength, str.end());
-}
-
-void FrobbyStringStream::appendIntegerToString(string& str,
-											   const mpz_class& integer) {
-  str += integer.get_str();
-}
 
 FrobbyStringStream& FrobbyStringStream::operator<<(char character) {
   _str += character;
@@ -103,4 +76,43 @@ const string& FrobbyStringStream::str() const {
 
 FrobbyStringStream::operator const string&() const {
   return _str;
+}
+
+void FrobbyStringStream::appendIntegerToString(string& str,
+											   unsigned long integer) {
+  unsigned long initialLength = str.size();
+
+  // Append string representation of integer with digits in reverse
+  // order.
+  do {
+	unsigned long quotient = integer / 10;
+	unsigned long remainder = integer - quotient * 10; // faster than %
+
+	char digit = static_cast<char>(remainder) + '0';
+	str += digit;
+
+	integer = quotient;
+
+	// condition at end so that zero maps to "0" rather than "".
+  } while (integer != 0);
+
+  // Reverse the digits (and only the digits) to get the correct
+  // order.
+  reverse(str.begin() + initialLength, str.end());
+}
+
+void FrobbyStringStream::appendIntegerToString(string& str,
+											   const mpz_class& integer) {
+  str += integer.get_str();
+}
+
+void FrobbyStringStream::parseInteger(mpz_class& integer, const string& str) {
+  if (integer.set_str(str, 10) != 0)
+	throw NotAnIntegerException
+	  ("Argument to FrobbyStringStream::parseInteger not a valid integer.");
+}
+
+FrobbyStringStream::NotAnIntegerException::NotAnIntegerException
+(const string& str):
+  runtime_error(str) {
 }

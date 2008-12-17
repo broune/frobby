@@ -18,6 +18,7 @@
 #define FROBBY_STRING_STREAM_GUARD
 
 #include <string>
+#include <stdexcept>
 
 // A replacement for stringstream. See the .cpp file for a motivation
 // to use this instead of the regular stringstream.
@@ -41,10 +42,16 @@ class FrobbyStringStream {
   static void appendIntegerToString(string& str, unsigned long integer);
   static void appendIntegerToString(string& str, const mpz_class& integer);
 
+  // Throws NotAnIntegerException if str is not the string
+  // representation of an integer.
+  static void parseInteger(mpz_class& integer, const string& str);
+  class NotAnIntegerException : public runtime_error {
+  public:
+	NotAnIntegerException(const string&);
+  };
+
  private:
   string _str;
 };
-
-// TODO: move file to FrobbyStringStream.
 
 #endif

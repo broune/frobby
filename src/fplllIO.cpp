@@ -20,8 +20,7 @@
 #include "BigIdeal.h"
 #include "Scanner.h"
 #include "error.h"
-
-#include <sstream>
+#include "FrobbyStringStream.h"
 
 namespace fplll {
   void readLatticeBasis(Scanner& scanner, BigIdeal& basis) {
@@ -38,7 +37,7 @@ namespace fplll {
       }
 
       if (tmp.front().size() != tmp.back().size()) {
-		ostringstream errorMsg;
+		FrobbyStringStream errorMsg;
 		errorMsg << "Row 1 has "
 				 << tmp.front().size()
 				 << " entries, while row "
@@ -46,7 +45,7 @@ namespace fplll {
 				 << " has "
 				 << tmp.back().size()
 				 << " entries.";
-		reportSyntaxError(scanner, errorMsg.str());
+		reportSyntaxError(scanner, errorMsg);
       }
     }
 
