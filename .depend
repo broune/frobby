@@ -1,5 +1,5 @@
-$(outdir)main.o: src/main.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
-  src/Parameter.h src/error.h
+$(outdir)main.o: src/main.cpp src/stdinc.h src/main.h src/Action.h \
+  src/BoolParameter.h src/Parameter.h src/DebugAllocator.h src/error.h
 $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IrreducibleDecomAction.h src/IOParameters.h \
   src/ParameterGroup.h src/StringParameter.h src/IOHandler.h \
@@ -130,7 +130,7 @@ $(outdir)BoolParameter.o: src/BoolParameter.cpp src/stdinc.h src/BoolParameter.h
   src/Parameter.h src/error.h
 $(outdir)Scanner.o: src/Scanner.cpp src/stdinc.h src/Scanner.h src/VarNames.h \
   src/hash_map/hash_map src/hash_map/hashtable.h src/hash_map/hash_fun.h \
-  src/IOHandler.h src/error.h
+  src/IOHandler.h src/error.h src/FrobbyStringStream.h
 $(outdir)Partition.o: src/Partition.cpp src/stdinc.h src/Partition.h
 $(outdir)StringParameter.o: src/StringParameter.cpp src/stdinc.h \
   src/StringParameter.h src/Parameter.h
@@ -370,4 +370,9 @@ $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/../example/MyIdealCreators.cpp \
   src/../example/MyPolynomialCreators.cpp src/../example/example.cpp
 $(outdir)NameFactory.o: src/NameFactory.cpp src/stdinc.h src/NameFactory.h
-$(outdir)error.o: src/error.cpp src/stdinc.h src/error.h src/Scanner.h
+$(outdir)error.o: src/error.cpp src/stdinc.h src/error.h src/Scanner.h \
+  src/FrobbyStringStream.h
+$(outdir)DebugAllocator.o: src/DebugAllocator.cpp src/stdinc.h \
+  src/DebugAllocator.h src/main.h src/error.h
+$(outdir)FrobbyStringStream.o: src/FrobbyStringStream.cpp src/stdinc.h \
+  src/FrobbyStringStream.h

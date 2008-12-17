@@ -20,9 +20,10 @@
 #include "VarNames.h"
 #include "IOHandler.h"
 #include "error.h"
+#include "FrobbyStringStream.h"
 
 #include <limits>
-#include <sstream>
+
 
 //#define ENABLE_SCANNER_LOG
 
@@ -98,7 +99,7 @@ void Scanner::expect(char expected) {
   eatWhite();
   char got = getChar();
   if (got != expected) {
-	ostringstream gotDescription;
+	FrobbyStringStream gotDescription;
 	if (got == EOF)
 	  gotDescription << "no more input";
 	else
@@ -106,7 +107,7 @@ void Scanner::expect(char expected) {
 
 	string expectedStr;
 	expectedStr += expected;
-	reportErrorUnexpectedToken(expectedStr, gotDescription.str());
+	reportErrorUnexpectedToken(expectedStr, gotDescription);
   }
 }
 
@@ -129,19 +130,19 @@ void Scanner::expect(const char* str) {
 	}
 
 	// Read the rest of what is there to improve error message.
-	ostringstream got;
+	FrobbyStringStream got;
 	if (character == EOF && it == str)
 	  got << "no more input";
 	else {
 	  got << '\"' << string(str, it);
 	  if (isalnum(character))
-		got.put(character);
+		got << static_cast<char>(character);
 	  while (isalnum(peek()))
-		got.put(static_cast<char>(getChar()));
+		got << static_cast<char>(getChar());
 	  got << '\"';
 	}
 
-	reportErrorUnexpectedToken(str, got.str());
+	reportErrorUnexpectedToken(str, got);
   }
 }
 
@@ -248,23 +249,24 @@ void Scanner::readSizeT(size_t& size) {
   // Deal with different possibilities for how large size_t is.
   if (sizeof(size_t) == sizeof(unsigned int)) {
 	if (!_integer.fits_uint_p()) {
-	  ostringstream errorMsg;
+	  FrobbyStringStream  errorMsg;
 	  errorMsg << "expected non-negative integer of size at most "
 			   << numeric_limits<unsigned int>::max()
 			   << " but got " << _integer << '.';
-	  reportSyntaxError(*this, errorMsg.str());
+	  reportSyntaxError(*this, errorMsg);
 	}
 	size = (unsigned int)_integer.get_ui();
   } else if (sizeof(size_t) == sizeof(unsigned long)) {
 	if (!_integer.fits_ulong_p()) {
-	  ostringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg << "expected non-negative integer of size at most "
 			   << numeric_limits<unsigned long>::max()
 			   << " but got " << _integer << '.';
+	  reportSyntaxError(*this, errorMsg);
 	}
 	size = _integer.get_ui(); // returns an unsigned long despite the name.
   } else {
-	ostringstream errorMsg;
+	FrobbyStringStream errorMsg;
 	errorMsg << 
 	  "Frobby does not work on this machine due to an "
 	  "unexpected technical issue.\n"
@@ -275,7 +277,7 @@ void Scanner::readSizeT(size_t& size) {
 	  " sizeof(size_t) = " << sizeof(size_t) << "\n"
 	  " sizeof(unsigned int) = " << sizeof(unsigned int) << "\n"
 	  " sizeof(unsigned long) = " << sizeof(unsigned long) << "\n";
-	reportInternalError(errorMsg.str());
+	reportInternalError(errorMsg);
   }
 }
 
@@ -319,9 +321,9 @@ size_t Scanner::readVariable(const VarNames& names) {
   const char* name = readIdentifier();
   size_t var = names.getIndex(name);
   if (var == VarNames::getInvalidIndex()) {
-	ostringstream errorMsg;
+	FrobbyStringStream errorMsg;
 	errorMsg << "Unknown variable \"" << name << "\". Maybe you forgot a *.";
-	reportSyntaxError(*this, errorMsg.str());
+	reportSyntaxError(*this, errorMsg);
   }
   return var;
 }
@@ -356,12 +358,12 @@ int Scanner::peek() {
 
 void Scanner::reportErrorUnexpectedToken
 (const string& expected, const string& got) {
-  stringstream errorMsg;
+  FrobbyStringStream errorMsg;
   errorMsg << "Expected " << expected;
   if (got != "")
 	errorMsg << ", but got " << got;
   errorMsg << '.';
-  reportSyntaxError(*this, errorMsg.str());
+  reportSyntaxError(*this, errorMsg);
 }
 
 void Scanner::eatWhite() {
