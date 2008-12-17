@@ -18,8 +18,8 @@
 #include "VarNames.h"
 
 #include "error.h"
+#include "FrobbyStringStream.h"
 
-#include <sstream>
 #include <limits>
 
 VarNames::VarNames() {
@@ -27,9 +27,9 @@ VarNames::VarNames() {
 
 VarNames::VarNames(size_t varCount) {
   for (size_t i = 0; i < varCount; ++i) {
-    ostringstream out;
+    FrobbyStringStream out;
     out << 'x' << (i + 1);
-    addVar(out.str());
+    addVar(out);
   }    
 }
 

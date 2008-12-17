@@ -17,8 +17,7 @@
 #include "stdinc.h"
 #include "Parameter.h"
 #include "error.h"
-
-#include <sstream>
+#include "FrobbyStringStream.h"
 
 Parameter::Parameter(const char* name,
 					 const char* description):
@@ -56,7 +55,7 @@ void Parameter::checkCorrectParameterCount(unsigned int from,
   if (from <= paramCount && paramCount <= to)
     return;
 
-  ostringstream errorMsg;
+  FrobbyStringStream errorMsg;
 
   errorMsg << "Option -" << getName() << " takes ";
   if (from == to) {
@@ -94,5 +93,5 @@ void Parameter::checkCorrectParameterCount(unsigned int from,
 		   << " has the following description:\n "
 		   << getDescription();
 
-  reportError(errorMsg.str());
+  reportError(errorMsg);
 }

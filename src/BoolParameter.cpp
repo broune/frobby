@@ -18,8 +18,7 @@
 #include "BoolParameter.h"
 
 #include "error.h"
-
-#include <sstream>
+#include "FrobbyStringStream.h"
 
 BoolParameter::BoolParameter(const char* name,
 			     const char* description,
@@ -64,12 +63,12 @@ processParameters(const char** params, unsigned int paramCount) {
   else if (param == "on")
     _value = true;
   else {
-	ostringstream errorMsg;
+	FrobbyStringStream errorMsg;
 	errorMsg << "Option -"
 			 << getName()
 			 << " was given the parameter \""
 			 << param
 			 << "\". The only valid parameters are \"on\" and \"off\".";
-	reportError(errorMsg.str());
+	reportError(errorMsg);
   }
 }

@@ -24,9 +24,10 @@
 #include "Scanner.h"
 #include "ElementDeleter.h"
 #include "error.h"
+#include "FrobbyStringStream.h"
 
 #include <iterator>
-#include <sstream>
+
 
 IOFacade::IOFacade(bool printActions):
   Facade(printActions) {
@@ -170,8 +171,8 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
 		(in, "The Grobner basis is not followed by a Frobenius instance.");
     else {
 	  // Note that we add one since the first entry of the rows encoding
-	  // the Grobner basis is chopped off.
-	  ostringstream errorMsg;
+	  // the Grobner basis is chopped off.	  
+	  FrobbyStringStream errorMsg;
 	  errorMsg << "The Grobner basis has "
 			   << ideal.getVarCount() + 1
 			   << " entries, and the Frobenius instance should then also have "
@@ -179,7 +180,7 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
 			   << " entries, but in fact it has "
 			   << instance.size() 
 			   << " entries.";
-		reportSyntaxError(in, errorMsg.str());
+		reportSyntaxError(in, errorMsg);
 	}
   }
 

@@ -25,8 +25,8 @@
 #include "TermTranslator.h"
 #include "BigPolynomial.h"
 #include "error.h"
+#include "FrobbyStringStream.h"
 
-#include <sstream>
 #include <cstdio>
 
 CoCoA4IOHandler::CoCoA4IOHandler():
@@ -307,29 +307,29 @@ void CoCoA4IOHandler::readCoCoA4VarPower(vector<mpz_class>& term,
   size_t var;
   in.readSizeT(var);
   if (var > term.size()) {
-	ostringstream errorMsg;
+	FrobbyStringStream errorMsg;
 	errorMsg << "There is no variable x[" << var << "].";
-	reportSyntaxError(in, errorMsg.str());
+	reportSyntaxError(in, errorMsg);
   }
   --var;
 
   in.expect(']');
 
   if (term[var] != 0) {
-	ostringstream errorMsg;
+	FrobbyStringStream errorMsg;
 	errorMsg << "The variable x["
 			 << (var + 1)
 			 << "] appears twice in the same monomial.";
-	reportSyntaxError(in, errorMsg.str());
+	reportSyntaxError(in, errorMsg);
   }
 
   if (in.match('^')) {
 	in.readInteger(term[var]);
 	if (term[var] <= 0) {
-	  ostringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg << "Expected positive integer as exponent but got "
 			   << term[var] << '.';
-	  reportSyntaxError(in, errorMsg.str());
+	  reportSyntaxError(in, errorMsg);
 	}
   } else
 	term[var] = 1;

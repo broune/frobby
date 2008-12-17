@@ -23,8 +23,8 @@
 #include "CoefTermConsumer.h"
 #include "BigPolynomial.h"
 #include "error.h"
+#include "FrobbyStringStream.h"
 
-#include <sstream>
 #include <cstdio>
 
 SingularIOHandler::SingularIOHandler():
@@ -174,7 +174,7 @@ void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
   if (in.match('1')) {
 	if (names.getVarCount() != 1 ||
 		names.getName(0) != string("dummy")) {
-	  stringstream errorMsg;
+	  FrobbyStringStream errorMsg;
 	  errorMsg <<
 		"A singular ring with no actual variables must have a single "
 		"place-holder variable named \"dummy\", and in this case ";
@@ -184,7 +184,7 @@ void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
 	  else
 		errorMsg << "it has the name \"" << names.getName(0) << "\".";
 
-	  reportSyntaxError(in, errorMsg.str());
+	  reportSyntaxError(in, errorMsg);
 	}
 	names.clear();
   } else if (!in.match('0'))

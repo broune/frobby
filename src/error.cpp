@@ -23,13 +23,13 @@
 void reportError(const string& errorMsg) {
   FrobbyStringStream err;
   err << "ERROR: " << errorMsg << '\n';
-  throw FrobbyException(err.str());
+  throw FrobbyException(err);
 }
 
 void reportInternalError(const string& errorMsg) {
   FrobbyStringStream err;
   err << "INTERNAL ERROR: " << errorMsg << '\n';
-  throw InternalFrobbyException(err.str());
+  throw InternalFrobbyException(err);
 }
 
 void reportSyntaxError(const Scanner& scanner, const string& errorMsg) {

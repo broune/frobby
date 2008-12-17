@@ -93,6 +93,12 @@ int main(int argc, const char** argv) {
 	return ExitCodeError;
   } catch (...) {
 	reportErrorNoThrow("An unexpected error occured.");
+	try {
+	  throw;
+	} catch (const exception& e) {
+	  reportErrorNoThrow(e.what());
+	} catch (...) {
+	}
 	return ExitCodeUnknownError;
   }
 }

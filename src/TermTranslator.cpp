@@ -21,9 +21,9 @@
 #include "Ideal.h"
 #include "BigIdeal.h"
 #include "VarNames.h"
+#include "FrobbyStringStream.h"
 
 #include <iterator>
-#include <sstream>
 #include <set>
 #include <algorithm>
 
@@ -306,7 +306,7 @@ void TermTranslator::makeStrings(bool includeVar) const {
       char* str = 0;
 
       if (_exponents[i][j] != 0 || !includeVar) {
-		stringstream out;
+		FrobbyStringStream out;
 		if (!includeVar)
 		  out << _exponents[i][j];
 		else {

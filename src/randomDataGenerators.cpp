@@ -21,8 +21,8 @@
 #include "Ideal.h"
 #include "Term.h"
 #include "error.h"
+#include "FrobbyStringStream.h"
 
-#include <sstream>
 #include <limits>
 
 void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount) {
@@ -50,9 +50,9 @@ void generateChessIdeal(BigIdeal& bigIdeal,
   VarNames names;
   for (unsigned int row = 0; row < rowCount; ++row) {
 	for (unsigned int column = 0; column < columnCount; ++column) {
-	  stringstream name;
+	  FrobbyStringStream name;
 	  name << 'r' << (row + 1) << 'c' << (column + 1);
-	  names.addVar(name.str());
+	  names.addVar(name);
 	}
   }
   bigIdeal.clearAndSetNames(names);
