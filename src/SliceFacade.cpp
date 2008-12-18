@@ -110,11 +110,6 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
   initialize(ideal);
 }
 
-SliceFacade::~SliceFacade() {
-  delete _translator;
-  delete _ideal;
-}
-
 void SliceFacade::setPrintDebug(bool printDebug) {
   _printDebug = printDebug;
 }
@@ -136,12 +131,12 @@ void SliceFacade::setSplitStrategy(auto_ptr<SplitStrategy> split) {
 }
 
 void SliceFacade::setCanonicalOutput() {
-  ASSERT(_translator != 0);
+  ASSERT(_translator.get() != 0);
 
   _canonicalOutput = true;
 
   VarSorter sorter(_translator->getNames());
-  sorter.permute(_translator);
+  sorter.permute(_translator.get());
 
   Ideal::iterator stop = _ideal->end();
   for (Ideal::iterator it = _ideal->begin(); it != stop; ++it)
@@ -149,7 +144,7 @@ void SliceFacade::setCanonicalOutput() {
 }
 
 void SliceFacade::computeMultigradedHilbertSeries() {
-  ASSERT(_ideal != 0);
+  ASSERT(_ideal.get() != 0);
 
   minimize();
 
@@ -158,9 +153,11 @@ void SliceFacade::computeMultigradedHilbertSeries() {
   CoefTermConsumer* consumer = getCoefTermConsumer();
 
   consumer->beginConsuming();
-  // TODO: fix leak of strategy on exception
-  SliceStrategy* strategy = new HilbertStrategy(consumer, _split.get());
-  runSliceAlgorithmAndDeleteStrategy(strategy);
+
+  {
+	HilbertStrategy strategy(consumer, _split.get());
+	runSliceAlgorithmWithOptions(strategy);
+  }
   consumer->doneConsuming();
 
   endAction();
@@ -169,7 +166,7 @@ void SliceFacade::computeMultigradedHilbertSeries() {
 void SliceFacade::computeUnivariateHilbertSeries() {
   minimize();
 
-  ASSERT(_translator != 0);
+  ASSERT(_translator.get() != 0);
 
   beginAction("Preparing to compute univariate Hilbert-Poincare series.");
 
@@ -180,7 +177,7 @@ void SliceFacade::computeUnivariateHilbertSeries() {
   _generatedCoefTermConsumer.reset
 	(new TotalDegreeCoefTermConsumer
 	 (auto_ptr<CoefBigTermConsumer>(new CoefBigTermRecorder(&polynomial)),
-	  _translator));
+	  _translator.get()));
 
   endAction();
 
@@ -207,8 +204,8 @@ void SliceFacade::computeUnivariateHilbertSeries() {
 }
 
 void SliceFacade::computeIrreducibleDecomposition(bool encode) {
-  ASSERT(_ideal != 0);
-  ASSERT(_translator != 0);
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
 
   minimize();
 
@@ -225,21 +222,23 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 }
 
 void SliceFacade::computeMaximalStaircaseMonomials() {
-  ASSERT(_ideal != 0);
+  ASSERT(_ideal.get() != 0);
   ASSERT(_split.get() != 0);
 
   minimize();
 
   beginAction("Computing maximal staircase monomials.");
 
-  SliceStrategy* strategy = new MsmStrategy(getTermConsumer(), _split.get());
-  runSliceAlgorithmAndDeleteStrategy(strategy);
+  {
+	MsmStrategy strategy(getTermConsumer(), _split.get());
+	runSliceAlgorithmWithOptions(strategy);
+  }
 
   endAction();
 }
 
 void SliceFacade::computeMaximalStandardMonomials() {
-  ASSERT(_translator != 0);
+  ASSERT(_translator.get() != 0);
 
   beginAction("Preparing to compute maximal standard monomials.");
 
@@ -251,8 +250,8 @@ void SliceFacade::computeMaximalStandardMonomials() {
 }
 
 void SliceFacade::computeAlexanderDual(const vector<mpz_class>& point) {
-  ASSERT(_ideal != 0);
-  ASSERT(_translator != 0);
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
   ASSERT(point.size() == _ideal->getVarCount());
 
   minimize();
@@ -283,7 +282,7 @@ void SliceFacade::computeAlexanderDual(const vector<mpz_class>& point) {
 }
 
 void SliceFacade::computeAlexanderDual() {
-  ASSERT(_ideal != 0);
+  ASSERT(_ideal.get() != 0);
 
   minimize();
 
@@ -298,7 +297,7 @@ void SliceFacade::computeAlexanderDual() {
 }
 
 void SliceFacade::computeAssociatedPrimes() {
-  ASSERT(_ideal != 0);
+  ASSERT(_ideal.get() != 0);
 
   size_t varCount = _ideal->getVarCount();
 
@@ -338,10 +337,7 @@ void SliceFacade::computeAssociatedPrimes() {
 	for (size_t var = 0; var < varCount; ++var)
 	  zeroOneIdeal.getLastTermExponentRef(var) = 1;
 
-	TermTranslator* newTranslator =
-	  new TermTranslator(zeroOneIdeal, *_ideal, false);
-	delete _translator;
-	_translator = newTranslator;
+	_translator.reset(new TermTranslator(zeroOneIdeal, *_ideal, false));
   }
 
   // Output associated primes.
@@ -362,8 +358,8 @@ void SliceFacade::computeAssociatedPrimes() {
 bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 									   bool useBound) {
   ASSERT(_split.get() != 0);
-  ASSERT(_ideal != 0);
-  ASSERT(_translator != 0);
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
   ASSERT(grading.size() == _ideal->getVarCount());
 
   minimize();
@@ -373,15 +369,16 @@ bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
   beginAction("Solving maximal standard monomial optimization program.");
 
   _translator->decrement();
-  TermGrader grader(grading, _translator);
+  TermGrader grader(grading, _translator.get());
 
   Ideal solution(varCount);
   _generatedTermConsumer.reset(new DecomRecorder(&solution));
 
-  SliceStrategy* strategy =
-	new FrobeniusStrategy(getTermConsumer(), grader, _split.get(), useBound);
-
-  runSliceAlgorithmAndDeleteStrategy(strategy);
+  {
+	FrobeniusStrategy strategy
+	  (getTermConsumer(), grader, _split.get(), useBound);
+	runSliceAlgorithmWithOptions(strategy);
+  }
 
   _generatedTermConsumer.reset(0);
 
@@ -399,20 +396,20 @@ bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 
 void SliceFacade::initialize(const BigIdeal& ideal) {
   // Only call once.
-  ASSERT(_ideal == 0);
-  ASSERT(_translator == 0);
+  ASSERT(_ideal.get() == 0);
+  ASSERT(_translator.get() == 0);
 
   beginAction("Translating ideal to internal data structure.");
 
   // TODO: fix leak of ideal and translator on exception.
-  _ideal = new Ideal(ideal.getVarCount());
-  _translator = new TermTranslator(ideal, *_ideal, false);
+  _ideal.reset(new Ideal(ideal.getVarCount()));
+  _translator.reset(new TermTranslator(ideal, *_ideal, false));
 
   endAction();
 }
 
 void SliceFacade::minimize() {
-  ASSERT(_ideal != 0);
+  ASSERT(_ideal.get() != 0);
 
   if (_isMinimallyGenerated)
 	return;
@@ -426,8 +423,8 @@ void SliceFacade::minimize() {
 }
 
 void SliceFacade::getLcmOfIdeal(vector<mpz_class>& bigLcm) {
-  ASSERT(_ideal != 0);
-  ASSERT(_translator != 0);
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
 
   Term lcm(_ideal->getVarCount());
   _ideal->getLcm(lcm);
@@ -437,32 +434,44 @@ void SliceFacade::getLcmOfIdeal(vector<mpz_class>& bigLcm) {
 	bigLcm.push_back(_translator->getExponent(var, lcm));
 }
 
-void SliceFacade::runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy) {
-  strategy->setUseIndependence(_useIndependence);
+void SliceFacade::runSliceAlgorithmWithOptions(SliceStrategy& strategy) {
+  strategy.setUseIndependence(_useIndependence);
 
-  if (_printDebug)
-	strategy = new DebugStrategy(strategy, stderr);
+  SliceStrategy* strategyWithOptions = &strategy;
 
-  if (_printStatistics)
-	strategy = new StatisticsStrategy(strategy, stderr);
+  auto_ptr<SliceStrategy> debugStrategy;
+  if (_printDebug) {
+	debugStrategy.reset
+	  (new DebugStrategy(strategyWithOptions, stderr));
+	strategyWithOptions = debugStrategy.get();
+  }
 
-  ::runSliceAlgorithm(*_ideal, strategy);
-  delete strategy;
+  auto_ptr<SliceStrategy> statisticsStrategy;
+  if (_printStatistics) {
+	statisticsStrategy.reset
+	  (new StatisticsStrategy(strategyWithOptions, stderr));
+	strategyWithOptions = statisticsStrategy.get();
+  }
+
+  ASSERT(strategyWithOptions != 0);
+  ASSERT(_ideal.get() != 0);
+
+  ::runSliceAlgorithm(*_ideal, *strategyWithOptions);
 }
 
 void SliceFacade::doIrreducibleIdealOutput() {
-  ASSERT(_translator != 0);
+  ASSERT(_translator.get() != 0);
   ASSERT(_out != 0);
   ASSERT(_generatedTermConsumer.get() == 0);
   ASSERT(_ioHandler != 0);
   ASSERT(_termConsumer == 0);
 
   _generatedTermConsumer.reset
-	(_ioHandler->createIrreducibleIdealWriter(_translator, _out));
+	(_ioHandler->createIrreducibleIdealWriter(_translator.get(), _out));
 
   if (_canonicalOutput) {
 	TermConsumer* newTermConsumer = new CanonicalTermConsumer
-	  (_generatedTermConsumer, _ideal->getVarCount(), _translator);
+	  (_generatedTermConsumer, _ideal->getVarCount(), _translator.get());
 	_generatedTermConsumer.reset(newTermConsumer);
   }
 
@@ -470,22 +479,22 @@ void SliceFacade::doIrreducibleIdealOutput() {
 }
 
 TermConsumer* SliceFacade::getTermConsumer() {
-  ASSERT(_translator != 0);
+  ASSERT(_translator.get() != 0);
 
   if (_generatedTermConsumer.get() == 0) {
 	if (_termConsumer != 0) {
 	  _generatedTermConsumer.reset
-		(new TranslatingTermConsumer(_termConsumer, _translator));
+		(new TranslatingTermConsumer(_termConsumer, _translator.get()));
 	} else {
 	  ASSERT(_ioHandler != 0);
 	  ASSERT(_out != 0);
 	  _generatedTermConsumer.reset
-		(_ioHandler->createIdealWriter(_translator, _out));
+		(_ioHandler->createIdealWriter(_translator.get(), _out));
 	}
 
 	if (_canonicalOutput) {
 	  TermConsumer* newTermConsumer = new CanonicalTermConsumer
-		(_generatedTermConsumer, _ideal->getVarCount(), _translator);
+		(_generatedTermConsumer, _ideal->getVarCount(), _translator.get());
 	  _generatedTermConsumer.reset(newTermConsumer);
 	}
   }
@@ -495,18 +504,19 @@ TermConsumer* SliceFacade::getTermConsumer() {
 }
 
 CoefTermConsumer* SliceFacade::getCoefTermConsumer() {
-  ASSERT(_ideal != 0);
-  ASSERT(_translator != 0);
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
 
   if (_generatedCoefTermConsumer.get() == 0) {
 	if (_coefTermConsumer != 0) {
 	  _generatedCoefTermConsumer.reset
-		(new TranslatingCoefTermConsumer(_coefTermConsumer, _translator));
+		(new TranslatingCoefTermConsumer
+		 (_coefTermConsumer, _translator.get()));
 	} else {
 	  ASSERT(_ioHandler != 0);
 	  ASSERT(_out != 0);
 	  _generatedCoefTermConsumer.reset
-		(_ioHandler->createPolynomialWriter(_translator, _out));
+		(_ioHandler->createPolynomialWriter(_translator.get(), _out));
 	}
 
 	if (_canonicalOutput)

@@ -24,15 +24,14 @@
 #include "DebugStrategy.h"
 #include "ElementDeleter.h"
 
-void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
-  ASSERT(strategy != 0);
+void runSliceAlgorithm(const Ideal& ideal, SliceStrategy& strategy) {
 
   // TODO: describe the interplay between events and slices below.
   vector<SliceEvent*> events;
   vector<Slice*> slices;
   ElementDeleter<vector<Slice*> > slicesElementDeleter(slices);
 
-  exceptionSafePushBack(slices, strategy->beginComputing(ideal));
+  exceptionSafePushBack(slices, strategy.beginComputing(ideal));
 
   while (!slices.empty()) {
 	auto_ptr<Slice> slice(slices.back());
@@ -45,7 +44,7 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
 	}
 
 	if (slice->baseCase()) {
-	  strategy->freeSlice(slice);
+	  strategy.freeSlice(slice);
 	  continue;
 	}
 
@@ -53,7 +52,7 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
 	SliceEvent* rightEvent = 0;
 	auto_ptr<Slice> leftSlice;
 	auto_ptr<Slice> rightSlice;
-	strategy->split(slice,
+	strategy.split(slice,
 					leftEvent, leftSlice,
 					rightEvent, rightSlice);
 
@@ -74,5 +73,5 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
 	  exceptionSafePushBack(slices, rightSlice);
   }
 
-  strategy->doneComputing();
+  strategy.doneComputing();
 }

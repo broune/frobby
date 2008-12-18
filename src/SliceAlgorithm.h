@@ -27,6 +27,6 @@ class HilbertSlice;
 class Slice;
 class SliceStrategy;
 
-void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy);
+void runSliceAlgorithm(const Ideal& ideal, SliceStrategy& strategy);
 
 #endif

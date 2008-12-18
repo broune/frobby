@@ -25,6 +25,9 @@ Facade::Facade(bool printActions):
 {
 }
 
+Facade::~Facade() {
+}
+
 void Facade::printMessage(const char* message) {
   if (_printActions) {
     fputs(message, stderr);
