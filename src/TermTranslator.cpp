@@ -22,13 +22,14 @@
 #include "BigIdeal.h"
 #include "VarNames.h"
 #include "FrobbyStringStream.h"
+#include "ElementDeleter.h"
 
 #include <iterator>
 #include <set>
 #include <algorithm>
 
 TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal,
-			       bool sortVars) {
+							   bool sortVars) {
   vector<BigIdeal*> bigIdeals;
   bigIdeals.push_back(const_cast<BigIdeal*>(&bigIdeal));
   initialize(bigIdeals, sortVars);
@@ -40,12 +41,16 @@ TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
 							   vector<Ideal*>& ideals) {
   ASSERT(!bigIdeals.empty());
 
+  ideals.clear();
+  ElementDeleter<vector<Ideal*> > idealsDeleter(ideals);
+
   initialize(bigIdeals, true);
 
   for (size_t i = 0; i < bigIdeals.size(); ++i) {
-    ideals.push_back(new Ideal());
+	exceptionSafePushBack(ideals, auto_ptr<Ideal>(new Ideal()));
     shrinkBigIdeal(*(bigIdeals[i]), *(ideals.back()));
   }
+  idealsDeleter.release();
 }
 
 // Helper function for extractExponents.
