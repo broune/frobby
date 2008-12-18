@@ -27,9 +27,10 @@ class TranslatingTermConsumer : public TermConsumer {
  public:
   TranslatingTermConsumer(BigTermConsumer* consumer,
 						  TermTranslator* translator);
-  virtual ~TranslatingTermConsumer();
 
+  virtual void beginConsuming();
   virtual void consume(const Term& term);
+  virtual void doneConsuming();
 
  private:
   BigTermConsumer* _consumer;

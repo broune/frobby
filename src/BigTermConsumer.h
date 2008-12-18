@@ -24,7 +24,9 @@ class BigTermConsumer {
  public:
   virtual ~BigTermConsumer();
 
+  virtual void beginConsuming() = 0;
   virtual void consume(const Term& term, TermTranslator* translator) = 0;
+  virtual void doneConsuming() = 0;
 };
 
 #endif

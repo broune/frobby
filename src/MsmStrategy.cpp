@@ -27,7 +27,8 @@
 #include "TermGrader.h"
 #include "SliceEvent.h"
 
-auto_ptr<Slice> MsmStrategy::setupInitialSlice(const Ideal& ideal) {
+auto_ptr<Slice> MsmStrategy::beginComputing(const Ideal& ideal) {
+  _consumer->beginConsuming();
   size_t varCount = ideal.getVarCount();
 
   Term sliceMultiply(varCount);
@@ -38,6 +39,10 @@ auto_ptr<Slice> MsmStrategy::setupInitialSlice(const Ideal& ideal) {
 	(new MsmSlice(ideal, Ideal(varCount), sliceMultiply, _consumer));
   slice->simplify();
   return slice;
+}
+
+void MsmStrategy::doneComputing() {
+  _consumer->doneConsuming();
 }
 
 auto_ptr<MsmSlice> MsmStrategy::newMsmSlice() {
@@ -132,9 +137,6 @@ MsmStrategy::MsmStrategy(TermConsumer* consumer,
   ASSERT(consumer != 0);
 }
 
-MsmStrategy::~MsmStrategy() {
-}
-
 class MsmIndependenceSplit : public TermConsumer, public SliceEvent {
 public:
   SliceEvent* getLeftEvent() {
@@ -174,6 +176,12 @@ private:
 	delete this;
   }
 
+  virtual void beginConsuming() {
+  }
+
+  virtual void doneConsuming() {
+  }
+
   virtual void consume(const Term& term) {
 	_leftProjection.inverseProject(_tmpTerm, term);
 	Ideal::const_iterator stop = _rightConsumer._decom.end();
@@ -185,7 +193,13 @@ private:
   }
 
   struct RightConsumer : public TermConsumer {
-	virtual void consume(const Term& term) {
+	virtual void beginConsuming() {
+	}
+
+	virtual void doneConsuming() {
+	}
+
+ 	virtual void consume(const Term& term) {
 	  _decom.insert(term);
 	}
 

@@ -20,12 +20,13 @@
 
 #include "Term.h"
 
-CanonicalTermConsumer::CanonicalTermConsumer(TermConsumer* consumer,
+CanonicalTermConsumer::CanonicalTermConsumer(auto_ptr<TermConsumer> consumer,
 											 size_t varCount,
 											 TermTranslator* translator):
   _consumer(consumer),
   _ideal(varCount),
   _translator(translator) {
+  ASSERT(_consumer.get() != 0);
 }
 
 class TranslatorSorter {
@@ -42,7 +43,16 @@ private:
   const TermTranslator* _translator;
 };
 
-CanonicalTermConsumer::~CanonicalTermConsumer() {
+void CanonicalTermConsumer::beginConsuming() {
+}
+
+void CanonicalTermConsumer::consume(const Term& term) {
+  ASSERT(term.getVarCount() == _ideal.getVarCount());
+
+  _ideal.insert(term);
+}
+
+void CanonicalTermConsumer::doneConsuming() {
   size_t varCount = _ideal.getVarCount();
   Ideal::const_iterator stop = _ideal.end();
 
@@ -53,17 +63,14 @@ CanonicalTermConsumer::~CanonicalTermConsumer() {
 	sort(_ideal.begin(), _ideal.end(), sorter);
   }
 
+  _consumer->beginConsuming();
+
   Term tmp(varCount);
   for (Ideal::const_iterator it = _ideal.begin(); it != stop; ++it) {
 	tmp = *it;
 	_consumer->consume(tmp);
   }
+  _ideal.clear();
 
-  delete _consumer;
-}
-
-void CanonicalTermConsumer::consume(const Term& term) {
-  ASSERT(term.getVarCount() == _ideal.getVarCount());
-
-  _ideal.insert(term);
+  _consumer->doneConsuming();
 }

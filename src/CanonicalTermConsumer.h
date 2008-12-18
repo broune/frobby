@@ -32,15 +32,16 @@ class CanonicalTermConsumer : public TermConsumer {
  public:
   // The translator, if non-null, is used to identify exponents that
   // map to zero, which influences the sorted order.
-  CanonicalTermConsumer(TermConsumer* consumer,
+  CanonicalTermConsumer(auto_ptr<TermConsumer> consumer,
 						size_t varCount,
 						TermTranslator* translator = 0);
-  virtual ~CanonicalTermConsumer();
 
+  virtual void beginConsuming();
   virtual void consume(const Term& term);
+  virtual void doneConsuming();
 
  private:
-  TermConsumer* _consumer;
+  auto_ptr<TermConsumer> _consumer;
   Ideal _ideal;
   TermTranslator* _translator;
 };

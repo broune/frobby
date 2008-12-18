@@ -25,10 +25,11 @@ class BigTermRecorder : public BigTermConsumer {
 public:
   // DecomRecorder does not take over ownership of recordInto.
   BigTermRecorder(BigIdeal* recordInto);
-  virtual ~BigTermRecorder();
 
+  virtual void beginConsuming();
   virtual void consume(const Term& term, TermTranslator* translator);
   virtual void consume(mpz_ptr* term);
+  virtual void doneConsuming();
 
 private:
   BigIdeal* _recordInto;

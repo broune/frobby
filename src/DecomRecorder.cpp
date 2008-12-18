@@ -24,10 +24,13 @@ DecomRecorder::DecomRecorder(Ideal* recordInto):
   ASSERT(recordInto != 0);
 }
 
-DecomRecorder::~DecomRecorder() {
+void DecomRecorder::beginConsuming() {
 }
 
 void DecomRecorder::consume(const Term& term) {
   ASSERT(term.getVarCount() == _recordInto->getVarCount());
   _recordInto->insert(term);
+}
+
+void DecomRecorder::doneConsuming() {
 }

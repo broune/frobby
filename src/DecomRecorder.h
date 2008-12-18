@@ -26,9 +26,10 @@ class DecomRecorder : public TermConsumer {
 public:
   // DecomRecorder does not take over ownership of recordInto.
   DecomRecorder(Ideal* recordInto);
-  virtual ~DecomRecorder();
 
+  virtual void beginConsuming();
   virtual void consume(const Term& term);
+  virtual void doneConsuming();
 
 private:
   Ideal* _recordInto;

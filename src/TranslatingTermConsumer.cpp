@@ -29,11 +29,16 @@ TranslatingTermConsumer::TranslatingTermConsumer
   ASSERT(translator != 0);
 }
 
-TranslatingTermConsumer::~TranslatingTermConsumer() {
+void TranslatingTermConsumer::beginConsuming() {
+  _consumer->beginConsuming();
 }
 
 void TranslatingTermConsumer::consume(const Term& term) {
   ASSERT(term.getVarCount() == _translator->getVarCount());
 
   _consumer->consume(term, _translator);
+}
+
+void TranslatingTermConsumer::doneConsuming() {
+  _consumer->doneConsuming();
 }

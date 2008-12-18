@@ -26,7 +26,7 @@ BigTermRecorder::BigTermRecorder(BigIdeal* recordInto):
   ASSERT(recordInto != 0);
 }
 
-BigTermRecorder::~BigTermRecorder() {
+void BigTermRecorder::beginConsuming() {
 }
 
 void BigTermRecorder::consume(const Term& term, TermTranslator* translator) {
@@ -45,4 +45,7 @@ void BigTermRecorder::consume(mpz_ptr* term) {
   _recordInto->newLastTerm();
   for (size_t var = 0; var < varCount; ++var)
 	_recordInto->getLastTermExponentRef(var) = mpz_class(term[var]);
+}
+
+void BigTermRecorder::doneConsuming() {
 }

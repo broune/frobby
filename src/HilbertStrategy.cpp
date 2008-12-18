@@ -33,13 +33,10 @@ HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
 }
 
 HilbertStrategy::~HilbertStrategy() {
-  while (!_consumerCache.empty()) {
-	delete _consumerCache.back();
-	_consumerCache.pop_back();
-  }
+  ASSERT(_consumerCache.empty());
 }
 
-auto_ptr<Slice> HilbertStrategy::setupInitialSlice(const Ideal& ideal) {
+auto_ptr<Slice> HilbertStrategy::beginComputing(const Ideal& ideal) {
   ASSERT(_consumer != 0);
 
   size_t varCount = ideal.getVarCount();
@@ -63,6 +60,14 @@ auto_ptr<Slice> HilbertStrategy::setupInitialSlice(const Ideal& ideal) {
 					  Term(varCount), _consumer));
   slice->simplify();
   return slice;
+}
+
+void HilbertStrategy::doneComputing() {
+  // TODO: replace with ElementDeleter
+  while (!_consumerCache.empty()) {
+	delete _consumerCache.back();
+	_consumerCache.pop_back();
+  }
 }
 
 void HilbertStrategy::
