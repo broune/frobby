@@ -19,6 +19,7 @@
 
 #include "main.h"
 #include "error.h"
+#include "Ideal.h"
 
 #ifdef DEBUG
 #undef new
@@ -101,6 +102,9 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
 void DebugAllocator::runWithLimit(int argc, const char** argv, size_t limit) {
   if (_detailAllocation)
 	fprintf(stderr, "DEBUG: Trying allocation limit of %i\n", (int)limit);
+
+  // To make each run more similar.
+  Ideal::clearStaticCache();
 
   _limitAllocation = true;
   _allocationLimit = limit;

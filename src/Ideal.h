@@ -153,6 +153,11 @@ class Ideal {
   template<class Predicate>
     bool removeIf(Predicate pred);
 
+  // Ideal caches memory allocated with new internally and reuses it
+  // to avoid calling new all the time. Call this method to release
+  // the cache.
+  static void clearStaticCache();
+
  protected:
   class ExponentAllocator {
   public:
