@@ -39,26 +39,26 @@ class MsmStrategy : public SliceStrategyCommon {
   MsmStrategy(TermConsumer* consumer, const SplitStrategy* splitStrategy);
   virtual ~MsmStrategy();
 
-  virtual Slice* setupInitialSlice(const Ideal& ideal);
+  virtual auto_ptr<Slice> setupInitialSlice(const Ideal& ideal);
 
-  virtual void split(Slice* slice,
-					 SliceEvent*& leftEvent, Slice*& leftSlice,
-					 SliceEvent*& rightEvent, Slice*& rightSlice);
+  virtual void split(auto_ptr<Slice> slice,
+					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
  protected:
   virtual void getPivot(Term& pivot, Slice& slice);
 
  private:
-  MsmSlice* newMsmSlice();
-  virtual Slice* allocateSlice();
+  auto_ptr<MsmSlice> newMsmSlice();
+  virtual auto_ptr<Slice> allocateSlice();
   virtual bool debugIsValidSlice(Slice* slice);
 
-  void labelSplit(Slice* slice,
-				  Slice*& leftSlice, Slice*& rightSlice);
+  void labelSplit(auto_ptr<MsmSlice> slice,
+				  auto_ptr<Slice>& leftSlice, auto_ptr<Slice>& rightSlice);
 
-  bool independenceSplit(MsmSlice* slice,
-						 SliceEvent*& leftEvent, Slice*& leftSlice,
-						 SliceEvent*& rightEvent, Slice*& rightSlice);
+  void independenceSplit(auto_ptr<MsmSlice> slice,
+						 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+						 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
   size_t getLabelSplitVariable(const Slice& slice);
 

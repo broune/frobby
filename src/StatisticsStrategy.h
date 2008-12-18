@@ -30,13 +30,13 @@ class StatisticsStrategy : public SliceStrategy {
 
   virtual void setUseIndependence(bool use);
 
-  virtual Slice* setupInitialSlice(const Ideal& ideal);
+  virtual auto_ptr<Slice> setupInitialSlice(const Ideal& ideal);
 
-  virtual void split(Slice* slice,
-					 SliceEvent*& leftEvent, Slice*& leftSlice,
-					 SliceEvent*& rightEvent, Slice*& rightSlice);
+  virtual void split(auto_ptr<Slice> slice,
+					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
-  virtual void freeSlice(Slice* slice);
+  virtual void freeSlice(auto_ptr<Slice> slice);
 
  private:
   SliceStrategy* _strategy;

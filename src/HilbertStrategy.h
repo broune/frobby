@@ -36,28 +36,28 @@ class HilbertStrategy : public SliceStrategyCommon {
 				  const SplitStrategy* splitStrategy);
   virtual ~HilbertStrategy();
 
-  virtual Slice* setupInitialSlice(const Ideal& ideal);
+  virtual auto_ptr<Slice> setupInitialSlice(const Ideal& ideal);
 
-  virtual void split(Slice* slice,
-					 SliceEvent*& leftEvent, Slice*& leftSlice,
-					 SliceEvent*& rightEvent, Slice*& rightSlice);
+  virtual void split(auto_ptr<Slice> slice,
+					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
   void freeConsumer(HilbertIndependenceConsumer* consumer);
 
  private:
   HilbertIndependenceConsumer* newConsumer();
 
-  HilbertSlice* newHilbertSlice();
-  virtual Slice* allocateSlice();
+  auto_ptr<HilbertSlice> newHilbertSlice();
+  virtual auto_ptr<Slice> allocateSlice();
   virtual bool debugIsValidSlice(Slice* slice);
 
   virtual void getPivot(Term& term, Slice& slice);
 
   IndependenceSplitter _indepSplitter;
-  bool independenceSplit(HilbertSlice* slice,
+  void independenceSplit(auto_ptr<HilbertSlice> slice,
 						 SliceEvent*& leftEvent,
-						 Slice*& leftSlice,
-						 Slice*& rightSlice);
+						 auto_ptr<Slice>& leftSlice,
+						 auto_ptr<Slice>& rightSlice);
 
   // It would make more sense with a stack, but that class has
   // (surprisingly) proven to have too high overhead.
