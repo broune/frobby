@@ -18,7 +18,12 @@
 #define SLICE_FACADE_GUARD
 
 #include "SplitStrategy.h"
+#include "Ideal.h"
+#include "TermTranslator.h"
 #include "Facade.h"
+#include "TermConsumer.h"
+#include "CoefTermConsumer.h"
+
 #include <vector>
 #include <cstdio>
 #include <string>
@@ -27,10 +32,7 @@ class BigIdeal;
 class BigTermConsumer;
 class CoefBigTermConsumer;
 class TermTranslator;
-class CoefTermConsumer;
-class Ideal;
 class SliceStrategy;
-class TermConsumer;
 class IOHandler;
 
 // This class acts as a simple interface to the slice-like
@@ -59,12 +61,11 @@ class SliceFacade : public Facade {
 			  CoefBigTermConsumer* consumer,
 			  bool printActions = false);
 
+  // Enable all algorithms.
   SliceFacade(const BigIdeal& ideal,
 			  IOHandler* handler,
 			  FILE* out,
 			  bool printActions = false);
-
-  ~SliceFacade();
 
   // Print debug output to stderr as the algorithm runs. The default
   // is to not do so.
@@ -172,7 +173,7 @@ class SliceFacade : public Facade {
   // Puts the least common multiple of ideal into lcm.
   void getLcmOfIdeal(vector<mpz_class>& lcm);
 
-  void runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy);
+  void runSliceAlgorithmWithOptions(SliceStrategy& strategy);
 
   // Output each term as an irreducible ideal. Cannot be called after
   // getTermConsumer has been called. Can only be called when writing
@@ -199,9 +200,8 @@ class SliceFacade : public Facade {
 
   auto_ptr<SplitStrategy> _split;
 
-  // These are points to avoid including more headers than necessary.
-  TermTranslator* _translator;
-  Ideal* _ideal;
+  auto_ptr<TermTranslator> _translator;
+  auto_ptr<Ideal> _ideal;
 };
 
 #endif

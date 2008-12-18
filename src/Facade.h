@@ -22,6 +22,7 @@
 class Facade {
  protected:
   Facade(bool printActions);
+  virtual ~Facade();
 
   void printMessage(const char* message);
   void beginAction(const char* message);
