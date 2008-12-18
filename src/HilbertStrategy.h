@@ -19,22 +19,21 @@
 
 #include <vector>
 #include "IndependenceSplitter.h"
+#include "SliceStrategyCommon.h"
+#include "ElementDeleter.h"
+#include "HilbertIndependenceConsumer.h"
 
 class HilbertSlice;
 class Ideal;
 class CoefTermConsumer;
 class SliceEvent;
-class HilbertIndependenceConsumer;
 class Slice;
 class SplitStrategy;
-
-#include "SliceStrategyCommon.h"
 
 class HilbertStrategy : public SliceStrategyCommon {
  public:
   HilbertStrategy(CoefTermConsumer* consumer,
 				  const SplitStrategy* splitStrategy);
-  virtual ~HilbertStrategy();
 
   virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
   virtual void doneComputing();
@@ -61,6 +60,7 @@ class HilbertStrategy : public SliceStrategyCommon {
 						 auto_ptr<Slice>& rightSlice);
 
   vector<HilbertIndependenceConsumer*> _consumerCache;
+  ElementDeleter<vector<HilbertIndependenceConsumer*> > _consumerCacheDeleter;
 
   CoefTermConsumer* _consumer;
   bool _useIndependence;

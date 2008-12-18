@@ -49,7 +49,7 @@ struct ObjectPool {
     objects[objectsStored] = object;
     ++objectsStored;
   }
-  
+
   ~ObjectPool() {
     if (objects == 0)
       return;
