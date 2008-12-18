@@ -19,127 +19,173 @@
 
 #include "Ideal.h"
 #include "Term.h"
+#include "error.h"
+
+HilbertBasecase::HilbertBasecase():
+  _idealCacheDeleter(_idealCache) {
+}
 
 HilbertBasecase::~HilbertBasecase() {
-  vector<Ideal*>::iterator end = _idealCache.end();
-  for (vector<Ideal*>::iterator it = _idealCache.begin(); it != end; ++it)
-	delete *it;
+  ASSERT(_todo.empty());
+}
+
+// Performs one or more steps of computation. Steps are performed on
+// entry until entry becomes a base case, or until it needs to be
+// split into two.
+//
+// If entry becomes a base case, then false is returned, entry can be
+// discarded and newEntry is unchanged.
+//
+// If entry needs to be split into two, then true is returned, entry
+// becomes one of the subcomputations, and newEntry becomes the other.
+bool HilbertBasecase::stepComputation(Entry& entry, Entry& newEntry) {
+  size_t varCount = entry.ideal->getVarCount();
+
+  // This loops keeps iterating as long as entry is not a base case
+  // and there is some computation that can be done on entry that does
+  // not require splitting it into two.
+  while (true) {
+	// Here _term is used to contain support counts to choose best pivot and
+	// to detect base case.
+
+	// We start off checking different ways that entry can be a base
+	// case.
+	entry.ideal->getSupportCounts(_term);
+	if (_term.getSizeOfSupport() + entry.extraSupport != varCount)
+	  return false;
+
+	if (_term.isSquareFree()) {
+	  if ((entry.ideal->getGeneratorCount() % 2) == 1)
+		entry.negate = !entry.negate;
+	  if (entry.negate)
+		--_sum;
+	  else
+		++_sum;
+	  return false;
+	}
+
+	if (entry.ideal->getGeneratorCount() == 2) {
+	  if (entry.negate)
+		--_sum;
+	  else
+		++_sum;
+	  return false;
+	}
+
+	// This is a simplification step, and if we can perform it, we
+	// just start over with the new entry we get that way. This is
+	// necessary because the base case checks below assume that this
+	// simplification has been performed.
+	size_t ridden = eliminate1Counts(*entry.ideal, _term, entry.negate);
+	if (ridden != 0) {
+	  entry.extraSupport += ridden;
+	  continue;
+	}
+
+	if (entry.ideal->getGeneratorCount() == 3) {
+	  if (entry.negate)
+		_sum -= 2;
+	  else
+		_sum += 2;
+	  return false;
+	}
+
+	if (entry.ideal->getGeneratorCount() == 4 &&
+		_term[_term.getFirstMaxExponent()] == 2 &&
+		_term.getSizeOfSupport() == 4) {
+	  if (entry.negate)
+		++_sum;
+	  else
+		--_sum;
+	  return false;
+	}
+
+	// At this point entry is not a base case, and it cannot be
+	// simplified, so we have to split it into two.
+
+	size_t bestPivotVar = _term.getFirstMaxExponent();
+
+	// Handle outer slice.
+	auto_ptr<Ideal> outer = getNewIdeal();
+	outer->clearAndSetVarCount(varCount);
+	outer->insertNonMultiples(bestPivotVar, 1, *entry.ideal);
+
+	// outer is subtracted instead of added due to having added the
+	// pivot to the ideal.
+	newEntry.negate = !entry.negate;
+	newEntry.extraSupport = entry.extraSupport + 1;
+	newEntry.ideal = outer.get();
+
+	// Handle inner slice in-place on entry.
+	entry.ideal->colonReminimize(bestPivotVar, 1);
+	++entry.extraSupport;
+
+	outer.release();
+	return true;
+  }
 }
 
 void HilbertBasecase::computeCoefficient(Ideal& originalIdeal) {
   ASSERT(_todo.empty());
 
-  _sum = 0;
-  size_t varCount = originalIdeal.getVarCount();
+  try { // Here to clear _todo in case of an exception
+	// _sum is updated as a side-effect of calling stepComputation.
+	_sum = 0;
 
-  // This object is reused for several different purposes in order to
-  // avoid having to allocate and deallocate the underlying data
-  // structure.
-  _term.reset(varCount);
+	// _term is reused for several different purposes in order to avoid
+	// having to allocate and deallocate the underlying data structure.
+	_term.reset(originalIdeal.getVarCount());
 
-  Ideal* ideal = &originalIdeal;
-  bool negate = false;
-  size_t extraSupport = 0;
+	// entry is the Entry currently being processed. Additional entries
+	// are added to _todo, though this only happens if there are two,
+	// since otherwise entry can just be updated to the next value
+	// directly and so we avoid the overhead of using _todo when we can.
+	Entry entry;
+	entry.negate = false;
+	entry.extraSupport = 0;
+	entry.ideal = &originalIdeal;
 
-  while (true) {
+	// This should normally point to entry.ideal, but since we do not
+	// have ownership of originalIdeal, it starts out pointing nowhere.
+	auto_ptr<Ideal> entryIdealDeleter;
+
 	while (true) {
-	  // term is used to contain support counts to choose best pivot and
-	  // to detect base case.
-	  
-	  ideal->getSupportCounts(_term);
-	  if (_term.getSizeOfSupport() + extraSupport != varCount)
+	  // Do an inner loop since there is no reason to add entry to _todo
+	  // and then immediately take it off again.
+	  Entry newEntry;
+	  while (stepComputation(entry, newEntry)) {
+		auto_ptr<Ideal> newEntryIdealDeleter(newEntry.ideal);
+		_todo.push_back(newEntry);
+		newEntryIdealDeleter.release();
+	  }
+
+	  if (_todo.empty())
 		break;
 
-	  if (_term.isSquareFree()) {
-		if ((ideal->getGeneratorCount() % 2) == 1)
-		  negate = !negate;
-		if (negate)
-		  _sum -= 1;
-		else
-		  _sum += 1;
-		break;
-	  }
-
-	  if (ideal->getGeneratorCount() == 2) {
-		if (negate)
-		  _sum -= 1;
-		else
-		  _sum += 1;
-		break;
-	  }
-
-	  size_t ridden = eliminate1Counts(*ideal, _term, negate);
-	  if (ridden != 0) {
-		extraSupport += ridden;
-		continue;
-	  }
-
-	  if (ideal->getGeneratorCount() == 3) {
-		if (negate)
-		  _sum -= 2;
-		else
-		  _sum += 2;
-		break;
-	  }
-
-	  if (ideal->getGeneratorCount() == 4 &&
-		  _term[_term.getFirstMaxExponent()] == 2 &&
-		  _term.getSizeOfSupport() == 4) {
-		if (negate)
-		  _sum += 1;
-		else
-		  _sum -= 1;
-		break;
-	  }
-
-	  size_t bestPivotVar = _term.getFirstMaxExponent();
-
-	  // Handle inner slice.
-	  Ideal* outer = getNewIdeal();
-	  outer->clearAndSetVarCount(varCount);
-	  outer->insertNonMultiples(bestPivotVar, 1, *ideal);
-
-	  // inner is subtracted instead of added due to having added the
-	  // pivot to the ideal.
-	  {
-		Entry entry;
-		entry.negate = !negate;
-		entry.extraSupport = extraSupport + 1;
-		entry.ideal = outer;
-		_todo.push_back(entry);
-	  }
-
-	  // Handle outer slice.
-	  ideal->colonReminimize(bestPivotVar, 1);
-	  ++extraSupport;
-
-	  // Run loop again to process outer slice.
-	}
-
-	if (ideal != &originalIdeal)
-	  freeIdeal(ideal);
-
-	if (_todo.empty())
-	  break;
-
-	{
-	  Entry entry = _todo.back();
+	  if (entryIdealDeleter.get() != 0)
+		freeIdeal(entryIdealDeleter);
+	  entry = _todo.back();
 	  _todo.pop_back();
-	
-	  ideal = entry.ideal;
-	  negate = entry.negate;
-	  extraSupport = entry.extraSupport;
-	}
-  }
 
-  ASSERT(_todo.empty());
+	  ASSERT(entryIdealDeleter.get() == 0);
+	  entryIdealDeleter.reset(entry.ideal);
+	}
+	ASSERT(_todo.empty());
+
+	// originalIdeal is in some state that depends on the particular
+	// steps the algorithm took. This information should not escape
+	// HilbertBasecase, and we ensure this by clearing originalIdeal.
+	originalIdeal.clear();
+  } catch (...) {
+	for (vector<Entry>::iterator it = _todo.begin(); it != _todo.end(); ++it)
+	  delete it->ideal;
+	_todo.clear();
+	throw;
+  }
 }
 
 const mpz_class& HilbertBasecase::getLastCoefficient() {
   return _sum;
-}
-
-void simplify(Ideal& ideal) {
 }
 
 bool HilbertBasecase::canSimplify(size_t var,
@@ -219,19 +265,26 @@ size_t HilbertBasecase::eliminate1Counts(Ideal& ideal,
   return adj;
 }
 
-Ideal* HilbertBasecase::getNewIdeal() {
+auto_ptr<Ideal> HilbertBasecase::getNewIdeal() {
   if (_idealCache.empty())
-	return new Ideal();
+	return auto_ptr<Ideal>(new Ideal());
 
-  Ideal* ideal = _idealCache.back();
+  auto_ptr<Ideal> ideal(_idealCache.back());
   _idealCache.pop_back();
 
   return ideal;
 }
 
-void HilbertBasecase::freeIdeal(Ideal* ideal) {
-  ASSERT(ideal != 0);
+void HilbertBasecase::freeIdeal(auto_ptr<Ideal> ideal) {
+  ASSERT(ideal.get() != 0);
 
   ideal->clear();
-  _idealCache.push_back(ideal);
+  try {
+	exceptionSafePushBack(_idealCache, ideal);
+  } catch (bad_alloc) {
+	// In this case ideal gets deleted without being added to
+	// _idealCache, which is OK too.
+  } catch (...) {
+	reportInternalError("Unexpected exception at HilbertBasecase::freeIdeal.");
+  }
 }
