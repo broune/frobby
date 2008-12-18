@@ -168,6 +168,10 @@ void Ideal::print(FILE* file) const {
 void Ideal::insert(const Exponent* exponents) {
   Exponent* term = _allocator.allocate();
   copy(exponents, exponents + _varCount, term);
+
+  // push_back could throw bad_alloc, but the allocator is already
+  // keeping track of the allocated memory, so there is not a memory
+  // leak.
   _terms.push_back(term);
 }
 
@@ -390,13 +394,18 @@ public:
 	try {
 	  _chunks.push_back(chunk);
 	} catch (const bad_alloc&) {
-	  delete chunk;
+	  delete[] chunk;
 	}
   }
-  
-  ~ChunkPool() {
+
+  void clear() {
     for (size_t i = 0; i < _chunks.size(); ++i)
       delete[] _chunks[i];
+	_chunks.clear();
+  }
+
+  ~ChunkPool() {
+	clear();
   }
 
 private:
@@ -419,14 +428,24 @@ Exponent* Ideal::ExponentAllocator::allocate() {
   if (_chunkIterator + _varCount > _chunkEnd) {
     if (useSingleChunking()) {
       Exponent* term = new Exponent[_varCount];
-      _chunks.push_back(term);
+	  try {
+		_chunks.push_back(term);
+	  } catch (...) {
+		delete[] term;
+		throw;
+	  }
       return term;
     }
 
-    _chunkIterator = globalChunkPool.allocate();
-    _chunkEnd = _chunkIterator + ExponentsPerChunk;
-
-    _chunks.push_back(_chunkIterator);
+	_chunkIterator = globalChunkPool.allocate();
+	_chunkEnd = _chunkIterator + ExponentsPerChunk;
+	
+	try {
+	  _chunks.push_back(_chunkIterator);
+	} catch (...) {
+	  globalChunkPool.deallocate(_chunkIterator);
+	  throw;
+	}
   }
 
   Exponent* term = _chunkIterator;
@@ -463,4 +482,8 @@ void Ideal::ExponentAllocator::swap(ExponentAllocator& allocator) {
 
 bool Ideal::ExponentAllocator::useSingleChunking() const {
   return _varCount > ExponentsPerChunk / MinTermsPerChunk;
+}
+
+void Ideal::clearStaticCache() {
+  globalChunkPool.clear();
 }
