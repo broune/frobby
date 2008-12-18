@@ -25,52 +25,108 @@
 #include "ElementDeleter.h"
 
 void runSliceAlgorithm(const Ideal& ideal, SliceStrategy& strategy) {
+  // This is a worklist algorithm with two different kinds of work
+  // items - events and slices. This is represented by the two vectors
+  // events and slices. If the next item in slices is 0, then the next
+  // item to be processed is taken from events, and the 0 is removed
+  // from slices.
+  //
+  // Note that the order of processing is important, since the
+  // contract of the split() method completely specifies
+  // it. E.g. events can be used to free resources, and it would be
+  // bad to do that before those resources were done being used.
+  //
+  // Also note that it is required to call dispose() on each event,
+  // even if an exception occurs in the middle of the computation so
+  // that raiseEvent() does not get called. In case of an exception,
+  // deallocation of slices and dispose() on events should still be
+  // called in the correct sequence.
 
-  // TODO: describe the interplay between events and slices below.
   vector<SliceEvent*> events;
   vector<Slice*> slices;
-  ElementDeleter<vector<Slice*> > slicesElementDeleter(slices);
 
-  exceptionSafePushBack(slices, strategy.beginComputing(ideal));
+  try {
+	exceptionSafePushBack(slices, strategy.beginComputing(ideal));
 
-  while (!slices.empty()) {
-	auto_ptr<Slice> slice(slices.back());
-	slices.pop_back();
+	while (!slices.empty()) {
+	  auto_ptr<Slice> slice(slices.back());
+	  slices.pop_back();
 
-	if (slice.get() == 0) {
-	  events.back()->raiseEvent();
-	  events.pop_back();
-	  continue;
+	  if (slice.get() == 0) {
+		SliceEvent* event = events.back();
+		event->raiseEvent();
+		events.pop_back();
+		event->dispose();
+		continue;
+	  }
+
+	  if (slice->baseCase()) {
+		strategy.freeSlice(slice);
+		continue;
+	  }
+
+	  SliceEvent* leftEvent = 0;
+	  SliceEvent* rightEvent = 0;
+	  auto_ptr<Slice> leftSlice;
+	  auto_ptr<Slice> rightSlice;
+	  strategy.split(slice,
+					 leftEvent, leftSlice,
+					 rightEvent, rightSlice);
+
+	  try {
+		if (leftEvent != 0) {
+		  slices.push_back(0);
+		  try {
+			events.push_back(leftEvent);
+		  } catch (...) {
+			slices.pop_back();
+			throw;
+		  }
+		  leftEvent = 0;
+		}		  
+
+		if (leftSlice.get() != 0)
+		  exceptionSafePushBack(slices, leftSlice);
+
+		if (rightEvent != 0) {
+		  slices.push_back(0);
+		  try {
+			events.push_back(rightEvent);
+		  } catch (...) {
+			slices.pop_back();
+			throw;
+		  }
+		  rightEvent = 0;
+		}
+
+		if (rightSlice.get() != 0)
+		  exceptionSafePushBack(slices, rightSlice);
+
+		ASSERT(leftEvent == 0);
+		ASSERT(rightEvent == 0);
+	  } catch (...) {
+		if (leftEvent != 0)
+		  leftEvent->dispose();
+		if (rightEvent != 0)
+		  rightEvent->dispose();
+		throw;
+	  }
+	}
+  } catch (...) {
+	// Deallocate and dispose() in correct order.
+	while (!slices.empty()) {
+	  if (slices.back() == 0) {
+		ASSERT(!events.empty());
+		events.back()->dispose();
+		events.pop_back();
+	  } else
+		delete slices.back();
+	  slices.pop_back();
 	}
 
-	if (slice->baseCase()) {
-	  strategy.freeSlice(slice);
-	  continue;
-	}
-
-	SliceEvent* leftEvent = 0;
-	SliceEvent* rightEvent = 0;
-	auto_ptr<Slice> leftSlice;
-	auto_ptr<Slice> rightSlice;
-	strategy.split(slice,
-					leftEvent, leftSlice,
-					rightEvent, rightSlice);
-
-	if (leftEvent != 0) {
-	  slices.push_back(0);
-	  events.push_back(leftEvent);
-	}
-
-	if (leftSlice.get() != 0)
-	  exceptionSafePushBack(slices, leftSlice);
-
-	if (rightEvent != 0) {
-	  slices.push_back(0);
-	  events.push_back(rightEvent);
-	}
-
-	if (rightSlice.get() != 0)
-	  exceptionSafePushBack(slices, rightSlice);
+	ASSERT(slices.empty());
+	ASSERT(events.empty());
+	throw;
   }
 
   strategy.doneComputing();

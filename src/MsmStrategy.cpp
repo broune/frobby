@@ -173,6 +173,9 @@ public:
 
 private:
   virtual void raiseEvent() {
+  }
+
+  virtual void dispose() {
 	delete this;
   }
 
@@ -219,21 +222,26 @@ void MsmStrategy::independenceSplit
  SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
  SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice) {
 
-  // TODO: exception-related leak occurs here
-  MsmIndependenceSplit* events = new MsmIndependenceSplit();
+  // Construct left event (assignment later).
+  auto_ptr<MsmIndependenceSplit> events(new MsmIndependenceSplit());
   events->reset(slice->getConsumer(), _indep);
 
-  leftEvent = events;
+  // Construct left slice.
   auto_ptr<MsmSlice> msmLeftSlice(new MsmSlice());
-  msmLeftSlice->setToProjOf(*slice, events->getLeftProjection(), events);
+  msmLeftSlice->setToProjOf(*slice, events->getLeftProjection(), events.get());
   leftSlice = msmLeftSlice;
 
+  // Construct right slice.
   auto_ptr<MsmSlice> msmRightSlice(new MsmSlice());
   msmRightSlice->setToProjOf(*slice, events->getRightProjection(),
 							 events->getRightConsumer());
   rightSlice = msmRightSlice;
 
+  // Deal with slice.
   freeSlice(static_cast<auto_ptr<Slice> >(slice));
+
+  // Done last to avoid memory leak on exception.
+  leftEvent = events.release();
 }
 
 void MsmStrategy::split(auto_ptr<Slice> sliceParam,

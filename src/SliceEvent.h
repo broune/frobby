@@ -21,7 +21,12 @@ class SliceEvent {
  public:
   virtual ~SliceEvent();
 
+  // Does whatever is supposed to happen when this event occurs.
   virtual void raiseEvent() = 0;
+
+  // Called when the event is no longer used, e.g. due to an
+  // exception. Thus dispose() is not allowed to throw any exceptions.
+  virtual void dispose() = 0;
 };
 
 #endif
