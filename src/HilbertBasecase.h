@@ -20,13 +20,16 @@
 class Ideal;
 
 #include "Term.h"
+#include "ElementDeleter.h"
 
 #include <vector>
 
 class HilbertBasecase {
  public:
+  HilbertBasecase();
   ~HilbertBasecase();
 
+  // Clears ideal.
   void computeCoefficient(Ideal& ideal);
 
   const mpz_class& getLastCoefficient();
@@ -37,12 +40,15 @@ class HilbertBasecase {
 	size_t extraSupport;
 	Ideal* ideal;
   };
-
   vector<Entry> _todo;
+  void clearTodo();
 
-  Ideal* getNewIdeal();
-  void freeIdeal(Ideal* ideal);
+  bool stepComputation(Entry& entry, Entry& newEntry);
+
+  auto_ptr<Ideal> getNewIdeal();
+  void freeIdeal(auto_ptr<Ideal> ideal);
   vector<Ideal*> _idealCache;
+  ElementDeleter<vector<Ideal*> > _idealCacheDeleter;
 
   bool canSimplify(size_t var, const Ideal& ideal, const Term& counts);
   size_t eliminate1Counts(Ideal& ideal, Term& counts, bool& negate);
