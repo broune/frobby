@@ -14,16 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef NULL_TERM_CONSUMER_GUARD
-#define NULL_TERM_CONSUMER_GUARD
+#include "stdinc.h"
+#include "SliceStrategy.h"
 
-#include "TermConsumer.h"
-
-class NullTermConsumer : public TermConsumer {
- public:
-  virtual void beginConsuming();
-  virtual void consume(const Term& term);
-  virtual void doneConsuming();
-};
-
-#endif
+SliceStrategy::~SliceStrategy() {
+}

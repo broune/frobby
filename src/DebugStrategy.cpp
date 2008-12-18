@@ -28,7 +28,6 @@ DebugStrategy::DebugStrategy(SliceStrategy* strategy, FILE* out):
 
 DebugStrategy::~DebugStrategy() {
   delete _strategy;
-  fputs("DEBUG: Slice computation done.\n", _out);
 }
 
 void DebugStrategy::setUseIndependence(bool use) {
@@ -39,12 +38,17 @@ void DebugStrategy::setUseIndependence(bool use) {
   _strategy->setUseIndependence(use);
 }
 
-auto_ptr<Slice> DebugStrategy::setupInitialSlice(const Ideal& ideal) {
+auto_ptr<Slice> DebugStrategy::beginComputing(const Ideal& ideal) {
   fputs("DEBUG: Constructing initial slice.\n", _out);
-  auto_ptr<Slice> initialSlice = _strategy->setupInitialSlice(ideal);
+  auto_ptr<Slice> initialSlice = _strategy->beginComputing(ideal);
   fputs("DEBUG: Initial slice is as follows.\n", _out);
   initialSlice->print(_out);
   return initialSlice;
+}
+
+void DebugStrategy::doneComputing() {
+  fputs("DEBUG: Slice computation done.\n", _out);
+  _strategy->doneComputing();
 }
 
 void DebugStrategy::split(auto_ptr<Slice> slice,

@@ -37,9 +37,9 @@ class TermConsumer;
 class MsmStrategy : public SliceStrategyCommon {
  public:
   MsmStrategy(TermConsumer* consumer, const SplitStrategy* splitStrategy);
-  virtual ~MsmStrategy();
 
-  virtual auto_ptr<Slice> setupInitialSlice(const Ideal& ideal);
+  virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
+  virtual void doneComputing();
 
   virtual void split(auto_ptr<Slice> slice,
 					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,

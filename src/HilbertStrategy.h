@@ -36,7 +36,8 @@ class HilbertStrategy : public SliceStrategyCommon {
 				  const SplitStrategy* splitStrategy);
   virtual ~HilbertStrategy();
 
-  virtual auto_ptr<Slice> setupInitialSlice(const Ideal& ideal);
+  virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
+  virtual void doneComputing();
 
   virtual void split(auto_ptr<Slice> slice,
 					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,

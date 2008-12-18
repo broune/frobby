@@ -194,7 +194,7 @@ class SliceFacade : public Facade {
   BigTermConsumer* _termConsumer;
   CoefBigTermConsumer* _coefTermConsumer;
 
-  TermConsumer* _generatedTermConsumer;
+  auto_ptr<TermConsumer> _generatedTermConsumer;
   auto_ptr<CoefTermConsumer> _generatedCoefTermConsumer;
 
   auto_ptr<SplitStrategy> _split;

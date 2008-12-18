@@ -111,7 +111,6 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
 }
 
 SliceFacade::~SliceFacade() {
-  delete _generatedTermConsumer;
   delete _translator;
   delete _ideal;
 }
@@ -159,6 +158,7 @@ void SliceFacade::computeMultigradedHilbertSeries() {
   CoefTermConsumer* consumer = getCoefTermConsumer();
 
   consumer->beginConsuming();
+  // TODO: fix leak of strategy on exception
   SliceStrategy* strategy = new HilbertStrategy(consumer, _split.get());
   runSliceAlgorithmAndDeleteStrategy(strategy);
   consumer->doneConsuming();
@@ -279,8 +279,6 @@ void SliceFacade::computeAlexanderDual(const vector<mpz_class>& point) {
 
   endAction();
 
-  getTermConsumer(); // To ensure some output is generated.
-
   computeIrreducibleDecomposition(true);
 }
 
@@ -308,10 +306,9 @@ void SliceFacade::computeAssociatedPrimes() {
   Ideal radical(varCount);
   {
 	Ideal decom(varCount);
-	_generatedTermConsumer = new DecomRecorder(&decom);
+	_generatedTermConsumer.reset(new DecomRecorder(&decom));
 	computeIrreducibleDecomposition(true);
-	delete _generatedTermConsumer;
-	_generatedTermConsumer = 0;
+	_generatedTermConsumer.reset(0);
 
 	beginAction("Computing associated primes from irreducible decomposition.");
 
@@ -349,12 +346,15 @@ void SliceFacade::computeAssociatedPrimes() {
 
   // Output associated primes.
   TermConsumer* consumer = getTermConsumer();
+
+  consumer->beginConsuming();
   Term tmp(varCount);
   Ideal::const_iterator stop = radical.end();
   for (Ideal::const_iterator it = radical.begin(); it != stop; ++it) {
 	tmp = *it;
 	consumer->consume(tmp);
   }
+  consumer->doneConsuming();
 
   endAction();
 }
@@ -376,22 +376,23 @@ bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
   TermGrader grader(grading, _translator);
 
   Ideal solution(varCount);
-  _generatedTermConsumer = new DecomRecorder(&solution);
+  _generatedTermConsumer.reset(new DecomRecorder(&solution));
 
   SliceStrategy* strategy =
 	new FrobeniusStrategy(getTermConsumer(), grader, _split.get(), useBound);
 
   runSliceAlgorithmAndDeleteStrategy(strategy);
 
-  delete _generatedTermConsumer;
-  _generatedTermConsumer = 0;
+  _generatedTermConsumer.reset(0);
 
   endAction();
 
   if (solution.isZeroIdeal())
 	return false;
 
+  getTermConsumer()->beginConsuming();
   getTermConsumer()->consume(Term(*solution.begin(), varCount));
+  getTermConsumer()->doneConsuming();
 
   return true;
 }
@@ -403,6 +404,7 @@ void SliceFacade::initialize(const BigIdeal& ideal) {
 
   beginAction("Translating ideal to internal data structure.");
 
+  // TODO: fix leak of ideal and translator on exception.
   _ideal = new Ideal(ideal.getVarCount());
   _translator = new TermTranslator(ideal, *_ideal, false);
 
@@ -451,41 +453,45 @@ void SliceFacade::runSliceAlgorithmAndDeleteStrategy(SliceStrategy* strategy) {
 void SliceFacade::doIrreducibleIdealOutput() {
   ASSERT(_translator != 0);
   ASSERT(_out != 0);
-  ASSERT(_generatedTermConsumer == 0);
+  ASSERT(_generatedTermConsumer.get() == 0);
   ASSERT(_ioHandler != 0);
   ASSERT(_termConsumer == 0);
 
-  _generatedTermConsumer =
-	_ioHandler->createIrreducibleIdealWriter(_translator, _out);
+  _generatedTermConsumer.reset
+	(_ioHandler->createIrreducibleIdealWriter(_translator, _out));
 
-  if (_canonicalOutput)
-	_generatedTermConsumer = new CanonicalTermConsumer
+  if (_canonicalOutput) {
+	TermConsumer* newTermConsumer = new CanonicalTermConsumer
 	  (_generatedTermConsumer, _ideal->getVarCount(), _translator);
+	_generatedTermConsumer.reset(newTermConsumer);
+  }
 
-  ASSERT(_generatedTermConsumer != 0);
+  ASSERT(_generatedTermConsumer.get() != 0);
 }
 
 TermConsumer* SliceFacade::getTermConsumer() {
   ASSERT(_translator != 0);
 
-  if (_generatedTermConsumer == 0) {
+  if (_generatedTermConsumer.get() == 0) {
 	if (_termConsumer != 0) {
-	  _generatedTermConsumer =
-		new TranslatingTermConsumer(_termConsumer, _translator);
+	  _generatedTermConsumer.reset
+		(new TranslatingTermConsumer(_termConsumer, _translator));
 	} else {
 	  ASSERT(_ioHandler != 0);
 	  ASSERT(_out != 0);
-	  _generatedTermConsumer =
-		_ioHandler->createIdealWriter(_translator, _out);
+	  _generatedTermConsumer.reset
+		(_ioHandler->createIdealWriter(_translator, _out));
 	}
 
-	if (_canonicalOutput)
-	  _generatedTermConsumer = new CanonicalTermConsumer
+	if (_canonicalOutput) {
+	  TermConsumer* newTermConsumer = new CanonicalTermConsumer
 		(_generatedTermConsumer, _ideal->getVarCount(), _translator);
+	  _generatedTermConsumer.reset(newTermConsumer);
+	}
   }
-  ASSERT(_generatedTermConsumer != 0);
+  ASSERT(_generatedTermConsumer.get() != 0);
 
-  return _generatedTermConsumer;
+  return _generatedTermConsumer.get();
 }
 
 CoefTermConsumer* SliceFacade::getCoefTermConsumer() {

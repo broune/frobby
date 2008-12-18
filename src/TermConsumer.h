@@ -23,7 +23,9 @@ class TermConsumer {
  public:
   virtual ~TermConsumer();
 
+  virtual void beginConsuming() = 0;
   virtual void consume(const Term& term) = 0;
+  virtual void doneConsuming() = 0;
 };
 
 #endif

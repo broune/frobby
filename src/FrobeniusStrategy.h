@@ -30,12 +30,14 @@ public:
 					TermGrader& grader,
 					const SplitStrategy* splitStrategy,
 					bool useBound);
-  virtual ~FrobeniusStrategy();
 
 private:
   virtual void getPivot(Term& pivot, Slice& slice);
   virtual void simplify(Slice& slice);
+
+  virtual void beginConsuming();
   virtual void consume(const Term& term);
+  virtual void doneConsuming();
 
   Exponent improveLowerBound(size_t var,
 							 const mpz_class& upperBoundDegree,

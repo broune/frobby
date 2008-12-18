@@ -32,7 +32,7 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
   vector<Slice*> slices;
   ElementDeleter<vector<Slice*> > slicesElementDeleter(slices);
 
-  exceptionSafePushBack(slices, strategy->setupInitialSlice(ideal));
+  exceptionSafePushBack(slices, strategy->beginComputing(ideal));
 
   while (!slices.empty()) {
 	auto_ptr<Slice> slice(slices.back());
@@ -73,4 +73,6 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
 	if (rightSlice.get() != 0)
 	  exceptionSafePushBack(slices, rightSlice);
   }
+
+  strategy->doneComputing();
 }

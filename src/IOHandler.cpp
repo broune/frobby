@@ -98,8 +98,6 @@ public:
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
-
-	_handler->writeIdealHeader(_translator->getNames(), _out);
   }
 
   IdealWriter(IOHandler* handler,
@@ -113,12 +111,11 @@ public:
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
-
-	_handler->writeIdealHeader(_translator->getNames(), generatorCount, _out);
   }
 
-  virtual ~IdealWriter() {
-	_handler->writeIdealFooter(_translator->getNames(), !_first, _out);
+  virtual void beginConsuming() {
+	_handler->writeIdealHeader(_translator->getNames(), _out);
+	_first = true;
   }
 
   virtual void consume(const Term& term) {
@@ -126,6 +123,10 @@ public:
 
 	_handler->writeTermOfIdeal(term, _translator, _first, _out);
 	_first = false;
+  }
+
+  virtual void doneConsuming() {
+	_handler->writeIdealFooter(_translator->getNames(), !_first, _out);
   }
 
 private:
@@ -149,6 +150,9 @@ public:
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
 	ASSERT(_tmp.isIdentity());
+  }
+
+  virtual void beginConsuming() {
   }
 
   virtual void consume(const Term& term) {
@@ -175,6 +179,9 @@ public:
 	ASSERT(_tmp.isIdentity());
   }
 
+  virtual void doneConsuming() {
+  }
+
 private:
   size_t _varCount;
   IOHandler* _handler;
@@ -197,7 +204,16 @@ class DelayedIdealWriter : public TermConsumer {
 	ASSERT(out != 0);
   }
 
-  virtual ~DelayedIdealWriter() {
+  virtual void beginConsuming() {
+  }
+
+  virtual void consume(const Term& term) {
+	ASSERT(term.getVarCount() == _ideal.getVarCount());
+
+	_ideal.insert(term);
+  }
+
+  virtual void doneConsuming() {
 	IdealWriter writer(_handler, _translator,
 					   _ideal.getGeneratorCount(), _out);
 
@@ -207,12 +223,6 @@ class DelayedIdealWriter : public TermConsumer {
 	  tmp = *it;
 	  writer.consume(tmp);
 	}
-  }
-
-  virtual void consume(const Term& term) {
-	ASSERT(term.getVarCount() == _ideal.getVarCount());
-
-	_ideal.insert(term);
   }
 
 private:

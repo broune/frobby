@@ -36,9 +36,7 @@ FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
   ASSERT(consumer != 0);
 }
 
-FrobeniusStrategy::~FrobeniusStrategy() {
-  if (_hasSeenAnyValue)
-	_consumer->consume(_maxValueTerm);
+void FrobeniusStrategy::beginConsuming() {
 }
 
 void FrobeniusStrategy::consume(const Term& term) {
@@ -50,6 +48,11 @@ void FrobeniusStrategy::consume(const Term& term) {
 	_maxValue = degree;
 	_hasSeenAnyValue = true;
   }
+}
+
+void FrobeniusStrategy::doneConsuming() {
+  if (_hasSeenAnyValue)
+	_consumer->consume(_maxValueTerm);
 }
 
 void FrobeniusStrategy::getPivot(Term& pivot, Slice& slice) {

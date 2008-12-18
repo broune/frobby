@@ -26,6 +26,20 @@ StatisticsStrategy::StatisticsStrategy(SliceStrategy* strategy, FILE* out):
 }
 
 StatisticsStrategy::~StatisticsStrategy() {
+  delete _strategy; // TODO: replace with auto_ptr
+}
+
+void StatisticsStrategy::setUseIndependence(bool use) {
+  _strategy->setUseIndependence(use);
+}
+
+auto_ptr<Slice> StatisticsStrategy::beginComputing(const Ideal& ideal) {
+  return _strategy->beginComputing(ideal);
+}
+
+void StatisticsStrategy::doneComputing() {
+  _strategy->doneComputing();
+
   fputs("*** Statistics\n", _out);
 
   gmp_fprintf(_out, " splits performed: %Zd\n",
@@ -45,16 +59,6 @@ StatisticsStrategy::~StatisticsStrategy() {
 	fprintf(_out, " avg. subtract generator count: %f\n",
 			avgSubtractGeneratorCount.get_d());
   }
-
-  delete _strategy;
-}
-
-void StatisticsStrategy::setUseIndependence(bool use) {
-  _strategy->setUseIndependence(use);
-}
-
-auto_ptr<Slice> StatisticsStrategy::setupInitialSlice(const Ideal& ideal) {
-  return _strategy->setupInitialSlice(ideal);
 }
 
 void StatisticsStrategy::split(auto_ptr<Slice> slice,

@@ -17,8 +17,11 @@
 #include "stdinc.h"
 #include "NullTermConsumer.h"
 
-NullTermConsumer::~NullTermConsumer() {
+void NullTermConsumer::beginConsuming() {
 }
 
 void NullTermConsumer::consume(const Term& term) {
+}
+
+void NullTermConsumer::doneConsuming() {
 }

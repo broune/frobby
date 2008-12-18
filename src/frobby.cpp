@@ -57,12 +57,11 @@ public:
 							   size_t varCount):
 	ConsumerWrapper(varCount),
 	_consumer(consumer) {
-	ASSERT(consumer != 0);
-	consumer->idealBegin(varCount);
+	ASSERT(_consumer != 0);
   }
 
-  virtual ~ExternalIdealConsumerWrapper() {
-	_consumer->idealEnd();
+  virtual void beginConsuming() {
+	_consumer->idealBegin(_varCount);
   }
 
   virtual void consume(const Term& term, TermTranslator* translator) {
@@ -78,6 +77,10 @@ public:
 	ASSERT(term != 0);
 
 	_consumer->consume(term);
+  }
+
+  virtual void doneConsuming() {
+	_consumer->idealEnd();
   }
 
 private:

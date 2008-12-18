@@ -28,13 +28,19 @@ class Ideal;
 // computations.
 class SliceStrategy {
  public:
-  virtual ~SliceStrategy() {}
+  virtual ~SliceStrategy();
 
+  // This method should only be called before calling beginComputing().
   virtual void setUseIndependence(bool use) = 0;
 
-  // This returns a slice based on ideal. This method should only be
-  // called once per strategy.
-  virtual auto_ptr<Slice> setupInitialSlice(const Ideal& ideal) = 0;
+  // This returns a slice based on ideal, which can be used to start
+  // the computation off. This method should only be called once per
+  // strategy, and it should be called before split().
+  virtual auto_ptr<Slice> beginComputing(const Ideal& ideal) = 0;
+
+  // This should be called once after computation is done, and then no
+  // more methods other than the destructor should be called.
+  virtual void doneComputing() = 0;
 
   // Performs a split of slice and puts the output into the remaining
   // four parameters. The strategy takes over ownership of slice,
