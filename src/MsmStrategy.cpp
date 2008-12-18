@@ -27,28 +27,27 @@
 #include "TermGrader.h"
 #include "SliceEvent.h"
 
-Slice* MsmStrategy::setupInitialSlice(const Ideal& ideal) {
+auto_ptr<Slice> MsmStrategy::setupInitialSlice(const Ideal& ideal) {
   size_t varCount = ideal.getVarCount();
 
   Term sliceMultiply(varCount);
   for (size_t var = 0; var < varCount; ++var)
 	sliceMultiply[var] = 1;
 
-  Slice* slice = new MsmSlice(ideal, Ideal(varCount), sliceMultiply,
-							  _consumer);
+  auto_ptr<Slice> slice
+	(new MsmSlice(ideal, Ideal(varCount), sliceMultiply, _consumer));
   slice->simplify();
-
   return slice;
 }
 
-MsmSlice* MsmStrategy::newMsmSlice() {
-  Slice* slice = newSlice();
-  ASSERT(dynamic_cast<MsmSlice*>(slice) != 0);
-  return static_cast<MsmSlice*>(slice);
+auto_ptr<MsmSlice> MsmStrategy::newMsmSlice() {
+  auto_ptr<Slice> slice(newSlice());
+  ASSERT(dynamic_cast<MsmSlice*>(slice.get()) != 0);
+  return auto_ptr<MsmSlice>(static_cast<MsmSlice*>(slice.release()));
 }
 
-Slice* MsmStrategy::allocateSlice() {
-  return new MsmSlice();
+auto_ptr<Slice> MsmStrategy::allocateSlice() {
+  return auto_ptr<Slice>(new MsmSlice());
 }
 
 bool MsmStrategy::debugIsValidSlice(Slice* slice) {
@@ -57,8 +56,9 @@ bool MsmStrategy::debugIsValidSlice(Slice* slice) {
   return true;
 }
 
-void MsmStrategy::labelSplit(Slice* slice,
-							 Slice*& leftSlice, Slice*& rightSlice) {
+void MsmStrategy::labelSplit(auto_ptr<MsmSlice> slice,
+							 auto_ptr<Slice>& leftSlice,
+							 auto_ptr<Slice>& rightSlice) {
   ASSERT(!slice->normalize());
   ASSERT(_split != 0);
   size_t var = _split->getLabelSplitVariable(*slice);
@@ -97,7 +97,7 @@ void MsmStrategy::labelSplit(Slice* slice,
 	}
   }
 
-  Slice* hasLabelSlice = 0;
+  auto_ptr<Slice> hasLabelSlice;
 
   if (label != stop) {
 	term = *label;
@@ -118,7 +118,7 @@ void MsmStrategy::labelSplit(Slice* slice,
   }
 
   leftSlice = hasLabelSlice;
-  if (leftSlice != 0)
+  if (leftSlice.get() != 0)
 	leftSlice->simplify();
 
   rightSlice = slice;
@@ -200,53 +200,50 @@ private:
   Term _tmpTerm;
 };
 
-bool MsmStrategy::independenceSplit
-(MsmSlice* slice,
- SliceEvent*& leftEvent, Slice*& leftSlice,
- SliceEvent*& rightEvent, Slice*& rightSlice) {
+void MsmStrategy::independenceSplit
+(auto_ptr<MsmSlice> slice,
+ SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+ SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice) {
 
-  if (!_indep.analyze(*slice))
-    return false;
-
+  // TODO: exception-related leak occurs here
   MsmIndependenceSplit* events = new MsmIndependenceSplit();
   events->reset(slice->getConsumer(), _indep);
 
   leftEvent = events;
-  MsmSlice* msmLeftSlice = new MsmSlice();
+  auto_ptr<MsmSlice> msmLeftSlice(new MsmSlice());
   msmLeftSlice->setToProjOf(*slice, events->getLeftProjection(), events);
   leftSlice = msmLeftSlice;
 
-  MsmSlice* msmRightSlice = new MsmSlice();
+  auto_ptr<MsmSlice> msmRightSlice(new MsmSlice());
   msmRightSlice->setToProjOf(*slice, events->getRightProjection(),
 							 events->getRightConsumer());
   rightSlice = msmRightSlice;
 
-  freeSlice(slice);
-
-  return true;
+  freeSlice(static_cast<auto_ptr<Slice> >(slice));
 }
 
-void MsmStrategy::split(Slice* sliceParam,
-						SliceEvent*& leftEvent, Slice*& leftSlice,
-						SliceEvent*& rightEvent, Slice*& rightSlice) {
-  ASSERT(sliceParam != 0);
-  ASSERT(dynamic_cast<MsmSlice*>(sliceParam) != 0);
-  MsmSlice* slice = static_cast<MsmSlice*>(sliceParam);
+void MsmStrategy::split(auto_ptr<Slice> sliceParam,
+						SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+						SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice) {
+  ASSERT(sliceParam.get() != 0);
+  ASSERT(dynamic_cast<MsmSlice*>(sliceParam.get()) != 0);
+  auto_ptr<MsmSlice> slice(static_cast<MsmSlice*>(sliceParam.release()));
 
   ASSERT(leftEvent == 0);
-  ASSERT(leftSlice == 0);
+  ASSERT(leftSlice.get() == 0);
   ASSERT(rightEvent == 0);
-  ASSERT(rightSlice == 0);
+  ASSERT(rightSlice.get() == 0);
 
-  if (getUseIndependence() && independenceSplit
-	  (slice, leftEvent, leftSlice, rightEvent, rightSlice))
+  if (getUseIndependence() && _indep.analyze(*slice)) {
+	independenceSplit(slice, leftEvent, leftSlice, rightEvent, rightSlice);
 	return;
+  }
 
   if (_split->isLabelSplit())
 	labelSplit(slice, leftSlice, rightSlice);
   else {
 	ASSERT(_split->isPivotSplit());
-	pivotSplit(slice, leftSlice, rightSlice);
+	pivotSplit(auto_ptr<Slice>(slice), leftSlice, rightSlice);
   }
 }
 

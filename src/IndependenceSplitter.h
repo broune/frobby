@@ -28,7 +28,7 @@ class Term;
 
 class IndependenceSplitter {
  public:
-  // Returns true if there are independent subsets of variabels. The
+  // Returns true if there are independent subsets of variables. The
   // other methods should only be called when the most recent call to
   // analyze returned true.
   bool analyze(const Slice& slice);

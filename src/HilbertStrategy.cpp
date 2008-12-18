@@ -39,7 +39,7 @@ HilbertStrategy::~HilbertStrategy() {
   }
 }
 
-Slice* HilbertStrategy::setupInitialSlice(const Ideal& ideal) {
+auto_ptr<Slice> HilbertStrategy::setupInitialSlice(const Ideal& ideal) {
   ASSERT(_consumer != 0);
 
   size_t varCount = ideal.getVarCount();
@@ -58,40 +58,43 @@ Slice* HilbertStrategy::setupInitialSlice(const Ideal& ideal) {
 	}
   }
 
-  HilbertSlice* slice = new HilbertSlice(sliceIdeal, Ideal(varCount),
-										 Term(varCount), _consumer);
+  auto_ptr<Slice> slice
+	(new HilbertSlice(sliceIdeal, Ideal(varCount),
+					  Term(varCount), _consumer));
   slice->simplify();
   return slice;
 }
 
 void HilbertStrategy::
-split(Slice* sliceParam,
-	  SliceEvent*& leftEvent, Slice*& leftSlice,
-	  SliceEvent*& rightEvent, Slice*& rightSlice) {
-  ASSERT(sliceParam != 0);
-  HilbertSlice* slice = static_cast<HilbertSlice*>(sliceParam);
+split(auto_ptr<Slice> sliceParam,
+	  SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+	  SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice) {
+  ASSERT(sliceParam.get() != 0);
+  auto_ptr<HilbertSlice> slice
+	(static_cast<HilbertSlice*>(sliceParam.release()));
 
   ASSERT(leftEvent == 0);
-  ASSERT(leftSlice == 0);
+  ASSERT(leftSlice.get() == 0);
   ASSERT(rightEvent == 0);
-  ASSERT(rightSlice == 0);
+  ASSERT(rightSlice.get() == 0);
 
-  if (getUseIndependence() &&
-	  independenceSplit(slice, leftEvent, leftSlice, rightSlice))
+  if (getUseIndependence() && _indepSplitter.analyze(*slice)) {
+	independenceSplit(slice, leftEvent, leftSlice, rightSlice);
 	return;
+  }
 
   ASSERT(_split->isPivotSplit());
-  pivotSplit(slice, leftSlice, rightSlice);
+  pivotSplit(auto_ptr<Slice>(slice), leftSlice, rightSlice);
 }
 
-HilbertSlice* HilbertStrategy::newHilbertSlice() {
-  Slice* slice = newSlice();
-  ASSERT(debugIsValidSlice(slice));
-  return static_cast<HilbertSlice*>(slice);
+auto_ptr<HilbertSlice> HilbertStrategy::newHilbertSlice() {
+  auto_ptr<Slice> slice(newSlice());
+  ASSERT(debugIsValidSlice(slice.get()));
+  return auto_ptr<HilbertSlice>(static_cast<HilbertSlice*>(slice.release()));
 }
 
-Slice* HilbertStrategy::allocateSlice() {
-  return new HilbertSlice();
+auto_ptr<Slice> HilbertStrategy::allocateSlice() {
+  return auto_ptr<Slice>(new HilbertSlice());
 }
 
 bool HilbertStrategy::debugIsValidSlice(Slice* slice) {
@@ -115,32 +118,31 @@ void HilbertStrategy::freeConsumer(HilbertIndependenceConsumer* consumer) {
   _consumerCache.push_back(consumer);
 }
 
-bool HilbertStrategy::independenceSplit(HilbertSlice* slice,
+void HilbertStrategy::independenceSplit(auto_ptr<HilbertSlice> slice,
 										SliceEvent*& leftEvent,
-										Slice*& leftSlice,
-										Slice*& rightSlice) {
-  ASSERT(slice != 0);
+										auto_ptr<Slice>& leftSlice,
+										auto_ptr<Slice>& rightSlice) {
+  ASSERT(slice.get() != 0);
+  ASSERT(leftEvent == 0);
+  ASSERT(leftSlice.get() == 0);
+  ASSERT(rightSlice.get() == 0);
 
-  if (!_indepSplitter.analyze(*slice))
-	return false;
-
+  // TODO: fix exception leak
   HilbertIndependenceConsumer* consumer = newConsumer();
   consumer->reset(slice->getConsumer(), _indepSplitter, slice->getVarCount());
   leftEvent = consumer;
 
-  HilbertSlice* hilbertLeftSlice = newHilbertSlice();
+  auto_ptr<HilbertSlice> hilbertLeftSlice(newHilbertSlice());
   hilbertLeftSlice->setToProjOf(*slice, consumer->getLeftProjection(),
 								consumer->getLeftConsumer());
   leftSlice = hilbertLeftSlice;
 
-  HilbertSlice* hilbertRightSlice = newHilbertSlice();
+  auto_ptr<HilbertSlice> hilbertRightSlice(newHilbertSlice());
   hilbertRightSlice->setToProjOf(*slice, consumer->getRightProjection(),
 								 consumer->getRightConsumer());
   rightSlice = hilbertRightSlice;
 
-  freeSlice(slice);
-
-  return true;
+  freeSlice(auto_ptr<Slice>(slice));
 }
 
 HilbertIndependenceConsumer* HilbertStrategy::newConsumer() {

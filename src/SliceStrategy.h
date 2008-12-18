@@ -34,7 +34,7 @@ class SliceStrategy {
 
   // This returns a slice based on ideal. This method should only be
   // called once per strategy.
-  virtual Slice* setupInitialSlice(const Ideal& ideal) = 0;
+  virtual auto_ptr<Slice> setupInitialSlice(const Ideal& ideal) = 0;
 
   // Performs a split of slice and puts the output into the remaining
   // four parameters. The strategy takes over ownership of slice,
@@ -56,15 +56,15 @@ class SliceStrategy {
   // produce output from split. To make this point clear, they are
   // required to be 0 when split gets called. Slice is not allowed to
   // be 0.
-  virtual void split(Slice* slice,
-					 SliceEvent*& leftEvent, Slice*& leftSlice,
-					 SliceEvent*& rightEvent, Slice*& rightSlice) = 0;
+  virtual void split(auto_ptr<Slice> slice,
+					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
+					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice) = 0;
 
   // It is allowed to delete returned slices directly, but it is
   // better to use freeSlice. freeSlice can only be called on slices
   // obtained from a method of the same strategy. This allows caching
   // of slices to avoid frequent allocations and deallocation.
-  virtual void freeSlice(Slice* slice) = 0;
+  virtual void freeSlice(auto_ptr<Slice> slice) = 0;
 };
 
 #endif

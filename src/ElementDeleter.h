@@ -96,4 +96,36 @@ class ElementDeleter {
   Container* _container;
 };
 
+// exceptionSafePushBack is designed to work around the fact that this
+// code can leak memory:
+//
+//   vector<int*> vec;
+//   ElementDeleter<vector<int*> > elementDeleter(vec);
+//   auto_ptr<int> p(new int());
+//   vec.push_back(p.release())
+//
+// This is because push_back can fail by throwing a bad_alloc, and at
+// that point the pointer in p has already been released, so that
+// pointer is now lost and hence the memory is leaked.
+//
+// This can be fixed by replacing
+//
+//   vec.push_back(p.release())
+//
+// by
+//
+//   vec.push_back(0);
+//   vec.back() = p.release();
+//
+// but this is annoying and looks quite strange. It is much clearer to
+// write
+//
+//   exceptionSafePushBack(vec, p);
+//
+template<class Container, class Element>
+void exceptionSafePushBack(Container& container, auto_ptr<Element> pointer) {
+  container.push_back(0);
+  container.back() = pointer.release();
+}
+
 #endif

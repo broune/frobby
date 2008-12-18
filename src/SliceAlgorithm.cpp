@@ -22,19 +22,23 @@
 #include "HilbertStrategy.h"
 #include "SliceEvent.h"
 #include "DebugStrategy.h"
+#include "ElementDeleter.h"
 
 void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
   ASSERT(strategy != 0);
 
+  // TODO: describe the interplay between events and slices below.
   vector<SliceEvent*> events;
   vector<Slice*> slices;
-  slices.push_back(strategy->setupInitialSlice(ideal));
+  ElementDeleter<vector<Slice*> > slicesElementDeleter(slices);
+
+  exceptionSafePushBack(slices, strategy->setupInitialSlice(ideal));
 
   while (!slices.empty()) {
-	Slice* slice = slices.back();
+	auto_ptr<Slice> slice(slices.back());
 	slices.pop_back();
 
-	if (slice == 0) {
+	if (slice.get() == 0) {
 	  events.back()->raiseEvent();
 	  events.pop_back();
 	  continue;
@@ -47,8 +51,8 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
 
 	SliceEvent* leftEvent = 0;
 	SliceEvent* rightEvent = 0;
-	Slice* leftSlice = 0;
-	Slice* rightSlice = 0;
+	auto_ptr<Slice> leftSlice;
+	auto_ptr<Slice> rightSlice;
 	strategy->split(slice,
 					leftEvent, leftSlice,
 					rightEvent, rightSlice);
@@ -58,15 +62,15 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy* strategy) {
 	  events.push_back(leftEvent);
 	}
 
-	if (leftSlice != 0)
-	  slices.push_back(leftSlice);
+	if (leftSlice.get() != 0)
+	  exceptionSafePushBack(slices, leftSlice);
 
 	if (rightEvent != 0) {
 	  slices.push_back(0);
 	  events.push_back(rightEvent);
 	}
 
-	if (rightSlice != 0)
-	  slices.push_back(rightSlice);
+	if (rightSlice.get() != 0)
+	  exceptionSafePushBack(slices, rightSlice);
   }
 }

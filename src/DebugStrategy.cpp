@@ -39,17 +39,19 @@ void DebugStrategy::setUseIndependence(bool use) {
   _strategy->setUseIndependence(use);
 }
 
-Slice* DebugStrategy::setupInitialSlice(const Ideal& ideal) {
+auto_ptr<Slice> DebugStrategy::setupInitialSlice(const Ideal& ideal) {
   fputs("DEBUG: Constructing initial slice.\n", _out);
-  Slice* initialSlice = _strategy->setupInitialSlice(ideal);
+  auto_ptr<Slice> initialSlice = _strategy->setupInitialSlice(ideal);
   fputs("DEBUG: Initial slice is as follows.\n", _out);
   initialSlice->print(_out);
   return initialSlice;
 }
 
-void DebugStrategy::split(Slice* slice,
-						  SliceEvent*& leftEvent, Slice*& leftSlice,
-						  SliceEvent*& rightEvent, Slice*& rightSlice) {
+void DebugStrategy::split(auto_ptr<Slice> slice,
+						  SliceEvent*& leftEvent,
+						  auto_ptr<Slice>& leftSlice,
+						  SliceEvent*& rightEvent,
+						  auto_ptr<Slice>& rightSlice) {
   fputs("DEBUG: Starting split of slice.\n", _out);
   slice->print(stderr);
   _strategy->split(slice, leftEvent, leftSlice, rightEvent, rightSlice);
@@ -57,19 +59,19 @@ void DebugStrategy::split(Slice* slice,
   fputs("DEBUG: Done with split of slice.\n", _out);
 
   fputs("Left slice: ", stderr);
-  if (leftSlice == 0)
+  if (leftSlice.get() == 0)
 	fputs("None.\n", stderr);
   else
 	leftSlice->print(stderr);
 
   fputs("Right slice: ", stderr);
-  if (rightSlice == 0)
+  if (rightSlice.get() == 0)
 	fputs("None.\n", stderr);
   else
 	rightSlice->print(stderr);
 }
 
-void DebugStrategy::freeSlice(Slice* slice) {
+void DebugStrategy::freeSlice(auto_ptr<Slice> slice) {
   fputs("DEBUG: Freeing slice.\n", _out);
   _strategy->freeSlice(slice);
 }

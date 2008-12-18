@@ -16,6 +16,7 @@
 */
 #include "stdinc.h"
 #include "SliceStrategyCommon.h"
+#include "ElementDeleter.h"
 
 #include "Slice.h"
 
@@ -26,39 +27,44 @@ SliceStrategyCommon::SliceStrategyCommon(const SplitStrategy* splitStrategy):
 }
 
 SliceStrategyCommon::~SliceStrategyCommon() {
+  // TODO: use ElementDeleter instead
   while (!_sliceCache.empty()) {
 	delete _sliceCache.back();
 	_sliceCache.pop_back();
   }
 }
 
-void SliceStrategyCommon::freeSlice(Slice* slice) {
-  ASSERT(slice != 0);
-  ASSERT(debugIsValidSlice(slice));
+void SliceStrategyCommon::freeSlice(auto_ptr<Slice> slice) {
+  ASSERT(slice.get() != 0);
+  ASSERT(debugIsValidSlice(slice.get()));
 
   slice->clearIdealAndSubtract(); // To preserve memory.
-  _sliceCache.push_back(slice);
+  exceptionSafePushBack(_sliceCache, slice);
 }
 
 void SliceStrategyCommon::setUseIndependence(bool use) {
   _useIndependence = use;
 }
 
-Slice* SliceStrategyCommon::newSlice() {
-  Slice* slice;
+auto_ptr<Slice> SliceStrategyCommon::newSlice() {
+  auto_ptr<Slice> slice;
   if (!_sliceCache.empty()) {
-	slice = _sliceCache.back();
+	slice.reset(_sliceCache.back());
 	_sliceCache.pop_back();
   } else
 	slice = allocateSlice();
 
-  ASSERT(debugIsValidSlice(slice));
+  ASSERT(debugIsValidSlice(slice.get()));
   return slice;
 }
 
-void SliceStrategyCommon::pivotSplit(Slice* slice,
-									 Slice*& leftSlice,
-									 Slice*& rightSlice) {
+void SliceStrategyCommon::pivotSplit(auto_ptr<Slice> slice,
+									 auto_ptr<Slice>& leftSlice,
+									 auto_ptr<Slice>& rightSlice) {
+  ASSERT(slice.get() != 0);
+  ASSERT(leftSlice.get() == 0);
+  ASSERT(rightSlice.get() == 0);
+
   _pivotTmp.reset(slice->getVarCount());
   getPivot(_pivotTmp, *slice);
 
@@ -81,8 +87,13 @@ void SliceStrategyCommon::pivotSplit(Slice* slice,
 
   // Process the smaller one first to preserve memory.
   if (leftSlice->getIdeal().getGeneratorCount() <
-	  rightSlice->getIdeal().getGeneratorCount())
-	std::swap(leftSlice, rightSlice);
+	  rightSlice->getIdeal().getGeneratorCount()) {
+	// swap() does not work correctly on auto_ptr, so we have to do
+	// the swap by hand.
+	auto_ptr<Slice> tmp = leftSlice;
+	leftSlice = rightSlice;
+	rightSlice = tmp;
+  }
 }
 
 bool SliceStrategyCommon::getUseIndependence() const {

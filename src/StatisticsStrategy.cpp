@@ -53,14 +53,16 @@ void StatisticsStrategy::setUseIndependence(bool use) {
   _strategy->setUseIndependence(use);
 }
 
-Slice* StatisticsStrategy::setupInitialSlice(const Ideal& ideal) {
+auto_ptr<Slice> StatisticsStrategy::setupInitialSlice(const Ideal& ideal) {
   return _strategy->setupInitialSlice(ideal);
 }
 
-void StatisticsStrategy::split(Slice* slice,
-							   SliceEvent*& leftEvent, Slice*& leftSlice,
-							   SliceEvent*& rightEvent, Slice*& rightSlice) {
-  ASSERT(slice != 0);
+void StatisticsStrategy::split(auto_ptr<Slice> slice,
+							   SliceEvent*& leftEvent,
+							   auto_ptr<Slice>& leftSlice,
+							   SliceEvent*& rightEvent,
+							   auto_ptr<Slice>& rightSlice) {
+  ASSERT(slice.get() != 0);
 
   ++_splitCount;
   _varCountSum += slice->getVarCount();
@@ -70,6 +72,6 @@ void StatisticsStrategy::split(Slice* slice,
   _strategy->split(slice, leftEvent, leftSlice, rightEvent, rightSlice);
 }
 
-void StatisticsStrategy::freeSlice(Slice* slice) {
+void StatisticsStrategy::freeSlice(auto_ptr<Slice> slice) {
   _strategy->freeSlice(slice);
 }
