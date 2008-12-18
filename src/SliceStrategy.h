@@ -44,8 +44,10 @@ class SliceStrategy {
 
   // Performs a split of slice and puts the output into the remaining
   // four parameters. The strategy takes over ownership of slice,
-  // while passing on of leftSlice and rightSlice. Ownership of
-  // leftEvent and rightEvent is not passed on.
+  // while passing on ownership of leftSlice and rightSlice. Ownership
+  // of leftEvent and rightEvent is not passed on, though it is
+  // required that if non-null, then their dispose() method must be
+  // called eventually.
   //
   // The parameter slice must have been obtained through a method of
   // this strategy - it must not have been allocated using new or by a

@@ -40,6 +40,7 @@ public:
   void clear();
 
   virtual void raiseEvent();
+  virtual void dispose();
 
   CoefTermConsumer* getLeftConsumer();
   

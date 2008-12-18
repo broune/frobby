@@ -25,6 +25,7 @@
 #include "IndependenceSplitter.h"
 #include "SliceEvent.h"
 #include "HilbertIndependenceConsumer.h"
+#include "ElementDeleter.h"
 
 HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
 								 const SplitStrategy* splitStrategy):
@@ -114,13 +115,15 @@ void HilbertStrategy::getPivot(Term& term, Slice& slice) {
   _split->getPivot(term, slice);
 }
 
-void HilbertStrategy::freeConsumer(HilbertIndependenceConsumer* consumer) {
-  ASSERT(consumer != 0);
+void HilbertStrategy::freeConsumer(auto_ptr<HilbertIndependenceConsumer>
+								   consumer) {
+  ASSERT(consumer.get() != 0);
   ASSERT(std::find(_consumerCache.begin(),
-				   _consumerCache.end(), consumer) ==
+				   _consumerCache.end(), consumer.get()) ==
 		 _consumerCache.end());
 
-  _consumerCache.push_back(consumer);
+  consumer->clear();
+  exceptionSafePushBack(_consumerCache, consumer);
 }
 
 void HilbertStrategy::independenceSplit(auto_ptr<HilbertSlice> slice,
@@ -132,32 +135,35 @@ void HilbertStrategy::independenceSplit(auto_ptr<HilbertSlice> slice,
   ASSERT(leftSlice.get() == 0);
   ASSERT(rightSlice.get() == 0);
 
-  // TODO: fix exception leak
-  HilbertIndependenceConsumer* consumer = newConsumer();
+  // Construct left event (assignment later).
+  auto_ptr<HilbertIndependenceConsumer> consumer = newConsumer();
   consumer->reset(slice->getConsumer(), _indepSplitter, slice->getVarCount());
-  leftEvent = consumer;
 
+  // Construct left slice.
   auto_ptr<HilbertSlice> hilbertLeftSlice(newHilbertSlice());
   hilbertLeftSlice->setToProjOf(*slice, consumer->getLeftProjection(),
 								consumer->getLeftConsumer());
   leftSlice = hilbertLeftSlice;
 
+  // Construct right slice.
   auto_ptr<HilbertSlice> hilbertRightSlice(newHilbertSlice());
   hilbertRightSlice->setToProjOf(*slice, consumer->getRightProjection(),
 								 consumer->getRightConsumer());
   rightSlice = hilbertRightSlice;
 
+  // Deal with slice.
   freeSlice(auto_ptr<Slice>(slice));
+
+  // Done last to avoid memory leak on exception.
+  leftEvent = consumer.release();
 }
 
-HilbertIndependenceConsumer* HilbertStrategy::newConsumer() {
-  HilbertIndependenceConsumer* consumer;
+auto_ptr<HilbertIndependenceConsumer> HilbertStrategy::newConsumer() {
   if (_consumerCache.empty())
-	consumer = new HilbertIndependenceConsumer(this);
-  else {
-	consumer = _consumerCache.back();
-	_consumerCache.pop_back();
-  }
+	return auto_ptr<HilbertIndependenceConsumer>
+	  (new HilbertIndependenceConsumer(this));
 
+  auto_ptr<HilbertIndependenceConsumer> consumer(_consumerCache.back());
+  _consumerCache.pop_back();
   return consumer;
 }

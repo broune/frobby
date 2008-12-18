@@ -43,10 +43,10 @@ class HilbertStrategy : public SliceStrategyCommon {
 					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
 					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
-  void freeConsumer(HilbertIndependenceConsumer* consumer);
+  void freeConsumer(auto_ptr<HilbertIndependenceConsumer> consumer);
 
  private:
-  HilbertIndependenceConsumer* newConsumer();
+  auto_ptr<HilbertIndependenceConsumer> newConsumer();
 
   auto_ptr<HilbertSlice> newHilbertSlice();
   virtual auto_ptr<Slice> allocateSlice();
@@ -60,8 +60,6 @@ class HilbertStrategy : public SliceStrategyCommon {
 						 auto_ptr<Slice>& leftSlice,
 						 auto_ptr<Slice>& rightSlice);
 
-  // It would make more sense with a stack, but that class has
-  // (surprisingly) proven to have too high overhead.
   vector<HilbertIndependenceConsumer*> _consumerCache;
 
   CoefTermConsumer* _consumer;

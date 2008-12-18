@@ -49,11 +49,11 @@ void HilbertIndependenceConsumer::clear() {
 }
 
 void HilbertIndependenceConsumer::raiseEvent() {
-  ASSERT(_parent != 0);
-  clear();
-  
+}
+
+void HilbertIndependenceConsumer::dispose() {
   ASSERT(_strategy != 0);
-  _strategy->freeConsumer(this);
+  _strategy->freeConsumer(auto_ptr<HilbertIndependenceConsumer>(this));
 }
 
 CoefTermConsumer* HilbertIndependenceConsumer::getLeftConsumer() {
