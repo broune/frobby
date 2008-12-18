@@ -30,11 +30,8 @@
 HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
 								 const SplitStrategy* splitStrategy):
   SliceStrategyCommon(splitStrategy),
+  _consumerCacheDeleter(_consumerCache),
   _consumer(consumer) {
-}
-
-HilbertStrategy::~HilbertStrategy() {
-  ASSERT(_consumerCache.empty());
 }
 
 auto_ptr<Slice> HilbertStrategy::beginComputing(const Ideal& ideal) {
@@ -64,11 +61,7 @@ auto_ptr<Slice> HilbertStrategy::beginComputing(const Ideal& ideal) {
 }
 
 void HilbertStrategy::doneComputing() {
-  // TODO: replace with ElementDeleter
-  while (!_consumerCache.empty()) {
-	delete _consumerCache.back();
-	_consumerCache.pop_back();
-  }
+  _consumerCacheDeleter.deleteElements();
 }
 
 void HilbertStrategy::
