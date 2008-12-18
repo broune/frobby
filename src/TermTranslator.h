@@ -39,7 +39,7 @@ class Term;
 class TermTranslator {
 public:
   // The constructors translate BigIdeals into Ideals, while
-  // initializing this to do the reverse translation. sortVars
+  // initializing *this to do the reverse translation. sortVars
   // indicates whether or not the order of the variable names should
   // be sorted. This cannot be turned off for the version taking
   // several ideals.
