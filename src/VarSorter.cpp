@@ -32,6 +32,8 @@ public:
   }
 
 private:
+  void operator=(const VarSorterCompare&); // To make unaccessible.
+
   const VarNames& _names;
 };
 

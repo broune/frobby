@@ -42,6 +42,8 @@ public:
   }
 
 private:
+  void operator=(const OffsetTermCompare&); // To make this inaccessible.
+
   const BigIdeal& _ideal;
 };
 

@@ -227,6 +227,8 @@ public:
   }
   
 private:
+  void operator=(const PruneSubtractPredicate&); // To make inaccessible.
+
   const Ideal& _ideal;
   const Term& _lcm;
 };

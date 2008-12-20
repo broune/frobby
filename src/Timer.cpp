@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "Timer.h"
 
+#include "ctime"
+
 Timer::Timer() {
   reset();
 }

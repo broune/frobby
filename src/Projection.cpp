@@ -95,7 +95,7 @@ bool Projection::domainVarHasProjection(size_t var) const {
   for (size_t rangeVar = 0; rangeVar < _offsets.size(); ++rangeVar)
 	if (var == inverseProjectVar(rangeVar))
 	  has = true;
-  ASSERT(has == _domainVarHasProjection[var]);
+  ASSERT(has == static_cast<bool>(_domainVarHasProjection[var]));
 #endif
 
   return _domainVarHasProjection[var];

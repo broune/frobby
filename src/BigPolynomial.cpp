@@ -111,7 +111,9 @@ void BigPolynomial::add(const mpz_class& coef, mpz_ptr* term) {
 
   _coefTerms.resize(_coefTerms.size() + 1);
   _coefTerms.back().coef = coef;
-  _coefTerms.back().term = vector<mpz_class>(term, term + getVarCount());
+
+  for (size_t exponent = 0; exponent < getVarCount(); ++exponent)
+    _coefTerms.back().term.push_back(mpz_class(term[exponent]));
 }
 
 void BigPolynomial::add(const mpz_class& coef,
