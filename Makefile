@@ -132,9 +132,9 @@ endif
 bake: all
 ifdef TESTCASE
 	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
-	cd test/$(TESTCASE); ./runtests _valgrind _debug-alloc $(TESTARGS); cd ../..
+	cd test/$(TESTCASE); ./runtests _valgrind _debugAlloc $(TESTARGS); cd ../..
 else
-	export frobby=bin/$(program); ./test/runfulltests _valgrind _debug-alloc  $(TESTARGS) 
+	export frobby=bin/$(program); ./test/runfulltests _valgrind _debugAlloc  $(TESTARGS) 
 endif
 
 bench: all
