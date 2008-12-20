@@ -22,6 +22,7 @@
 #include "error.h"
 
 #include <ctime>
+#include <cstdlib>
 
 int frobbyMain(int argc, const char** argv) {
   string prefix;

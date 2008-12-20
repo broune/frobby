@@ -101,6 +101,7 @@ $(info $(TMP_CMD) $(shell mkdir -p $(outdir)))
 
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
+CC      = "g++"
 
 # ***** Compilation
 
@@ -152,7 +153,7 @@ ifeq ($(MODE), analysis)
 	echo > $(outdir)$(program)
 endif
 ifneq ($(MODE), analysis)
-	g++ $(objs) $(ldflags) -o $(outdir)$(program)
+	$(CC) $(objs) $(ldflags) -o $(outdir)$(program)
 	if [ -f $(outdir)$(program).exe ]; then \
 	  mv -f $(outdir)$(program).exe $(outdir)$(program); \
 	fi
@@ -166,7 +167,7 @@ library: bin/$(library)
 bin/$(library): $(objs) | bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
-	g++ -shared $(ldflags) -o bin/$(library) $(patsubst main.o,,$(objs))
+	$(CC) -shared $(ldflags) -o bin/$(library) $(patsubst main.o,,$(objs))
 else
 	ar crs bin/$(library) $(patsubst main.o,,$(objs))
 endif
@@ -175,14 +176,14 @@ endif
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
 $(outdir)%.o: src/%.cpp
-	  g++ ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
+	  $(CC) ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
 ifeq ($(MODE), analysis)
 	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
 endif
 
 # ***** Dependency management
 depend:
-	g++ ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
+	$(CC) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
 -include .depend
 
 clean: tidy
