@@ -14,8 +14,37 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
+#ifdef _MSC_VER // For Microsoft Visual Studio.
+#pragma warning (push, 1) // Reduce warning level for GMP headers.
+#endif
+
 #include <gmp.h>
 #include <gmpxx.h>
+
+#ifdef _MSC_VER // For Microsoft Compiler in Visual Studio C++.
+#pragma warning (pop) // Go back to previous warning level.
+#pragma warning (disable: 4996) // std::copy is flagged as dangerous.
+#pragma warning (disable: 4290) // VC++ ignores throw () specification.
+#pragma warning (disable: 4127) // Warns about using "while (true)".
+#pragma warning (disable: 4100) // Warns about unused parameters.
+#pragma warning (disable: 4800) // Warns on int to bool conversion.
+
+// This warning warns about using the this pointer in base member
+// initializer lists. This is a pretty good warning as that can
+// obviously easily go wrong, but it is pretty useful to do as well,
+// so the warning is turned off.
+#pragma warning (disable: 4355)
+
+// MSC's map header has an issue where you get a syntax error if you
+// define a macro for new like we do below. We work around this by including
+// map before we define the macro.
+#include <map>
+
+#ifdef _DEBUG
+#define DEBUG
+#endif
+#endif
+
 #include <memory>
 using namespace std;
 

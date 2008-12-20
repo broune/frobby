@@ -122,7 +122,7 @@ bool Action::acceptsNonParameter() const {
   return _acceptsNonParameter;
 }
 
-void Action::processNonParameter(const char* str) {
+void Action::processNonParameter(const char*) {
   ASSERT(false);
   reportInternalError("Action::processNonParameter called.");
 }

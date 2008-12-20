@@ -97,7 +97,7 @@ void Scanner::expect(char expected) {
   SCANNER_LOG1("Expecting the character '%c'.\n", expected);
 
   eatWhite();
-  char got = getChar();
+  int got = getChar();
   if (got != expected) {
 	FrobbyStringStream gotDescription;
 	if (got == EOF)

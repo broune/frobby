@@ -21,6 +21,8 @@
 #include "DebugAllocator.h"
 #include "error.h"
 
+#include <ctime>
+
 int frobbyMain(int argc, const char** argv) {
   string prefix;
   if (argc > 1) {
@@ -63,7 +65,9 @@ int main(int argc, const char** argv) {
 	set_unexpected(frobbyUnexpected);
 
 	srand((unsigned int)time(0) +
+#ifdef __GNUC__ // Only GCC defines this macro.
 		  (unsigned int)getpid() +
+#endif
 		  (unsigned int)clock());
 
 #ifdef PROFILE
@@ -82,7 +86,7 @@ int main(int argc, const char** argv) {
 #else
 	return frobbyMain(argc, argv);
 #endif
-  } catch (const bad_alloc& e) {
+  } catch (const bad_alloc&) {
 	reportErrorNoThrow("Ran out of memory.");
 	return ExitCodeOutOfMemory;
   } catch (const InternalFrobbyException& e) {

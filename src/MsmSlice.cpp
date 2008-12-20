@@ -146,6 +146,8 @@ public:
   }
 
 private:
+  void operator=(const DoubleLcmPredicate&); // To make it inaccessible.
+
   const Term& _lcm;
 };
 
