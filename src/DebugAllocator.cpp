@@ -87,7 +87,7 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
   fprintf(stderr,
 		  "Going through the %i remaining allocations "
 		  "with steps of size %i.\n",
-		  (int)limitsLeft, stepSize);
+		  (int)limitsLeft, (int)stepSize);
 
   for (size_t limit = AllocationLimitsTryFirst;
 	   limit < maxAllocations - AllocationLimitsTryLast; limit += stepSize)
@@ -137,9 +137,9 @@ void DebugAllocator::processDebugOptions(int& argc, const char**& argv) {
 	++argv;
 	--argc;
 
-	if (option == "debug-alloc")
+	if (option == "debugAlloc")
 	  _debugAllocation = true;
-	else if (option == "detail-alloc")
+	else if (option == "detailAlloc")
 	  _detailAllocation = true;
 	else if (option == "input") {
 	  if (argc <= 1)
