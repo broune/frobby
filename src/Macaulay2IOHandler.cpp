@@ -33,6 +33,7 @@ Macaulay2IOHandler::Macaulay2IOHandler():
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
   registerOutput(MonomialIdeal);
+  registerOutput(MonomialIdealList);
   registerOutput(Polynomial);
 }
 

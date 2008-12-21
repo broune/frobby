@@ -274,6 +274,7 @@ void Ideal::remove(const_iterator it) {
   _terms.pop_back();
 }
 
+
 void Ideal::removeMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
   iterator stop = _terms.end();

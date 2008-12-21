@@ -221,6 +221,81 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
   computeMaximalStaircaseMonomials();
 }
 
+void SliceFacade::computePrimaryDecomposition() {
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
+
+  minimize();
+
+  size_t varCount = _ideal->getVarCount();
+
+  Ideal irreducibleDecom(varCount);
+  _generatedTermConsumer.reset(new DecomRecorder(&irreducibleDecom));
+  computeIrreducibleDecomposition(true);
+  _generatedTermConsumer.reset(0);
+
+  beginAction
+	("Computing primary decomposition from irreducible decomposition.");
+
+  // Do intersection of each component also using irreducible
+  // decomposition of the dual. We can't use the Alexander dual
+  // methods, since those switch around the translator to emit altered
+  // big integers, while keeping the small integers the same, but we
+  // want to keep this in small integers. So we have to do the dual
+  // thing here.
+
+  // To get actual supports.
+  _translator->setInfinityPowersToZero(irreducibleDecom);
+
+  // To collect same-support vectors together.
+  irreducibleDecom.sortReverseLex();
+
+  Term lcm(varCount);
+  irreducibleDecom.getLcm(lcm); 
+
+  Term tmp(varCount);
+  Term support(varCount);
+
+  _ideal->clear();
+  Ideal& primaryComponentDual = *_ideal;
+  Ideal primaryComponent(varCount);
+
+  DecomRecorder recorder(&primaryComponent);
+
+  Ideal::const_iterator stop = irreducibleDecom.end();
+  Ideal::const_iterator it = irreducibleDecom.begin();
+  while (it != stop) {
+	// Get all vectors with same support.
+	support = *it;
+	do {
+	  tmp.encodedDual(*it, lcm);
+	  primaryComponentDual.insert(tmp);
+	  ++it;
+	} while (it != stop && support.hasSameSupport(*it));
+	ASSERT(!primaryComponentDual.isZeroIdeal());
+	
+	_translator->addPurePowersAtInfinity(primaryComponentDual);
+	{
+	  MsmStrategy strategy(&recorder, _split.get());
+	  runSliceAlgorithmWithOptions(strategy);
+	}
+	_translator->setInfinityPowersToZero(primaryComponent);
+
+	getTermConsumer()->beginConsuming();
+	for (Ideal::const_iterator dualTerm = primaryComponent.begin();
+		 dualTerm != primaryComponent.end(); ++dualTerm) {
+	  tmp.encodedDual(*dualTerm, lcm);
+	  getTermConsumer()->consume(tmp);
+	}
+	getTermConsumer()->doneConsuming();
+
+	primaryComponent.clear();
+	primaryComponentDual.clear();
+  }
+
+  endAction();
+}
+
 void SliceFacade::computeMaximalStaircaseMonomials() {
   ASSERT(_ideal.get() != 0);
   ASSERT(_split.get() != 0);

@@ -34,6 +34,7 @@
 #include "HelpAction.h"
 #include "TestAction.h"
 #include "NameFactory.h"
+#include "PrimaryDecomAction.h"
 #include "error.h"
 
 Action::Action(const char* name,
@@ -73,6 +74,7 @@ namespace {
 
 	nameFactoryRegister<HelpAction>(factory);
 	nameFactoryRegister<TestAction>(factory);
+	nameFactoryRegister<PrimaryDecomAction>(factory);
 
 	return factory;
   }
