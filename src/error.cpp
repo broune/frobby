@@ -52,6 +52,10 @@ void displayNote(const string& msg) {
   fprintf(stderr, "NOTE: %s\n", msg.c_str());
 }
 
+void displayDebugNote(const string& msg) {
+  fprintf(stderr, "DEBUG: %s\n", msg.c_str());
+}
+
 void reportErrorNoThrow(const string& errorMsg) {
   fprintf(stderr, "ERROR: %s\n", errorMsg.c_str());
 }

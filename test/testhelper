@@ -41,7 +41,7 @@
 # standard out. Lines containing the word DEBUG is removed from this
 # output.
 #
-# If $4 is _debug-alloc, then Frobby will be run with the _debug-alloc
+# If $4 is _debugAlloc, then Frobby will be run with the _debugAlloc
 # option, which will make it run through every scenario of runnning
 # out of memory and recovering, which can take a long time. This only
 # works for the debug versions of Frobby.
@@ -111,7 +111,7 @@ do
     shift;
   fi
 
-  if [ "$1" = "_debug-alloc" ];
+  if [ "$1" = "_debugAlloc" ];
   then
     changed=1;
     useDebugAlloc=1;
@@ -143,7 +143,7 @@ then
   # to collect all the input into a single file, in case $inputFile
   # contains more than a single filename.
   cat $inputFile > $frobbyChangedInput
-  origFrobby="$frobby _debug-alloc _input $frobbyChangedInput";
+  origFrobby="$frobby _debugAlloc _input $frobbyChangedInput";
   frobby="$origFrobby"
   # OK, I change origFrobby, so it is not quite original. So shoot me.
 fi

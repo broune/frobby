@@ -29,6 +29,7 @@ MonosIOHandler::MonosIOHandler():
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerOutput(MonomialIdeal);
+  registerOutput(MonomialIdealList);
 }
 
 const char* MonosIOHandler::staticGetName() {

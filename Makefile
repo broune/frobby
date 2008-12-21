@@ -33,7 +33,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   HilbertBasecase.cpp HilbertIndependenceConsumer.cpp					\
   SplitStrategy.cpp CanonicalTermConsumer.cpp StatisticsStrategy.cpp	\
   TestAction.cpp NameFactory.cpp error.cpp DebugAllocator.cpp			\
-  FrobbyStringStream.cpp SliceStrategy.cpp
+  FrobbyStringStream.cpp SliceStrategy.cpp PrimaryDecomAction.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -101,6 +101,7 @@ $(info $(TMP_CMD) $(shell mkdir -p $(outdir)))
 
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
+CC      = "g++"
 
 # ***** Compilation
 
@@ -132,9 +133,9 @@ endif
 bake: all
 ifdef TESTCASE
 	export frobby=bin/$(program); echo; echo -n "$(TESTCASE): " ; \
-	cd test/$(TESTCASE); ./runtests _valgrind _debug-alloc $(TESTARGS); cd ../..
+	cd test/$(TESTCASE); ./runtests _valgrind _debugAlloc $(TESTARGS); cd ../..
 else
-	export frobby=bin/$(program); ./test/runfulltests _valgrind _debug-alloc  $(TESTARGS) 
+	export frobby=bin/$(program); ./test/runfulltests _valgrind _debugAlloc  $(TESTARGS) 
 endif
 
 bench: all
@@ -152,7 +153,7 @@ ifeq ($(MODE), analysis)
 	echo > $(outdir)$(program)
 endif
 ifneq ($(MODE), analysis)
-	g++ $(objs) $(ldflags) -o $(outdir)$(program)
+	$(CC) $(objs) $(ldflags) -o $(outdir)$(program)
 	if [ -f $(outdir)$(program).exe ]; then \
 	  mv -f $(outdir)$(program).exe $(outdir)$(program); \
 	fi
@@ -166,7 +167,7 @@ library: bin/$(library)
 bin/$(library): $(objs) | bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
-	g++ -shared $(ldflags) -o bin/$(library) $(patsubst main.o,,$(objs))
+	$(CC) -shared $(ldflags) -o bin/$(library) $(patsubst main.o,,$(objs))
 else
 	ar crs bin/$(library) $(patsubst main.o,,$(objs))
 endif
@@ -175,14 +176,14 @@ endif
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
 $(outdir)%.o: src/%.cpp
-	  g++ ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
+	  $(CC) ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
 ifeq ($(MODE), analysis)
 	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
 endif
 
 # ***** Dependency management
 depend:
-	g++ ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
+	$(CC) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
 -include .depend
 
 clean: tidy

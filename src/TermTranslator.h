@@ -71,6 +71,12 @@ public:
   // needed for computing irreducible decompositions.
   void addPurePowersAtInfinity(Ideal& ideal) const;
 
+  // The method addPurePowersAtInfinity adds high exponents that map to
+  // zero. This method replaces those high powers with the power
+  // zero. If a term becomes (but was not previously) the identity, it is
+  // removed.
+  void setInfinityPowersToZero(Ideal& ideal) const;
+
   const VarNames& getNames() const;
   size_t getVarCount() const;
 

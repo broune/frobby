@@ -49,6 +49,24 @@ inline void colon(Exponent* res,
   }
 }
 
+// dualOf encodes an irreducible ideal as a term, and the dual of that in
+// point is a principal ideal of which res will be the generator. This
+// requires that dualOf divides point, as otherwise that dual is not defined.
+inline void encodedDual(Exponent* res,
+                        const Exponent* dualOf, const Exponent* point,
+                        size_t varCount) {
+  ASSERT(res != 0 || varCount == 0);
+  ASSERT(dualOf != 0 || varCount == 0);
+  ASSERT(point != 0 || varCount == 0);
+  for (size_t var = 0; var < varCount; ++var) {
+    ASSERT(dualOf[var] <= point[var]);
+    if (dualOf[var] != 0)
+      res[var] = point[var] - dualOf[var] + 1;
+    else
+      res[var] = 0;
+  }
+}
+
 inline void decrement(Exponent* a, size_t varCount) {
   ASSERT(a != 0 || varCount == 0);
   for (size_t var = 0; var < varCount; ++var)
@@ -182,6 +200,23 @@ inline size_t getSizeOfSupport(const Exponent* a, size_t varCount) {
   return size;
 }
 
+inline bool hasSameSupport(const Exponent* a, const Exponent* b,
+						   size_t varCount) {
+  ASSERT(a != 0 || varCount == 0);
+  ASSERT(b != 0 || varCount == 0);
+  for (size_t var = 0; var < varCount; ++var) {
+	if (a[var] == 0) {
+	  if (b[var] != 0)
+		return false;
+	} else {
+	  ASSERT(a[var] != 0);
+	  if (b[var] == 0)
+		return false;
+	}
+  }
+  return true;
+}
+
 // Defines lexicographic order on exponents.
 //  Returns something < 0 if a < b.
 //  Returns 0 if a = b.
@@ -189,7 +224,7 @@ inline size_t getSizeOfSupport(const Exponent* a, size_t varCount) {
 //
 // For example (0,0) < (0,1) < (1,0).
 inline int lexCompare(const Exponent* a, const Exponent* b,
-		   size_t varCount) {
+					  size_t varCount) {
   ASSERT(a != 0 || varCount == 0);
   ASSERT(b != 0 || varCount == 0);
   for (size_t var = 0; var < varCount; ++var) {
@@ -436,14 +471,33 @@ class Term {
     return ::getSizeOfSupport(_exponents, _varCount);
   }
 
+  bool hasSameSupport(const Term& a) const {
+	ASSERT(_varCount == a._varCount);
+	return hasSameSupport(a._exponents);
+  }
+
+  bool hasSameSupport(const Exponent* a) const {
+	return ::hasSameSupport(_exponents, a, _varCount);
+  }
+
   void colon(const Term& a, const Term& b) {
     ASSERT(_varCount == a._varCount);
-    ASSERT(a._varCount == b._varCount);
+    ASSERT(_varCount == b._varCount);
     colon(a._exponents, b._exponents);
   }
 
   void colon(const Exponent* a, const Exponent* b) {
     ::colon(_exponents, a, b, _varCount);
+  }
+
+  void encodedDual(const Term& dualOf, const Term& point) {
+    ASSERT(_varCount == dualOf._varCount);
+    ASSERT(_varCount == point._varCount);
+    encodedDual(dualOf._exponents, point._exponents);
+  }
+
+  void encodedDual(const Exponent* dualOf, const Exponent* point) {
+    ::encodedDual(_exponents, dualOf, point, _varCount);
   }
 
   void decrement() {

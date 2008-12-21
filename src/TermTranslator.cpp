@@ -244,6 +244,28 @@ void TermTranslator::addPurePowersAtInfinity(Ideal& ideal) const {
   }
 }
 
+void TermTranslator::setInfinityPowersToZero(Ideal& ideal) const {
+  size_t varCount = ideal.getVarCount();
+  Ideal::iterator term = ideal.begin();
+  while (term != ideal.end()) {
+	bool changed = false;
+	for (size_t var = 0; var < varCount; ++var) {
+	  if ((*term)[var] == getMaxId(var)) {
+		ASSERT(getExponent(var, (*term)[var]) == 0);
+		(*term)[var] = 0;
+		changed = true;
+	  }
+	}
+	if (changed && ::isIdentity(*term, varCount)) {
+	  bool last = (term + 1 == ideal.end());
+	  ideal.remove(term);
+	  if (last)
+		break;
+	} else
+	  ++term;
+  }
+}
+
 void TermTranslator::dualize(const vector<mpz_class>& a) {
   clearStrings();
   for (size_t var = 0; var < _exponents.size(); ++var)

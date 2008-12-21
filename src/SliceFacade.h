@@ -114,6 +114,10 @@ class SliceFacade : public Facade {
   // components are provided in arbitrary order.
   void computeIrreducibleDecomposition(bool encode);
 
+  // Compute the unique "nicest" primary decomposition. Each primary
+  // component is output as a separate ideal in arbitrary order.
+  void computePrimaryDecomposition();
+
   // Compute each maximal staircase monomial. A monomial m is a
   // staircase monomial if it belongs to the ideal, while the monomial
   // m : (x_1 ... x_n) does not. A monomial m is a maximal staircase
@@ -137,6 +141,7 @@ class SliceFacade : public Facade {
   //
   // It is an error for the size of point to be different from the
   // number of variables of ideal.
+  // TODO: actually implement this.
   void computeAlexanderDual(const vector<mpz_class>& point);
 
   // Like computeAlexanderDual, except that the point is set to the
