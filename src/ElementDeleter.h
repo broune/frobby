@@ -131,4 +131,19 @@ void exceptionSafePushBack(Container& container, auto_ptr<Element> pointer) {
   container.back() = pointer.release();
 }
 
+// Serves the same purpose as exceptionSafePushBack, except that this
+// overload will simply ignore an exception without propagating it.
+// Thus if there is not enough memory to add the element to the container,
+// the element will simply get deleted and the container will remain
+// unchanged. This works well if e.g. adding an element to a cache, where
+// it is no great problem if the element gets deleted rather than added.
+template<class Container, class Element>
+void noThrowPushBack(Container& container, auto_ptr<Element> pointer) throw () {
+  try {
+	exceptionSafePushBack(container, pointer);
+  } catch (const bad_alloc&) {
+	// Ignore the exception.
+  }
+}
+
 #endif
