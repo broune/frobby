@@ -135,7 +135,7 @@ test: all
 
 # Good for testing Frobby after a small change.
 microTest: all
-	test/runtests _few $(TESTARGS)
+	test/runTests _few $(TESTARGS)
 miniTest: all
 	test/runTests $(TESTARGS)
 
