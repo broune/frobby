@@ -125,7 +125,8 @@ endif
 # point in the test system than they are. There are more options - see
 # test/testScripts/testhelper for a full list.
 #
-# Only miniTest and bareTest support TESTARGS.
+# Only miniTest and bareTest support TESTARGS, and some options are not
+# available unless MODE=debug.
 
 # The correct choice to test an installation of Frobby.
 test: all
@@ -133,6 +134,8 @@ test: all
 	test/runSplitTests
 
 # Good for testing Frobby after a small change.
+microTest:
+	test/runtests _few $(TESTARGS)
 miniTest: all
 	test/runTests $(TESTARGS)
 

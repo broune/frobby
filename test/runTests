@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ "$1" = "_few" ]; then
+  testLevel="few";
+  shift;
+else
+  testLevel="normal"
+fi
+
 TIMEFORMAT=$' (%2lR real)'
 
 normalTests="hilbert irrdecom primdecom intersect assoprimes \
@@ -16,12 +23,15 @@ runNormalTests () {
   cd ../..;
 }
 
-for t in $normalTests;
-do
+for t in $normalTests; do
   echo -n "$t "
 
   echo -n "(s)";
   runNormalTests $t specialIdeals
+  if [ $testLevel = "few" ]; then
+    echo;
+	continue;
+  fi
 
   echo -n "(c)";
   runNormalTests $t commonIdeals
