@@ -1,0 +1,31 @@
+R = QQ[a, b, c, d];
+I = monomialIdeal(
+ a^2,
+ b^2,
+ c,
+ d
+);
+I = monomialIdeal(
+ a,
+ b^2,
+ c^2,
+ d
+);
+I = monomialIdeal(
+ a,
+ b,
+ c^2,
+ d^2
+);
+I = monomialIdeal(
+ a,
+ c
+);
+I = monomialIdeal(
+ b,
+ c
+);
+I = monomialIdeal(
+ b,
+ d
+);

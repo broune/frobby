@@ -31,6 +31,7 @@ Fourti2IOHandler::Fourti2IOHandler():
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
   registerOutput(MonomialIdeal);
+  registerOutput(MonomialIdealList);
   registerOutput(Polynomial);
 }
 
@@ -100,6 +101,7 @@ void Fourti2IOHandler::writePolynomialFooter(const VarNames& names,
 }
 
 void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
+										bool defineNewRing,
 										size_t generatorCount,
 										FILE* out) {
   ASSERT(out != 0);
@@ -167,7 +169,9 @@ void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,
 	 "Fourti2IOHandler using the overload that does not specify size.");
 }
 
-void Fourti2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
+										bool defineNewRing,
+										FILE* out) {
   ASSERT(false);
   reportInternalError
 	("The method writeIdealHeader called on object of type "

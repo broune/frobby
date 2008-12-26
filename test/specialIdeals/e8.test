@@ -1,0 +1,2 @@
+R = QQ[q, w, e, r, t, y, u, i, o];
+I = monomialIdeal(0_R);

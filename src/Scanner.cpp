@@ -36,9 +36,12 @@
 #define SCANNER_LOG(MSG) gmp_fprintf(stderr, MSG);
 #define SCANNER_LOG1(MSG, PARAM) \
   gmp_fprintf(stderr, MSG, PARAM);
+#define SCANNER_LOG2(MSG, PARAM1, PARAM2) \
+  gmp_fprintf(stderr, MSG, PARAM1, PARAM2);
 #else
 #define SCANNER_LOG(MSG) ;
 #define SCANNER_LOG1(MSG, PARAM) ;
+#define SCANNER_LOG2(MSG, PARAM1, PARAM2) ;
 #endif
 
 Scanner::Scanner(const string& formatName, FILE* in):
@@ -130,6 +133,7 @@ void Scanner::expect(const char* str) {
 	}
 
 	// Read the rest of what is there to improve error message.
+	// TODO: read at least one char in total even if not alnum.
 	FrobbyStringStream got;
 	if (character == EOF && it == str)
 	  got << "no more input";
@@ -153,13 +157,23 @@ void Scanner::expect(const string& str) {
 void Scanner::expectEOF() {
   SCANNER_LOG("Expecting End-Of-File.\n");
 
-  // TODO: get this moved into the null format itself
+  // TODO: get this moved into the null format itself.
   if (_formatName == "null")
 	return;
 
   eatWhite();
   if (getChar() != EOF)
 	reportErrorUnexpectedToken("no more input", "");
+}
+
+void Scanner::expected(char a, char b) {
+  SCANNER_LOG2("Expected %c or %c.\n", a, b);
+  ASSERT(!match(a));
+  ASSERT(!match(b));
+
+  FrobbyStringStream err;
+  err << a << " or " << b;
+  reportErrorUnexpectedToken(err, "");
 }
 
 size_t Scanner::readIntegerString() {
@@ -342,6 +356,15 @@ bool Scanner::peekWhite() {
 			   isspace(peek()) ? "found" : "not found");
 
   return isspace(peek());
+}
+
+bool Scanner::peek(char character) {
+  eatWhite();
+
+  SCANNER_LOG2("Peeking for character %c. Character %s.\n",
+			   character, peek() == character ? "found" : "not found");
+
+  return peek() == character;
 }
 
 int Scanner::getChar() {

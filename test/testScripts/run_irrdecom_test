@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+
+frobby=../../bin/frobby
+testhelper=../testScripts/testhelper
+test="$1"
+shift
+
+if [ "$1" = "_full" ];
+then
+  shift;
+
+  # Check -canon agrees with transform on ideal list
+  $testhelper transform $test.irrdecom $test.irrdecom -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Check -canon agrees with transform on ideal
+  $testhelper transform $test.irrdecom_ideal $test.irrdecom_ideal -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Check that taking products relate the two representations.
+  $testhelper transform $test.irrdecom $test.irrdecom_ideal \
+    -product -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Check that intersection is inverse of irrdecom.
+  $frobby transform < `ls $test.*test` > /tmp/$test.test \
+    -canon -minimize 2>/dev/null
+  $testhelper intersect $test.irrdecom /tmp/$test.test -canon
+  if [ $? != 0 ]; then exit 1; fi
+  rm /tmp/$test.test
+fi
+
+$testhelper irrdecom $test.*test $test.irrdecom $* -encode off -canon
+if [ $? != 0 ]; then exit 1; fi
+
+$testhelper irrdecom $test.*test $test.irrdecom_ideal $* -encode on -canon
+if [ $? != 0 ]; then exit 1; fi

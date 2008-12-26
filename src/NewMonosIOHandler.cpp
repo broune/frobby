@@ -42,7 +42,9 @@ void NewMonosIOHandler::writeTerm(const vector<mpz_class>& term,
   writeTermProduct(term, names, out);
 }
 
-void NewMonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+void NewMonosIOHandler::writeIdealHeader(const VarNames& names,
+										 bool defineNewRing,
+										 FILE* out) {
   fputs("(monomial-ideal-with-order\n (lex-order", out);
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
 	putc(' ', out);

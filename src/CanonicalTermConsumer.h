@@ -25,9 +25,12 @@ class TermTranslator;
 
 #include "Ideal.h"
 #include "TermConsumer.h"
+#include "ElementDeleter.h"
 
 // Passes consumed items on in a canonical order. This requires
-// storing all items before any can be passed on.
+// storing all items before any can be passed on, which can take a lot
+// of memory. The ideals are not minimized, so adding non-minimal
+// generators can have an effect on the sorted order.
 class CanonicalTermConsumer : public TermConsumer {
  public:
   // The translator, if non-null, is used to identify exponents that
@@ -36,13 +39,26 @@ class CanonicalTermConsumer : public TermConsumer {
 						size_t varCount,
 						TermTranslator* translator = 0);
 
+  // This method is not required to be called. If it is called, the list
+  // of ideals will be sorted and then passed on. If it is not called, each
+  // ideal will be passed on immediately.
+  virtual void beginConsumingList();
+
   virtual void beginConsuming();
   virtual void consume(const Term& term);
   virtual void doneConsuming();
 
+  virtual void doneConsumingList();
+
  private:
+  void passLastIdeal();
+  void canonicalizeIdeal(Ideal& ideal);
+
+  size_t _varCount;
+  bool _storingList;
+  vector<Ideal*> _ideals;
+  ElementDeleter<vector<Ideal*> > _idealsDeleter;
   auto_ptr<TermConsumer> _consumer;
-  Ideal _ideal;
   TermTranslator* _translator;
 };
 

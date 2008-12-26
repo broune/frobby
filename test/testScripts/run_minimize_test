@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+frobby=../../bin/frobby
+testhelper=../testScripts/testhelper
+test="$1"
+shift
+
+if [ "$1" = "_full" ];
+then
+  shift;
+
+  # Check that -canon agrees with transform without -minimize on.
+  $testhelper transform $test.minimize $test.minimize -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Check that minimize is idempotent.
+  $testhelper transform $test.minimize $test.minimize -minimize -canon
+  if [ $? != 0 ]; then exit 1; fi
+fi
+
+$testhelper transform $test.*test $test.minimize $* -canon -minimize

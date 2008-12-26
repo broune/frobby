@@ -30,6 +30,7 @@
 #include "NameFactory.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
+#include "ElementDeleter.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -94,46 +95,48 @@ public:
 	_handler(handler),
 	_translator(translator),
 	_out(out),
-	_first(true) {
+	_firstIdeal(true),
+	_firstGenerator(true) {
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
   }
 
-  IdealWriter(IOHandler* handler,
-			  const TermTranslator* translator,
-			  size_t generatorCount,
-			  FILE* out):
-	_handler(handler),
-	_translator(translator),
-	_out(out),
-	_first(true) {
-	ASSERT(handler != 0);
-	ASSERT(translator != 0);
-	ASSERT(out != 0);
+  virtual void beginConsumingList() {
+	_firstIdeal = true;
   }
 
   virtual void beginConsuming() {
-	_handler->writeIdealHeader(_translator->getNames(), _out);
-	_first = true;
+	_handler->writeIdealHeader(_translator->getNames(), _firstIdeal, _out);
+	_firstGenerator = true;
   }
 
   virtual void consume(const Term& term) {
 	ASSERT(term.getVarCount() == _translator->getVarCount());
 
-	_handler->writeTermOfIdeal(term, _translator, _first, _out);
-	_first = false;
+	_handler->writeTermOfIdeal(term, _translator, _firstGenerator, _out);
+	_firstGenerator = false;
   }
 
   virtual void doneConsuming() {
-	_handler->writeIdealFooter(_translator->getNames(), !_first, _out);
+	_handler->writeIdealFooter(_translator->getNames(), !_firstGenerator, _out);
+	_firstIdeal = false;
+  }
+
+  virtual void doneConsumingList() {
+	if (_firstIdeal) {
+	  // Output empty list.
+	  vector<BigIdeal*> ideals;
+	  _handler->writeIdeals(ideals, _translator->getNames(), _out);
+	}
   }
 
 private:
   IOHandler* _handler;
   const TermTranslator* _translator;
   FILE* _out;
-  bool _first;
+  bool _firstIdeal;
+  bool _firstGenerator;
 };
 
 class IrreducibleIdealWriter : public TermConsumer {
@@ -145,7 +148,8 @@ public:
 	_handler(handler),
 	_translator(translator),
 	_out(out),
-	_tmp(translator->getVarCount()) {
+	_tmp(translator->getVarCount()),
+	_firstIdeal(true) {
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
@@ -164,22 +168,29 @@ public:
 	  if (_translator->getExponent(var, term) != 0)
 		++support;
 
-	_handler->writeIdealHeader(_translator->getNames(), support, _out);
-	bool first = true;
+	_handler->writeIdealHeader(_translator->getNames(), _firstIdeal,
+							   support, _out);
+	bool firstGenerator = true;
 	for (size_t var = 0; var < _varCount; ++var) {
 	  if (_translator->getExponent(var, term) != 0) {
 		_tmp[var] = term[var];
-		_handler->writeTermOfIdeal(_tmp, _translator, first, _out);
-		first = false;
+		_handler->writeTermOfIdeal(_tmp, _translator, firstGenerator, _out);
+		firstGenerator = false;
 		_tmp[var] = 0;
 	  }
 	}
-	_handler->writeIdealFooter(_translator->getNames(), true, _out);
+	_handler->writeIdealFooter(_translator->getNames(), !firstGenerator, _out);
 
+	_firstIdeal = false;
 	ASSERT(_tmp.isIdentity());
   }
 
   virtual void doneConsuming() {
+	if (_firstIdeal) {
+	  // Write empty list of ideals.
+	  vector<BigIdeal*> ideals;
+	  _handler->writeIdeals(ideals, _translator->getNames(), _out);
+	}
   }
 
 private:
@@ -188,8 +199,12 @@ private:
   const TermTranslator* _translator;
   FILE* _out;
   Term _tmp;
+  bool _firstIdeal;
 };
 
+// TODO: give this and CanonicalTermConsumer a common base class. Also consider
+// support for passing along whole ideals and even lists of ideals at one
+// time instead of piece-meal.
 class DelayedIdealWriter : public TermConsumer {
  public:
   DelayedIdealWriter(IOHandler* handler,
@@ -198,30 +213,51 @@ class DelayedIdealWriter : public TermConsumer {
 	_handler(handler),
 	_translator(translator),
 	_out(out),
-	_ideal(translator->getVarCount()) {
+	_ideal(translator->getVarCount()),
+	_firstIdeal(true) {
 	ASSERT(handler != 0);
 	ASSERT(translator != 0);
 	ASSERT(out != 0);
   }
 
+  virtual void beginConsumingList() {
+	ASSERT(_ideal.isZeroIdeal());
+	_firstIdeal = true;
+  }
+
   virtual void beginConsuming() {
+	ASSERT(_ideal.isZeroIdeal());
   }
 
   virtual void consume(const Term& term) {
 	ASSERT(term.getVarCount() == _ideal.getVarCount());
-
 	_ideal.insert(term);
   }
 
   virtual void doneConsuming() {
-	IdealWriter writer(_handler, _translator,
-					   _ideal.getGeneratorCount(), _out);
+	_handler->writeIdealHeader(_translator->getNames(), _firstIdeal,
+							   _ideal.getGeneratorCount(), _out);
 
-	Term tmp(_ideal.getVarCount());
-	Ideal::const_iterator stop = _ideal.end();
-	for (Ideal::const_iterator it = _ideal.begin(); it != stop; ++it) {
-	  tmp = *it;
-	  writer.consume(tmp);
+	bool firstGenerator = true;
+	Term term(_ideal.getVarCount());
+	Ideal::const_iterator end = _ideal.end();
+	for (Ideal::const_iterator it = _ideal.begin(); it != end; ++it) {
+	  term = *it;
+	  _handler->writeTermOfIdeal(term, _translator, firstGenerator, _out);
+	  firstGenerator = false;
+	}
+	_handler->writeIdealFooter(_translator->getNames(), !firstGenerator, _out);
+	
+	_firstIdeal = false;
+	_ideal.clear();
+  }
+
+  virtual void doneConsumingList() {
+	ASSERT(_ideal.isZeroIdeal());
+	if (_firstIdeal) {
+	  // Output empty list.
+	  vector<BigIdeal*> ideals;
+	  _handler->writeIdeals(ideals, _translator->getNames(), _out);
 	}
   }
 
@@ -230,16 +266,49 @@ private:
   const TermTranslator* _translator;
   FILE* _out;
   Ideal _ideal;
+  bool _firstIdeal;
 };
 
-void IOHandler::readIdeals(Scanner& in, vector<BigIdeal*> ideals) {
+// If you overload this method, which is a nice thing to do, also
+// overload readIdeals.
+void IOHandler::readIdeal(Scanner& in, BigIdeal& ideal,
+						  const VarNames& names) {
+  readIdeal(in, ideal);
+}
+
+// The default implementation uses the initial value of names to
+// call readIdeal with a names parameter repeatedly. If readIdeal is
+// overloaded to make use of the names paramter, this method should also
+// be overloaded to require a ring to be present. In that case this
+// implementation can be called after the initial ring has been read.
+void IOHandler::readIdeals(Scanner& in,
+						   vector<BigIdeal*>& ideals,
+						   VarNames& names) {
   ASSERT(supportsInput(MonomialIdealList));
 
+  // To make it clear what needs to be deleted in case of an exception.
+  ASSERT(ideals.empty());
+
+  ElementDeleter<vector<BigIdeal*> > idealsDeleter(ideals);
+
+  const VarNames* lastRing = &names;
   while (hasMoreInput(in)) {
-	BigIdeal* ideal = new BigIdeal();
-	readIdeal(in, *ideal);
-	ideals.push_back(ideal);
+    auto_ptr<BigIdeal> ideal(new BigIdeal());
+	readIdeal(in, *ideal, *lastRing);
+	lastRing = &(ideal->getNames());
+	exceptionSafePushBack(ideals, ideal);
   }
+
+  // TODO: consider making readIdeal read into the passed-in ideal if given
+  // a non-const reference. This would decrease the number of temporary
+  // names in the reading code, and avoid the need for this copy.
+  // TODO: consider even more strongly getting a hold of a shared_ptr
+  // implementation, and then have VarNames immutable and only ever
+  // represented as a shared_ptr. This would make input more efficient
+  // and simpler.
+  names = *lastRing;
+
+  idealsDeleter.release();
 }
 
 void IOHandler::readTerm(Scanner& in,
@@ -258,12 +327,34 @@ void IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
 IOHandler::~IOHandler() {
 }
 
-void IOHandler::writeIdeal(const BigIdeal& ideal, FILE* out) {
+void IOHandler::writeIdeal(const BigIdeal& ideal,
+						   bool defineNewRing,
+						   FILE* out) {
   size_t generatorCount = ideal.getGeneratorCount();
-  writeIdealHeader(ideal.getNames(), generatorCount, out);
+  writeIdealHeader(ideal.getNames(), defineNewRing, generatorCount, out);
   for (size_t i = 0; i < generatorCount; ++i)
 	writeTermOfIdeal(ideal[i], ideal.getNames(), i == 0, out);
   writeIdealFooter(ideal.getNames(), generatorCount > 0, out);
+}
+
+void IOHandler::writeIdeals(const vector<BigIdeal*>& ideals,
+							const VarNames& names,
+							FILE* out) {
+  vector<BigIdeal*>::const_iterator begin = ideals.begin();
+  vector<BigIdeal*>::const_iterator end = ideals.end();
+  for (vector<BigIdeal*>::const_iterator it = begin; it != end; ++it) {
+	const BigIdeal& ideal = **it;
+
+	bool defineNewRing;
+	if (it == begin)
+	  defineNewRing = true;
+	else {
+	  const BigIdeal& previousIdeal = **(it - 1);
+	  defineNewRing = (ideal.getNames() != previousIdeal.getNames());
+	}
+
+	writeIdeal(ideal, defineNewRing, out);
+  }
 }
 
 void IOHandler::writePolynomial(const BigPolynomial& polynomial, FILE* out) {
@@ -545,9 +636,10 @@ void IOHandler::writePolynomialFooter(const VarNames& names,
 }
 
 void IOHandler::writeIdealHeader(const VarNames& names,
+								 bool defineNewRing,
 								 size_t generatorCount,
 								 FILE* out) {
-  writeIdealHeader(names, out);
+  writeIdealHeader(names, defineNewRing, out);
 }
 
 class PolynomialWriter : public CoefTermConsumer {

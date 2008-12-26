@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+tests="primdecom alexdual irrdecom assoprimes hilbert radical intersect minimize"
+
+for t in $tests;
+do
+  echo -n "$t "
+  ../testScripts/runtests $t $*
+  if [ $? != 0 ]; then exit 1; fi
+  echo
+done

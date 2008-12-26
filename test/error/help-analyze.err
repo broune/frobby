@@ -15,6 +15,12 @@ The parameters accepted by analyze are as follows.
    The format "autodetect" instructs Frobby to guess the format.
    Type 'frobby help io' for more information on input formats.
 
+ -oformat STRING   (default is input)
+   The format used to write the output. This action supports the formats:
+     m2 cocoa4 singular monos newmonos 4ti2 null.
+   The format "input" instructs Frobby to use the input format.
+   Type 'frobby help io' for more information on output formats.
+
  -lcm [BOOL]   (default is off)
    Print the least common multiple of the generators.
 

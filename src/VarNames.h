@@ -20,6 +20,8 @@
 #include <vector>
 #include <string>
 
+class Scanner;
+
 // Use the GCC-specific hash_map class if compiling with GCC, and
 // otherwise use a std::map, which is present in all compilers.
 #ifdef __GNUC__ // Only GCC defines this macro
@@ -51,7 +53,13 @@ public:
   VarNames(const VarNames& names);
   ~VarNames();
 
+  // Adds the variable and returns true if name is not already a variable.
+  // Otherwise it returns false without adding the variable (again).
   bool addVar(const string& name);
+
+  // As addvar, except it reports a syntax error if name is already a
+  // variable.
+  void addVarSyntaxCheckUnique(const Scanner& in, const string& name);
 
   // This also depends on the order of the names.
   bool operator<(const VarNames& names) const;
@@ -76,6 +84,7 @@ public:
 
   VarNames& operator=(const VarNames& names);
   bool operator==(const VarNames& names) const;
+  bool operator!=(const VarNames& names) const;
 
   void swapVariables(size_t a, size_t b);
 

@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+test="run_$1_test"
+shift
+
+for t in `ls -S -r *.test`
+do
+  ../testScripts/$test `basename $t .test` $*
+  if [ $? != 0 ]; then exit 1; fi
+done

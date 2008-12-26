@@ -209,8 +209,10 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 
   minimize();
 
-  if (!encode)
+  if (!encode) {
 	doIrreducibleIdealOutput();
+	getTermConsumer()->beginConsumingList();
+  }
 
   beginAction("Preparing to compute irreducible decomposition.");
 
@@ -219,6 +221,9 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
   endAction();
 
   computeMaximalStaircaseMonomials();
+
+  if (!encode)
+	getTermConsumer()->doneConsumingList();
 }
 
 void SliceFacade::computePrimaryDecomposition() {
@@ -262,6 +267,8 @@ void SliceFacade::computePrimaryDecomposition() {
 
   DecomRecorder recorder(&primaryComponent);
 
+  getTermConsumer()->beginConsumingList();
+
   Ideal::const_iterator stop = irreducibleDecom.end();
   Ideal::const_iterator it = irreducibleDecom.begin();
   while (it != stop) {
@@ -292,6 +299,8 @@ void SliceFacade::computePrimaryDecomposition() {
 	primaryComponent.clear();
 	primaryComponentDual.clear();
   }
+
+  getTermConsumer()->doneConsumingList();
 
   endAction();
 }

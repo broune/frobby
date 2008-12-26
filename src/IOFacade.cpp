@@ -55,29 +55,17 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   endAction();
 }
 
-void IOFacade::readIdeals(Scanner& in, vector<BigIdeal*>& ideals) {
-  ASSERT(ideals.empty());
+void IOFacade::readIdeals(Scanner& in,
+						  vector<BigIdeal*>& ideals,
+						  VarNames& names) {
+  ASSERT(ideals.empty()); // Because IOHandler requires it.
   beginAction("Reading monomial ideals.");
 
-  ElementDeleter<vector<BigIdeal*> > idealsDeleter(ideals);
-
   auto_ptr<IOHandler> handler(in.createIOHandler());
-  ASSERT(handler.get() != 0);
-
-  while (handler->hasMoreInput(in)) {
-    auto_ptr<BigIdeal> ideal(new BigIdeal());
-	handler->readIdeal(in, *ideal);
-
-	// We have to call release *after* push_back since
-	// push_back(release()) leaks memory in case of push_back throwing
-	// an exception.
-    ideals.push_back(ideal.get());
-	ideal.release();
-  }
+  handler->readIdeals(in, ideals, names);
   in.expectEOF();
 
   endAction();
-  idealsDeleter.release();
 }
 
 void IOFacade::writeIdeal(const BigIdeal& ideal,
@@ -87,9 +75,22 @@ void IOFacade::writeIdeal(const BigIdeal& ideal,
 
   beginAction("Writing monomial ideal.");
 
-  handler->writeIdeal(ideal, out);
+  handler->writeIdeal(ideal, true, out);
 
   endAction();
+}
+
+void IOFacade::writeIdeals(const vector<BigIdeal*>& ideals,
+						   const VarNames& names,
+						   IOHandler* handler,
+						   FILE* out) {
+  ASSERT(handler != 0);
+
+  beginAction("Writing monomial ideals.");
+
+  handler->writeIdeals(ideals, names, out);
+
+  endAction();  
 }
 
 void IOFacade::readPolynomial(Scanner& in, BigPolynomial& polynomial) {

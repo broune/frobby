@@ -1,0 +1,19 @@
+These are edge cases, such as ideals having no variables or a very
+large number of variables, and special cases.
+
+e1 - no variables, zero ideal
+e2 - no variables, whole ring
+e3 - one variable, zero ideal
+e4 - one variable, whole ring
+e5 - one variable, that var as generator
+e6 - long variable name, large exponent
+e7 - large number of variables, various special exponents
+e8 - several variables, zero ideal
+e9 - three independent blocks of generators
+e10 - two variables, three generators
+e11 - square-free ideal, circle of three elements, one non-minimal generator
+e12 - two variables, zero ideal
+e13 - two variables, whole ring
+e14 - four variables, four pure powers
+e15 - no variables, redundant 1 generators
+e16 - several variables, whole ring

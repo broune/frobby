@@ -4,6 +4,7 @@ run it by typing `frobby ACTION', where ACTION is one of the following.
 
  hilbert      - Compute the Hilbert-Poincare series of the input ideal.
  irrdecom     - Compute the irreducible decomposition of the input ideal.
+ primdecom    - Compute the primary decomposition of monomial ideals.
  alexdual     - Compute the Alexander dual of the input ideal.
  assoprimes   - Compute the associated primes of the input ideal.
  transform    - Change the representation of the input ideal.

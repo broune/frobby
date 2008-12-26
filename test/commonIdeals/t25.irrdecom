@@ -1,0 +1,32 @@
+vars a, b, c;
+[
+ a^3,
+ c^2
+];
+vars a, b, c;
+[
+ a^2,
+ c^3
+];
+vars a, b, c;
+[
+ a
+];
+vars a, b, c;
+[
+ b^3,
+ c^2
+];
+vars a, b, c;
+[
+ b^2,
+ c^3
+];
+vars a, b, c;
+[
+ b
+];
+vars a, b, c;
+[
+ c
+];

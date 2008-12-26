@@ -37,7 +37,9 @@ public:
 									 bool wroteAnyGenerators,
 									 FILE* out);
 
-  virtual void writeIdealHeader(const VarNames& names, FILE* out);
+  virtual void writeIdealHeader(const VarNames& names,
+								bool defineNewRing,
+								FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
 								const TermTranslator* translator,
 								bool isFirst,

@@ -49,7 +49,9 @@ void CoCoA4IOHandler::writeTerm(const vector<mpz_class>& term,
   writeCoCoA4TermProduct(term, names, out);
 }
 
-void CoCoA4IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+void CoCoA4IOHandler::writeIdealHeader(const VarNames& names,
+									   bool defineNewRing,
+									   FILE* out) {
   writeRing(names, out);
   fputs("I := Ideal(", out);
 }

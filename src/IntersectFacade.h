@@ -21,12 +21,17 @@
 #include "Facade.h"
 
 class BigIdeal;
+class VarNames;
 
 class IntersectFacade : Facade {
  public:
   IntersectFacade(bool printActions);
 
-  BigIdeal* intersect(const vector<BigIdeal*>& ideals);
+  // Returns the intersection of ideals. If ideals is empty, then the
+  // whole ring is the intersection, which requires knowing the ring,
+  // and this is what names contains.
+  auto_ptr<BigIdeal> intersect(const vector<BigIdeal*>& ideals,
+							   const VarNames& names);
 };
 
 #endif

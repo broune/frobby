@@ -1,0 +1,3460 @@
+R = QQ[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, a, a1, a10, a100, a11, a12, a13, a14, a15, a16, a17, a18, a19, a2, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a3, a30, a31, a32, a33, a34, a35, a36, a37, a38, a39, a4, a40, a41, a42, a43, a44, a45, a46, a47, a48, a49, a5, a50, a51, a52, a53, a54, a55, a56, a57, a58, a59, a6, a60, a61, a62, a63, a64, a65, a66, a67, a68, a69, a7, a70, a71, a72, a73, a74, a75, a76, a77, a78, a79, a8, a80, a81, a82, a83, a84, a85, a86, a87, a88, a89, a9, a90, a91, a92, a93, a94, a95, a96, a97, a98, a99, aa00bob, b, b1, b10, b100, b11, b12, b13, b14, b15, b16, b17, b18, b19, b2, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b3, b30, b31, b32, b33, b34, b35, b36, b37, b38, b39, b4, b40, b41, b42, b43, b44, b45, b46, b47, b48, b49, b5, b50, b51, b52, b53, b54, b55, b56, b57, b58, b59, b6, b60, b61, b62, b63, b64, b65, b66, b67, b68, b69, b7, b70, b71, b72, b73, b74, b75, b76, b77, b78, b79, b8, b80, b81, b82, b83, b84, b85, b86, b87, b88, b89, b9, b90, b91, b92, b93, b94, b95, b96, b97, b98, b99, c, c1, c10, c100, c11, c12, c13, c14, c15, c16, c17, c18, c19, c2, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c3, c30, c31, c32, c33, c34, c35, c36, c37, c38, c39, c4, c40, c41, c42, c43, c44, c45, c46, c47, c48, c49, c5, c50, c51, c52, c53, c54, c55, c56, c57, c58, c59, c6, c60, c61, c62, c63, c64, c65, c66, c67, c68, c69, c7, c70, c71, c72, c73, c74, c75, c76, c77, c78, c79, c8, c80, c81, c82, c83, c84, c85, c86, c87, c88, c89, c9, c90, c91, c92, c93, c94, c95, c96, c97, c98, c99, d, d1, d10, d100, d11, d12, d13, d14, d15, d16, d17, d18, d19, d2, d20, d21, d22, d23, d24, d25, d26, d27, d28, d29, d3, d30, d31, d32, d33, d34, d35, d36, d37, d38, d39, d4, d40, d41, d42, d43, d44, d45, d46, d47, d48, d49, d5, d50, d51, d52, d53, d54, d55, d56, d57, d58, d59, d6, d60, d61, d62, d63, d64, d65, d66, d67, d68, d69, d7, d70, d71, d72, d73, d74, d75, d76, d77, d78, d79, d8, d80, d81, d82, d83, d84, d85, d86, d87, d88, d89, d9, d90, d91, d92, d93, d94, d95, d96, d97, d98, d99, e, e1, e10, e100, e11, e12, e13, e14, e15, e16, e17, e18, e19, e2, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e3, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e4, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49, e5, e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e6, e60, e61, e62, e63, e64, e65, e66, e67, e68, e69, e7, e70, e71, e72, e73, e74, e75, e76, e77, e78, e79, e8, e80, e81, e82, e83, e84, e85, e86, e87, e88, e89, e9, e90, e91, e92, e93, e94, e95, e96, e97, e98, e99, f, f1, f10, f100, f11, f12, f13, f14, f15, f16, f17, f18, f19, f2, f20, f21, f22, f23, f24, f25, f26, f27, f28, f29, f3, f30, f31, f32, f33, f34, f35, f36, f37, f38, f39, f4, f40, f41, f42, f43, f44, f45, f46, f47, f48, f49, f5, f50, f51, f52, f53, f54, f55, f56, f57, f58, f59, f6, f60, f61, f62, f63, f64, f65, f66, f67, f68, f69, f7, f70, f71, f72, f73, f74, f75, f76, f77, f78, f79, f8, f80, f81, f82, f83, f84, f85, f86, f87, f88, f89, f9, f90, f91, f92, f93, f94, f95, f96, f97, f98, f99, g, g1, g10, g100, g11, g12, g13, g14, g15, g16, g17, g18, g19, g2, g20, g21, g22, g23, g24, g25, g26, g27, g28, g29, g3, g30, g31, g32, g33, g34, g35, g36, g37, g38, g39, g4, g40, g41, g42, g43, g44, g45, g46, g47, g48, g49, g5, g50, g51, g52, g53, g54, g55, g56, g57, g58, g59, g6, g60, g61, g62, g63, g64, g65, g66, g67, g68, g69, g7, g70, g71, g72, g73, g74, g75, g76, g77, g78, g79, g8, g80, g81, g82, g83, g84, g85, g86, g87, g88, g89, g9, g90, g91, g92, g93, g94, g95, g96, g97, g98, g99, h, h1, h10, h100, h11, h12, h13, h14, h15, h16, h17, h18, h19, h2, h20, h21, h22, h23, h24, h25, h26, h27, h28, h29, h3, h30, h31, h32, h33, h34, h35, h36, h37, h38, h39, h4, h40, h41, h42, h43, h44, h45, h46, h47, h48, h49, h5, h50, h51, h52, h53, h54, h55, h56, h57, h58, h59, h6, h60, h61, h62, h63, h64, h65, h66, h67, h68, h69, h7, h70, h71, h72, h73, h74, h75, h76, h77, h78, h79, h8, h80, h81, h82, h83, h84, h85, h86, h87, h88, h89, h9, h90, h91, h92, h93, h94, h95, h96, h97, h98, h99, i, i1, i10, i100, i11, i12, i13, i14, i15, i16, i17, i18, i19, i2, i20, i21, i22, i23, i24, i25, i26, i27, i28, i29, i3, i30, i31, i32, i33, i34, i35, i36, i37, i38, i39, i4, i40, i41, i42, i43, i44, i45, i46, i47, i48, i49, i5, i50, i51, i52, i53, i54, i55, i56, i57, i58, i59, i6, i60, i61, i62, i63, i64, i65, i66, i67, i68, i69, i7, i70, i71, i72, i73, i74, i75, i76, i77, i78, i79, i8, i80, i81, i82, i83, i84, i85, i86, i87, i88, i89, i9, i90, i91, i92, i93, i94, i95, i96, i97, i98, i99, j, j1, j10, j100, j11, j12, j13, j14, j15, j16, j17, j18, j19, j2, j20, j21, j22, j23, j24, j25, j26, j27, j28, j29, j3, j30, j31, j32, j33, j34, j35, j36, j37, j38, j39, j4, j40, j41, j42, j43, j44, j45, j46, j47, j48, j49, j5, j50, j51, j52, j53, j54, j55, j56, j57, j58, j59, j6, j60, j61, j62, j63, j64, j65, j66, j67, j68, j69, j7, j70, j71, j72, j73, j74, j75, j76, j77, j78, j79, j8, j80, j81, j82, j83, j84, j85, j86, j87, j88, j89, j9, j90, j91, j92, j93, j94, j95, j96, j97, j98, j99, k, k1, k10, k100, k11, k12, k13, k14, k15, k16, k17, k18, k19, k2, k20, k21, k22, k23, k24, k25, k26, k27, k28, k29, k3, k30, k31, k32, k33, k34, k35, k36, k37, k38, k39, k4, k40, k41, k42, k43, k44, k45, k46, k47, k48, k49, k5, k50, k51, k52, k53, k54, k55, k56, k57, k58, k59, k6, k60, k61, k62, k63, k64, k65, k66, k67, k68, k69, k7, k70, k71, k72, k73, k74, k75, k76, k77, k78, k79, k8, k80, k81, k82, k83, k84, k85, k86, k87, k88, k89, k9, k90, k91, k92, k93, k94, k95, k96, k97, k98, k99, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z];
+I = monomialIdeal(
+ A^128
+);
+I = monomialIdeal(
+ B^65537
+);
+I = monomialIdeal(
+ C^65535
+);
+I = monomialIdeal(
+ D^255
+);
+I = monomialIdeal(
+ E^17
+);
+I = monomialIdeal(
+ F^256
+);
+I = monomialIdeal(
+ G^257
+);
+I = monomialIdeal(
+ H^511
+);
+I = monomialIdeal(
+ I^64
+);
+I = monomialIdeal(
+ J^512
+);
+I = monomialIdeal(
+ K^513
+);
+I = monomialIdeal(
+ L^1023
+);
+I = monomialIdeal(
+ M^4294967296
+);
+I = monomialIdeal(
+ N^4294967295
+);
+I = monomialIdeal(
+ O^65
+);
+I = monomialIdeal(
+ P^127
+);
+I = monomialIdeal(
+ Q^15
+);
+I = monomialIdeal(
+ R^31
+);
+I = monomialIdeal(
+ S^129
+);
+I = monomialIdeal(
+ T^32
+);
+I = monomialIdeal(
+ U^63
+);
+I = monomialIdeal(
+ V^65536
+);
+I = monomialIdeal(
+ W^16
+);
+I = monomialIdeal(
+ X^1025
+);
+I = monomialIdeal(
+ Y^33
+);
+I = monomialIdeal(
+ Z^1024
+);
+I = monomialIdeal(
+ a^10
+);
+I = monomialIdeal(
+ a1^4294967297
+);
+I = monomialIdeal(
+ a10^1001
+);
+I = monomialIdeal(
+ a100
+);
+I = monomialIdeal(
+ a11^9999
+);
+I = monomialIdeal(
+ a12^10000
+);
+I = monomialIdeal(
+ a13^10001
+);
+I = monomialIdeal(
+ a14^99999
+);
+I = monomialIdeal(
+ a15^100000
+);
+I = monomialIdeal(
+ a16^100001
+);
+I = monomialIdeal(
+ a17^999999
+);
+I = monomialIdeal(
+ a18^1000000
+);
+I = monomialIdeal(
+ a19^1000001
+);
+I = monomialIdeal(
+ a2^18446744073709551615
+);
+I = monomialIdeal(
+ a20^9999999
+);
+I = monomialIdeal(
+ a21^10000000
+);
+I = monomialIdeal(
+ a22^10000001
+);
+I = monomialIdeal(
+ a23^99999999
+);
+I = monomialIdeal(
+ a24^100000000
+);
+I = monomialIdeal(
+ a25^100000001
+);
+I = monomialIdeal(
+ a26^999999999
+);
+I = monomialIdeal(
+ a27^1000000000
+);
+I = monomialIdeal(
+ a28^1000000001
+);
+I = monomialIdeal(
+ a29^9999999999
+);
+I = monomialIdeal(
+ a3^18446744073709551616
+);
+I = monomialIdeal(
+ a30^10000000000
+);
+I = monomialIdeal(
+ a31^10000000001
+);
+I = monomialIdeal(
+ a32^99999999999
+);
+I = monomialIdeal(
+ a33^100000000000
+);
+I = monomialIdeal(
+ a34^100000000001
+);
+I = monomialIdeal(
+ a35^999999999999
+);
+I = monomialIdeal(
+ a36^1000000000000
+);
+I = monomialIdeal(
+ a37^1000000000001
+);
+I = monomialIdeal(
+ a38^9999999999999
+);
+I = monomialIdeal(
+ a39^10000000000000
+);
+I = monomialIdeal(
+ a4^18446744073709551617
+);
+I = monomialIdeal(
+ a40^10000000000001
+);
+I = monomialIdeal(
+ a41^99999999999999
+);
+I = monomialIdeal(
+ a42^100000000000000
+);
+I = monomialIdeal(
+ a43^100000000000001
+);
+I = monomialIdeal(
+ a44^999999999999999
+);
+I = monomialIdeal(
+ a45^1000000000000000
+);
+I = monomialIdeal(
+ a46^1000000000000001
+);
+I = monomialIdeal(
+ a47^9999999999999999
+);
+I = monomialIdeal(
+ a48^10000000000000000
+);
+I = monomialIdeal(
+ a49^10000000000000001
+);
+I = monomialIdeal(
+ a5^99
+);
+I = monomialIdeal(
+ a50^9999999999999999
+);
+I = monomialIdeal(
+ a51^10000000000000000
+);
+I = monomialIdeal(
+ a52^10000000000000001
+);
+I = monomialIdeal(
+ a53^9999999999999998
+);
+I = monomialIdeal(
+ a54
+);
+I = monomialIdeal(
+ a55
+);
+I = monomialIdeal(
+ a56
+);
+I = monomialIdeal(
+ a57
+);
+I = monomialIdeal(
+ a58
+);
+I = monomialIdeal(
+ a59
+);
+I = monomialIdeal(
+ a6^100
+);
+I = monomialIdeal(
+ a60
+);
+I = monomialIdeal(
+ a61
+);
+I = monomialIdeal(
+ a62
+);
+I = monomialIdeal(
+ a63
+);
+I = monomialIdeal(
+ a64
+);
+I = monomialIdeal(
+ a65
+);
+I = monomialIdeal(
+ a66
+);
+I = monomialIdeal(
+ a67
+);
+I = monomialIdeal(
+ a68
+);
+I = monomialIdeal(
+ a69
+);
+I = monomialIdeal(
+ a7^101
+);
+I = monomialIdeal(
+ a70
+);
+I = monomialIdeal(
+ a71
+);
+I = monomialIdeal(
+ a72
+);
+I = monomialIdeal(
+ a73
+);
+I = monomialIdeal(
+ a74
+);
+I = monomialIdeal(
+ a75
+);
+I = monomialIdeal(
+ a76
+);
+I = monomialIdeal(
+ a77
+);
+I = monomialIdeal(
+ a78
+);
+I = monomialIdeal(
+ a79
+);
+I = monomialIdeal(
+ a8^999
+);
+I = monomialIdeal(
+ a80
+);
+I = monomialIdeal(
+ a81
+);
+I = monomialIdeal(
+ a82
+);
+I = monomialIdeal(
+ a83
+);
+I = monomialIdeal(
+ a84
+);
+I = monomialIdeal(
+ a85
+);
+I = monomialIdeal(
+ a86
+);
+I = monomialIdeal(
+ a87
+);
+I = monomialIdeal(
+ a88
+);
+I = monomialIdeal(
+ a89
+);
+I = monomialIdeal(
+ a9^1000
+);
+I = monomialIdeal(
+ a90
+);
+I = monomialIdeal(
+ a91
+);
+I = monomialIdeal(
+ a92
+);
+I = monomialIdeal(
+ a93
+);
+I = monomialIdeal(
+ a94
+);
+I = monomialIdeal(
+ a95
+);
+I = monomialIdeal(
+ a96
+);
+I = monomialIdeal(
+ a97
+);
+I = monomialIdeal(
+ a98
+);
+I = monomialIdeal(
+ a99
+);
+I = monomialIdeal(
+ aa00bob
+);
+I = monomialIdeal(
+ b^23
+);
+I = monomialIdeal(
+ b1
+);
+I = monomialIdeal(
+ b10
+);
+I = monomialIdeal(
+ b100
+);
+I = monomialIdeal(
+ b11
+);
+I = monomialIdeal(
+ b12
+);
+I = monomialIdeal(
+ b13
+);
+I = monomialIdeal(
+ b14
+);
+I = monomialIdeal(
+ b15
+);
+I = monomialIdeal(
+ b16
+);
+I = monomialIdeal(
+ b17
+);
+I = monomialIdeal(
+ b18
+);
+I = monomialIdeal(
+ b19
+);
+I = monomialIdeal(
+ b2
+);
+I = monomialIdeal(
+ b20
+);
+I = monomialIdeal(
+ b21
+);
+I = monomialIdeal(
+ b22
+);
+I = monomialIdeal(
+ b23
+);
+I = monomialIdeal(
+ b24
+);
+I = monomialIdeal(
+ b25
+);
+I = monomialIdeal(
+ b26
+);
+I = monomialIdeal(
+ b27
+);
+I = monomialIdeal(
+ b28
+);
+I = monomialIdeal(
+ b29
+);
+I = monomialIdeal(
+ b3
+);
+I = monomialIdeal(
+ b30
+);
+I = monomialIdeal(
+ b31
+);
+I = monomialIdeal(
+ b32
+);
+I = monomialIdeal(
+ b33
+);
+I = monomialIdeal(
+ b34
+);
+I = monomialIdeal(
+ b35
+);
+I = monomialIdeal(
+ b36
+);
+I = monomialIdeal(
+ b37
+);
+I = monomialIdeal(
+ b38
+);
+I = monomialIdeal(
+ b39
+);
+I = monomialIdeal(
+ b4
+);
+I = monomialIdeal(
+ b40
+);
+I = monomialIdeal(
+ b41
+);
+I = monomialIdeal(
+ b42
+);
+I = monomialIdeal(
+ b43
+);
+I = monomialIdeal(
+ b44
+);
+I = monomialIdeal(
+ b45
+);
+I = monomialIdeal(
+ b46
+);
+I = monomialIdeal(
+ b47
+);
+I = monomialIdeal(
+ b48
+);
+I = monomialIdeal(
+ b49
+);
+I = monomialIdeal(
+ b5
+);
+I = monomialIdeal(
+ b50
+);
+I = monomialIdeal(
+ b51
+);
+I = monomialIdeal(
+ b52
+);
+I = monomialIdeal(
+ b53
+);
+I = monomialIdeal(
+ b54
+);
+I = monomialIdeal(
+ b55
+);
+I = monomialIdeal(
+ b56
+);
+I = monomialIdeal(
+ b57
+);
+I = monomialIdeal(
+ b58
+);
+I = monomialIdeal(
+ b59
+);
+I = monomialIdeal(
+ b6
+);
+I = monomialIdeal(
+ b60
+);
+I = monomialIdeal(
+ b61
+);
+I = monomialIdeal(
+ b62
+);
+I = monomialIdeal(
+ b63
+);
+I = monomialIdeal(
+ b64
+);
+I = monomialIdeal(
+ b65
+);
+I = monomialIdeal(
+ b66
+);
+I = monomialIdeal(
+ b67
+);
+I = monomialIdeal(
+ b68
+);
+I = monomialIdeal(
+ b69
+);
+I = monomialIdeal(
+ b7
+);
+I = monomialIdeal(
+ b70
+);
+I = monomialIdeal(
+ b71
+);
+I = monomialIdeal(
+ b72
+);
+I = monomialIdeal(
+ b73
+);
+I = monomialIdeal(
+ b74
+);
+I = monomialIdeal(
+ b75
+);
+I = monomialIdeal(
+ b76
+);
+I = monomialIdeal(
+ b77
+);
+I = monomialIdeal(
+ b78
+);
+I = monomialIdeal(
+ b79
+);
+I = monomialIdeal(
+ b8
+);
+I = monomialIdeal(
+ b80
+);
+I = monomialIdeal(
+ b81
+);
+I = monomialIdeal(
+ b82
+);
+I = monomialIdeal(
+ b83
+);
+I = monomialIdeal(
+ b84
+);
+I = monomialIdeal(
+ b85
+);
+I = monomialIdeal(
+ b86
+);
+I = monomialIdeal(
+ b87
+);
+I = monomialIdeal(
+ b88
+);
+I = monomialIdeal(
+ b89
+);
+I = monomialIdeal(
+ b9
+);
+I = monomialIdeal(
+ b90
+);
+I = monomialIdeal(
+ b91
+);
+I = monomialIdeal(
+ b92
+);
+I = monomialIdeal(
+ b93
+);
+I = monomialIdeal(
+ b94
+);
+I = monomialIdeal(
+ b95
+);
+I = monomialIdeal(
+ b96
+);
+I = monomialIdeal(
+ b97
+);
+I = monomialIdeal(
+ b98
+);
+I = monomialIdeal(
+ b99
+);
+I = monomialIdeal(
+ c^21
+);
+I = monomialIdeal(
+ c1
+);
+I = monomialIdeal(
+ c10
+);
+I = monomialIdeal(
+ c100
+);
+I = monomialIdeal(
+ c11
+);
+I = monomialIdeal(
+ c12
+);
+I = monomialIdeal(
+ c13
+);
+I = monomialIdeal(
+ c14
+);
+I = monomialIdeal(
+ c15
+);
+I = monomialIdeal(
+ c16
+);
+I = monomialIdeal(
+ c17
+);
+I = monomialIdeal(
+ c18
+);
+I = monomialIdeal(
+ c19
+);
+I = monomialIdeal(
+ c2
+);
+I = monomialIdeal(
+ c20
+);
+I = monomialIdeal(
+ c21
+);
+I = monomialIdeal(
+ c22
+);
+I = monomialIdeal(
+ c23
+);
+I = monomialIdeal(
+ c24
+);
+I = monomialIdeal(
+ c25
+);
+I = monomialIdeal(
+ c26
+);
+I = monomialIdeal(
+ c27
+);
+I = monomialIdeal(
+ c28
+);
+I = monomialIdeal(
+ c29
+);
+I = monomialIdeal(
+ c3
+);
+I = monomialIdeal(
+ c30
+);
+I = monomialIdeal(
+ c31
+);
+I = monomialIdeal(
+ c32
+);
+I = monomialIdeal(
+ c33
+);
+I = monomialIdeal(
+ c34
+);
+I = monomialIdeal(
+ c35
+);
+I = monomialIdeal(
+ c36
+);
+I = monomialIdeal(
+ c37
+);
+I = monomialIdeal(
+ c38
+);
+I = monomialIdeal(
+ c39
+);
+I = monomialIdeal(
+ c4
+);
+I = monomialIdeal(
+ c40
+);
+I = monomialIdeal(
+ c41
+);
+I = monomialIdeal(
+ c42
+);
+I = monomialIdeal(
+ c43
+);
+I = monomialIdeal(
+ c44
+);
+I = monomialIdeal(
+ c45
+);
+I = monomialIdeal(
+ c46
+);
+I = monomialIdeal(
+ c47
+);
+I = monomialIdeal(
+ c48
+);
+I = monomialIdeal(
+ c49
+);
+I = monomialIdeal(
+ c5
+);
+I = monomialIdeal(
+ c50
+);
+I = monomialIdeal(
+ c51
+);
+I = monomialIdeal(
+ c52
+);
+I = monomialIdeal(
+ c53
+);
+I = monomialIdeal(
+ c54
+);
+I = monomialIdeal(
+ c55
+);
+I = monomialIdeal(
+ c56
+);
+I = monomialIdeal(
+ c57
+);
+I = monomialIdeal(
+ c58
+);
+I = monomialIdeal(
+ c59
+);
+I = monomialIdeal(
+ c6
+);
+I = monomialIdeal(
+ c60
+);
+I = monomialIdeal(
+ c61
+);
+I = monomialIdeal(
+ c62
+);
+I = monomialIdeal(
+ c63
+);
+I = monomialIdeal(
+ c64
+);
+I = monomialIdeal(
+ c65
+);
+I = monomialIdeal(
+ c66
+);
+I = monomialIdeal(
+ c67
+);
+I = monomialIdeal(
+ c68
+);
+I = monomialIdeal(
+ c69
+);
+I = monomialIdeal(
+ c7
+);
+I = monomialIdeal(
+ c70
+);
+I = monomialIdeal(
+ c71
+);
+I = monomialIdeal(
+ c72
+);
+I = monomialIdeal(
+ c73
+);
+I = monomialIdeal(
+ c74
+);
+I = monomialIdeal(
+ c75
+);
+I = monomialIdeal(
+ c76
+);
+I = monomialIdeal(
+ c77
+);
+I = monomialIdeal(
+ c78
+);
+I = monomialIdeal(
+ c79
+);
+I = monomialIdeal(
+ c8
+);
+I = monomialIdeal(
+ c80
+);
+I = monomialIdeal(
+ c81
+);
+I = monomialIdeal(
+ c82
+);
+I = monomialIdeal(
+ c83
+);
+I = monomialIdeal(
+ c84
+);
+I = monomialIdeal(
+ c85
+);
+I = monomialIdeal(
+ c86
+);
+I = monomialIdeal(
+ c87
+);
+I = monomialIdeal(
+ c88
+);
+I = monomialIdeal(
+ c89
+);
+I = monomialIdeal(
+ c9
+);
+I = monomialIdeal(
+ c90
+);
+I = monomialIdeal(
+ c91
+);
+I = monomialIdeal(
+ c92
+);
+I = monomialIdeal(
+ c93
+);
+I = monomialIdeal(
+ c94
+);
+I = monomialIdeal(
+ c95
+);
+I = monomialIdeal(
+ c96
+);
+I = monomialIdeal(
+ c97
+);
+I = monomialIdeal(
+ c98
+);
+I = monomialIdeal(
+ c99
+);
+I = monomialIdeal(
+ d^12
+);
+I = monomialIdeal(
+ d1
+);
+I = monomialIdeal(
+ d10
+);
+I = monomialIdeal(
+ d100
+);
+I = monomialIdeal(
+ d11
+);
+I = monomialIdeal(
+ d12
+);
+I = monomialIdeal(
+ d13
+);
+I = monomialIdeal(
+ d14
+);
+I = monomialIdeal(
+ d15
+);
+I = monomialIdeal(
+ d16
+);
+I = monomialIdeal(
+ d17
+);
+I = monomialIdeal(
+ d18
+);
+I = monomialIdeal(
+ d19
+);
+I = monomialIdeal(
+ d2
+);
+I = monomialIdeal(
+ d20
+);
+I = monomialIdeal(
+ d21
+);
+I = monomialIdeal(
+ d22
+);
+I = monomialIdeal(
+ d23
+);
+I = monomialIdeal(
+ d24
+);
+I = monomialIdeal(
+ d25
+);
+I = monomialIdeal(
+ d26
+);
+I = monomialIdeal(
+ d27
+);
+I = monomialIdeal(
+ d28
+);
+I = monomialIdeal(
+ d29
+);
+I = monomialIdeal(
+ d3
+);
+I = monomialIdeal(
+ d30
+);
+I = monomialIdeal(
+ d31
+);
+I = monomialIdeal(
+ d32
+);
+I = monomialIdeal(
+ d33
+);
+I = monomialIdeal(
+ d34
+);
+I = monomialIdeal(
+ d35
+);
+I = monomialIdeal(
+ d36
+);
+I = monomialIdeal(
+ d37
+);
+I = monomialIdeal(
+ d38
+);
+I = monomialIdeal(
+ d39
+);
+I = monomialIdeal(
+ d4
+);
+I = monomialIdeal(
+ d40
+);
+I = monomialIdeal(
+ d41
+);
+I = monomialIdeal(
+ d42
+);
+I = monomialIdeal(
+ d43
+);
+I = monomialIdeal(
+ d44
+);
+I = monomialIdeal(
+ d45
+);
+I = monomialIdeal(
+ d46
+);
+I = monomialIdeal(
+ d47
+);
+I = monomialIdeal(
+ d48
+);
+I = monomialIdeal(
+ d49
+);
+I = monomialIdeal(
+ d5
+);
+I = monomialIdeal(
+ d50
+);
+I = monomialIdeal(
+ d51
+);
+I = monomialIdeal(
+ d52
+);
+I = monomialIdeal(
+ d53
+);
+I = monomialIdeal(
+ d54
+);
+I = monomialIdeal(
+ d55
+);
+I = monomialIdeal(
+ d56
+);
+I = monomialIdeal(
+ d57
+);
+I = monomialIdeal(
+ d58
+);
+I = monomialIdeal(
+ d59
+);
+I = monomialIdeal(
+ d6
+);
+I = monomialIdeal(
+ d60
+);
+I = monomialIdeal(
+ d61
+);
+I = monomialIdeal(
+ d62
+);
+I = monomialIdeal(
+ d63
+);
+I = monomialIdeal(
+ d64
+);
+I = monomialIdeal(
+ d65
+);
+I = monomialIdeal(
+ d66
+);
+I = monomialIdeal(
+ d67
+);
+I = monomialIdeal(
+ d68
+);
+I = monomialIdeal(
+ d69
+);
+I = monomialIdeal(
+ d7
+);
+I = monomialIdeal(
+ d70
+);
+I = monomialIdeal(
+ d71
+);
+I = monomialIdeal(
+ d72
+);
+I = monomialIdeal(
+ d73
+);
+I = monomialIdeal(
+ d74
+);
+I = monomialIdeal(
+ d75
+);
+I = monomialIdeal(
+ d76
+);
+I = monomialIdeal(
+ d77
+);
+I = monomialIdeal(
+ d78
+);
+I = monomialIdeal(
+ d79
+);
+I = monomialIdeal(
+ d8
+);
+I = monomialIdeal(
+ d80
+);
+I = monomialIdeal(
+ d81
+);
+I = monomialIdeal(
+ d82
+);
+I = monomialIdeal(
+ d83
+);
+I = monomialIdeal(
+ d84
+);
+I = monomialIdeal(
+ d85
+);
+I = monomialIdeal(
+ d86
+);
+I = monomialIdeal(
+ d87
+);
+I = monomialIdeal(
+ d88
+);
+I = monomialIdeal(
+ d89
+);
+I = monomialIdeal(
+ d9
+);
+I = monomialIdeal(
+ d90
+);
+I = monomialIdeal(
+ d91
+);
+I = monomialIdeal(
+ d92
+);
+I = monomialIdeal(
+ d93
+);
+I = monomialIdeal(
+ d94
+);
+I = monomialIdeal(
+ d95
+);
+I = monomialIdeal(
+ d96
+);
+I = monomialIdeal(
+ d97
+);
+I = monomialIdeal(
+ d98
+);
+I = monomialIdeal(
+ d99
+);
+I = monomialIdeal(
+ e^2
+);
+I = monomialIdeal(
+ e1
+);
+I = monomialIdeal(
+ e10
+);
+I = monomialIdeal(
+ e100
+);
+I = monomialIdeal(
+ e11
+);
+I = monomialIdeal(
+ e12
+);
+I = monomialIdeal(
+ e13
+);
+I = monomialIdeal(
+ e14
+);
+I = monomialIdeal(
+ e15
+);
+I = monomialIdeal(
+ e16
+);
+I = monomialIdeal(
+ e17
+);
+I = monomialIdeal(
+ e18
+);
+I = monomialIdeal(
+ e19
+);
+I = monomialIdeal(
+ e2
+);
+I = monomialIdeal(
+ e20
+);
+I = monomialIdeal(
+ e21
+);
+I = monomialIdeal(
+ e22
+);
+I = monomialIdeal(
+ e23
+);
+I = monomialIdeal(
+ e24
+);
+I = monomialIdeal(
+ e25
+);
+I = monomialIdeal(
+ e26
+);
+I = monomialIdeal(
+ e27
+);
+I = monomialIdeal(
+ e28
+);
+I = monomialIdeal(
+ e29
+);
+I = monomialIdeal(
+ e3
+);
+I = monomialIdeal(
+ e30
+);
+I = monomialIdeal(
+ e31
+);
+I = monomialIdeal(
+ e32
+);
+I = monomialIdeal(
+ e33
+);
+I = monomialIdeal(
+ e34
+);
+I = monomialIdeal(
+ e35
+);
+I = monomialIdeal(
+ e36
+);
+I = monomialIdeal(
+ e37
+);
+I = monomialIdeal(
+ e38
+);
+I = monomialIdeal(
+ e39
+);
+I = monomialIdeal(
+ e4
+);
+I = monomialIdeal(
+ e40
+);
+I = monomialIdeal(
+ e41
+);
+I = monomialIdeal(
+ e42
+);
+I = monomialIdeal(
+ e43
+);
+I = monomialIdeal(
+ e44
+);
+I = monomialIdeal(
+ e45
+);
+I = monomialIdeal(
+ e46
+);
+I = monomialIdeal(
+ e47
+);
+I = monomialIdeal(
+ e48
+);
+I = monomialIdeal(
+ e49
+);
+I = monomialIdeal(
+ e5
+);
+I = monomialIdeal(
+ e50
+);
+I = monomialIdeal(
+ e51
+);
+I = monomialIdeal(
+ e52
+);
+I = monomialIdeal(
+ e53
+);
+I = monomialIdeal(
+ e54
+);
+I = monomialIdeal(
+ e55
+);
+I = monomialIdeal(
+ e56
+);
+I = monomialIdeal(
+ e57
+);
+I = monomialIdeal(
+ e58
+);
+I = monomialIdeal(
+ e59
+);
+I = monomialIdeal(
+ e6
+);
+I = monomialIdeal(
+ e60
+);
+I = monomialIdeal(
+ e61
+);
+I = monomialIdeal(
+ e62
+);
+I = monomialIdeal(
+ e63
+);
+I = monomialIdeal(
+ e64
+);
+I = monomialIdeal(
+ e65
+);
+I = monomialIdeal(
+ e66
+);
+I = monomialIdeal(
+ e67
+);
+I = monomialIdeal(
+ e68
+);
+I = monomialIdeal(
+ e69
+);
+I = monomialIdeal(
+ e7
+);
+I = monomialIdeal(
+ e70
+);
+I = monomialIdeal(
+ e71
+);
+I = monomialIdeal(
+ e72
+);
+I = monomialIdeal(
+ e73
+);
+I = monomialIdeal(
+ e74
+);
+I = monomialIdeal(
+ e75
+);
+I = monomialIdeal(
+ e76
+);
+I = monomialIdeal(
+ e77
+);
+I = monomialIdeal(
+ e78
+);
+I = monomialIdeal(
+ e79
+);
+I = monomialIdeal(
+ e8
+);
+I = monomialIdeal(
+ e80
+);
+I = monomialIdeal(
+ e81
+);
+I = monomialIdeal(
+ e82
+);
+I = monomialIdeal(
+ e83
+);
+I = monomialIdeal(
+ e84
+);
+I = monomialIdeal(
+ e85
+);
+I = monomialIdeal(
+ e86
+);
+I = monomialIdeal(
+ e87
+);
+I = monomialIdeal(
+ e88
+);
+I = monomialIdeal(
+ e89
+);
+I = monomialIdeal(
+ e9
+);
+I = monomialIdeal(
+ e90
+);
+I = monomialIdeal(
+ e91
+);
+I = monomialIdeal(
+ e92
+);
+I = monomialIdeal(
+ e93
+);
+I = monomialIdeal(
+ e94
+);
+I = monomialIdeal(
+ e95
+);
+I = monomialIdeal(
+ e96
+);
+I = monomialIdeal(
+ e97
+);
+I = monomialIdeal(
+ e98
+);
+I = monomialIdeal(
+ e99
+);
+I = monomialIdeal(
+ f^13
+);
+I = monomialIdeal(
+ f1^103
+);
+I = monomialIdeal(
+ f10
+);
+I = monomialIdeal(
+ f100
+);
+I = monomialIdeal(
+ f11
+);
+I = monomialIdeal(
+ f12
+);
+I = monomialIdeal(
+ f13
+);
+I = monomialIdeal(
+ f14
+);
+I = monomialIdeal(
+ f15
+);
+I = monomialIdeal(
+ f16
+);
+I = monomialIdeal(
+ f17
+);
+I = monomialIdeal(
+ f18
+);
+I = monomialIdeal(
+ f19
+);
+I = monomialIdeal(
+ f2^104
+);
+I = monomialIdeal(
+ f20
+);
+I = monomialIdeal(
+ f21
+);
+I = monomialIdeal(
+ f22
+);
+I = monomialIdeal(
+ f23
+);
+I = monomialIdeal(
+ f24
+);
+I = monomialIdeal(
+ f25
+);
+I = monomialIdeal(
+ f26
+);
+I = monomialIdeal(
+ f27
+);
+I = monomialIdeal(
+ f28
+);
+I = monomialIdeal(
+ f29
+);
+I = monomialIdeal(
+ f3^105
+);
+I = monomialIdeal(
+ f30
+);
+I = monomialIdeal(
+ f31
+);
+I = monomialIdeal(
+ f32
+);
+I = monomialIdeal(
+ f33
+);
+I = monomialIdeal(
+ f34
+);
+I = monomialIdeal(
+ f35
+);
+I = monomialIdeal(
+ f36
+);
+I = monomialIdeal(
+ f37
+);
+I = monomialIdeal(
+ f38
+);
+I = monomialIdeal(
+ f39
+);
+I = monomialIdeal(
+ f4
+);
+I = monomialIdeal(
+ f40
+);
+I = monomialIdeal(
+ f41
+);
+I = monomialIdeal(
+ f42
+);
+I = monomialIdeal(
+ f43
+);
+I = monomialIdeal(
+ f44
+);
+I = monomialIdeal(
+ f45
+);
+I = monomialIdeal(
+ f46
+);
+I = monomialIdeal(
+ f47
+);
+I = monomialIdeal(
+ f48
+);
+I = monomialIdeal(
+ f49
+);
+I = monomialIdeal(
+ f5
+);
+I = monomialIdeal(
+ f50
+);
+I = monomialIdeal(
+ f51
+);
+I = monomialIdeal(
+ f52
+);
+I = monomialIdeal(
+ f53
+);
+I = monomialIdeal(
+ f54
+);
+I = monomialIdeal(
+ f55
+);
+I = monomialIdeal(
+ f56
+);
+I = monomialIdeal(
+ f57
+);
+I = monomialIdeal(
+ f58
+);
+I = monomialIdeal(
+ f59
+);
+I = monomialIdeal(
+ f6
+);
+I = monomialIdeal(
+ f60
+);
+I = monomialIdeal(
+ f61
+);
+I = monomialIdeal(
+ f62
+);
+I = monomialIdeal(
+ f63
+);
+I = monomialIdeal(
+ f64
+);
+I = monomialIdeal(
+ f65
+);
+I = monomialIdeal(
+ f66
+);
+I = monomialIdeal(
+ f67
+);
+I = monomialIdeal(
+ f68
+);
+I = monomialIdeal(
+ f69
+);
+I = monomialIdeal(
+ f7
+);
+I = monomialIdeal(
+ f70
+);
+I = monomialIdeal(
+ f71
+);
+I = monomialIdeal(
+ f72
+);
+I = monomialIdeal(
+ f73
+);
+I = monomialIdeal(
+ f74
+);
+I = monomialIdeal(
+ f75
+);
+I = monomialIdeal(
+ f76
+);
+I = monomialIdeal(
+ f77
+);
+I = monomialIdeal(
+ f78
+);
+I = monomialIdeal(
+ f79
+);
+I = monomialIdeal(
+ f8
+);
+I = monomialIdeal(
+ f80
+);
+I = monomialIdeal(
+ f81
+);
+I = monomialIdeal(
+ f82
+);
+I = monomialIdeal(
+ f83
+);
+I = monomialIdeal(
+ f84
+);
+I = monomialIdeal(
+ f85
+);
+I = monomialIdeal(
+ f86
+);
+I = monomialIdeal(
+ f87
+);
+I = monomialIdeal(
+ f88
+);
+I = monomialIdeal(
+ f89
+);
+I = monomialIdeal(
+ f9
+);
+I = monomialIdeal(
+ f90
+);
+I = monomialIdeal(
+ f91
+);
+I = monomialIdeal(
+ f92
+);
+I = monomialIdeal(
+ f93
+);
+I = monomialIdeal(
+ f94
+);
+I = monomialIdeal(
+ f95
+);
+I = monomialIdeal(
+ f96
+);
+I = monomialIdeal(
+ f97
+);
+I = monomialIdeal(
+ f98
+);
+I = monomialIdeal(
+ f99
+);
+I = monomialIdeal(
+ g^14
+);
+I = monomialIdeal(
+ g1
+);
+I = monomialIdeal(
+ g10
+);
+I = monomialIdeal(
+ g100
+);
+I = monomialIdeal(
+ g11
+);
+I = monomialIdeal(
+ g12
+);
+I = monomialIdeal(
+ g13
+);
+I = monomialIdeal(
+ g14
+);
+I = monomialIdeal(
+ g15
+);
+I = monomialIdeal(
+ g16
+);
+I = monomialIdeal(
+ g17
+);
+I = monomialIdeal(
+ g18
+);
+I = monomialIdeal(
+ g19
+);
+I = monomialIdeal(
+ g2
+);
+I = monomialIdeal(
+ g20
+);
+I = monomialIdeal(
+ g21
+);
+I = monomialIdeal(
+ g22
+);
+I = monomialIdeal(
+ g23
+);
+I = monomialIdeal(
+ g24
+);
+I = monomialIdeal(
+ g25
+);
+I = monomialIdeal(
+ g26
+);
+I = monomialIdeal(
+ g27
+);
+I = monomialIdeal(
+ g28
+);
+I = monomialIdeal(
+ g29
+);
+I = monomialIdeal(
+ g3
+);
+I = monomialIdeal(
+ g30
+);
+I = monomialIdeal(
+ g31
+);
+I = monomialIdeal(
+ g32
+);
+I = monomialIdeal(
+ g33
+);
+I = monomialIdeal(
+ g34
+);
+I = monomialIdeal(
+ g35
+);
+I = monomialIdeal(
+ g36
+);
+I = monomialIdeal(
+ g37
+);
+I = monomialIdeal(
+ g38
+);
+I = monomialIdeal(
+ g39
+);
+I = monomialIdeal(
+ g4
+);
+I = monomialIdeal(
+ g40
+);
+I = monomialIdeal(
+ g41
+);
+I = monomialIdeal(
+ g42
+);
+I = monomialIdeal(
+ g43
+);
+I = monomialIdeal(
+ g44
+);
+I = monomialIdeal(
+ g45
+);
+I = monomialIdeal(
+ g46
+);
+I = monomialIdeal(
+ g47
+);
+I = monomialIdeal(
+ g48
+);
+I = monomialIdeal(
+ g49
+);
+I = monomialIdeal(
+ g5
+);
+I = monomialIdeal(
+ g50
+);
+I = monomialIdeal(
+ g51
+);
+I = monomialIdeal(
+ g52
+);
+I = monomialIdeal(
+ g53
+);
+I = monomialIdeal(
+ g54
+);
+I = monomialIdeal(
+ g55
+);
+I = monomialIdeal(
+ g56
+);
+I = monomialIdeal(
+ g57
+);
+I = monomialIdeal(
+ g58
+);
+I = monomialIdeal(
+ g59
+);
+I = monomialIdeal(
+ g6
+);
+I = monomialIdeal(
+ g60
+);
+I = monomialIdeal(
+ g61
+);
+I = monomialIdeal(
+ g62
+);
+I = monomialIdeal(
+ g63
+);
+I = monomialIdeal(
+ g64
+);
+I = monomialIdeal(
+ g65
+);
+I = monomialIdeal(
+ g66
+);
+I = monomialIdeal(
+ g67
+);
+I = monomialIdeal(
+ g68
+);
+I = monomialIdeal(
+ g69
+);
+I = monomialIdeal(
+ g7
+);
+I = monomialIdeal(
+ g70
+);
+I = monomialIdeal(
+ g71
+);
+I = monomialIdeal(
+ g72
+);
+I = monomialIdeal(
+ g73
+);
+I = monomialIdeal(
+ g74
+);
+I = monomialIdeal(
+ g75
+);
+I = monomialIdeal(
+ g76
+);
+I = monomialIdeal(
+ g77
+);
+I = monomialIdeal(
+ g78
+);
+I = monomialIdeal(
+ g79
+);
+I = monomialIdeal(
+ g8
+);
+I = monomialIdeal(
+ g80
+);
+I = monomialIdeal(
+ g81
+);
+I = monomialIdeal(
+ g82
+);
+I = monomialIdeal(
+ g83
+);
+I = monomialIdeal(
+ g84
+);
+I = monomialIdeal(
+ g85
+);
+I = monomialIdeal(
+ g86
+);
+I = monomialIdeal(
+ g87
+);
+I = monomialIdeal(
+ g88
+);
+I = monomialIdeal(
+ g89
+);
+I = monomialIdeal(
+ g9
+);
+I = monomialIdeal(
+ g90
+);
+I = monomialIdeal(
+ g91
+);
+I = monomialIdeal(
+ g92
+);
+I = monomialIdeal(
+ g93
+);
+I = monomialIdeal(
+ g94
+);
+I = monomialIdeal(
+ g95
+);
+I = monomialIdeal(
+ g96
+);
+I = monomialIdeal(
+ g97
+);
+I = monomialIdeal(
+ g98
+);
+I = monomialIdeal(
+ g99
+);
+I = monomialIdeal(
+ h^15
+);
+I = monomialIdeal(
+ h1
+);
+I = monomialIdeal(
+ h10
+);
+I = monomialIdeal(
+ h100
+);
+I = monomialIdeal(
+ h11
+);
+I = monomialIdeal(
+ h12
+);
+I = monomialIdeal(
+ h13
+);
+I = monomialIdeal(
+ h14
+);
+I = monomialIdeal(
+ h15
+);
+I = monomialIdeal(
+ h16
+);
+I = monomialIdeal(
+ h17
+);
+I = monomialIdeal(
+ h18
+);
+I = monomialIdeal(
+ h19
+);
+I = monomialIdeal(
+ h2
+);
+I = monomialIdeal(
+ h20
+);
+I = monomialIdeal(
+ h21
+);
+I = monomialIdeal(
+ h22
+);
+I = monomialIdeal(
+ h23
+);
+I = monomialIdeal(
+ h24
+);
+I = monomialIdeal(
+ h25
+);
+I = monomialIdeal(
+ h26
+);
+I = monomialIdeal(
+ h27
+);
+I = monomialIdeal(
+ h28
+);
+I = monomialIdeal(
+ h29
+);
+I = monomialIdeal(
+ h3
+);
+I = monomialIdeal(
+ h30
+);
+I = monomialIdeal(
+ h31
+);
+I = monomialIdeal(
+ h32
+);
+I = monomialIdeal(
+ h33
+);
+I = monomialIdeal(
+ h34
+);
+I = monomialIdeal(
+ h35
+);
+I = monomialIdeal(
+ h36
+);
+I = monomialIdeal(
+ h37
+);
+I = monomialIdeal(
+ h38
+);
+I = monomialIdeal(
+ h39
+);
+I = monomialIdeal(
+ h4
+);
+I = monomialIdeal(
+ h40
+);
+I = monomialIdeal(
+ h41
+);
+I = monomialIdeal(
+ h42
+);
+I = monomialIdeal(
+ h43
+);
+I = monomialIdeal(
+ h44
+);
+I = monomialIdeal(
+ h45
+);
+I = monomialIdeal(
+ h46
+);
+I = monomialIdeal(
+ h47
+);
+I = monomialIdeal(
+ h48
+);
+I = monomialIdeal(
+ h49
+);
+I = monomialIdeal(
+ h5
+);
+I = monomialIdeal(
+ h50
+);
+I = monomialIdeal(
+ h51
+);
+I = monomialIdeal(
+ h52
+);
+I = monomialIdeal(
+ h53
+);
+I = monomialIdeal(
+ h54
+);
+I = monomialIdeal(
+ h55
+);
+I = monomialIdeal(
+ h56
+);
+I = monomialIdeal(
+ h57
+);
+I = monomialIdeal(
+ h58
+);
+I = monomialIdeal(
+ h59
+);
+I = monomialIdeal(
+ h6
+);
+I = monomialIdeal(
+ h60
+);
+I = monomialIdeal(
+ h61
+);
+I = monomialIdeal(
+ h62
+);
+I = monomialIdeal(
+ h63
+);
+I = monomialIdeal(
+ h64
+);
+I = monomialIdeal(
+ h65
+);
+I = monomialIdeal(
+ h66
+);
+I = monomialIdeal(
+ h67
+);
+I = monomialIdeal(
+ h68
+);
+I = monomialIdeal(
+ h69
+);
+I = monomialIdeal(
+ h7
+);
+I = monomialIdeal(
+ h70
+);
+I = monomialIdeal(
+ h71
+);
+I = monomialIdeal(
+ h72
+);
+I = monomialIdeal(
+ h73
+);
+I = monomialIdeal(
+ h74
+);
+I = monomialIdeal(
+ h75
+);
+I = monomialIdeal(
+ h76
+);
+I = monomialIdeal(
+ h77
+);
+I = monomialIdeal(
+ h78
+);
+I = monomialIdeal(
+ h79
+);
+I = monomialIdeal(
+ h8
+);
+I = monomialIdeal(
+ h80
+);
+I = monomialIdeal(
+ h81
+);
+I = monomialIdeal(
+ h82
+);
+I = monomialIdeal(
+ h83
+);
+I = monomialIdeal(
+ h84
+);
+I = monomialIdeal(
+ h85
+);
+I = monomialIdeal(
+ h86
+);
+I = monomialIdeal(
+ h87
+);
+I = monomialIdeal(
+ h88
+);
+I = monomialIdeal(
+ h89
+);
+I = monomialIdeal(
+ h9
+);
+I = monomialIdeal(
+ h90
+);
+I = monomialIdeal(
+ h91
+);
+I = monomialIdeal(
+ h92
+);
+I = monomialIdeal(
+ h93
+);
+I = monomialIdeal(
+ h94
+);
+I = monomialIdeal(
+ h95
+);
+I = monomialIdeal(
+ h96
+);
+I = monomialIdeal(
+ h97
+);
+I = monomialIdeal(
+ h98
+);
+I = monomialIdeal(
+ h99
+);
+I = monomialIdeal(
+ i^7
+);
+I = monomialIdeal(
+ i1
+);
+I = monomialIdeal(
+ i10
+);
+I = monomialIdeal(
+ i100
+);
+I = monomialIdeal(
+ i11
+);
+I = monomialIdeal(
+ i12
+);
+I = monomialIdeal(
+ i13
+);
+I = monomialIdeal(
+ i14
+);
+I = monomialIdeal(
+ i15
+);
+I = monomialIdeal(
+ i16
+);
+I = monomialIdeal(
+ i17
+);
+I = monomialIdeal(
+ i18
+);
+I = monomialIdeal(
+ i19
+);
+I = monomialIdeal(
+ i2
+);
+I = monomialIdeal(
+ i20
+);
+I = monomialIdeal(
+ i21
+);
+I = monomialIdeal(
+ i22
+);
+I = monomialIdeal(
+ i23
+);
+I = monomialIdeal(
+ i24
+);
+I = monomialIdeal(
+ i25
+);
+I = monomialIdeal(
+ i26
+);
+I = monomialIdeal(
+ i27
+);
+I = monomialIdeal(
+ i28
+);
+I = monomialIdeal(
+ i29
+);
+I = monomialIdeal(
+ i3
+);
+I = monomialIdeal(
+ i30
+);
+I = monomialIdeal(
+ i31
+);
+I = monomialIdeal(
+ i32
+);
+I = monomialIdeal(
+ i33
+);
+I = monomialIdeal(
+ i34
+);
+I = monomialIdeal(
+ i35
+);
+I = monomialIdeal(
+ i36
+);
+I = monomialIdeal(
+ i37
+);
+I = monomialIdeal(
+ i38
+);
+I = monomialIdeal(
+ i39
+);
+I = monomialIdeal(
+ i4
+);
+I = monomialIdeal(
+ i40
+);
+I = monomialIdeal(
+ i41
+);
+I = monomialIdeal(
+ i42
+);
+I = monomialIdeal(
+ i43
+);
+I = monomialIdeal(
+ i44
+);
+I = monomialIdeal(
+ i45
+);
+I = monomialIdeal(
+ i46
+);
+I = monomialIdeal(
+ i47
+);
+I = monomialIdeal(
+ i48
+);
+I = monomialIdeal(
+ i49
+);
+I = monomialIdeal(
+ i5
+);
+I = monomialIdeal(
+ i50
+);
+I = monomialIdeal(
+ i51
+);
+I = monomialIdeal(
+ i52
+);
+I = monomialIdeal(
+ i53
+);
+I = monomialIdeal(
+ i54
+);
+I = monomialIdeal(
+ i55
+);
+I = monomialIdeal(
+ i56
+);
+I = monomialIdeal(
+ i57
+);
+I = monomialIdeal(
+ i58
+);
+I = monomialIdeal(
+ i59
+);
+I = monomialIdeal(
+ i6
+);
+I = monomialIdeal(
+ i60
+);
+I = monomialIdeal(
+ i61
+);
+I = monomialIdeal(
+ i62
+);
+I = monomialIdeal(
+ i63
+);
+I = monomialIdeal(
+ i64
+);
+I = monomialIdeal(
+ i65
+);
+I = monomialIdeal(
+ i66
+);
+I = monomialIdeal(
+ i67
+);
+I = monomialIdeal(
+ i68
+);
+I = monomialIdeal(
+ i69
+);
+I = monomialIdeal(
+ i7
+);
+I = monomialIdeal(
+ i70
+);
+I = monomialIdeal(
+ i71
+);
+I = monomialIdeal(
+ i72
+);
+I = monomialIdeal(
+ i73
+);
+I = monomialIdeal(
+ i74
+);
+I = monomialIdeal(
+ i75
+);
+I = monomialIdeal(
+ i76
+);
+I = monomialIdeal(
+ i77
+);
+I = monomialIdeal(
+ i78
+);
+I = monomialIdeal(
+ i79
+);
+I = monomialIdeal(
+ i8
+);
+I = monomialIdeal(
+ i80
+);
+I = monomialIdeal(
+ i81
+);
+I = monomialIdeal(
+ i82
+);
+I = monomialIdeal(
+ i83
+);
+I = monomialIdeal(
+ i84
+);
+I = monomialIdeal(
+ i85
+);
+I = monomialIdeal(
+ i86
+);
+I = monomialIdeal(
+ i87
+);
+I = monomialIdeal(
+ i88
+);
+I = monomialIdeal(
+ i89
+);
+I = monomialIdeal(
+ i9
+);
+I = monomialIdeal(
+ i90
+);
+I = monomialIdeal(
+ i91
+);
+I = monomialIdeal(
+ i92
+);
+I = monomialIdeal(
+ i93
+);
+I = monomialIdeal(
+ i94
+);
+I = monomialIdeal(
+ i95
+);
+I = monomialIdeal(
+ i96
+);
+I = monomialIdeal(
+ i97
+);
+I = monomialIdeal(
+ i98
+);
+I = monomialIdeal(
+ i99
+);
+I = monomialIdeal(
+ j^16
+);
+I = monomialIdeal(
+ j1
+);
+I = monomialIdeal(
+ j10
+);
+I = monomialIdeal(
+ j100
+);
+I = monomialIdeal(
+ j11
+);
+I = monomialIdeal(
+ j12
+);
+I = monomialIdeal(
+ j13
+);
+I = monomialIdeal(
+ j14
+);
+I = monomialIdeal(
+ j15
+);
+I = monomialIdeal(
+ j16
+);
+I = monomialIdeal(
+ j17
+);
+I = monomialIdeal(
+ j18
+);
+I = monomialIdeal(
+ j19
+);
+I = monomialIdeal(
+ j2
+);
+I = monomialIdeal(
+ j20
+);
+I = monomialIdeal(
+ j21
+);
+I = monomialIdeal(
+ j22
+);
+I = monomialIdeal(
+ j23
+);
+I = monomialIdeal(
+ j24
+);
+I = monomialIdeal(
+ j25
+);
+I = monomialIdeal(
+ j26
+);
+I = monomialIdeal(
+ j27
+);
+I = monomialIdeal(
+ j28
+);
+I = monomialIdeal(
+ j29
+);
+I = monomialIdeal(
+ j3
+);
+I = monomialIdeal(
+ j30
+);
+I = monomialIdeal(
+ j31
+);
+I = monomialIdeal(
+ j32
+);
+I = monomialIdeal(
+ j33
+);
+I = monomialIdeal(
+ j34
+);
+I = monomialIdeal(
+ j35
+);
+I = monomialIdeal(
+ j36
+);
+I = monomialIdeal(
+ j37
+);
+I = monomialIdeal(
+ j38
+);
+I = monomialIdeal(
+ j39
+);
+I = monomialIdeal(
+ j4
+);
+I = monomialIdeal(
+ j40
+);
+I = monomialIdeal(
+ j41
+);
+I = monomialIdeal(
+ j42
+);
+I = monomialIdeal(
+ j43
+);
+I = monomialIdeal(
+ j44
+);
+I = monomialIdeal(
+ j45
+);
+I = monomialIdeal(
+ j46
+);
+I = monomialIdeal(
+ j47
+);
+I = monomialIdeal(
+ j48
+);
+I = monomialIdeal(
+ j49
+);
+I = monomialIdeal(
+ j5
+);
+I = monomialIdeal(
+ j50
+);
+I = monomialIdeal(
+ j51
+);
+I = monomialIdeal(
+ j52
+);
+I = monomialIdeal(
+ j53
+);
+I = monomialIdeal(
+ j54
+);
+I = monomialIdeal(
+ j55
+);
+I = monomialIdeal(
+ j56
+);
+I = monomialIdeal(
+ j57
+);
+I = monomialIdeal(
+ j58
+);
+I = monomialIdeal(
+ j59
+);
+I = monomialIdeal(
+ j6
+);
+I = monomialIdeal(
+ j60
+);
+I = monomialIdeal(
+ j61
+);
+I = monomialIdeal(
+ j62
+);
+I = monomialIdeal(
+ j63
+);
+I = monomialIdeal(
+ j64
+);
+I = monomialIdeal(
+ j65
+);
+I = monomialIdeal(
+ j66
+);
+I = monomialIdeal(
+ j67
+);
+I = monomialIdeal(
+ j68
+);
+I = monomialIdeal(
+ j69
+);
+I = monomialIdeal(
+ j7
+);
+I = monomialIdeal(
+ j70
+);
+I = monomialIdeal(
+ j71
+);
+I = monomialIdeal(
+ j72
+);
+I = monomialIdeal(
+ j73
+);
+I = monomialIdeal(
+ j74
+);
+I = monomialIdeal(
+ j75
+);
+I = monomialIdeal(
+ j76
+);
+I = monomialIdeal(
+ j77
+);
+I = monomialIdeal(
+ j78
+);
+I = monomialIdeal(
+ j79
+);
+I = monomialIdeal(
+ j8
+);
+I = monomialIdeal(
+ j80
+);
+I = monomialIdeal(
+ j81
+);
+I = monomialIdeal(
+ j82
+);
+I = monomialIdeal(
+ j83
+);
+I = monomialIdeal(
+ j84
+);
+I = monomialIdeal(
+ j85
+);
+I = monomialIdeal(
+ j86
+);
+I = monomialIdeal(
+ j87
+);
+I = monomialIdeal(
+ j88
+);
+I = monomialIdeal(
+ j89
+);
+I = monomialIdeal(
+ j9
+);
+I = monomialIdeal(
+ j90
+);
+I = monomialIdeal(
+ j91
+);
+I = monomialIdeal(
+ j92
+);
+I = monomialIdeal(
+ j93
+);
+I = monomialIdeal(
+ j94
+);
+I = monomialIdeal(
+ j95
+);
+I = monomialIdeal(
+ j96
+);
+I = monomialIdeal(
+ j97
+);
+I = monomialIdeal(
+ j98
+);
+I = monomialIdeal(
+ j99
+);
+I = monomialIdeal(
+ k^17
+);
+I = monomialIdeal(
+ k1
+);
+I = monomialIdeal(
+ k10
+);
+I = monomialIdeal(
+ k100^12345678901234567890
+);
+I = monomialIdeal(
+ k11
+);
+I = monomialIdeal(
+ k12
+);
+I = monomialIdeal(
+ k13
+);
+I = monomialIdeal(
+ k14
+);
+I = monomialIdeal(
+ k15
+);
+I = monomialIdeal(
+ k16
+);
+I = monomialIdeal(
+ k17
+);
+I = monomialIdeal(
+ k18
+);
+I = monomialIdeal(
+ k19
+);
+I = monomialIdeal(
+ k2
+);
+I = monomialIdeal(
+ k20
+);
+I = monomialIdeal(
+ k21
+);
+I = monomialIdeal(
+ k22
+);
+I = monomialIdeal(
+ k23
+);
+I = monomialIdeal(
+ k24
+);
+I = monomialIdeal(
+ k25
+);
+I = monomialIdeal(
+ k26
+);
+I = monomialIdeal(
+ k27
+);
+I = monomialIdeal(
+ k28
+);
+I = monomialIdeal(
+ k29
+);
+I = monomialIdeal(
+ k3
+);
+I = monomialIdeal(
+ k30
+);
+I = monomialIdeal(
+ k31
+);
+I = monomialIdeal(
+ k32
+);
+I = monomialIdeal(
+ k33
+);
+I = monomialIdeal(
+ k34
+);
+I = monomialIdeal(
+ k35
+);
+I = monomialIdeal(
+ k36
+);
+I = monomialIdeal(
+ k37
+);
+I = monomialIdeal(
+ k38
+);
+I = monomialIdeal(
+ k39
+);
+I = monomialIdeal(
+ k4
+);
+I = monomialIdeal(
+ k40
+);
+I = monomialIdeal(
+ k41
+);
+I = monomialIdeal(
+ k42
+);
+I = monomialIdeal(
+ k43
+);
+I = monomialIdeal(
+ k44
+);
+I = monomialIdeal(
+ k45
+);
+I = monomialIdeal(
+ k46
+);
+I = monomialIdeal(
+ k47
+);
+I = monomialIdeal(
+ k48
+);
+I = monomialIdeal(
+ k49
+);
+I = monomialIdeal(
+ k5
+);
+I = monomialIdeal(
+ k50
+);
+I = monomialIdeal(
+ k51
+);
+I = monomialIdeal(
+ k52
+);
+I = monomialIdeal(
+ k53
+);
+I = monomialIdeal(
+ k54
+);
+I = monomialIdeal(
+ k55
+);
+I = monomialIdeal(
+ k56
+);
+I = monomialIdeal(
+ k57
+);
+I = monomialIdeal(
+ k58
+);
+I = monomialIdeal(
+ k59
+);
+I = monomialIdeal(
+ k6
+);
+I = monomialIdeal(
+ k60
+);
+I = monomialIdeal(
+ k61
+);
+I = monomialIdeal(
+ k62
+);
+I = monomialIdeal(
+ k63
+);
+I = monomialIdeal(
+ k64
+);
+I = monomialIdeal(
+ k65
+);
+I = monomialIdeal(
+ k66
+);
+I = monomialIdeal(
+ k67
+);
+I = monomialIdeal(
+ k68
+);
+I = monomialIdeal(
+ k69
+);
+I = monomialIdeal(
+ k7
+);
+I = monomialIdeal(
+ k70
+);
+I = monomialIdeal(
+ k71
+);
+I = monomialIdeal(
+ k72
+);
+I = monomialIdeal(
+ k73
+);
+I = monomialIdeal(
+ k74
+);
+I = monomialIdeal(
+ k75
+);
+I = monomialIdeal(
+ k76
+);
+I = monomialIdeal(
+ k77
+);
+I = monomialIdeal(
+ k78
+);
+I = monomialIdeal(
+ k79
+);
+I = monomialIdeal(
+ k8
+);
+I = monomialIdeal(
+ k80
+);
+I = monomialIdeal(
+ k81
+);
+I = monomialIdeal(
+ k82
+);
+I = monomialIdeal(
+ k83
+);
+I = monomialIdeal(
+ k84
+);
+I = monomialIdeal(
+ k85
+);
+I = monomialIdeal(
+ k86
+);
+I = monomialIdeal(
+ k87
+);
+I = monomialIdeal(
+ k88
+);
+I = monomialIdeal(
+ k89
+);
+I = monomialIdeal(
+ k9
+);
+I = monomialIdeal(
+ k90
+);
+I = monomialIdeal(
+ k91
+);
+I = monomialIdeal(
+ k92
+);
+I = monomialIdeal(
+ k93
+);
+I = monomialIdeal(
+ k94
+);
+I = monomialIdeal(
+ k95
+);
+I = monomialIdeal(
+ k96
+);
+I = monomialIdeal(
+ k97^3
+);
+I = monomialIdeal(
+ k98^4
+);
+I = monomialIdeal(
+ k99^5
+);
+I = monomialIdeal(
+ l^18
+);
+I = monomialIdeal(
+ m^25
+);
+I = monomialIdeal(
+ n^24
+);
+I = monomialIdeal(
+ o^8
+);
+I = monomialIdeal(
+ p^9
+);
+I = monomialIdeal(
+ q
+);
+I = monomialIdeal(
+ r^3
+);
+I = monomialIdeal(
+ s^11
+);
+I = monomialIdeal(
+ t^4
+);
+I = monomialIdeal(
+ u^6
+);
+I = monomialIdeal(
+ v^22
+);
+I = monomialIdeal(
+ w
+);
+I = monomialIdeal(
+ x^20
+);
+I = monomialIdeal(
+ y^5
+);
+I = monomialIdeal(
+ z^19
+);

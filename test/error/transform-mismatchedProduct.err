@@ -1,6 +1,6 @@
 ERROR: Taking products of ideals in rings with different variable lists.
 One ring has variables
-  a,
+  b,
 while another has variables
-  b.
+  a.
 Contact the Frobby developers if you need this functionality.

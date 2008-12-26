@@ -1,0 +1,27 @@
+R = QQ[x, y, z];
+I = monomialIdeal(
+ x^3,
+ y^3,
+ z^3
+);
+I = monomialIdeal(
+ x^2,
+ y^2
+);
+I = monomialIdeal(
+ x^2,
+ z^2
+);
+I = monomialIdeal(
+ x
+);
+I = monomialIdeal(
+ y^2,
+ z^2
+);
+I = monomialIdeal(
+ y
+);
+I = monomialIdeal(
+ z
+);

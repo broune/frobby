@@ -34,7 +34,7 @@ AnalyzeAction::AnalyzeAction():
  "that need information about the ideal.",
  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::None),
+  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal),
 
   _printLcm
   ("lcm",
@@ -85,8 +85,8 @@ void AnalyzeAction::perform() {
 
   IdealFacade idealFacade(_printActions);
   if (_printLcm) {
-	auto_ptr<IOHandler> handler(IOHandler::createIOHandler("m2"));
-	idealFacade.printLcm(ideal, handler.get(), stdout);
+	auto_ptr<IOHandler> output = _io.createOutputHandler();
+	idealFacade.printLcm(ideal, output.get(), stdout);
   }
   if (_printVarCount) {
 	fprintf(stdout, "%lu\n", (unsigned long)ideal.getVarCount());

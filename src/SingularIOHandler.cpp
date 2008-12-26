@@ -79,7 +79,9 @@ void SingularIOHandler::writePolynomialFooter(const VarNames& names,
   fputs(";\n", out);
 }
 
-void SingularIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+void SingularIOHandler::writeIdealHeader(const VarNames& names,
+										 bool defineNewRing,
+										 FILE* out) {
   writeRing(names, out);
   fputs("ideal I =", out);
 }

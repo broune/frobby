@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+
+frobby=../../bin/frobby
+testhelper=../testScripts/testhelper
+test="$1"
+shift
+
+if [ -e "$test.alexdual_point" ];
+then
+  input="$test.test $test.alexdual_point";
+else
+  input="$test.test"
+fi
+
+if [ "$1" = "_full" ];
+then
+  shift;
+
+  # Check -canon agrees with transform.
+  $testhelper transform $test.alexdual $test.alexdual -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Check that double dual on the same point is identity.
+  $frobby transform < `ls $test.*test` > /tmp/$test.test \
+    -canon -minimize 2>/dev/null
+  if [ -e "$test.alexdual_point" ];
+  then
+    pointFile="$test.alexdual_point";
+  else
+    $frobby analyze -lcm < /tmp/$test.test 2>/dev/null > /tmp/alexdual_point;
+    pointFile="/tmp/alexdual_point";
+  fi
+
+  $testhelper alexdual "$test.alexdual $pointFile" /tmp/$test.test $* -canon
+  if [ $? != 0 ]; then exit 1; fi
+
+  rm -f /tmp/$test.test /tmp/alexdual_point
+fi
+
+$testhelper alexdual "$input" $test.alexdual $* -canon

@@ -22,6 +22,7 @@
 #include "IdealFacade.h"
 #include "Scanner.h"
 #include "ElementDeleter.h"
+#include "VarSorter.h"
 
 #include <algorithm>
 
@@ -93,26 +94,19 @@ void TransformAction::perform() {
 
   vector<BigIdeal*> ideals;
   ElementDeleter<vector<BigIdeal*> > idealsDeleter(ideals);
+  VarNames names;
 
-  facade.readIdeals(in, ideals);
+  facade.readIdeals(in, ideals, names);
 
   if (_product) {
 	auto_ptr<BigIdeal> ideal;
-	if (ideals.empty())
-	  ideal.reset(new BigIdeal());
-	else
-	  ideal.reset(new BigIdeal(ideals[0]->getNames()));
+	ideal.reset(new BigIdeal(names));
 
 	IdealFacade idealFacade(_printActions);
 	idealFacade.takeProducts(ideals, *ideal);
 
 	idealsDeleter.deleteElements();
-
-	// We have to call release *after* push_back since
-	// push_back(release()) leaks memory in case of push_back throwing
-	// an exception.
-	ideals.push_back(ideal.get());
-	ideal.release();
+	exceptionSafePushBack(ideals, ideal);
   }
 
   for (size_t i = 0; i < ideals.size(); ++i) {
@@ -137,12 +131,15 @@ void TransformAction::perform() {
 	  idealFacade.sortGenerators(ideal);
   }
 
-  if (_canonicalize)
+  if (_canonicalize) {
+	VarSorter sorter(names);
+	sorter.getOrderedNames(names);
+
 	sort(ideals.begin(), ideals.end(), compareIdeals);
+  }
 
   auto_ptr<IOHandler> output(_io.createOutputHandler());
-  for (size_t i = 0; i < ideals.size(); ++i)
-	facade.writeIdeal(*(ideals[i]), output.get(), stdout);
+  facade.writeIdeals(ideals, names, output.get(), stdout);
 }
 
 const char* TransformAction::staticGetName() {

@@ -69,7 +69,9 @@ void NullIOHandler::writePolynomialFooter(const VarNames& names,
 										  FILE* out) {
 }
 
-void NullIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+void NullIOHandler::writeIdealHeader(const VarNames& names,
+									 bool defineNewRing,
+									 FILE* out) {
 }
 
 void NullIOHandler::writeTermOfIdeal(const Term& term,
