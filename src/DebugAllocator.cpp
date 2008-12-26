@@ -71,12 +71,12 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
 	return ExitCodeSuccess;
   }
 
-  fprintf(stderr, "Trying the first %i allocations.\n",
+  fprintf(stderr, "DEBUG: Trying the first %i allocations.\n",
 		  (int)AllocationLimitsTryFirst);
   for (size_t limit = 0; limit < AllocationLimitsTryFirst; ++limit)
 	runWithLimit(argc, argv, limit);
 
-  fprintf(stderr, "Trying the last %i allocations.\n",
+  fprintf(stderr, "DEBUG: Trying the last %i allocations.\n",
 		  (int)AllocationLimitsTryLast);
   for (size_t limit = 0; limit < AllocationLimitsTryLast; ++limit)
 	runWithLimit(argc, argv, maxAllocations - limit);
@@ -85,7 +85,7 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
 	maxAllocations - AllocationLimitsTryFirst - AllocationLimitsTryLast;
   size_t stepSize = limitsLeft / AllocationLimitsStepRatio + 1;
   fprintf(stderr,
-		  "Going through the %i remaining allocations "
+		  "DEBUG: Going through the %i remaining allocations "
 		  "with steps of size %i.\n",
 		  (int)limitsLeft, (int)stepSize);
 
@@ -102,7 +102,7 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
 void DebugAllocator::runWithLimit(int argc, const char** argv, size_t limit) {
   if (_detailAllocation)
 	fprintf(stderr, "DEBUG: Trying allocation limit of %i\n", (int)limit);
-
+  
   // To make each run more similar.
   Ideal::clearStaticCache();
 
