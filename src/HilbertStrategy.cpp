@@ -30,6 +30,7 @@
 HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
 								 const SplitStrategy* splitStrategy):
   SliceStrategyCommon(splitStrategy),
+  _consumerCache(),
   _consumerCacheDeleter(_consumerCache),
   _consumer(consumer) {
 }
@@ -116,7 +117,7 @@ void HilbertStrategy::freeConsumer(auto_ptr<HilbertIndependenceConsumer>
 		 _consumerCache.end());
 
   consumer->clear();
-  exceptionSafePushBack(_consumerCache, consumer);
+  noThrowPushBack(_consumerCache, consumer);
 }
 
 void HilbertStrategy::independenceSplit(auto_ptr<HilbertSlice> slice,

@@ -39,7 +39,7 @@ void SliceStrategyCommon::freeSlice(auto_ptr<Slice> slice) {
   ASSERT(debugIsValidSlice(slice.get()));
 
   slice->clearIdealAndSubtract(); // To preserve memory.
-  exceptionSafePushBack(_sliceCache, slice);
+  noThrowPushBack(_sliceCache, slice);
 }
 
 void SliceStrategyCommon::setUseIndependence(bool use) {
