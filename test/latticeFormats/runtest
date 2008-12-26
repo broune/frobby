@@ -1,0 +1,19 @@
+#!/bin/bash
+
+testhelper=../testScripts/testhelper
+testName="$1"
+shift
+
+if [ "$1" = "_full" ]; then
+  shift;
+fi
+
+params="$*"
+
+$testhelper latformat $testName.4ti2 $testName.fplll \
+  $params -iformat 4ti2 -oformat fplll
+if [ $? != 0 ]; then exit 1; fi
+
+$testhelper latformat $testName.fplll $testName.4ti2 \
+  $params -iformat fplll -oformat 4ti2
+if [ $? != 0 ]; then exit 1; fi

@@ -256,6 +256,8 @@ void TermTranslator::setInfinityPowersToZero(Ideal& ideal) const {
 		changed = true;
 	  }
 	}
+	++term;
+	continue;
 	if (changed && ::isIdentity(*term, varCount)) {
 	  bool last = (term + 1 == ideal.end());
 	  ideal.remove(term);
@@ -427,4 +429,19 @@ lessThanReverseLex(const Exponent* a, const Exponent* b) const {
   }
 
   return 0;
+}
+
+bool TranslatedReverseLexComparator::operator()(const Term& a,
+												const Term& b) const {
+  ASSERT(a.getVarCount() == _translator.getVarCount());
+  ASSERT(b.getVarCount() == _translator.getVarCount());
+  return operator()(a.begin(), b.begin());
+}
+
+bool TranslatedReverseLexComparator::operator()(const Exponent* a,
+												const Exponent* b) const {
+  ASSERT(a != 0 || _translator.getVarCount() == 0);
+  ASSERT(b != 0 || _translator.getVarCount() == 0);
+
+  return _translator.lessThanReverseLex(a, b);
 }

@@ -41,14 +41,34 @@ const char* Macaulay2IOHandler::staticGetName() {
   return "m2";
 }
 
+void Macaulay2IOHandler::writeIdeals(const vector<BigIdeal*>& ideals,
+									const VarNames& names,
+									FILE* out) {
+  if (ideals.empty())
+	writeRing(names, out);
+  else
+	IOHandler::writeIdeals(ideals, names, out);
+}
+
 void Macaulay2IOHandler::writeTerm(const vector<mpz_class>& term,
 								   const VarNames& names,
 								   FILE* out) {
   writeTermProduct(term, names, out);
 }
 
-void Macaulay2IOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
-  writeRing(names, out);
+void Macaulay2IOHandler::writeBareIdeal(const BigIdeal& ideal, FILE* out) {
+  size_t generatorCount = ideal.getGeneratorCount();
+  fputs("I = monomialIdeal(", out);
+  for (size_t i = 0; i < generatorCount; ++i)
+	writeTermOfIdeal(ideal[i], ideal.getNames(), i == 0, out);
+  writeIdealFooter(ideal.getNames(), generatorCount > 0, out);
+}
+
+void Macaulay2IOHandler::writeIdealHeader(const VarNames& names,
+										  bool defineNewRing,
+										  FILE* out) {
+  if (defineNewRing)
+	writeRing(names, out);
   fputs("I = monomialIdeal(", out);
 }
 
@@ -86,16 +106,70 @@ void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
   if (wroteAnyGenerators)
 	fputc('\n', out);
   else
-	fputs("0_R", out); // monomialIdeal reports an error otherwise.
+	fputs("0_R", out); // Macaulay 2's monomialIdeal reports an error otherwise.
   fputs(");\n", out);  
 }
 
-void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
-  {
-	VarNames names;
-	readVars(names, in);
-	ideal.clearAndSetNames(names);
+void Macaulay2IOHandler::readRing(Scanner& in, VarNames& names) {
+  in.expect('R');
+  in.expect('=');
+
+  in.eatWhite();
+  if (in.peek() == 'Z') {
+	displayNote("In the Macaulay 2 format, writing ZZ as the ground field "
+				"instead of QQ is deprecated and may not work in future "
+				"releases of Frobby.");
+	in.expect("ZZ");
+  } else
+	in.expect("QQ");
+  in.expect('[');
+
+  // The enclosing braces are optional, but if the start brace is
+  // there, then the end brace should be there too.
+  bool readBrace = in.match('{'); 
+  if (readBrace) {
+	displayNote("In the Macaulay 2 format, putting braces { } around the "
+				"variables is deprecated and may not work in future "
+				"releases of Frobby.");
   }
+
+  if (in.peekIdentifier()) {
+	do {
+	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
+	} while (in.match(','));
+  }
+
+  if (readBrace)
+	in.expect('}');
+  in.expect(']');
+  in.expect(';');
+}
+
+void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal,
+								   const VarNames& names) {
+  if (in.peek('R'))
+	readIdeal(in, ideal);
+  else if (in.peek('I'))
+	readBareIdeal(in, ideal, names);
+  else
+	in.expected('R', 'I');
+}
+
+void Macaulay2IOHandler::readIdeals(Scanner& in,
+									vector<BigIdeal*>& ideals,
+									VarNames& names) {
+  readRing(in, names);
+
+  // TODO: make test that triggers this error message.
+  if (in.match('R'))
+	reportSyntaxError(in, "Did not expect another ring description.");
+
+  IOHandler::readIdeals(in, ideals, names);
+}
+
+void Macaulay2IOHandler::
+readBareIdeal(Scanner& in, BigIdeal& ideal, const VarNames& names) {
+  ideal.clearAndSetNames(names);
 
   in.expect('I');
   in.expect('=');
@@ -108,22 +182,18 @@ void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
   } else {
 	do {
 	  readTerm(ideal, in);
-	  
-	  vector<mpz_class>& term = ideal.getLastTermRef();
-	  bool isIdentity = true;
-	  size_t varCount = term.size();
-	  for (size_t var = 0; var < varCount; ++var) {
-		if (term[var] != 0) {
-		  isIdentity = false;
-		  break;
-		}
-	  }
 	  if (in.match('_'))
 		in.expect('R');
 	} while (in.match(','));
   }
   in.expect(')');
   in.expect(';');
+}
+
+void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
+  VarNames names;
+  readRing(in, names);
+  readBareIdeal(in, ideal, names);
 }
 
 void Macaulay2IOHandler::readPolynomial(Scanner& in,
@@ -240,6 +310,8 @@ void Macaulay2IOHandler::writeRing(const VarNames& names, FILE* out) {
 		 "likely not be able to read it since it will confuse the variable R "
 		 "with the polynomial ring R.");
 	}
+	// TODO: make the same note for I. Consider using a name like "frobbyRing"
+	// and "frobbyIdeal" instead of I and R.
 
 	fputs(names.getName(i).c_str(), out);
 	pre = ", ";

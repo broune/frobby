@@ -146,8 +146,6 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
 	  *_inputFormat = "4ti2";
 	else if (c == 'v')
 	  *_inputFormat = "monos";
-	else if (in.matchEOF())
-	  *_inputFormat = "null";
 	else
 	  *_inputFormat = "m2"; // We use m2 as a fall-back
   }

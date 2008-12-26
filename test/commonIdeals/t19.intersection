@@ -1,0 +1,9 @@
+R = QQ[a, b];
+I = monomialIdeal(
+ a^11,
+ a^10*b,
+ a^4*b^4,
+ a^2*b^5,
+ a*b^10,
+ b^20
+);

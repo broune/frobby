@@ -42,6 +42,9 @@
 // a dependency on Boost or on having a very recent compiler which
 // incorporates TR1.
 
+// TODO: make an AutoVector that wraps std::vector instead of or as a
+// supplement to this class.
+
 // Container::value_type is required to be a pointer type.
 template<class Container>
 class ElementDeleter {

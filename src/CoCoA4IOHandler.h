@@ -53,7 +53,9 @@ public:
 									 bool wroteAnyGenerators,
 									 FILE* out);
 
-  virtual void writeIdealHeader(const VarNames& names, FILE* out);
+  virtual void writeIdealHeader(const VarNames& names,
+								bool defineNewRing,
+								FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
 								const TermTranslator* translator,
 								bool isFirst,
@@ -67,7 +69,7 @@ public:
 								FILE* out);
 
   static void readVars(VarNames& ideal, Scanner& in);
-  static void writeRing(const VarNames& names, FILE* out);
+  virtual void writeRing(const VarNames& names, FILE* out);
 
   static void writeCoCoA4TermProduct(const Term& term,
 									 const TermTranslator* translator,

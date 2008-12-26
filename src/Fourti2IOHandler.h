@@ -56,6 +56,7 @@ public:
 									 FILE* out);
 
   virtual void writeIdealHeader(const VarNames& names,
+								bool defineNewRing,
 								size_t generatorCount,
 								FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
@@ -72,7 +73,9 @@ public:
 
   // These are not supported and calling any one of them is an error.
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
-  virtual void writeIdealHeader(const VarNames& names, FILE* out);
+  virtual void writeIdealHeader(const VarNames& names, bool
+								defineNewRing,
+								FILE* out);
 };
 
 #endif

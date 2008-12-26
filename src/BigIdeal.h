@@ -89,9 +89,9 @@ public:
 
   void print(FILE* file) const;
 
-private:
   static bool bigTermCompare(const vector<mpz_class>& a,
 							 const vector<mpz_class>& b);
+private:
 
   vector<string> _variables;
   vector<vector<mpz_class> > _terms;

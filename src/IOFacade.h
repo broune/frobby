@@ -26,6 +26,7 @@ class IOHandler;
 class BigPolynomial;
 class VarNames;
 
+// TODO: Consider letting Scanner play the role of IOFacade.
 class IOFacade : private Facade {
  public:
   IOFacade(bool printActions);
@@ -34,10 +35,16 @@ class IOFacade : private Facade {
   void readIdeal(Scanner& in, BigIdeal& ideal);
 
   // Insert the ideals that are read into the parameter ideals. The
-  // parameter ideals is required to be empty.
-  void readIdeals(Scanner& in,
-				  vector<BigIdeal*>& ideals);
+  // parameter ideals is required to be empty. Names contains the last
+  // ring read, even if there are no ideals.
+  void readIdeals(Scanner& in, vector<BigIdeal*>& ideals, VarNames& names);
+
   void writeIdeal(const BigIdeal& ideal, IOHandler* handler, FILE* out);
+
+  void writeIdeals(const vector<BigIdeal*>& ideals,
+				   const VarNames& names,
+				   IOHandler* handler,
+				   FILE* out);
 
   void readPolynomial(Scanner& in, BigPolynomial& polynomial);
   void writePolynomial(const BigPolynomial& polynomial,

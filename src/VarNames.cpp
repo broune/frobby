@@ -46,8 +46,10 @@ bool VarNames::addVar(const string& name) {
 
   pair<VarNameMap::iterator, bool> p =_nameToIndex.insert
 	(make_pair(name, _indexToName.size()));
-  if (!p.second)
+  if (!p.second) {
+	ASSERT(contains(name));
 	return false;
+  }
 
   try {
 	_indexToName.push_back(&(p.first->first)); // TODO: fix to vector of iters
@@ -59,7 +61,15 @@ bool VarNames::addVar(const string& name) {
   if (getVarCount() == getInvalidIndex())
 	reportError("Too many variable names");
 
+  ASSERT(contains(name));
   return true;
+}
+
+void VarNames::addVarSyntaxCheckUnique(const Scanner& in,
+									   const string& name) {
+  if (!addVar(name))
+	reportSyntaxError(in, "The variable " + name + " is declared twice.");
+  ASSERT(contains(name));
 }
 
 bool VarNames::operator<(const VarNames& names) const {
@@ -106,14 +116,16 @@ bool VarNames::empty() const {
   return _indexToName.empty();
 }
 
-
 VarNames& VarNames::operator=(const VarNames& names) {
-  clear();
+  if (this != &names) {
+	clear();
 
-  _indexToName.reserve(names.getVarCount());
+	_indexToName.reserve(names.getVarCount());
 
-  for (size_t var = 0; var < names.getVarCount(); ++var)
-	addVar(names.getName(var));
+	for (size_t var = 0; var < names.getVarCount(); ++var)
+	  addVar(names.getName(var));
+  }
+
   return *this;
 }
 
@@ -126,6 +138,10 @@ bool VarNames::operator==(const VarNames& names) const {
 	  return false;
 
   return true;
+}
+
+bool VarNames::operator!=(const VarNames& names) const {
+  return !operator==(names);
 }
 
 void VarNames::swapVariables(size_t a, size_t b) {

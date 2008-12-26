@@ -1,0 +1,48 @@
+#!/bin/bash
+
+TIMEFORMAT=$' (%2lR real)'
+
+normalTests="hilbert irrdecom primdecom intersect assoprimes \
+             minimize alexdual radical frob"
+specialTests="error idealFormats polyFormats latticeFormats internal"
+params="$*"
+
+runNormalTests () {
+  action="$1"; shift;
+  path="$1"; shift;
+  cd test/$path;
+  ../testScripts/runtests $action $params
+  if [ $? != 0 ]; then exit 1; fi
+  cd ../..;
+}
+
+for t in $normalTests;
+do
+  echo -n "$t "
+
+  echo -n "(s)";
+  runNormalTests $t specialIdeals
+
+  echo -n "(c)";
+  runNormalTests $t commonIdeals
+
+  echo -n "(f)";
+  runNormalTests $t frob
+
+  if [ -e "$t" ]; then
+    echo -n "(#)"
+    runNormalTests $t $t
+  fi
+
+  echo
+done
+
+for t in $specialTests;
+do
+  echo -n "$t "
+  cd test/$t
+  ./runtests $*
+  if [ $? != 0 ]; then exit 1; fi
+  echo
+  cd ../..
+done

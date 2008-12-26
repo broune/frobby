@@ -73,8 +73,7 @@ public:
 
   // The method addPurePowersAtInfinity adds high exponents that map to
   // zero. This method replaces those high powers with the power
-  // zero. If a term becomes (but was not previously) the identity, it is
-  // removed.
+  // zero.
   void setInfinityPowersToZero(Ideal& ideal) const;
 
   const VarNames& getNames() const;
@@ -109,6 +108,21 @@ private:
   mutable vector<vector<const char*> > _stringExponents;
   mutable vector<vector<const char*> > _stringVarExponents;
   VarNames _names;
+};
+
+// A predicate that sorts according to reverse lexicographic order
+// on the translated values of a term.
+class TranslatedReverseLexComparator {
+ public:
+ TranslatedReverseLexComparator(const TermTranslator& translator):
+  _translator(translator) {
+  }
+
+  bool operator()(const Term& a, const Term& b) const;
+  bool operator()(const Exponent* a, const Exponent* b) const;
+
+ private:
+  const TermTranslator& _translator;
 };
 
 #endif

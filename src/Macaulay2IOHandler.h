@@ -29,7 +29,17 @@ public:
   Macaulay2IOHandler();
 
   virtual void readIdeal(Scanner& in, BigIdeal& ideal);
+  virtual void readIdeal(Scanner& in, BigIdeal& ideal,
+						 const VarNames& names);
+  virtual void readIdeals(Scanner& in,
+						  vector<BigIdeal*>& ideals,
+						  VarNames& names);
+
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
+
+  virtual void writeIdeals(const vector<BigIdeal*>& ideals,
+						   const VarNames& names,
+						   FILE* out);
 
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
@@ -38,6 +48,10 @@ public:
   static const char* staticGetName();
 
  private:
+  void readRing(Scanner& in, VarNames& names);
+  void readBareIdeal(Scanner& in, BigIdeal& ideal, const VarNames& names);
+  void writeBareIdeal(const BigIdeal& ideal, FILE* out);
+
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,
 									 const Term& term,
@@ -53,7 +67,9 @@ public:
 									 bool wroteAnyGenerators,
 									 FILE* out);
 
-  virtual void writeIdealHeader(const VarNames& names, FILE* out);
+  virtual void writeIdealHeader(const VarNames& names,
+								bool defineNewRing,
+								FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
 								const TermTranslator* translator,
 								bool isFirst,

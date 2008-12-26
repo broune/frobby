@@ -24,7 +24,7 @@ support are as follows.
 
 * The format m2: Format understandable by the program Macaulay 2.
   - supports input and output of a monomial ideal.
-  - supports input of a list of monomial ideals.
+  - supports input and output of a list of monomial ideals.
   - supports input and output of a polynomial.
 
 * The format cocoa4: Format understandable by the program CoCoA 4.
@@ -39,7 +39,7 @@ support are as follows.
 
 * The format monos: Older format used by the program Monos.
   - supports input and output of a monomial ideal.
-  - supports input of a list of monomial ideals.
+  - supports input and output of a list of monomial ideals.
 
 * The format newmonos: Newer format used by the program Monos.
   - supports input and output of a monomial ideal.
@@ -47,7 +47,7 @@ support are as follows.
 
 * The format 4ti2: Format used by the software package 4ti2.
   - supports input and output of a monomial ideal.
-  - supports input of a list of monomial ideals.
+  - supports input and output of a list of monomial ideals.
   - supports input and output of a polynomial.
 
 * The format null: Ignores input and produces no output.

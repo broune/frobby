@@ -1,0 +1,284 @@
+#!/usr/bin/env bash
+
+# This runs a test while providing diagnostic output on error.
+# $1  The Frobby action to run (e.g. alexdual)
+# $2  The name of one or more space-seperated input files
+# $3  The reference output file
+# $4+ Parameters to frobby
+#
+# Parameter 2 can contain more than one file if this script has been called
+# as e.g. "../thisscript action "file1 file2" reference
+#
+# If the output produced by Frobby does not match that from the
+# reference output according to diff, then this is considered an
+# error, diagnostics will be printed and the exit status will 1.
+#
+# Otherwise a dot '.' is printed and the exit status is 0.
+#
+# If $4 is _generate, then the output from Frobby is piped into the
+# reference output file, overwriting any previous contents. It is
+# recommended to manually inspect the output to check if it is
+# correct.
+#
+# If $4 is _summary, then nothing will be printed on success, and a
+# short summary line is printed on failure. In this case the exit
+# status 0 zero even on failure. The intent of this is to get a
+# summary of all failing tests, instead of getting detailed
+# information on the first failure.
+#
+# If $4 is _valgrind, then frobby will be run under valgrind. If
+# valgrind reports no errors and no memory leaks, then a 'v' is
+# printed to indicate this, and the exist status is 0. If valgrind
+# does report an issue, then the valgrind output is displayed and the
+# exit status is 1. In either case the actual output of Frobby is
+# ignored and is thus not compared to the correct reference output.
+#
+# If $4 is _expectExitCode, then the expected error code is $5 instead
+# of the usual expectation of 0.
+#
+# If $4 is _matchError, then the output written to standard error is
+# matched against the reference output, instead of that written to
+# standard out. Lines containing the word DEBUG is removed from this
+# output.
+#
+# If $4 is _debugAlloc, then Frobby will be run with the _debugAlloc
+# option, which will make it run through every scenario of runnning
+# out of memory and recovering, which can take a long time. This only
+# works for the debug versions of Frobby.
+
+# These options can all be combined by adding them one after each
+# other, in which case the last setting of some options is used,
+# and then of course the options will be further along than $4.
+
+# This script is designed to be run from a sub-directory of where it
+# resides.
+
+printDebugOutput=0
+origParams="$*" # used for debug output below
+origFrobby="../../bin/frobby"
+origFrobbyOut="/tmp/frobbyTestScriptTemporary_standardOutput"
+origFrobbyErr="/tmp/frobbyTestScriptTemporary_standardError"
+frobbyChangedErr="/tmp/frobbyTestScriptTemporary_standardErrorChanged"
+frobbyChangedInput="/tmp/frobbyTestScriptTemporary_standardInput"
+
+frobby="$origFrobby"
+frobbyOut="$origFrobbyOut"
+frobbyErr="$origFrobbyErr"
+action="$1"
+inputFile="$2"
+referenceOutputFile="$3"
+
+# Note that we *must* use echo $inputFile|... instead of ... < $inputFile,
+# because the latter does not work if $inputFile ha more than one file
+# name in it.
+
+shift
+shift
+shift
+
+# Set initial values
+generate=0;
+expectedExitCode=0;
+matchErr=0;
+useValgrind=0;
+useDebugAlloc=0
+summary=0;
+
+changed=1;
+while [ $changed = 1 ];
+do
+  changed=0;
+
+  if [ "$1" = "_generate" ];
+  then
+    changed=1;
+    if [ "$inputFile" == "$referenceOutputFile" ]; then exit 0; fi
+    generate=1;
+    shift;
+  fi
+
+  if [ "$1" = "_summary" ];
+  then
+    changed=1;
+    summary=1;
+    shift;
+  fi
+
+  if [ "$1" = "_valgrind" ];
+  then
+    changed=1;
+    useValgrind=1;
+    shift;
+  fi
+
+  if [ "$1" = "_debugAlloc" ];
+  then
+    changed=1;
+    useDebugAlloc=1;
+    shift;
+  fi
+
+  if [ "$1" = "_expectExitCode" ];
+  then
+    changed=1;
+    expectedExitCode="$2";
+    shift;
+    shift;
+  fi
+
+  if [ "$1" = "_matchError" ];
+  then
+    changed=1;
+    matchErr=1;
+    shift;
+  fi
+done
+
+if [ $useDebugAlloc = 1 ];
+then
+  # note that we have to use the _input option, since Frobby starts
+  # the computation over after each simulated recory, so it needs to be
+  # able to rewind the input too, which is not possible using pipes.
+  # Also, since the _input notation only supports a single file, we have
+  # to collect all the input into a single file, in case $inputFile
+  # contains more than a single filename.
+  cat $inputFile > $frobbyChangedInput
+  origFrobby="$frobby _debugAlloc _input $frobbyChangedInput";
+  frobby="$origFrobby"
+  # OK, I change origFrobby, so it is not quite original. So shoot me.
+fi
+
+
+if [ $useValgrind = 1 ];
+then
+  frobby="valgrind $frobby";
+fi
+
+params="$*"
+
+if [ "$printDebugOutput" == 1 ];
+then
+  echo "------ debug output ------"
+  echo "frobby is \"$frobby\""
+  echo "origParams is \"$origParams\""
+  echo "action is \"$action\""
+  echo "inputFile is \"$inputFile\""
+  echo "params is \"$params\""
+  echo "referenceOutputFile is \"$referenceOutputFile\""
+  echo "cmd is \"$cmd\""
+  echo "generate is $generate"
+  echo "summary is $summary"
+  echo "useValgrind is $useValgrind"
+  echo "useDebugAlloc is $useDebugAlloc"
+  echo "expectedExitCode is $expectedExitCode"
+  echo "matchErr is $matchErr"
+fi
+
+# This is where we actually run Frobby
+cat $inputFile|$frobby $action $params > $frobbyOut 2> $frobbyErr
+frobbyExitCode="$?"
+
+if [ $matchErr = 1 ];
+then
+  # Use a new file to remove lines containing the words DEBUG
+  frobbyOut="$frobbyChangedErr";
+  sed /DEBUG/d < $frobbyErr|sed /^==/d > $frobbyOut
+fi
+
+# Check if Frobby's output matches the reference output file.
+diff $frobbyOut $referenceOutputFile > /dev/null 2> /dev/null
+referenceMatch="$?"
+
+if [ $generate = 1 ];
+then
+  if [ $frobbyExitCode != $expectedExitCode ];
+  then
+    echo "Halting generation of output due to getting exit code $frobbyExitCode."
+    echo "The expected exit code was $expectedExitCode. This is for "
+	echo "  cat $inputFile|$frobby $action $params"
+    echo "Giving error output of "
+    cat $origFrobbyErr
+    exit 1
+  fi
+
+  cp -f $frobbyOut $referenceOutputFile;
+  if [ $referenceMatch = 0 ];
+  then
+    echo -n "g";
+  else
+    echo;
+    echo -n "Replaced output file $referenceOutputFile with new version.";
+  fi
+  exit 0
+fi
+
+if [ $useValgrind = 1 ];
+then
+  errs=`grep -e "ERROR SUMMARY: [^0].* error" \
+             -e "--leak-check=full" $frobbyErr`;
+  if [ "$errs" == "" ];
+  then
+    echo -n v
+  else
+    echo
+    echo
+    echo "valgrind reports issue on running:"
+    echo "  cat $inputFile|$frobby $action $params"
+    echo "Re-running to show details:"
+    echo
+    
+    cat $inputFile|valgrind --leak-check=full --show-reachable=no $origFrobby $action $params > /dev/null;
+    echo "This is a valgrind report on running:"
+    echo "  cat $inputFile|valgrind $frobby $action $params"
+    exit 1;
+  fi
+fi
+
+if [[ $referenceMatch = 0 && $frobbyExitCode = $expectedExitCode ]];
+then
+  if [ $summary = 0 ];
+  then
+    if [ $useDebugAlloc = 1 ];
+    then
+      echo -n ".d"
+    else
+      echo -n "."
+    fi
+  fi
+  exit 0;
+fi
+
+if [ $summary = 1 ];
+then
+  echo "Error on $action: $inputFile -> $referenceOutputFile";
+  exit 0;
+fi
+
+echo
+echo
+echo "***** Encountered failure on output $referenceOutputFile. Input head was:"
+cat $inputFile|head
+
+echo "***** Reference output head:"
+cat $referenceOutputFile|head
+
+echo "***** Standard output head from Frobby:"
+cat $origFrobbyOut|head
+
+echo "***** Error output head from Frobby:"
+cat $origFrobbyErr|head
+
+echo "***** Output head diff original compared to actual is"
+diff $referenceOutputFile $frobbyOut|head
+
+echo "***** Exit code was $frobbyExitCode, and expecting $expectedExitCode"
+if [ $matchErr = 1 ];
+then
+   echo "***** Matching on error output, not standard output.";
+fi
+
+echo
+echo "***** A test $action: $inputFile -> $referenceOutputFile failed."
+echo "  cat $inputFile|$frobby $action $params"
+
+exit 1

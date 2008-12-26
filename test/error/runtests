@@ -5,6 +5,9 @@
 
 t="./runtest"
 
+if [ "$1" = "_full" ]; then
+  shift;
+fi
 
 #######################################
 # The help action

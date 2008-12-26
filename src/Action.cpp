@@ -59,6 +59,7 @@ namespace {
 
 	nameFactoryRegister<HilbertAction>(factory);
 	nameFactoryRegister<IrreducibleDecomAction>(factory);
+	nameFactoryRegister<PrimaryDecomAction>(factory);
 	nameFactoryRegister<AlexanderDualAction>(factory);
 	nameFactoryRegister<AssociatedPrimesAction>(factory);
 	nameFactoryRegister<TransformAction>(factory);
@@ -74,7 +75,6 @@ namespace {
 
 	nameFactoryRegister<HelpAction>(factory);
 	nameFactoryRegister<TestAction>(factory);
-	nameFactoryRegister<PrimaryDecomAction>(factory);
 
 	return factory;
   }

@@ -22,6 +22,8 @@
 #include "IntersectFacade.h"
 #include "Scanner.h"
 #include "IdealFacade.h"
+#include "VarSorter.h"
+#include "ElementDeleter.h"
 
 IntersectionAction::IntersectionAction():
   Action
@@ -53,12 +55,15 @@ void IntersectionAction::perform() {
   _io.validateFormats();
 
   vector<BigIdeal*> ideals;
+  ElementDeleter<vector<BigIdeal*> > idealsDeleter(ideals);
 
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeals(in, ideals);
+  VarNames names;
+  ioFacade.readIdeals(in, ideals, names);
 
   IntersectFacade facade(_printActions);
-  BigIdeal* intersection = facade.intersect(ideals);
+  auto_ptr<BigIdeal> intersection(facade.intersect(ideals, names));
+  idealsDeleter.deleteElements();
 
   if (_canonical) {
 	IdealFacade idealFacade(_printActions);
@@ -67,11 +72,7 @@ void IntersectionAction::perform() {
   }
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();
-  ioFacade.writeIdeal(*intersection, output.get(), stdout );
-
-  delete intersection;
-  for (size_t i = 0; i < ideals.size(); ++i)
-    delete ideals[i];
+  ioFacade.writeIdeal(*intersection, output.get(), stdout);
 }
 
 const char* IntersectionAction::staticGetName() {

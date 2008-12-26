@@ -1,0 +1,7 @@
+R = QQ[a, b, c, d];
+I = monomialIdeal(
+ a*b*c*d,
+ a*c,
+ b*c,
+ b*d
+);

@@ -32,13 +32,46 @@ class IOHandler {
  public:
   virtual ~IOHandler();
 
+  // Read an ideal and its ambient ring.
   virtual void readIdeal(Scanner& in, BigIdeal& ideal) = 0;
-  virtual void readIdeals(Scanner& in, vector<BigIdeal*> ideals);
+
+  // Read an ideal and possibly its ambient ring. If no ambient ring is
+  // specified in the input, the format is allowed but not required to
+  // use the passed-in ring.
+  virtual void readIdeal(Scanner& in, BigIdeal& ideal,
+						 const VarNames& names);
+
+  // Read a list of ideals. In case of an empty list of ideals, the format is
+  // allowed but not required to support reading a ring for the empty list.
+  // This method is required to read the output of writeIdeals().
+  //
+  // The initial value of names is discarded and then names is set to the
+  // last ring described as part of the list of ideals. In the case of an
+  // empty list with a ring, this is the only way to obtain the ring. If
+  // there are no rings specified, names is left unchanged.
+  //
+  // The vector ideals is required to be empty.
+  virtual void readIdeals(Scanner& in,
+						  vector<BigIdeal*>& ideals,
+						  VarNames& names);
+
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
-  virtual void writeIdeal(const BigIdeal& ideal, FILE* out);
+  // Writes ideal to out. For format is allowed but not required to omit
+  // a description of the ring if defineNewRing is false.
+  virtual void writeIdeal(const BigIdeal& ideal,
+						  bool defineNewRing,
+						  FILE* out);
+
+  // Writes ideals to out. If ideals is empty, the format is allowed to write
+  // just the ring, or to discard the information about which ring is used.
+  virtual void writeIdeals(const vector<BigIdeal*>& ideals,
+						   const VarNames& names,
+						   FILE* out);
+
+
   virtual void writePolynomial(const BigPolynomial& polynomial, FILE* out);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
@@ -95,9 +128,22 @@ class IOHandler {
 									 bool wroteAnyGenerators,
 									 FILE* out);
 
-  // Output of monomial ideals.
-  virtual void writeIdealHeader(const VarNames& names, FILE* out) = 0;
+  // Output of monomial ideals. writeIdealHeader should be called
+  // before starting output of a monomial ideal, and writeIdealFooter
+  // should be called afterwards. The parameter defineNewRing specifies
+  // whether the ring the ideal lies in needs to be written to the
+  // file. E.g. it only needs to be specified once when writing a list of
+  // ideals that all lie in the same ring.
+  //
+  // There are two overloads of writeIdealHeader because some formats
+  // have to know the number of generators of the ideal before that ideal
+  // can be written to the output. These formats are thus unable to implement
+  // the overload that does not specify this number.
   virtual void writeIdealHeader(const VarNames& names,
+								bool defineNewRing,
+								FILE* out) = 0;
+  virtual void writeIdealHeader(const VarNames& names,
+								bool defineNewRing,
 								size_t generatorCount,
 								FILE* out);
   virtual void writeTermOfIdeal(const Term& term,
@@ -156,6 +202,7 @@ class IOHandler {
   friend class IdealWriter;
   friend class IrreducibleIdealWriter;
   friend class PolynomialWriter;
+  friend class DelayedIdealWriter;
 };
 
 void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers);

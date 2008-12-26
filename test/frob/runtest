@@ -8,6 +8,6 @@ params="$*"
 
 
 outputFile="$testName.ref"
-../testhelper frobgrob "$inputFile" $outputFile $params
+../testScripts/testhelper frobgrob "$inputFile" $outputFile $params
 if [ $? != 0 ]; then exit 1; fi
 exit 0

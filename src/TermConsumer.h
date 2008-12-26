@@ -19,13 +19,38 @@
 
 class Term;
 
+// This class is used to transfer terms one at a time from one part of
+// the program to another, and possibly to perform computations on
+// those terms. These can be divided into ideals (lists of terms) and
+// lists of ideals.
+//
+// Using a consumer for output, for example, allows to move the output from
+// memory onto the disk without having to wait for the entire computation to
+// be done, while still making it possible to store the output in memory
+// in a convenient form just by using a different consumer.
 class TermConsumer {
  public:
   virtual ~TermConsumer();
 
+  // Tell the consumer that the ideals that are consumed until the next
+  // call to doneConsumingList are to be considered as one list of ideals,
+  // rather than as a number of separate ideals. The default implementation
+  // is to ignore this, but the consumer is free to do something special
+  // in this case. It is thus not in general required to call this method.
+  virtual void beginConsumingList();
+
+  // Tell the consumer to begin consuming an ideal. It is required to call
+  // this method before calling consume().
   virtual void beginConsuming() = 0;
+
+  // Consume a term.
   virtual void consume(const Term& term) = 0;
+
+  // Must be called once each time beginConsuming has been called.
   virtual void doneConsuming() = 0;
+
+  // Must be called once each time beginConsumingList has been called.
+  virtual void doneConsumingList();
 };
 
 #endif

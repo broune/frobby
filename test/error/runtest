@@ -14,4 +14,4 @@ shift
 outputFile="$1.err"
 shift
 
-../testhelper $action $tmpFile $outputFile  _expectExitCode 1 _matchError $*
+../testScripts/testhelper $action $tmpFile $outputFile  _expectExitCode 1 _matchError $*

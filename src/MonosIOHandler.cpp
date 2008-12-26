@@ -42,7 +42,9 @@ void MonosIOHandler::writeTerm(const vector<mpz_class>& term,
   writeTermProduct(term, names, out);
 }
 
-void MonosIOHandler::writeIdealHeader(const VarNames& names, FILE* out) {
+void MonosIOHandler::writeIdealHeader(const VarNames& names,
+									  bool defineNewRing,
+									  FILE* out) {
   fputs("vars ", out);
   const char* pre = "";
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {

@@ -1,0 +1,63 @@
+R = QQ[x1, x10, x2, x3, x4, x5, x6, x7, x8, x9];
+I = monomialIdeal(
+ x1^9,
+ x6^7
+);
+I = monomialIdeal(
+ x1^2
+);
+I = monomialIdeal(
+ x10^5,
+ x6^7
+);
+I = monomialIdeal(
+ x10
+);
+I = monomialIdeal(
+ x2
+);
+I = monomialIdeal(
+ x3^7,
+ x6^7
+);
+I = monomialIdeal(
+ x3^2
+);
+I = monomialIdeal(
+ x4^9,
+ x6^7
+);
+I = monomialIdeal(
+ x4^4
+);
+I = monomialIdeal(
+ x5^4,
+ x6^7
+);
+I = monomialIdeal(
+ x5
+);
+I = monomialIdeal(
+ x6^7,
+ x7^7
+);
+I = monomialIdeal(
+ x6^7,
+ x8^8
+);
+I = monomialIdeal(
+ x6^7,
+ x9^9
+);
+I = monomialIdeal(
+ x6^3
+);
+I = monomialIdeal(
+ x7^5
+);
+I = monomialIdeal(
+ x8^2
+);
+I = monomialIdeal(
+ x9^4
+);

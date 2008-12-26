@@ -19,3 +19,9 @@
 
 TermConsumer::~TermConsumer() {
 }
+
+void TermConsumer::beginConsumingList() {
+}
+
+void TermConsumer::doneConsumingList() {
+}

@@ -1,0 +1,15 @@
+vars a, b, c;
+[
+ a^2,
+ a*b^5,
+ b^7
+];
+vars a, b, c;
+[
+ b^5,
+ c^4
+];
+vars a, b, c;
+[
+ b^3
+];

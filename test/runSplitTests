@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#test/runtests $*
+#if [ $? != 0 ]; then exit 1; fi
+
+TIMEFORMAT=$' (%2lR real)'
+
+pivotSplits="minimum median maximum gcd indep"
+pivotActions="hilbert"
+
+labelSplits="maxlabel varlabel minlabel $pivotSplits"
+labelActions="irrdecom assoprimes alexdual"
+
+frobSplits="frob $labelSplits"
+frobActions="frob"
+
+params="$*"
+testhelper=../testScripts/testhelper
+paths="specialIdeals commonIdeals frob"
+
+runTests () {
+  action="$1"; shift;
+  splits="$*";
+
+  echo "*** $action";
+
+  for split in $splits; do
+    echo -n " $split ";
+    for path in $paths; do
+      cd test/$path;
+      ../testScripts/runtests $action $params -split $split;
+      if [ $? != 0 ]; then exit 1; fi
+      cd ../..;
+    done
+    echo;
+  done
+}
+
+for action in $labelActions;
+do
+  runTests "$action" $labelSplits
+done
+
+for action in $pivotActions;
+do
+  runTests "$action" $pivotSplits
+done
+
+for action in $frobActions;
+do
+  runTests "$action" $frobSplits
+done

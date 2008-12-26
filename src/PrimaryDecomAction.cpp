@@ -26,7 +26,7 @@
 PrimaryDecomAction::PrimaryDecomAction():
   Action
 (staticGetName(),
- "Compute the primary decomposition of monomial ideals (not done).",
+ "Compute the primary decomposition of monomial ideals.",
  "This feature is experimental which means that it isn't correctly\n"
  "implemented yet. I.e. it doesn't work yet - don't use it other than\n"
  "because you are developing Frobby or curious to see how this\n"
@@ -43,8 +43,6 @@ void PrimaryDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void PrimaryDecomAction::perform() {
-  displayNote("You are using the primdecom action, "
-			  "which is NOT DONE and does not work!\n");
   BigIdeal ideal;
 
   _sliceParams.validateSplit(true, false);
