@@ -28,9 +28,11 @@ for t in $normalTests; do
 
   echo -n "(s)";
   runNormalTests $t specialIdeals
-  if [ $testLevel = "few" ]; then
-    echo;
-	continue;
+  if [ "$testLevel" = "few" ]; then
+    if [ "$t" != "frob" ]; then
+      echo;
+	  continue;
+    fi
   fi
 
   echo -n "(c)";
