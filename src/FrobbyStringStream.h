@@ -27,8 +27,8 @@ class FrobbyStringStream {
   FrobbyStringStream& operator<<(unsigned long integer);
   FrobbyStringStream& operator<<(unsigned int integer);
   FrobbyStringStream& operator<<(const mpz_class& integer);
-  FrobbyStringStream& operator<<(const string& str);
-  FrobbyStringStream& operator<<(const char* str);
+  FrobbyStringStream& operator<<(const string& text);
+  FrobbyStringStream& operator<<(const char* text);
 
   // This overload actually appends the character to the stream
   // instead of appending a string representation of the number. This

@@ -35,8 +35,6 @@ class IOHandler;
 //  Expect X: Require the exact value X to be in the input and skip past it.
 //  Match X: Return true if the exact value X is in the input, and in that case
 //    skip past it.
-//  Expected X: Tell the Scanner that X was required but not seen. It is
-//    a bug to call this method if in fact X is in the input.
 //
 // If a requirement is not met, Scanner reports a syntax error using the
 // functions in the erorr.h header. 
@@ -59,6 +57,10 @@ public:
   // is skipped past.
   void expect(char expected);
 
+  // Require the next character to be equal to a or b. This character is
+  // skipped past.
+  void expect(char a, char b);
+
   // Require the following characters to be equal to str. These characters
   // are skipped past.
   void expect(const char* str);
@@ -69,10 +71,6 @@ public:
 
   // Require that there is no more input.
   void expectEOF();
-
-  // Report that a or b was required, but that none of them are present. It
-  // is a precondition of this method that match(a) and match(b) return false.
-  void expected(char a, char b);
 
   // Read an arbitrary-precision integer.
   void readInteger(mpz_class& integer);

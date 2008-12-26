@@ -152,7 +152,7 @@ void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal,
   else if (in.peek('I'))
 	readBareIdeal(in, ideal, names);
   else
-	in.expected('R', 'I');
+	in.expect('R', 'I');
 }
 
 void Macaulay2IOHandler::readIdeals(Scanner& in,

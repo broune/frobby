@@ -166,14 +166,14 @@ void Scanner::expectEOF() {
 	reportErrorUnexpectedToken("no more input", "");
 }
 
-void Scanner::expected(char a, char b) {
-  SCANNER_LOG2("Expected %c or %c.\n", a, b);
-  ASSERT(!match(a));
-  ASSERT(!match(b));
+void Scanner::expect(char a, char b) {
+  SCANNER_LOG2("Expecting %c or %c.\n", a, b);
 
-  FrobbyStringStream err;
-  err << a << " or " << b;
-  reportErrorUnexpectedToken(err, "");
+  if (!match(a) && !match(b)) {
+	FrobbyStringStream err;
+	err << a << " or " << b;
+	reportErrorUnexpectedToken(err, "");
+  }
 }
 
 size_t Scanner::readIntegerString() {

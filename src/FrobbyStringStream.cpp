@@ -56,13 +56,13 @@ FrobbyStringStream& FrobbyStringStream::operator<<(const mpz_class& integer) {
   return *this;
 }
 
-FrobbyStringStream& FrobbyStringStream::operator<<(const string& str) {
-  _str += str;
+FrobbyStringStream& FrobbyStringStream::operator<<(const string& text) {
+  _str += text;
   return *this;
 }
 
-FrobbyStringStream& FrobbyStringStream::operator<<(const char* str) {
-  _str += str;
+FrobbyStringStream& FrobbyStringStream::operator<<(const char* text) {
+  _str += text;
   return *this;
 }
 
@@ -88,7 +88,7 @@ void FrobbyStringStream::appendIntegerToString(string& str,
 	unsigned long quotient = integer / 10;
 	unsigned long remainder = integer - quotient * 10; // faster than %
 
-	char digit = static_cast<char>(remainder) + '0';
+	char digit = static_cast<char>(remainder + '0');
 	str += digit;
 
 	integer = quotient;
