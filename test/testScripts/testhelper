@@ -53,7 +53,6 @@
 # This script is designed to be run from a sub-directory of where it
 # resides.
 
-printDebugOutput=0
 origParams="$*" # used for debug output below
 origFrobby="../../bin/frobby"
 origFrobbyOut="/tmp/frobbyTestScriptTemporary_standardOutput"
@@ -156,6 +155,7 @@ fi
 
 params="$*"
 
+# Set printDebugOutput to 1 outside the script to see this output.
 if [ "$printDebugOutput" == 1 ];
 then
   echo "------ debug output ------"
@@ -232,6 +232,15 @@ then
     echo "  cat $inputFile|valgrind $frobby $action $params"
     exit 1;
   fi
+fi
+
+# The option _debugAlloc makes Frobby rerun many times, and to avoid
+# making the same output many times, it closes standard out after one run.
+# It does not close stdandard error, so matching on error and _debugAlloc
+# cannot be combined in a sensible way, so we stop that from happening.
+if [[ $matchErr = 1 && $useDebugAlloc = 1 && $frobbyExitCode = $expectedExitCode ]]; then
+  echo -n "d";
+  exit 0;
 fi
 
 if [[ $referenceMatch = 0 && $frobbyExitCode = $expectedExitCode ]];
