@@ -1,1 +1,1 @@
-../testScripts/runtests ptransform
+../testScripts/runtests ptransform $*

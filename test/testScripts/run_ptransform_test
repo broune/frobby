@@ -11,7 +11,6 @@ shift
 
 inputFile="$testName.test"
 oformats="m2 cocoa4 4ti2 singular"
-params="$*"
 
 if [ "$1" = "_full" ];
 then
@@ -21,14 +20,14 @@ fi
 for oformat in $oformats; do
   # Test format conversion to $oformat
   outputFile="$testName.$oformat";
-  $testhelper ptransform $inputFile $outputFile $params -oformat $oformat;
+  $testhelper ptransform $inputFile $outputFile $* -oformat $oformat;
   if [ $? != 0 ]; then exit 1; fi
 
   # Test same-format transform
-  $testhelper ptransform $outputFile $outputFile $params;
+  $testhelper ptransform $outputFile $outputFile $*;
   if [ $? != 0 ]; then exit 1; fi
 done
 
 # Test canonicalization of input
 outputFile="$testName.canon";
-$testhelper ptransform $inputFile $outputFile $params -canon
+$testhelper ptransform $inputFile $outputFile $* -canon
