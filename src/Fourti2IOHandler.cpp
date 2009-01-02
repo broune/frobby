@@ -104,7 +104,7 @@ void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
   mpz_out_str(out, 10, coef.get_mpz_t());
 
   if (!term.empty()) {
-	fputs("  ", out);
+	fputc(' ', out);
 	writeTermOfIdeal(term, names, isFirst, out);  
   } else
 	fputc('\n', out);
@@ -144,8 +144,7 @@ void Fourti2IOHandler::writeTermOfIdeal(const Term& term,
 	return; // Avoids the newline.
 
   for (size_t var = 0; var < varCount; ++var) {
-	if (var != 0) // TODO: make this unconditional.
-	  fputc(' ', out);
+	fputc(' ', out);
 	const char* exp = translator->getExponentString(var, term[var]);
 	if (exp == 0)
 	  exp = "0";
@@ -166,8 +165,7 @@ void Fourti2IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 	return; // Avoids the newline.
 
   for (size_t var = 0; var < varCount; ++var) {
-	if (var != 0)
-	  fputc(' ', out);
+	fputc(' ', out);
 	mpz_out_str(out, 10, term[var].get_mpz_t());
   }
   fputc('\n', out);
