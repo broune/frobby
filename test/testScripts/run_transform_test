@@ -10,21 +10,36 @@ testName="$1"
 shift
 
 inputFile="$testName.test"
-oformats="m2 4ti2 monos newmonos singular cocoa4"
+formats="m2 4ti2 monos newmonos singular cocoa4"
 
 if [ "$1" = "_full" ];
 then
   shift;
-fi
 
-for oformat in $oformats; do
-  # Test format conversion to $oformat
-  outputFile="$testName.$oformat";
-  $testhelper transform $inputFile $outputFile $* -oformat $oformat;
+  for format in $formats; do
+    # Test same-format transform.
+    $testhelper transform $testName.$format $testName.$format;
+    if [ $? != 0 ]; then exit 1; fi
+
+    # And again with specified formats.
+    $testhelper transform $testName.$format $testName.$format \
+      -iformat $format -oformat $format;
+    if [ $? != 0 ]; then exit 1; fi
+  done
+
+  # Test same-format transform on canon
+  $testhelper transform $testName.canon $testName.canon;
   if [ $? != 0 ]; then exit 1; fi
 
-  # Test same-format transform
-  $testhelper transform $outputFile $outputFile $*;
+  # And again with -canon option
+  $testhelper transform $testName.canon $testName.canon -canon;
+  if [ $? != 0 ]; then exit 1; fi
+fi
+
+for format in $formats; do
+  # Test format conversion to $format
+  outputFile="$testName.$format";
+  $testhelper transform $inputFile $outputFile $* -oformat $format;
   if [ $? != 0 ]; then exit 1; fi
 done
 

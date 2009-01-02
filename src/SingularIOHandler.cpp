@@ -23,13 +23,14 @@
 #include "CoefTermConsumer.h"
 #include "BigPolynomial.h"
 #include "error.h"
+#include "BigTermConsumer.h"
 #include "FrobbyStringStream.h"
 
 #include <cstdio>
 
 SingularIOHandler::SingularIOHandler():
-  IOHandler(staticGetName(),
-			"Format understandable by the program Singular.", false) {
+  IOHandlerCommon(staticGetName(),
+				  "Format understandable by the program Singular.") {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
@@ -94,7 +95,7 @@ void SingularIOHandler::writeTermOfIdeal(const Term& term,
   IOHandler::writeTermProduct(term, translator, out);
 }
 
-void SingularIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+void SingularIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 										 const VarNames& names,
 										 bool isFirst,
 										 FILE* out) {
@@ -110,45 +111,9 @@ void SingularIOHandler::writeIdealFooter(const VarNames& names,
   fputs(";\n", out);  
 }
 
-void SingularIOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
-  {
-	VarNames names;
-	readVars(names, in);
-	ideal.clearAndSetNames(names);
-  }
+void SingularIOHandler::readRing(Scanner& in, VarNames& names) {
+  names.clear();
 
-  in.expect("ideal");
-  in.expect('I');
-  in.expect('=');
-
-  if (!in.match('0')) {
-	do
-	  readTerm(ideal, in);
-	while (in.match(','));
-  }
-  in.expect(';');
-}
-
-void SingularIOHandler::readPolynomial(Scanner& in,
-									   BigPolynomial& polynomial) {
-  {
-	VarNames names;
-	readVars(names, in);
-	polynomial.clearAndSetNames(names);
-  }
-
-  in.expect("poly");
-  in.expect('p');
-  in.expect('=');
-
-  bool first = true;
-  do {
-	readCoefTerm(polynomial, first, in);
-	first = false;
-  } while (!in.match(';'));
-}
-
-void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
   in.expect("ring");
   in.expect('R');
   in.expect('=');
@@ -156,13 +121,8 @@ void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
   in.expect(',');
   in.expect('(');
 
-  names.clear();
   do {
-	const char* varName = in.readIdentifier();
-	if (names.contains(varName))
-	  reportSyntaxError
-		(in, "The variable " + string(varName) + " is declared twice.");
-	names.addVar(varName);
+	names.addVarSyntaxCheckUnique(in, in.readIdentifier());
   } while (in.match(','));
 
   in.expect(')');
@@ -189,10 +149,55 @@ void SingularIOHandler::readVars(VarNames& names, Scanner& in) {
 	  reportSyntaxError(in, errorMsg);
 	}
 	names.clear();
-  } else if (!in.match('0'))
+  } else if (!in.match('0')) {
+	// TODO: Replace following line with: in.expect('0', '1');
 	reportSyntaxError(in, "noVars must be either 0 or 1.");
+  }
 
   in.expect(';');
+}
+
+void SingularIOHandler::readBareIdeal(Scanner& in, const VarNames& names,
+									  BigTermConsumer& consumer) {
+  consumer.beginConsuming(names);
+  vector<mpz_class> term(names.getVarCount());
+
+  in.expect("ideal");
+  in.expect('I');
+  in.expect('=');
+
+  if (!in.match('0')) {
+	do {
+	  readTerm(in, names, term);
+	  consumer.consume(term);
+	} while (in.match(','));
+  }
+  in.expect(';');
+
+  consumer.doneConsuming();
+}
+
+bool SingularIOHandler::peekRing(Scanner& in) {
+  return in.peek('r') || in.peek('R');
+}
+
+void SingularIOHandler::readPolynomial(Scanner& in,
+									   BigPolynomial& polynomial) {
+  {
+	VarNames names;
+	readRing(in, names);
+	polynomial.clearAndSetNames(names);
+  }
+
+  in.expect("poly");
+  in.expect('p');
+  in.expect('=');
+
+  bool first = true;
+  do {
+	readCoefTerm(polynomial, first, in);
+	first = false;
+  } while (!in.match(';'));
 }
 
 void SingularIOHandler::writeRing(const VarNames& names, FILE* out) {

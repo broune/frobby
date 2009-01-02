@@ -17,23 +17,17 @@
 #ifndef MACAULAY_2_IO_HANDLER_GUARD
 #define MACAULAY_2_IO_HANDLER_GUARD
 
-#include "IOHandler.h"
+#include "IOHandlerCommon.h"
 
 class VarNames;
 class Scanner;
 class BigIdeal;
 class CoefTermConsumer;
+class BigTermConsumer;
 
-class Macaulay2IOHandler : public IOHandler {
+class Macaulay2IOHandler : public IOHandlerCommon {
 public:
   Macaulay2IOHandler();
-
-  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
-  virtual void readIdeal(Scanner& in, BigIdeal& ideal,
-						 const VarNames& names);
-  virtual void readIdeals(Scanner& in,
-						  vector<BigIdeal*>& ideals,
-						  VarNames& names);
 
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
@@ -48,9 +42,10 @@ public:
   static const char* staticGetName();
 
  private:
-  void readRing(Scanner& in, VarNames& names);
-  void readBareIdeal(Scanner& in, BigIdeal& ideal, const VarNames& names);
-  void writeBareIdeal(const BigIdeal& ideal, FILE* out);
+  virtual void readRing(Scanner& in, VarNames& names);
+  virtual void readBareIdeal(Scanner& in, const VarNames& names,
+							 BigTermConsumer& consumer);
+  virtual bool peekRing(Scanner& in);
 
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,
@@ -74,7 +69,7 @@ public:
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);

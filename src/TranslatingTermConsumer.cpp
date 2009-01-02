@@ -30,13 +30,13 @@ TranslatingTermConsumer::TranslatingTermConsumer
 }
 
 void TranslatingTermConsumer::beginConsuming() {
-  _consumer->beginConsuming();
+  _consumer->beginConsuming(_translator->getNames());
 }
 
 void TranslatingTermConsumer::consume(const Term& term) {
   ASSERT(term.getVarCount() == _translator->getVarCount());
 
-  _consumer->consume(term, _translator);
+  _consumer->consume(term, *_translator);
 }
 
 void TranslatingTermConsumer::doneConsuming() {

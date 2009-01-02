@@ -27,7 +27,9 @@ class Fourti2IOHandler : public IOHandler {
 public:
   Fourti2IOHandler();
 
-  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
+  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
+  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
+
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
@@ -38,6 +40,14 @@ public:
   static const char* staticGetName();
 
  protected:
+  void readIdeal(Scanner& in, BigTermConsumer& consumer,
+				 size_t generatorCount, size_t varCount);
+  void readRing(Scanner& in, VarNames& names);
+  void readRing(Scanner& in, VarNames& names, size_t varCount);
+  void writeRingWithoutHeader(const VarNames& names, FILE* out);
+
+  virtual void writeRing(const VarNames& names, FILE* out);
+
   virtual void writePolynomialHeader(const VarNames& names,
 									 size_t termCount,
 									 FILE* out);
@@ -63,7 +73,7 @@ public:
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);

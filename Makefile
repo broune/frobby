@@ -34,7 +34,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   SplitStrategy.cpp CanonicalTermConsumer.cpp StatisticsStrategy.cpp	\
   TestAction.cpp NameFactory.cpp error.cpp DebugAllocator.cpp			\
   FrobbyStringStream.cpp SliceStrategy.cpp PrimaryDecomAction.cpp       \
-  IdealComparator.cpp
+  IdealComparator.cpp IOHandlerCommon.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

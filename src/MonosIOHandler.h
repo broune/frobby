@@ -17,17 +17,16 @@
 #ifndef MONOS_IO_HANDLER_GUARD
 #define MONOS_IO_HANDLER_GUARD
 
-#include "IOHandler.h"
+#include "IOHandlerCommon.h"
 
 class Scanner;
 class VarNames;
 class BigIdeal;
 
-class MonosIOHandler : public IOHandler {
+class MonosIOHandler : public IOHandlerCommon {
 public:
   MonosIOHandler();
 
-  virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);
@@ -35,6 +34,13 @@ public:
   static const char* staticGetName();
 
  private:
+  virtual void readRing(Scanner& in, VarNames& names);
+  virtual bool peekRing(Scanner& in);
+  virtual void readBareIdeal(Scanner& in,
+							 const VarNames& names,
+							 BigTermConsumer& consumer);
+  virtual void writeRing(const VarNames& names, FILE* out);
+
   virtual void writeIdealHeader(const VarNames& names,
 								bool defineNewRing,
 								FILE* out);
@@ -42,15 +48,13 @@ public:
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);
   virtual void writeIdealFooter(const VarNames& names,
 								bool wroteAnyGenerators,
 								FILE* out);
-
-  void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
 };
 
 #endif

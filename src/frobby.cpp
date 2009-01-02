@@ -46,6 +46,13 @@ protected:
 		(translator->getExponent(var, term).get_mpz_t());
   }
 
+  void setTerm(const vector<mpz_class>& term) {
+	ASSERT(term.size() == _varCount);
+
+	for (size_t var = 0; var < _varCount; ++var)
+	  _term[var] = const_cast<mpz_ptr>(term[var].get_mpz_t());
+  }
+
   size_t _varCount;
   mpz_ptr* _term;
 };
@@ -58,6 +65,10 @@ public:
 	ConsumerWrapper(varCount),
 	_consumer(consumer) {
 	ASSERT(_consumer != 0);
+  }
+
+  virtual void consumeRing(const VarNames& names) {
+	ASSERT(names == _varCount);
   }
 
   virtual void beginConsuming() {
@@ -73,10 +84,11 @@ public:
 	_consumer->consume(_term);
   }
 
-  virtual void consume(mpz_ptr* term) {
-	ASSERT(term != 0);
+  virtual void consume(const vector<mpz_class>& term) {
+	ASSERT(term.size() == _varCount);
 
-	_consumer->consume(term);
+	setTerm(term);
+	_consumer->consume(_term);
   }
 
   virtual void doneConsuming() {

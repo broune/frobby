@@ -15,16 +15,35 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "TermConsumer.h"
+#include "IOHandlerCommon.h"
 
-TermConsumer::~TermConsumer() {
+#include "Scanner.h"
+#include "BigIdeal.h"
+#include "BigTermRecorder.h"
+
+IOHandlerCommon::IOHandlerCommon(const char* formatName,
+								 const char* formatDescription):
+  IOHandler(formatName, formatDescription, false) {
 }
 
-void TermConsumer::consumeRing(const VarNames& names) {
+void IOHandlerCommon::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+  VarNames names;
+  readRing(in, names);
+  if (!hasMoreInput(in)) {
+	consumer.consumeRing(names);
+	return;
+  }
+  readBareIdeal(in, names, consumer);
+
+  while (hasMoreInput(in)) {
+	if (peekRing(in))
+	  readRing(in, names);
+	readBareIdeal(in, names, consumer);
+  }
 }
 
-void TermConsumer::beginConsumingList() {
-}
-
-void TermConsumer::doneConsumingList() {
+void IOHandlerCommon::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+  VarNames names;
+  readRing(in, names);
+  readBareIdeal(in, names, consumer);
 }

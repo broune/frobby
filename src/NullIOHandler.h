@@ -30,6 +30,9 @@ class NullIOHandler : public IOHandler {
 public:
   NullIOHandler();
 
+  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
+  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
+
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
   virtual void writeTerm(const vector<mpz_class>& term,
@@ -45,6 +48,8 @@ public:
   static const char* staticGetName();
 
  protected:
+  virtual void writeRing(const VarNames& names, FILE* out);
+
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,
 									 const Term& term,
@@ -67,7 +72,7 @@ public:
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);

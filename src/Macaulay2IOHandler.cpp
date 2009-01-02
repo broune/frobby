@@ -22,13 +22,14 @@
 #include "VarNames.h"
 #include "BigPolynomial.h"
 #include "TermTranslator.h"
+#include "BigTermConsumer.h"
 #include "error.h"
 
 #include <cstdio>
 
 Macaulay2IOHandler::Macaulay2IOHandler():
-  IOHandler(staticGetName(),
-			"Format understandable by the program Macaulay 2.", false) {
+  IOHandlerCommon(staticGetName(),
+				  "Format understandable by the program Macaulay 2.") {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
@@ -56,14 +57,6 @@ void Macaulay2IOHandler::writeTerm(const vector<mpz_class>& term,
   writeTermProduct(term, names, out);
 }
 
-void Macaulay2IOHandler::writeBareIdeal(const BigIdeal& ideal, FILE* out) {
-  size_t generatorCount = ideal.getGeneratorCount();
-  fputs("I = monomialIdeal(", out);
-  for (size_t i = 0; i < generatorCount; ++i)
-	writeTermOfIdeal(ideal[i], ideal.getNames(), i == 0, out);
-  writeIdealFooter(ideal.getNames(), generatorCount > 0, out);
-}
-
 void Macaulay2IOHandler::writeIdealHeader(const VarNames& names,
 										  bool defineNewRing,
 										  FILE* out) {
@@ -86,7 +79,7 @@ void Macaulay2IOHandler::writeTermOfIdeal(const Term& term,
   fputs("_R", out);
 }
 
-void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 										  const VarNames& names,
 										  bool isFirst,
 										  FILE* out) {
@@ -111,6 +104,7 @@ void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
 }
 
 void Macaulay2IOHandler::readRing(Scanner& in, VarNames& names) {
+  names.clear();
   in.expect('R');
   in.expect('=');
 
@@ -145,31 +139,11 @@ void Macaulay2IOHandler::readRing(Scanner& in, VarNames& names) {
   in.expect(';');
 }
 
-void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal,
-								   const VarNames& names) {
-  if (in.peek('R'))
-	readIdeal(in, ideal);
-  else if (in.peek('I'))
-	readBareIdeal(in, ideal, names);
-  else
-	in.expect('R', 'I');
-}
-
-void Macaulay2IOHandler::readIdeals(Scanner& in,
-									vector<BigIdeal*>& ideals,
-									VarNames& names) {
-  readRing(in, names);
-
-  // TODO: make test that triggers this error message.
-  if (in.match('R'))
-	reportSyntaxError(in, "Did not expect another ring description.");
-
-  IOHandler::readIdeals(in, ideals, names);
-}
-
-void Macaulay2IOHandler::
-readBareIdeal(Scanner& in, BigIdeal& ideal, const VarNames& names) {
-  ideal.clearAndSetNames(names);
+void Macaulay2IOHandler::readBareIdeal(Scanner& in,
+									   const VarNames& names,
+									   BigTermConsumer& consumer) {
+  consumer.beginConsuming(names);
+  vector<mpz_class> term(names.getVarCount());
 
   in.expect('I');
   in.expect('=');
@@ -181,19 +155,19 @@ readBareIdeal(Scanner& in, BigIdeal& ideal, const VarNames& names) {
 	  in.expect('R');
   } else {
 	do {
-	  readTerm(ideal, in);
+	  readTerm(in, names, term);
 	  if (in.match('_'))
 		in.expect('R');
+	  consumer.consume(term);
 	} while (in.match(','));
   }
   in.expect(')');
   in.expect(';');
+  consumer.doneConsuming();
 }
 
-void Macaulay2IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
-  VarNames names;
-  readRing(in, names);
-  readBareIdeal(in, ideal, names);
+bool Macaulay2IOHandler::peekRing(Scanner& in) {
+  return in.peek('R') || in.peek('r');
 }
 
 void Macaulay2IOHandler::readPolynomial(Scanner& in,

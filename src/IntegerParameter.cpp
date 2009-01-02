@@ -35,6 +35,10 @@ void IntegerParameter::getValue(string& str) const {
   FrobbyStringStream::appendIntegerToString(str, _value);
 }
 
+unsigned int IntegerParameter::getIntegerValue() const {
+  return _value;
+}
+
 IntegerParameter::operator unsigned int() const {
   return _value;
 }

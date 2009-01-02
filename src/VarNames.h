@@ -45,7 +45,13 @@ class StringLessThan {
 typedef map<string, size_t> VarNameMap;
 #endif
 
-
+// Defines the variables of a polynomial ring and facilities IO involving them.
+// TODO: Rename to Ring or a similar name.
+// TODO: make this class immutable and make a VarNamesBuilder.
+// TODO: make copies share the same memory and use reference counting
+// to deallocate the shared memory.
+// TODO: make equality check for the same memory and thus return true very
+// quickly if that is the case.
 class VarNames {
 public:
   VarNames();

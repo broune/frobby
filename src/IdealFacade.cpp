@@ -135,11 +135,9 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
   endAction();
 }
 
+// TODO: decide what to do with this.
 void IdealFacade::printAnalysis(FILE* out, BigIdeal& bigIdeal) {
   beginAction("Computing and printing analysis.");
-
-  fprintf(out, "%u generators\n", (unsigned int)bigIdeal.getGeneratorCount());
-  fprintf(out, "%u variables\n", (unsigned int)bigIdeal.getVarCount());
 
   Ideal ideal(bigIdeal.getVarCount());
   TermTranslator translator(bigIdeal, ideal, false);

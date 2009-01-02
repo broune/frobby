@@ -68,12 +68,13 @@ void FrobeniusAction::perform() {
   vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
   vector<mpz_class> bigVector;
 
-  BigIdeal maxSolution(ideal.getVarCount());
-  BigTermRecorder consumer(&maxSolution);
+  BigTermRecorder recorder;
 
-  SliceFacade facade(ideal, &consumer, _printActions);
+  SliceFacade facade(ideal, &recorder, _printActions);
   _sliceParams.apply(facade);
   facade.solveStandardProgram(shiftedDegrees, _sliceParams.getUseBound());
+
+  BigIdeal maxSolution = *(recorder.releaseIdeal());
 
   ASSERT(maxSolution.getGeneratorCount() == 1);
   bigVector = maxSolution[0];

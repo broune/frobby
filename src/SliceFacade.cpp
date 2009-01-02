@@ -153,7 +153,6 @@ void SliceFacade::computeMultigradedHilbertSeries() {
   CoefTermConsumer* consumer = getCoefTermConsumer();
 
   consumer->beginConsuming();
-
   {
 	HilbertStrategy strategy(consumer, _split.get());
 	runSliceAlgorithmWithOptions(strategy);
@@ -267,6 +266,7 @@ void SliceFacade::computePrimaryDecomposition() {
 
   DecomRecorder recorder(&primaryComponent);
 
+  getTermConsumer()->consumeRing(_translator->getNames());
   getTermConsumer()->beginConsumingList();
 
   Ideal::const_iterator stop = irreducibleDecom.end();
@@ -312,6 +312,8 @@ void SliceFacade::computeMaximalStaircaseMonomials() {
   minimize();
 
   beginAction("Computing maximal staircase monomials.");
+
+  getTermConsumer()->consumeRing(_translator->getNames());
 
   {
 	MsmStrategy strategy(getTermConsumer(), _split.get());
@@ -427,6 +429,7 @@ void SliceFacade::computeAssociatedPrimes() {
   // Output associated primes.
   TermConsumer* consumer = getTermConsumer();
 
+  consumer->consumeRing(_translator->getNames());
   consumer->beginConsuming();
   Term tmp(varCount);
   Ideal::const_iterator stop = radical.end();
@@ -471,6 +474,7 @@ bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
   if (solution.isZeroIdeal())
 	return false;
 
+  getTermConsumer()->consumeRing(_translator->getNames());
   getTermConsumer()->beginConsuming();
   getTermConsumer()->consume(Term(*solution.begin(), varCount));
   getTermConsumer()->doneConsuming();
@@ -485,7 +489,6 @@ void SliceFacade::initialize(const BigIdeal& ideal) {
 
   beginAction("Translating ideal to internal data structure.");
 
-  // TODO: fix leak of ideal and translator on exception.
   _ideal.reset(new Ideal(ideal.getVarCount()));
   _translator.reset(new TermTranslator(ideal, *_ideal, false));
 

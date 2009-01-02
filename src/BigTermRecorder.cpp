@@ -21,31 +21,57 @@
 #include "Term.h"
 #include "TermTranslator.h"
 
-BigTermRecorder::BigTermRecorder(BigIdeal* recordInto):
-  _recordInto(recordInto) {
-  ASSERT(recordInto != 0);
+BigTermRecorder::BigTermRecorder():
+  _ideals(),
+  _idealsDeleter(_ideals) {
+}
+
+void BigTermRecorder::consumeRing(const VarNames& names) {
+  _names = names;
 }
 
 void BigTermRecorder::beginConsuming() {
+  auto_ptr<BigIdeal> ideal(new BigIdeal(_names));
+  exceptionSafePushBack(_ideals, ideal);
 }
 
-void BigTermRecorder::consume(const Term& term, TermTranslator* translator) {
-  ASSERT(term.getVarCount() == _recordInto->getVarCount());
-  ASSERT(translator->getVarCount() == _recordInto->getVarCount());
+void BigTermRecorder::consume(const Term& term, TermTranslator& translator) {
+  ASSERT(!_ideals.empty());
+  BigIdeal& ideal = *(_ideals.back());
 
-  size_t varCount = _recordInto->getVarCount();
-  _recordInto->newLastTerm();
+  ASSERT(term.getVarCount() == ideal.getVarCount());
+  ASSERT(translator.getVarCount() == ideal.getVarCount());
+
+  ideal.newLastTerm();
+  size_t varCount = ideal.getVarCount();
   for (size_t var = 0; var < varCount; ++var)
-	_recordInto->getLastTermExponentRef(var) =
-	  translator->getExponent(var, term);
+	ideal.getLastTermExponentRef(var) = translator.getExponent(var, term);
 }
 
-void BigTermRecorder::consume(mpz_ptr* term) {
-  size_t varCount = _recordInto->getVarCount();
-  _recordInto->newLastTerm();
+void BigTermRecorder::consume(const vector<mpz_class>& term) {
+  ASSERT(!_ideals.empty());
+  BigIdeal& ideal = *(_ideals.back());
+
+  ideal.newLastTerm();
+  size_t varCount = ideal.getVarCount();
   for (size_t var = 0; var < varCount; ++var)
-	_recordInto->getLastTermExponentRef(var) = mpz_class(term[var]);
+	ideal.getLastTermExponentRef(var) = term[var];
 }
 
 void BigTermRecorder::doneConsuming() {
+}
+
+bool BigTermRecorder::empty() const {
+  return _ideals.empty();
+}
+
+auto_ptr<BigIdeal> BigTermRecorder::releaseIdeal() {
+  ASSERT(!empty());
+  auto_ptr<BigIdeal> ideal(_ideals.front());
+  _ideals.pop_front();
+  return ideal;
+}
+
+const VarNames& BigTermRecorder::getRing() {
+  return _names;
 }
