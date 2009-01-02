@@ -22,8 +22,65 @@
 #include "IdealFacade.h"
 #include "Scanner.h"
 #include "IOHandler.h"
+#include "BigTermConsumer.h"
 
 #include <algorithm>
+
+class AnalyzeConsumer : public BigTermConsumer {
+public:
+  AnalyzeConsumer():
+	_generatorCount(0) {
+  }
+
+  virtual void consumeRing(const VarNames& names) {
+	_names = names;
+	_lcm.clear();
+	_lcm.resize(_names.getVarCount());
+  }
+
+  virtual void beginConsuming() {
+  }
+
+  using BigTermConsumer::consume;
+
+  virtual void consume(const Term& term, TermTranslator& translator) {
+	BigTermConsumer::consume(term, translator);
+  }
+
+  virtual void consume(const vector<mpz_class>& term) {
+	ASSERT(term.size() == _names.getVarCount());
+
+	++_generatorCount;
+	for (size_t var = 0; var < term.size(); ++var)
+	  if (_lcm[var] < term[var])
+		_lcm[var] = term[var];
+  }
+
+  virtual void doneConsuming() {
+  }
+
+  size_t getGeneratorCount() const {
+	return _generatorCount;
+  }
+
+  const VarNames& getNames() const {
+	return _names;
+  }
+
+  const vector<mpz_class>& getLcm() const {
+	return _lcm;
+  }
+
+  const mpz_class& getMaximumExponent() const {
+	ASSERT(_lcm.size() > 0);
+	return *max_element(_lcm.begin(), _lcm.end());
+  }
+
+private:
+  VarNames _names;
+  size_t _generatorCount;
+  vector<mpz_class> _lcm;
+};
 
 AnalyzeAction::AnalyzeAction():
   Action
@@ -35,6 +92,14 @@ AnalyzeAction::AnalyzeAction():
  false),
 
   _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal),
+
+  _summaryLevel
+  ("summaryLevel",
+   "If non-zero, then print a summary of the ideal to the error output\n"
+   "stream. A higher summary level results in more expensive analysis in\n"
+   "order to provide more information. Currently only level 1 is available\n"
+   "which prints the number of variables and the number of generators.",   
+   1),
 
   _printLcm
   ("lcm",
@@ -78,42 +143,51 @@ void AnalyzeAction::perform() {
   _io.autoDetectInputFormat(in);
   _io.validateFormats();
 
-  BigIdeal ideal;
+  AnalyzeConsumer consumer;
 
+  // We only read the entire ideal into memory at once if we have to.
   IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(in, ideal);
-
   IdealFacade idealFacade(_printActions);
-  if (_printLcm) {
-	auto_ptr<IOHandler> output = _io.createOutputHandler();
-	idealFacade.printLcm(ideal, output.get(), stdout);
-  }
-  if (_printVarCount) {
-	fprintf(stdout, "%lu\n", (unsigned long)ideal.getVarCount());
-  }
-  if (_printGeneratorCount) {
-	fprintf(stdout, "%lu\n", (unsigned long)ideal.getGeneratorCount());	
-  }
-  if (_printMaximumExponent) {
-	if (ideal.getVarCount() == 0)
-	  fputs("0\n", stdout);
-	else {
-	  vector<mpz_class> lcm;
-	  ideal.getLcm(lcm);
-	  gmp_fprintf(stdout, "%Zd\n",
-				  max_element(lcm.begin(), lcm.end())->get_mpz_t());
-	}
-  }
-  if (_printMinimal) {
-	BigIdeal clone(ideal);
-	idealFacade.sortAllAndMinimize(clone);
-	if (ideal.getGeneratorCount() == clone.getGeneratorCount())
+  if (!_printMinimal)
+	ioFacade.readIdeal(in, consumer);
+  else {
+	BigIdeal ideal;
+	ioFacade.readIdeal(in, ideal);
+	consumer.consume(ideal);
+	
+	size_t generatorCount = ideal.getGeneratorCount();
+	idealFacade.sortAllAndMinimize(ideal);
+	if (generatorCount == ideal.getGeneratorCount())
 	  fputs("1\n", stdout);
 	else
 	  fputs("0\n", stdout);
   }
 
-  idealFacade.printAnalysis(stderr, ideal);
+  if (_printLcm) {
+	auto_ptr<IOHandler> output = _io.createOutputHandler();
+	ioFacade.writeTerm(consumer.getLcm(), consumer.getNames(),
+					   output.get(), stdout);
+	fputc('\n', stdout);
+  }
+
+  if (_printVarCount)
+	fprintf(stdout, "%lu\n", (unsigned long)consumer.getNames().getVarCount());
+  if (_printGeneratorCount)
+	fprintf(stdout, "%lu\n", (unsigned long)consumer.getGeneratorCount());	
+
+  if (_printMaximumExponent) {
+	if (consumer.getNames().getVarCount() == 0)
+	  fputs("0\n", stdout);
+	else
+	  gmp_fprintf(stdout, "%Zd\n", consumer.getMaximumExponent().get_mpz_t());
+  }
+
+  if (_summaryLevel.getIntegerValue() > 0) {
+	fprintf(stdout, "%lu generators\n",
+			(unsigned long)consumer.getGeneratorCount());
+	fprintf(stdout, "%lu variables\n",
+			(unsigned long)consumer.getNames().getVarCount());	
+  }
 }
 
 const char* AnalyzeAction::staticGetName() {

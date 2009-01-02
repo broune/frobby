@@ -38,6 +38,15 @@ const char* NullIOHandler::staticGetName() {
   return "null";
 }
 
+void NullIOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+}
+
+void NullIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+}
+
+void NullIOHandler::writeRing(const VarNames& names, FILE* out) {
+}
+
 void NullIOHandler::writeTerm(const vector<mpz_class>& term,
 							  const VarNames& names,
 							  FILE* out) {
@@ -80,7 +89,7 @@ void NullIOHandler::writeTermOfIdeal(const Term& term,
 									 FILE* out) {
 }
 
-void NullIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+void NullIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 									 const VarNames& names,
 									 bool isFirst,
 									 FILE* out) {

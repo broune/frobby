@@ -21,12 +21,14 @@
 #include "BigIdeal.h"
 #include "VarNames.h"
 #include "error.h"
+#include "BigTermConsumer.h"
 
 #include <cstdio>
 
 NewMonosIOHandler::NewMonosIOHandler():
   IOHandler(staticGetName(),
-			"Newer format used by the program Monos.", false) {
+			"Newer format used by the program Monos.",
+			false) {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerOutput(MonomialIdeal);
@@ -42,15 +44,29 @@ void NewMonosIOHandler::writeTerm(const vector<mpz_class>& term,
   writeTermProduct(term, names, out);
 }
 
-void NewMonosIOHandler::writeIdealHeader(const VarNames& names,
-										 bool defineNewRing,
-										 FILE* out) {
-  fputs("(monomial-ideal-with-order\n (lex-order", out);
+void NewMonosIOHandler::writeIdeals(const vector<BigIdeal*>& ideals,
+									const VarNames& names,
+									FILE* out) {
+  if (ideals.empty())
+	writeRing(names, out);
+  else
+	IOHandler::writeIdeals(ideals, names, out);
+}
+
+void NewMonosIOHandler::writeRing(const VarNames& names, FILE* out) {
+  fputs("(lex-order", out);
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
 	putc(' ', out);
 	fputs(names.getName(i).c_str(), out);
   }
   fputc(')', out);
+}
+
+void NewMonosIOHandler::writeIdealHeader(const VarNames& names,
+										 bool defineNewRing,
+										 FILE* out) {
+  fputs("(monomial-ideal-with-order\n ", out);
+  writeRing(names, out);
 }
 
 void NewMonosIOHandler::writeTermOfIdeal(const Term& term,
@@ -61,7 +77,7 @@ void NewMonosIOHandler::writeTermOfIdeal(const Term& term,
   IOHandler::writeTermProduct(term, translator, out);
 }
 
-void NewMonosIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+void NewMonosIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 										 const VarNames& names,
 										 bool isFirst,
 										 FILE* out) {
@@ -75,27 +91,47 @@ void NewMonosIOHandler::writeIdealFooter(const VarNames& names,
   fputs("\n)\n", out);
 }
 
-void NewMonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-  scanner.expect('(');
-  scanner.expect("monomial-ideal-with-order");
-  readVarsAndClearIdeal(ideal, scanner);
-
-  while (!scanner.match(')'))
-    readTerm(ideal, scanner);
+void NewMonosIOHandler::readRingNoLeftParen(Scanner& in, VarNames& names) {
+  in.expect("lex-order");
+  while (!in.match(')'))
+	names.addVarSyntaxCheckUnique(in, in.readIdentifier());
 }
 
-void NewMonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
-  scanner.expect('(');
-  scanner.expect("lex-order");
+void NewMonosIOHandler::readIdealNoLeftParen(Scanner& in,
+											 BigTermConsumer& consumer) {
+  in.expect("monomial-ideal-with-order");
 
   VarNames names;
-  while (!scanner.match(')')) {
-	const char* varName = scanner.readIdentifier();
-    if (names.contains(varName))
-	  reportSyntaxError
-		(scanner, "The variable " + string(varName) + " is declared twice.");
-    names.addVar(varName);
+  in.expect('(');
+  readRingNoLeftParen(in, names);
+  consumer.consumeRing(names);
+
+  consumer.beginConsuming();
+  vector<mpz_class> term(names.getVarCount());
+
+  while (!in.match(')')) {
+	readTerm(in, names, term);
+	consumer.consume(term);
   }
 
-  ideal.clearAndSetNames(names);
+  consumer.doneConsuming();
+}
+
+void NewMonosIOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+  in.expect('(');
+  readIdealNoLeftParen(in, consumer);
+}
+
+void NewMonosIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+  in.expect('(');
+  if (in.peek('l') || in.peek('L')) {
+	VarNames names;
+	readRingNoLeftParen(in, names);
+	consumer.consumeRing(names);
+	return;
+  }
+
+  do {
+	readIdealNoLeftParen(in, consumer);
+  } while (in.match('('));
 }

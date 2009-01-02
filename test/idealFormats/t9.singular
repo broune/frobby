@@ -1,0 +1,2 @@
+ring R = 0, (c, b, aa, a), lp;
+int noVars = 0;

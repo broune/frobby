@@ -18,6 +18,7 @@
 #define TERM_CONSUMER_GUARD
 
 class Term;
+class VarNames;
 
 // This class is used to transfer terms one at a time from one part of
 // the program to another, and possibly to perform computations on
@@ -28,9 +29,14 @@ class Term;
 // memory onto the disk without having to wait for the entire computation to
 // be done, while still making it possible to store the output in memory
 // in a convenient form just by using a different consumer.
+//
+// TODO: consider merging this with BigTermConsumer;
 class TermConsumer {
  public:
   virtual ~TermConsumer();
+
+  // Tell the consumer which ring is being used.
+  virtual void consumeRing(const VarNames& names);
 
   // Tell the consumer that the ideals that are consumed until the next
   // call to doneConsumingList are to be considered as one list of ideals,

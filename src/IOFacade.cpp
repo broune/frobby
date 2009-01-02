@@ -25,6 +25,7 @@
 #include "ElementDeleter.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
+#include "BigTermRecorder.h"
 
 #include <iterator>
 
@@ -43,14 +44,32 @@ bool IOFacade::isValidMonomialIdealFormat(const string& format) {
   return valid;
 }
 
+void IOFacade::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+  beginAction("Reading monomial ideal.");
+
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
+
+  handler->readIdeal(in, consumer);
+  in.expectEOF();
+
+  endAction();
+}
+
 void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   beginAction("Reading monomial ideal.");
 
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
-  handler->readIdeal(in, ideal);
+  BigTermRecorder recorder;
+  handler->readIdeal(in, recorder);
   in.expectEOF();
+
+  // TODO: return value instead of this copy.
+  ASSERT(!recorder.empty());
+  ideal = *(recorder.releaseIdeal());
+  ASSERT(recorder.empty());
 
   endAction();
 }
@@ -58,12 +77,23 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
 void IOFacade::readIdeals(Scanner& in,
 						  vector<BigIdeal*>& ideals,
 						  VarNames& names) {
-  ASSERT(ideals.empty()); // Because IOHandler requires it.
   beginAction("Reading monomial ideals.");
 
+  // To make it clear what needs to be deleted in case of an exception.
+  ASSERT(ideals.empty());
+  ElementDeleter<vector<BigIdeal*> > idealsDeleter(ideals);
+
   auto_ptr<IOHandler> handler(in.createIOHandler());
-  handler->readIdeals(in, ideals, names);
+
+  BigTermRecorder recorder;
+  handler->readIdeals(in, recorder);
   in.expectEOF();
+
+  names = recorder.getRing();
+  while (!recorder.empty())
+	exceptionSafePushBack(ideals, recorder.releaseIdeal());
+
+  idealsDeleter.release();
 
   endAction();
 }
@@ -137,7 +167,13 @@ bool IOFacade::readAlexanderDualInstance
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
-  handler->readIdeal(in, ideal);
+  BigTermRecorder recorder;
+  handler->readIdeal(in, recorder);
+
+  // TODO: return value instead of this copy.
+  ASSERT(!recorder.empty());
+  ideal = *(recorder.releaseIdeal());
+  ASSERT(recorder.empty());
 
   bool pointSpecified = false;
   if (handler->hasMoreInput(in)) {

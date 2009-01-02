@@ -25,6 +25,7 @@ class Scanner;
 class IOHandler;
 class BigPolynomial;
 class VarNames;
+class BigTermConsumer;
 
 // TODO: Consider letting Scanner play the role of IOFacade.
 class IOFacade : private Facade {
@@ -32,6 +33,11 @@ class IOFacade : private Facade {
   IOFacade(bool printActions);
 
   bool isValidMonomialIdealFormat(const string& format);
+
+  // Read an ideal from in and feed it to consumer.
+  void readIdeal(Scanner& in, BigTermConsumer& consumer);
+
+  // Read an ideal from in and place it in the parameter ideal.
   void readIdeal(Scanner& in, BigIdeal& ideal);
 
   // Insert the ideals that are read into the parameter ideals. The

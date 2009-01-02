@@ -17,16 +17,32 @@
 #ifndef BIG_TERM_CONSUMER_GUARD
 #define BIG_TERM_CONSUMER_GUARD
 
+#include "TermConsumer.h"
+
+#include <vector>
+
 class Term;
 class TermTranslator;
+class VarNames;
+class BigIdeal;
 
-class BigTermConsumer {
+class BigTermConsumer : public TermConsumer {
  public:
   virtual ~BigTermConsumer();
 
+  virtual void consumeRing(const VarNames& names) = 0;
   virtual void beginConsuming() = 0;
-  virtual void consume(const Term& term, TermTranslator* translator) = 0;
+  virtual void consume(const vector<mpz_class>& term) = 0;
   virtual void doneConsuming() = 0;
+
+  virtual void consume(const Term& term);
+  virtual void consume(const Term& term, TermTranslator& translator);
+  virtual void consume(const BigIdeal& ideal);
+
+  // Calling this convenience method is equivalent to
+  //   consumeRing(names);
+  //   beginConsuming();
+  void beginConsuming(const VarNames& names);
 };
 
 #endif

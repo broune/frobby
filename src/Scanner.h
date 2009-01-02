@@ -100,7 +100,7 @@ public:
   bool peekWhite();
 
   // Skips whitespace and returns true if the next character is equal to
-  // the parameter.
+  // the parameter(s).
   bool peek(char character);
 
   // Returns the number of newlines seen. Does not skip whitespace.

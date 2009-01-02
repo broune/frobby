@@ -22,11 +22,12 @@
 class IntegerParameter : public Parameter {
 public:
   IntegerParameter(const char* name, const char* description,
-		   unsigned int defaultValue);
+				   unsigned int defaultValue);
 
   virtual const char* getParameterName() const;
 
   virtual void getValue(string& str) const;
+  unsigned int getIntegerValue() const;
 
   operator unsigned int() const;
 

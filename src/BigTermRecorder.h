@@ -18,21 +18,44 @@
 #define BIG_TERM_RECORDER_GUARD
 
 #include "BigTermConsumer.h"
+#include "ElementDeleter.h"
+
+#include "VarNames.h"
+
+#include <list>
 
 class BigIdeal;
+class TermTranslator;
 
+// BigTermRecorder records all the terms it consumes into a passed-in ideal
+//
+// TODO: make recorder construct and own its ideal, with a provision
+// to grab control of it, in which case it will put another one in its place.
 class BigTermRecorder : public BigTermConsumer {
 public:
-  // DecomRecorder does not take over ownership of recordInto.
-  BigTermRecorder(BigIdeal* recordInto);
+  BigTermRecorder();
 
+  virtual void consumeRing(const VarNames& names);
   virtual void beginConsuming();
-  virtual void consume(const Term& term, TermTranslator* translator);
-  virtual void consume(mpz_ptr* term);
+  virtual void consume(const Term& term, TermTranslator& translator);
+  virtual void consume(const vector<mpz_class>& term);
   virtual void doneConsuming();
 
+  // Returns true if this currently stores no ideals.
+  bool empty() const;
+
+  // Returns the least recently consumed ideal from this and returns it.
+  // It is a precondition that empty() is false.
+  auto_ptr<BigIdeal> releaseIdeal();
+
+  // Returns the most recently consumed ring.
+  const VarNames& getRing();
+
 private:
-  BigIdeal* _recordInto;
+  VarNames _names;
+  size_t _idealCount;
+  list<BigIdeal*> _ideals; // zero entries are treated as if not there.
+  ElementDeleter<list<BigIdeal*> > _idealsDeleter;
 };
 
 #endif

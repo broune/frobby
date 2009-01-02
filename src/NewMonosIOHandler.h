@@ -27,7 +27,12 @@ class NewMonosIOHandler : public IOHandler {
 public:
   NewMonosIOHandler();
 
-  virtual void readIdeal(Scanner& in, BigIdeal& ideal);
+  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
+  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
+
+  virtual void writeIdeals(const vector<BigIdeal*>& ideals,
+						   const VarNames& names,
+						   FILE* out);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);
@@ -35,6 +40,10 @@ public:
   static const char* staticGetName();
 
  private:
+  void readRingNoLeftParen(Scanner& in, VarNames& names);
+  void readIdealNoLeftParen(Scanner& in, BigTermConsumer& consumer);
+  virtual void writeRing(const VarNames& names, FILE* out);
+
   virtual void writeIdealHeader(const VarNames& names, 
 								bool defineNewRing,
 								FILE* out);
@@ -42,15 +51,13 @@ public:
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out);
   virtual void writeIdealFooter(const VarNames& names,
 								bool wroteAnyGenerators,
 								FILE* out);
-
-  void readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner);
 };
 
 #endif

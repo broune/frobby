@@ -20,6 +20,7 @@
 #include "Action.h"
 #include "BoolParameter.h"
 #include "IOParameters.h"
+#include "IntegerParameter.h"
 
 class AnalyzeAction : public Action {
  public:
@@ -33,6 +34,7 @@ class AnalyzeAction : public Action {
 
  private:
   IOParameters _io;
+  IntegerParameter _summaryLevel;
   BoolParameter _printLcm;
   BoolParameter _printVarCount;
   BoolParameter _printGeneratorCount;

@@ -20,12 +20,12 @@
 #include "BigIdeal.h"
 #include "Scanner.h"
 #include "error.h"
+#include "BigTermConsumer.h"
 
 #include <cstdio>
 
 MonosIOHandler::MonosIOHandler():
-  IOHandler(staticGetName(),
-			"Older format used by the program Monos.", false) {
+  IOHandlerCommon(staticGetName(), "Older format used by the program Monos.") {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerOutput(MonomialIdeal);
@@ -34,6 +34,17 @@ MonosIOHandler::MonosIOHandler():
 
 const char* MonosIOHandler::staticGetName() {
   return "monos";
+}
+
+void MonosIOHandler::writeRing(const VarNames& names, FILE* out) {
+  fputs("vars ", out);
+  const char* pre = "";
+  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+	fputs(pre, out);
+	fputs(names.getName(i).c_str(), out);
+	pre = ", ";
+  }
+  fputs(";\n", out);
 }
 
 void MonosIOHandler::writeTerm(const vector<mpz_class>& term,
@@ -45,14 +56,8 @@ void MonosIOHandler::writeTerm(const vector<mpz_class>& term,
 void MonosIOHandler::writeIdealHeader(const VarNames& names,
 									  bool defineNewRing,
 									  FILE* out) {
-  fputs("vars ", out);
-  const char* pre = "";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-	fputs(pre, out);
-	fputs(names.getName(i).c_str(), out);
-	pre = ", ";
-  }
-  fputs(";\n[", out);
+  writeRing(names, out);
+  fputc('[', out);
 }
 
 void MonosIOHandler::writeTermOfIdeal(const Term& term,
@@ -63,7 +68,7 @@ void MonosIOHandler::writeTermOfIdeal(const Term& term,
   IOHandler::writeTermProduct(term, translator, out);
 }
 
-void MonosIOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+void MonosIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 									  const VarNames& names,
 									  bool isFirst,
 									  FILE* out) {
@@ -77,36 +82,41 @@ void MonosIOHandler::writeIdealFooter(const VarNames& names,
   fputs("\n];\n", out);
 }
 
-void MonosIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-  readVarsAndClearIdeal(ideal, scanner);
-  
-  scanner.expect('[');
-  if (!scanner.match(']')) {
-    do {
-      readTerm(ideal, scanner);
-    } while (scanner.match(','));
-	if (!scanner.match(']')) {
-	  if (scanner.peekIdentifier())
-		scanner.expect('*');
-	  else
-		scanner.expect(']');
-	}
-  }
-  scanner.expect(';');
+void MonosIOHandler::readRing(Scanner& in, VarNames& names) {
+  names.clear();
+  in.expect("vars");
+  if (!in.match(';')) {
+	do {
+	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
+	} while (in.match(','));
+	in.expect(';');
+  }  
 }
 
-void MonosIOHandler::readVarsAndClearIdeal(BigIdeal& ideal, Scanner& scanner) {
-  ideal.clear();
+bool MonosIOHandler::peekRing(Scanner& in) {
+  return in.peek('v');
+}
 
-  scanner.expect("vars");
-  if (!scanner.match(';')) {
-	do {
-	  const char* varName = scanner.readIdentifier();
-	  if (!ideal.addVarToClearedIdeal(varName))
-		reportSyntaxError
-		  (scanner, "The variable " + string(varName) + " is declared twice.");
-	} while (scanner.match(','));
+void MonosIOHandler::readBareIdeal(Scanner& in,
+								   const VarNames& names,
+								   BigTermConsumer& consumer) {
+  consumer.beginConsuming(names);
+  vector<mpz_class> term(names.getVarCount());
 
-	scanner.expect(';');
+  in.expect('[');
+  if (!in.match(']')) {
+    do {
+      readTerm(in, names, term);
+	  consumer.consume(term);
+    } while (in.match(','));
+	if (!in.match(']')) {
+	  if (in.peekIdentifier())
+		in.expect('*');
+	  else
+		in.expect(']');
+	}
   }
+  in.expect(';');
+
+  consumer.doneConsuming();
 }

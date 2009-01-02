@@ -27,39 +27,29 @@ class CoefTermConsumer;
 class TermConsumer;
 class VarNames;
 class BigPolynomial;
+class BigTermConsumer;
 
+// An IOHandler implements input and output in some format in such a way
+// that client code does not need to know which format is being used.
+// The IOHandler itself has no mutable of its own. If it needs to track
+// state, that state is either passed through each method call, of the
+// IOHandler returns an object that takes care of further IO and which
+// itself has state.
 class IOHandler {
  public:
   virtual ~IOHandler();
 
-  // Read an ideal and its ambient ring.
-  virtual void readIdeal(Scanner& in, BigIdeal& ideal) = 0;
+  // Read an ideal and feed it to the consumer.
+  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer) = 0;
 
-  // Read an ideal and possibly its ambient ring. If no ambient ring is
-  // specified in the input, the format is allowed but not required to
-  // use the passed-in ring.
-  virtual void readIdeal(Scanner& in, BigIdeal& ideal,
-						 const VarNames& names);
-
-  // Read a list of ideals. In case of an empty list of ideals, the format is
-  // allowed but not required to support reading a ring for the empty list.
-  // This method is required to read the output of writeIdeals().
-  //
-  // The initial value of names is discarded and then names is set to the
-  // last ring described as part of the list of ideals. In the case of an
-  // empty list with a ring, this is the only way to obtain the ring. If
-  // there are no rings specified, names is left unchanged.
-  //
-  // The vector ideals is required to be empty.
-  virtual void readIdeals(Scanner& in,
-						  vector<BigIdeal*>& ideals,
-						  VarNames& names);
+  // Read a number of ideals and feed them to the consumer.
+  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer) = 0;
 
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
-  // Writes ideal to out. For format is allowed but not required to omit
+  // Writes ideal to out. The format is allowed but not required to omit
   // a description of the ring if defineNewRing is false.
   virtual void writeIdeal(const BigIdeal& ideal,
 						  bool defineNewRing,
@@ -82,10 +72,11 @@ class IOHandler {
   const char* getName() const;
   const char* getDescription() const;
 
-  virtual TermConsumer* createIdealWriter
+  virtual BigTermConsumer* createIdealWriter
 	(const TermTranslator* translator, FILE* out);
+  virtual BigTermConsumer* createIdealWriter(FILE* out);
 
-  virtual TermConsumer* createIrreducibleIdealWriter
+  virtual BigTermConsumer* createIrreducibleIdealWriter
 	(const TermTranslator* translator, FILE* out);
 
   virtual CoefTermConsumer* createPolynomialWriter
@@ -109,6 +100,10 @@ class IOHandler {
   static void addDataTypes(vector<DataType>& types);
 
  protected:
+  // For preserving ring information when writing an empty list of ideals.
+  // TODO: and in future polynomials.
+  virtual void writeRing(const VarNames& names, FILE* out) = 0;
+
   // Output of polynomials.
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writePolynomialHeader(const VarNames& names,
@@ -139,6 +134,10 @@ class IOHandler {
   // have to know the number of generators of the ideal before that ideal
   // can be written to the output. These formats are thus unable to implement
   // the overload that does not specify this number.
+  // TODO: this means that those derivatives are then not substitutable for
+  // IOHandlers, so they should not be derivates of IOHandler. Fix this
+  // removing this part of the IOHandler interface, and push it down into
+  // two derivates, one with generatorCount and one without.
   virtual void writeIdealHeader(const VarNames& names,
 								bool defineNewRing,
 								FILE* out) = 0;
@@ -150,7 +149,7 @@ class IOHandler {
 								const TermTranslator* translator,
 								bool isFirst,
 								FILE* out) = 0;
-  virtual void writeTermOfIdeal(const vector<mpz_class> term,
+  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
 								const VarNames& names,
 								bool isFirst,
 								FILE* out) = 0;

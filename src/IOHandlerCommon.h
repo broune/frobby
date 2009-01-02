@@ -14,17 +14,27 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#include "stdinc.h"
-#include "TermConsumer.h"
+#ifndef IO_HANDLER_COMMON_GUARD
+#define IO_HANDLER_COMMON_GUARD
 
-TermConsumer::~TermConsumer() {
-}
+#include "IOHandler.h"
 
-void TermConsumer::consumeRing(const VarNames& names) {
-}
+// IOHandlerCommon is an abstract base class that implements functionality
+// that is useful for most but not all derivates of IOHandler.
+class IOHandlerCommon : public IOHandler {
+ public:
+  // TODO: make protected.
+  IOHandlerCommon(const char* formatName, const char* formatDescription);
 
-void TermConsumer::beginConsumingList() {
-}
+  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
+  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
 
-void TermConsumer::doneConsumingList() {
-}
+ protected:
+  virtual void readRing(Scanner& in, VarNames& names) = 0;
+  virtual bool peekRing(Scanner& in) = 0;
+  virtual void readBareIdeal(Scanner& in,
+							 const VarNames& names,
+							 BigTermConsumer& consumer) = 0;
+};
+
+#endif

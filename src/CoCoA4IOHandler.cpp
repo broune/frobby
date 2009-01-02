@@ -26,12 +26,13 @@
 #include "BigPolynomial.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
+#include "BigTermConsumer.h"
 
 #include <cstdio>
 
 CoCoA4IOHandler::CoCoA4IOHandler():
-  IOHandler(staticGetName(),
-			"Format understandable by the program CoCoA 4.", false) {
+  IOHandlerCommon(staticGetName(),
+				  "Format understandable by the program CoCoA 4.") {
   registerInput(MonomialIdeal);
   registerInput(MonomialIdealList);
   registerInput(Polynomial);
@@ -64,7 +65,7 @@ void CoCoA4IOHandler::writeTermOfIdeal(const Term& term,
   writeCoCoA4TermProduct(term, translator, out);
 }
 
-void CoCoA4IOHandler::writeTermOfIdeal(const vector<mpz_class> term,
+void CoCoA4IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 									   const VarNames& names,
 									   bool isFirst,
 									   FILE* out) {
@@ -78,33 +79,11 @@ void CoCoA4IOHandler::writeIdealFooter(const VarNames& names,
   fputs("\n);\n", out);  
 }
 
-void CoCoA4IOHandler::readIdeal(Scanner& in, BigIdeal& ideal) {
-  {
-	VarNames names;
-	readVars(names, in);
-	ideal.clearAndSetNames(names);
-  }
-
-  in.expect('I');
-  in.expect(":=");
-  in.expect("Ideal");
-  in.expect('(');
-
-  if (!in.match(')')) {
-	do {
-	  ideal.newLastTerm();
-	  readCoCoA4Term(ideal.getLastTermRef(), in);
-	} while (in.match(','));
-	in.expect(')');
-  }
-  in.match(';');
-}
-
 void CoCoA4IOHandler::readPolynomial(Scanner& in,
 									 BigPolynomial& polynomial) {
   {
 	VarNames names;
-	readVars(names, in);
+	readRing(in, names);
 	polynomial.clearAndSetNames(names);
   }
 
@@ -182,7 +161,9 @@ void CoCoA4IOHandler::writePolynomialFooter(const VarNames& names,
   fputs(";\n", out);
 }
 
-void CoCoA4IOHandler::readVars(VarNames& names, Scanner& in) {
+void CoCoA4IOHandler::readRing(Scanner& in, VarNames& names) {
+  names.clear();
+
   in.expect("Use");
   in.expect('R');
   in.expect("::=");
@@ -204,17 +185,12 @@ void CoCoA4IOHandler::readVars(VarNames& names, Scanner& in) {
   in.expect(":=");
   in.expect('[');
 
-  names.clear();
   for (size_t var = 0; var < varCount; ++var) {
 	in.expect('\"');
 	if (in.peekWhite())
 	  reportSyntaxError(in, "Variable name contains space.");
 
-	const char* varName = in.readIdentifier();
-	if (names.contains(varName))
-	  reportSyntaxError
-		(in, "The variable " + string(varName) + " is declared twice.");
-	names.addVar(varName);
+	names.addVarSyntaxCheckUnique(in, in.readIdentifier());
 
 	if (in.peekWhite())
 	  reportSyntaxError(in, "Variable name contains space.");
@@ -226,6 +202,32 @@ void CoCoA4IOHandler::readVars(VarNames& names, Scanner& in) {
 
   in.expect(']');
   in.expect(';');
+}
+
+void CoCoA4IOHandler::readBareIdeal(Scanner& in, const VarNames& names,
+									BigTermConsumer& consumer) {
+  consumer.beginConsuming(names);
+  vector<mpz_class> term(names.getVarCount());
+
+  in.expect('I');
+  in.expect(":=");
+  in.expect("Ideal");
+  in.expect('(');
+
+  if (!in.match(')')) {
+	do {
+	  readCoCoA4Term(term, in);
+	  consumer.consume(term);
+	} while (in.match(','));
+	in.expect(')');
+  }
+  in.match(';');
+
+  consumer.doneConsuming();
+}
+
+bool CoCoA4IOHandler::peekRing(Scanner& in) {
+  return in.peek('U') || in.peek('u');
 }
 
 void CoCoA4IOHandler::writeRing(const VarNames& names, FILE* out) {
@@ -292,6 +294,9 @@ void CoCoA4IOHandler::writeCoCoA4TermProduct(const vector<mpz_class>& term,
 }
 
 void CoCoA4IOHandler::readCoCoA4Term(vector<mpz_class>& term, Scanner& in) {
+  for (size_t var = 0; var < term.size(); ++var)
+	term[var] = 0;
+
   if (in.match('1'))
 	return;
 
