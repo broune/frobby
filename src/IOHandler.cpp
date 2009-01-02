@@ -33,6 +33,7 @@
 #include "ElementDeleter.h"
 #include "BigTermConsumer.h"
 #include "BigTermRecorder.h"
+#include "TranslatingTermConsumer.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -96,7 +97,6 @@ class IdealWriter : public BigTermConsumer {
 public:
   IdealWriter(IOHandler* handler, FILE* out):
 	_handler(handler),
-	_translator(0),
 	_out(out),
 	_firstIdeal(true),
 	_firstGenerator(true),
@@ -105,25 +105,10 @@ public:
 	ASSERT(out != 0);
   }
 
-  IdealWriter(IOHandler* handler, const TermTranslator* translator, FILE* out):
-	_handler(handler),
-	_translator(translator),
-	_out(out),
-	_firstIdeal(true),
-	_firstGenerator(true),
-	_names(translator->getNames()) {
-	ASSERT(handler != 0);
-	ASSERT(translator != 0);
-	ASSERT(out != 0);
-  }
-
   virtual void consumeRing(const VarNames& names) {
-	ASSERT(_translator == 0 || _translator->getNames() == names);
-	if (_translator == 0) {
-	  if (_names != names) {
-		_names = names;
-		_firstIdeal = true;
-	  }
+	if (_names != names) {
+	  _names = names;
+	  _firstIdeal = true;
 	}
   }
 
@@ -139,12 +124,15 @@ public:
   virtual void consume(const Term& term) {
 	ASSERT(term.getVarCount() == _names.getVarCount());
 
-	if (_translator != 0)
-	  _handler->writeTermOfIdeal(term, _translator, _firstGenerator, _out);
-	else
-	  BigTermConsumer::consume(term);
-
+	BigTermConsumer::consume(term);
 	_firstGenerator = false;
+  }
+
+  virtual void consume(const Term& term, const TermTranslator& translator) {
+	ASSERT(term.getVarCount() == _names.getVarCount());
+
+	_handler->writeTermOfIdeal(term, &translator, _firstGenerator, _out);
+	_firstGenerator = false;	
   }
 
   virtual void consume(const vector<mpz_class>& term) {
@@ -167,7 +155,6 @@ public:
 
 private:
   IOHandler* _handler;
-  const TermTranslator* _translator;
   FILE* _out;
   bool _firstIdeal;
   bool _firstGenerator;
@@ -205,6 +192,10 @@ public:
   }
 
   virtual void consume(const Term& term) {
+	consume(term, *_translator);
+  }
+
+  virtual void consume(const Term& term, const TermTranslator& translator) {
 	// TODO: make this a wrapper instead of having direct contact
 	// with the handler.
 	ASSERT(term.getVarCount() == _varCount);
@@ -212,21 +203,21 @@ public:
 
 	size_t support = 0;
 	for (size_t var = 0; var < _varCount; ++var)
-	  if (_translator->getExponent(var, term) != 0)
+	  if (translator.getExponent(var, term) != 0)
 		++support;
 
-	_handler->writeIdealHeader(_translator->getNames(), _firstIdeal,
+	_handler->writeIdealHeader(translator.getNames(), _firstIdeal,
 							   support, _out);
 	bool firstGenerator = true;
 	for (size_t var = 0; var < _varCount; ++var) {
-	  if (_translator->getExponent(var, term) != 0) {
+	  if (translator.getExponent(var, term) != 0) {
 		_tmp[var] = term[var];
-		_handler->writeTermOfIdeal(_tmp, _translator, firstGenerator, _out);
+		_handler->writeTermOfIdeal(_tmp, &translator, firstGenerator, _out);
 		firstGenerator = false;
 		_tmp[var] = 0;
 	  }
 	}
-	_handler->writeIdealFooter(_translator->getNames(), !firstGenerator, _out);
+	_handler->writeIdealFooter(translator.getNames(), !firstGenerator, _out);
 
 	_firstIdeal = false;
 	ASSERT(_tmp.isIdentity());
@@ -335,11 +326,20 @@ class DelayedIdealWriter : public BigTermConsumer {
   }
 
   virtual void consume(const Term& term) {
+	// TODO: do not use a translator here, set it to 0.
 	ASSERT(term.getVarCount() == _ideal.getVarCount());
 	_ideal.insert(term);
   }
 
+  virtual void consume(const Term& term, const TermTranslator& translator) {
+	// TODO: translate everything if this translator is different from
+	// the previous one (by address), and then remember this one.
+	BigTermConsumer::consume(term, translator);
+  }
+
   virtual void consume(const vector<mpz_class>& term) {
+	// TODO: this does not preserve order. if this gets called, it should
+	// translate everything into bigIdeal, and only then append the term.
 	ASSERT(term.size() == _bigIdeal.getVarCount());
 	_bigIdeal.newLastTerm();
 	_bigIdeal.getLastTermRef() = term;
@@ -433,19 +433,14 @@ void IOHandler::writeIdeal(const BigIdeal& ideal,
 void IOHandler::writeIdeals(const vector<BigIdeal*>& ideals,
 							const VarNames& names,
 							FILE* out) {
-  BigTermConsumer* consumer = createIdealWriter(out);
+  auto_ptr<BigTermConsumer> consumer = createIdealWriter(out);
 
   consumer->beginConsumingList();
+  consumer->consumeRing(names);
 
-  vector<BigIdeal*>::const_iterator begin = ideals.begin();
-  vector<BigIdeal*>::const_iterator end = ideals.end();
-  for (vector<BigIdeal*>::const_iterator it = begin; it != end; ++it) {
-	const BigIdeal& ideal = **it;
-	consumer->consume(ideal);
-  }
-
-  if (ideals.empty())
-	consumer->consumeRing(names);
+  for (vector<BigIdeal*>::const_iterator it = ideals.begin();
+	   it != ideals.end(); ++it)
+	consumer->consume(**it);
 
   consumer->doneConsumingList();
 }
@@ -482,7 +477,7 @@ IOHandler::IOHandler(const char* formatName,
   ASSERT(formatDescription != 0);
 }
 
-BigTermConsumer* IOHandler::createIdealWriter(FILE* out) {
+auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
   ASSERT(supportsOutput(MonomialIdeal));
 
   if (_requiresSizeForIdealOutput) {
@@ -493,34 +488,16 @@ BigTermConsumer* IOHandler::createIdealWriter(FILE* out) {
 	  "memory consumption and decreases performance.";
 	displayNote(msg);
 
-	return new DelayedIdealWriter(this, out);
+	return auto_ptr<BigTermConsumer>(new DelayedIdealWriter(this, out));
   }
   else
-	return new IdealWriter(this, out);
+	return auto_ptr<BigTermConsumer>(new IdealWriter(this, out));
 }
 
-BigTermConsumer* IOHandler::createIdealWriter(const TermTranslator* translator,
-											  FILE* out) {
-  ASSERT(supportsOutput(MonomialIdeal));
-
-  if (_requiresSizeForIdealOutput) {
-	FrobbyStringStream msg;
-	msg << "Using the format " << getName() <<
-	  " makes it necessary to store all of the output in "
-	  "memory before writing it out. This increases "
-	  "memory consumption and decreases performance.";
-	displayNote(msg);
-
-	return new DelayedIdealWriter(this, translator, out);
-  }
-  else
-	return new IdealWriter(this, translator, out);
-}
-
-BigTermConsumer* IOHandler::createIrreducibleIdealWriter
-(const TermTranslator* translator,
- FILE* out) {
-  return new IrreducibleIdealWriter(this, translator, out);
+auto_ptr<BigTermConsumer> IOHandler::createIrreducibleIdealWriter
+(const TermTranslator* translator, FILE* out) {
+  return auto_ptr<BigTermConsumer>
+	(new IrreducibleIdealWriter(this, translator, out));
 }
 
 
@@ -846,7 +823,7 @@ private:
   Polynomial _polynomial;
 };
 
-CoefTermConsumer* IOHandler::createPolynomialWriter
+auto_ptr<CoefTermConsumer> IOHandler::createPolynomialWriter
 (const TermTranslator* translator, FILE* out) {
   ASSERT(supportsOutput(Polynomial));
 
@@ -858,10 +835,12 @@ CoefTermConsumer* IOHandler::createPolynomialWriter
 	  "memory consumption and decreases performance.";
 	displayNote(msg);
 
-	return new DelayedPolynomialWriter(this, translator, out);
+	return auto_ptr<CoefTermConsumer>
+	  (new DelayedPolynomialWriter(this, translator, out));
   }
   else
-	return new PolynomialWriter(this, translator, out);
+	return auto_ptr<CoefTermConsumer>
+	  (new PolynomialWriter(this, translator, out));
 }
 
 void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {

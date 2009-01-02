@@ -39,6 +39,13 @@ class CanonicalTermConsumer : public TermConsumer {
 						size_t varCount,
 						TermTranslator* translator = 0);
 
+  // Passes on the call immediately. Thus the ordering between when
+  // this gets called and when consume gets called on the wrapped
+  // consumer can be switched around if consumeRing is called in the
+  // middle of consuming an ideal or a list of ideals.
+  // TODO: fix this.
+  virtual void consumeRing(const VarNames& names);
+
   // This method is not required to be called. If it is called, the list
   // of ideals will be sorted and then passed on. If it is not called, each
   // ideal will be passed on immediately.

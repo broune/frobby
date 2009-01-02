@@ -36,7 +36,7 @@ class BigTermConsumer : public TermConsumer {
   virtual void doneConsuming() = 0;
 
   virtual void consume(const Term& term);
-  virtual void consume(const Term& term, TermTranslator& translator);
+  virtual void consume(const Term& term, const TermTranslator& translator) = 0;
   virtual void consume(const BigIdeal& ideal);
 
   // Calling this convenience method is equivalent to

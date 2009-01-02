@@ -52,9 +52,9 @@ void NullIOHandler::writeTerm(const vector<mpz_class>& term,
 							  FILE* out) {
 }
 
-TermConsumer* NullIOHandler::createIdealWriter(TermTranslator* translator,
-											   FILE* file) {
-  return new NullTermConsumer();
+auto_ptr<BigTermConsumer> NullIOHandler::createIdealWriter
+(TermTranslator* translator, FILE* file) {
+  return auto_ptr<BigTermConsumer>(new NullTermConsumer());
 }
 
 void NullIOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
@@ -100,9 +100,9 @@ void NullIOHandler::writeIdealFooter(const VarNames& names,
 									 FILE* out) {
 }
 
-CoefTermConsumer* NullIOHandler::createPolynomialWriter
+auto_ptr<CoefTermConsumer> NullIOHandler::createPolynomialWriter
 (const TermTranslator* translator, FILE* out) {
-  return new NullCoefTermConsumer();
+  return auto_ptr<CoefTermConsumer>(new NullCoefTermConsumer());
 }
 
 void NullIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {

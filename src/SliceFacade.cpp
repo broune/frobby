@@ -553,8 +553,8 @@ void SliceFacade::doIrreducibleIdealOutput() {
   ASSERT(_ioHandler != 0);
   ASSERT(_termConsumer == 0);
 
-  _generatedTermConsumer.reset
-	(_ioHandler->createIrreducibleIdealWriter(_translator.get(), _out));
+  _generatedTermConsumer =
+	_ioHandler->createIrreducibleIdealWriter(_translator.get(), _out);
 
   if (_canonicalOutput) {
 	TermConsumer* newTermConsumer = new CanonicalTermConsumer
@@ -571,12 +571,14 @@ TermConsumer* SliceFacade::getTermConsumer() {
   if (_generatedTermConsumer.get() == 0) {
 	if (_termConsumer != 0) {
 	  _generatedTermConsumer.reset
-		(new TranslatingTermConsumer(_termConsumer, _translator.get()));
+		(new TranslatingTermConsumer(*_termConsumer, *_translator));
 	} else {
 	  ASSERT(_ioHandler != 0);
 	  ASSERT(_out != 0);
+	  auto_ptr<BigTermConsumer> untranslated =
+		_ioHandler->createIdealWriter(_out);
 	  _generatedTermConsumer.reset
-		(_ioHandler->createIdealWriter(_translator.get(), _out));
+		(new TranslatingTermConsumer(untranslated, *_translator));
 	}
 
 	if (_canonicalOutput) {
@@ -602,8 +604,8 @@ CoefTermConsumer* SliceFacade::getCoefTermConsumer() {
 	} else {
 	  ASSERT(_ioHandler != 0);
 	  ASSERT(_out != 0);
-	  _generatedCoefTermConsumer.reset
-		(_ioHandler->createPolynomialWriter(_translator.get(), _out));
+	  _generatedCoefTermConsumer =
+		_ioHandler->createPolynomialWriter(_translator.get(), _out);
 	}
 
 	if (_canonicalOutput)
