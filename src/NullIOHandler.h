@@ -39,10 +39,10 @@ public:
 						 const VarNames& names,
 						 FILE* out);
 
-  virtual TermConsumer* createIdealWriter(TermTranslator* translator,
-										  FILE* out);
+  virtual auto_ptr<BigTermConsumer> createIdealWriter
+	(TermTranslator* translator, FILE* out);
 
-  virtual CoefTermConsumer* createPolynomialWriter
+  virtual auto_ptr<CoefTermConsumer> createPolynomialWriter
 	(const TermTranslator* translator, FILE* out);
 
   static const char* staticGetName();

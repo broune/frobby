@@ -43,7 +43,7 @@ public:
 
   using BigTermConsumer::consume;
 
-  virtual void consume(const Term& term, TermTranslator& translator) {
+  virtual void consume(const Term& term, const TermTranslator& translator) {
 	BigTermConsumer::consume(term, translator);
   }
 

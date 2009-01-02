@@ -27,7 +27,8 @@ BigTermConsumer::~BigTermConsumer() {
 // Do not use this implementation for anything time-critical, since
 // the allocation of a new vector and mpz_class'es each time really is
 // not efficient.
-void BigTermConsumer::consume(const Term& term, TermTranslator& translator) {
+void BigTermConsumer::consume
+(const Term& term, const TermTranslator& translator) {
   ASSERT(term.getVarCount() == translator.getVarCount());
 
   vector<mpz_class> bigTerm(term.getVarCount());

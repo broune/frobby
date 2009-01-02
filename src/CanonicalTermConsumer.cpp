@@ -33,6 +33,10 @@ CanonicalTermConsumer::CanonicalTermConsumer(auto_ptr<TermConsumer> consumer,
   ASSERT(_consumer.get() != 0);
 }
 
+void CanonicalTermConsumer::consumeRing(const VarNames& names) {
+  _consumer->consumeRing(names);
+}
+
 void CanonicalTermConsumer::beginConsumingList() {
   ASSERT(!_storingList);
   ASSERT(_ideals.empty());

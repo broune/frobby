@@ -72,14 +72,12 @@ class IOHandler {
   const char* getName() const;
   const char* getDescription() const;
 
-  virtual BigTermConsumer* createIdealWriter
-	(const TermTranslator* translator, FILE* out);
-  virtual BigTermConsumer* createIdealWriter(FILE* out);
+  virtual auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
 
-  virtual BigTermConsumer* createIrreducibleIdealWriter
+  virtual auto_ptr<BigTermConsumer> createIrreducibleIdealWriter
 	(const TermTranslator* translator, FILE* out);
 
-  virtual CoefTermConsumer* createPolynomialWriter
+  virtual auto_ptr<CoefTermConsumer> createPolynomialWriter
 	(const TermTranslator* translator, FILE* out);
 
   // Returns null if name is unknown.

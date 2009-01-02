@@ -22,23 +22,53 @@
 #include "BigTermConsumer.h"
 
 TranslatingTermConsumer::TranslatingTermConsumer
-(BigTermConsumer* consumer, TermTranslator* translator):
-  _consumer(consumer),
-  _translator(translator) {
-  ASSERT(consumer != 0);
-  ASSERT(translator != 0);
+(BigTermConsumer& consumer, const TermTranslator& translator):
+  _translator(translator),
+  _consumer(consumer) {
+}
+
+TranslatingTermConsumer::TranslatingTermConsumer
+(auto_ptr<BigTermConsumer> consumer, const TermTranslator& translator):
+  _translator(translator),
+  _consumer(*consumer),
+  _consumerOwner(consumer) {
+}
+
+void TranslatingTermConsumer::beginConsumingList() {
+  _consumer.beginConsumingList();
+}
+
+void TranslatingTermConsumer::consumeRing(const VarNames& names) {
+  _consumer.consumeRing(names);
 }
 
 void TranslatingTermConsumer::beginConsuming() {
-  _consumer->beginConsuming(_translator->getNames());
+  _consumer.beginConsuming();
 }
 
 void TranslatingTermConsumer::consume(const Term& term) {
-  ASSERT(term.getVarCount() == _translator->getVarCount());
+  ASSERT(term.getVarCount() == _translator.getVarCount());
 
-  _consumer->consume(term, *_translator);
+  _consumer.consume(term, _translator);
+}
+
+void TranslatingTermConsumer::consume(const vector<mpz_class>& term) {
+  _consumer.consume(term);
+}
+
+void TranslatingTermConsumer::consume
+(const Term& term, const TermTranslator& translator) {
+  _consumer.consume(term, translator);
 }
 
 void TranslatingTermConsumer::doneConsuming() {
-  _consumer->doneConsuming();
+  _consumer.doneConsuming();
+}
+
+void TranslatingTermConsumer::doneConsumingList() {
+  _consumer.doneConsumingList();
+}
+
+void TranslatingTermConsumer::consume(const BigIdeal& ideal) {
+  _consumer.consume(ideal);
 }

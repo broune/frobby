@@ -17,11 +17,30 @@
 #include "stdinc.h"
 #include "NullTermConsumer.h"
 
+void NullTermConsumer::beginConsumingList() {
+}
+
+void NullTermConsumer::consumeRing(const VarNames& names) {
+}
+
 void NullTermConsumer::beginConsuming() {
 }
 
 void NullTermConsumer::consume(const Term& term) {
 }
 
+void NullTermConsumer::consume(const vector<mpz_class>& term) {
+}
+
+void NullTermConsumer::consume
+(const Term& term, const TermTranslator& translator) {
+}
+
 void NullTermConsumer::doneConsuming() {
+}
+
+void NullTermConsumer::doneConsumingList() {
+}
+
+void NullTermConsumer::consume(const BigIdeal& ideal) {
 }

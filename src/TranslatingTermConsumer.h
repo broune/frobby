@@ -17,24 +17,47 @@
 #ifndef TRANSLATING_TERM_CONSUMER_GUARD
 #define TRANSLATING_TERM_CONSUMER_GUARD
 
-#include "TermConsumer.h"
+#include "BigTermConsumer.h"
 
 class BigTermConsumer;
 class TermTranslator;
+class VarNames;
 class Term;
 
-class TranslatingTermConsumer : public TermConsumer {
+// The purpose of this class is to replace calls to consume(term) by
+// consume(term, translator) when term is a Term. Thus untranslated
+// terms get translated by the translator specified in the translator.
+class TranslatingTermConsumer : public BigTermConsumer {
  public:
-  TranslatingTermConsumer(BigTermConsumer* consumer,
-						  TermTranslator* translator);
+  // Does not copy the consumer or translator, so they need to remain
+  // valid for the lifetime of this object. Does not take over
+  // ownership of consumer, as is strongly indicated by it being a
+  // reference as opposed to an auto_ptr.
+  TranslatingTermConsumer(BigTermConsumer& consumer,
+						  const TermTranslator& translator);
 
+  // Does not copy the translator, so it needs to remain valid for the
+  // lifetime of this object. Takes over ownership of consumer.
+  TranslatingTermConsumer(auto_ptr<BigTermConsumer> consumer,
+						  const TermTranslator& translator);
+
+  virtual void beginConsumingList();
+  virtual void consumeRing(const VarNames& names);
   virtual void beginConsuming();
+
   virtual void consume(const Term& term);
+  virtual void consume(const vector<mpz_class>& term);
+  virtual void consume(const Term& term, const TermTranslator& translator);
+
   virtual void doneConsuming();
+  virtual void doneConsumingList();
+
+  virtual void consume(const BigIdeal& ideal);
 
  private:
-  BigTermConsumer* _consumer;
-  TermTranslator* _translator;
+  const TermTranslator& _translator;
+  BigTermConsumer& _consumer;
+  auto_ptr<BigTermConsumer> _consumerOwner;
 };
 
 #endif

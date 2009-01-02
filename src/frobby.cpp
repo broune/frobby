@@ -36,14 +36,13 @@ protected:
 	delete[] _term;
   }
 
-  void setTerm(const Term& term, TermTranslator* translator) {
-	ASSERT(translator != 0);
+  void setTerm(const Term& term, const TermTranslator& translator) {
 	ASSERT(term.getVarCount() == _varCount);
-	ASSERT(translator->getVarCount() == _varCount);
+	ASSERT(translator.getVarCount() == _varCount);
 
 	for (size_t var = 0; var < _varCount; ++var)
 	  _term[var] = const_cast<mpz_ptr>
-		(translator->getExponent(var, term).get_mpz_t());
+		(translator.getExponent(var, term).get_mpz_t());
   }
 
   void setTerm(const vector<mpz_class>& term) {
@@ -75,10 +74,9 @@ public:
 	_consumer->idealBegin(_varCount);
   }
 
-  virtual void consume(const Term& term, TermTranslator* translator) {
-	ASSERT(translator != 0);
+  virtual void consume(const Term& term, const TermTranslator& translator) {
 	ASSERT(term.getVarCount() == _varCount);
-	ASSERT(translator->getVarCount() == _varCount);
+	ASSERT(translator.getVarCount() == _varCount);
 
 	setTerm(term, translator);
 	_consumer->consume(_term);
@@ -121,7 +119,7 @@ public:
 	ASSERT(term.getVarCount() == _varCount);
 	ASSERT(translator->getVarCount() == _varCount);
 
-	setTerm(term, translator);
+	setTerm(term, *translator);
 	_consumer->consume(coef.get_mpz_t(), _term);
   }
 

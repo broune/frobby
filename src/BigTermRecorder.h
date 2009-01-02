@@ -28,20 +28,17 @@ class BigIdeal;
 class TermTranslator;
 
 // BigTermRecorder records all the terms it consumes into a passed-in ideal
-//
-// TODO: make recorder construct and own its ideal, with a provision
-// to grab control of it, in which case it will put another one in its place.
 class BigTermRecorder : public BigTermConsumer {
 public:
   BigTermRecorder();
 
   virtual void consumeRing(const VarNames& names);
   virtual void beginConsuming();
-  virtual void consume(const Term& term, TermTranslator& translator);
+  virtual void consume(const Term& term, const TermTranslator& translator);
   virtual void consume(const vector<mpz_class>& term);
   virtual void doneConsuming();
 
-  // Returns true if this currently stores no ideals.
+  // Returns true if this object currently stores no ideals.
   bool empty() const;
 
   // Returns the least recently consumed ideal from this and returns it.

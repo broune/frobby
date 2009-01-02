@@ -35,7 +35,8 @@ void BigTermRecorder::beginConsuming() {
   exceptionSafePushBack(_ideals, ideal);
 }
 
-void BigTermRecorder::consume(const Term& term, TermTranslator& translator) {
+void BigTermRecorder::consume
+(const Term& term, const TermTranslator& translator) {
   ASSERT(!_ideals.empty());
   BigIdeal& ideal = *(_ideals.back());
 
