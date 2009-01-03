@@ -106,16 +106,6 @@ void BigPolynomial::add(const mpz_class& coef,
   _coefTerms.back().term = term;
 }
 
-void BigPolynomial::add(const mpz_class& coef, mpz_ptr* term) {
-  ASSERT(term != 0);
-
-  _coefTerms.resize(_coefTerms.size() + 1);
-  _coefTerms.back().coef = coef;
-
-  for (size_t exponent = 0; exponent < getVarCount(); ++exponent)
-    _coefTerms.back().term.push_back(mpz_class(term[exponent]));
-}
-
 void BigPolynomial::add(const mpz_class& coef,
 						const Term& term,
 						TermTranslator* translator) {
