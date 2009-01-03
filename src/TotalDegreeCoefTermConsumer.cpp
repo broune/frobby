@@ -66,13 +66,14 @@ void TotalDegreeCoefTermConsumer::consume(const mpz_class& coef,
 
 void TotalDegreeCoefTermConsumer::doneConsuming() {
   _consumer->beginConsuming();
+  vector<mpz_class> term(1);
 
   map<mpz_class, mpz_class>::reverse_iterator stop = _polynomial.rend();
   for (map<mpz_class, mpz_class>::reverse_iterator it = _polynomial.rbegin();
 	   it != stop; ++it) {
 	ASSERT(it->second != 0);
-	mpz_ptr ptr = const_cast<mpz_ptr>(it->first.get_mpz_t());
-	_consumer->consume(it->second, &ptr);
+	term[0] = it->first;
+	_consumer->consume(it->second, term);
   }
 
   _consumer->doneConsuming();

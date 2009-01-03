@@ -49,9 +49,7 @@ class BigPolynomial {
   void renameVars(const VarNames& names);
 
   void add(const mpz_class& coef, const vector<mpz_class> term);
-  void add(const mpz_class& coef, mpz_ptr* term);
-  void add(const mpz_class& coef,
-		   const Term& term,
+  void add(const mpz_class& coef, const Term& term,
 		   TermTranslator* translator);
 
  private:

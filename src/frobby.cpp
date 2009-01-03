@@ -67,7 +67,7 @@ public:
   }
 
   virtual void consumeRing(const VarNames& names) {
-	ASSERT(names == _varCount);
+	ASSERT(names.getVarCount() == _varCount);
   }
 
   virtual void beginConsuming() {
@@ -121,12 +121,6 @@ public:
 
 	setTerm(term, *translator);
 	_consumer->consume(coef.get_mpz_t(), _term);
-  }
-
-  virtual void consume(const mpz_class& coef, mpz_ptr* term) {
-	ASSERT(term != 0);
-
-	_consumer->consume(coef.get_mpz_t(), term);
   }
 
   virtual void consume(const mpz_class& coef,
