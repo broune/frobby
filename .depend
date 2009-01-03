@@ -35,10 +35,10 @@ $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h src/Scanner
   src/Polynomial.h src/BigPolynomial.h src/NameFactory.h src/error.h \
   src/FrobbyStringStream.h src/ElementDeleter.h src/BigTermConsumer.h \
   src/BigTermRecorder.h src/TranslatingTermConsumer.h \
-  src/IrreducibleIdealSplitter.h src/DataType.h src/NewMonosIOHandler.h \
-  src/MonosIOHandler.h src/IOHandlerCommon.h src/Macaulay2IOHandler.h \
-  src/Fourti2IOHandler.h src/NullIOHandler.h src/CoCoA4IOHandler.h \
-  src/SingularIOHandler.h
+  src/IrreducibleIdealSplitter.h src/DataType.h src/IdealConsolidator.h \
+  src/NewMonosIOHandler.h src/MonosIOHandler.h src/IOHandlerCommon.h \
+  src/Macaulay2IOHandler.h src/Fourti2IOHandler.h src/NullIOHandler.h \
+  src/CoCoA4IOHandler.h src/SingularIOHandler.h
 $(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
   src/hash_map/hash_fun.h src/Scanner.h src/IOHandler.h src/error.h
@@ -231,7 +231,8 @@ $(outdir)Fourti2IOHandler.o: src/Fourti2IOHandler.cpp src/stdinc.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
   src/hash_map/hash_fun.h src/Term.h src/TermTranslator.h \
   src/BigPolynomial.h src/error.h src/BigTermConsumer.h \
-  src/TermConsumer.h src/DataType.h
+  src/TermConsumer.h src/DataType.h src/FrobbyStringStream.h \
+  src/IdealConsolidator.h
 $(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h \
   src/IOHandler.h src/BigIdeal.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h \
@@ -340,9 +341,9 @@ $(outdir)BigPolynomial.o: src/BigPolynomial.cpp src/stdinc.h src/BigPolynomial.h
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
   src/hash_map/hash_fun.h src/Term.h src/TermTranslator.h src/VarSorter.h
 $(outdir)CoefBigTermRecorder.o: src/CoefBigTermRecorder.cpp src/stdinc.h \
-  src/CoefBigTermRecorder.h src/CoefBigTermConsumer.h src/BigPolynomial.h \
-  src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
-  src/hash_map/hash_fun.h
+  src/CoefBigTermRecorder.h src/CoefBigTermConsumer.h \
+  src/CoefTermConsumer.h src/BigPolynomial.h src/VarNames.h \
+  src/hash_map/hash_map src/hash_map/hashtable.h src/hash_map/hash_fun.h
 $(outdir)PolyTransformAction.o: src/PolyTransformAction.cpp src/stdinc.h \
   src/PolyTransformAction.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
@@ -439,3 +440,11 @@ $(outdir)IrreducibleIdealSplitter.o: src/IrreducibleIdealSplitter.cpp src/stdinc
   src/Term.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h src/TermTranslator.h
 $(outdir)DataType.o: src/DataType.cpp src/stdinc.h src/DataType.h
+$(outdir)IdealConsolidator.o: src/IdealConsolidator.cpp src/stdinc.h \
+  src/IdealConsolidator.h src/BigTermConsumer.h src/TermConsumer.h \
+  src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
+  src/hash_map/hash_fun.h src/BigIdeal.h src/Term.h src/TermTranslator.h
+$(outdir)CoefBigTermConsumer.o: src/CoefBigTermConsumer.cpp src/stdinc.h \
+  src/CoefBigTermConsumer.h src/CoefTermConsumer.h src/BigPolynomial.h \
+  src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
+  src/hash_map/hash_fun.h src/Term.h

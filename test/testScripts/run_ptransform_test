@@ -9,25 +9,37 @@ testhelper=../testScripts/testhelper
 testName="$1"
 shift
 
-inputFile="$testName.test"
-oformats="m2 cocoa4 4ti2 singular"
+formats="m2 cocoa4 4ti2 singular"
 
 if [ "$1" = "_full" ];
 then
   shift;
+
+  for format in $formats; do
+    # Test same-format transform.
+	$testhelper ptransform $testName.$format $testName.$format $*;
+	if [ $? != 0 ]; then exit 1; fi
+
+    # And again with specified formats.
+	$testhelper ptransform $testName.$format $testName.$format $* \
+      -iformat $format -oformat $format
+	if [ $? != 0 ]; then exit 1; fi
+  done
+
+  # Test same-format transform on canon.
+  $testhelper ptransform $testName.canon $testName.canon $*;
+  if [ $? != 0 ]; then exit 1; fi
+  
+  # And again with -canon option.
+  $testhelper ptransform $testName.canon $testName.canon $* -canon;
+  if [ $? != 0 ]; then exit 1; fi
 fi
 
-for oformat in $oformats; do
-  # Test format conversion to $oformat
-  outputFile="$testName.$oformat";
-  $testhelper ptransform $inputFile $outputFile $* -oformat $oformat;
-  if [ $? != 0 ]; then exit 1; fi
-
-  # Test same-format transform
-  $testhelper ptransform $outputFile $outputFile $*;
+for format in $formats; do
+  # Test format conversion to $format
+  $testhelper ptransform $testName.test $testName.$format $* -oformat $format;
   if [ $? != 0 ]; then exit 1; fi
 done
 
 # Test canonicalization of input
-outputFile="$testName.canon";
-$testhelper ptransform $inputFile $outputFile $* -canon
+$testhelper ptransform $testName.test $testName.canon $* -canon

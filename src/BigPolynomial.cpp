@@ -47,8 +47,8 @@ void BigPolynomial::clearAndSetNames(const VarNames& names) {
   _names = names;
 }
 
-void BigPolynomial::sortTerms() {
-  sort(_coefTerms.begin(), _coefTerms.end(), compareCoefTerms);
+void BigPolynomial::sortTermsReverseLex() {
+  sort(_coefTerms.begin(), _coefTerms.end(), compareCoefTermsReverseLex);
 }
 
 void BigPolynomial::sortVariables() {
@@ -121,8 +121,8 @@ void BigPolynomial::add(const mpz_class& coef,
 	bigTerm.push_back(translator->getExponent(var, term));
 }
 
-bool BigPolynomial::compareCoefTerms(const BigCoefTerm& a,
-									 const BigCoefTerm& b) {
+bool BigPolynomial::compareCoefTermsReverseLex(const BigCoefTerm& a,
+											   const BigCoefTerm& b) {
   for (size_t var = 0; var < a.term.size(); ++var)
 	if (a.term[var] != b.term[var])
 	  return a.term[var] > b.term[var];

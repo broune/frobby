@@ -15,26 +15,24 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "PolynomialFacade.h"
+#include "CoefBigTermConsumer.h"
 
 #include "BigPolynomial.h"
+#include "Term.h"
 
-PolynomialFacade::PolynomialFacade(bool printActions):
-  Facade(printActions) {
+// Do not use this implementation when in need of high performance, since
+// allocating a new big term each time is not very efficient.
+void CoefBigTermConsumer::consume(const mpz_class& coef, const Term& term) {
+  vector<mpz_class> bigTerm;
+  bigTerm.reserve(term.getVarCount());
+  for (size_t var = 0; var < term.getVarCount(); ++var)
+	bigTerm.push_back(term[var]);
+  consume(coef, bigTerm);
 }
 
-void PolynomialFacade::sortTerms(BigPolynomial& poly) {
-  beginAction("Sorting terms of polynomial.\n");
-
-  poly.sortTermsReverseLex();
-
-  endAction();
-}
-
-void PolynomialFacade::sortVariables(BigPolynomial& poly) {
-  beginAction("Sorting variables of polynomial.\n");
-
-  poly.sortVariables();
-
-  endAction();
+void CoefBigTermConsumer::consume(const BigPolynomial& poly) {
+  beginConsuming();
+  for (size_t index = 0; index < poly.getTermCount(); ++index)
+	consume(poly.getCoef(index), poly.getTerm(index));
+  doneConsuming();
 }

@@ -36,7 +36,7 @@ class BigPolynomial {
 
   void clear();
 
-  void sortTerms();
+  void sortTermsReverseLex();
   void sortVariables();
 
   const mpz_class& getCoef(size_t index) const;
@@ -60,7 +60,8 @@ class BigPolynomial {
   typedef vector<BigCoefTerm>::iterator iterator;
   typedef vector<BigCoefTerm>::const_iterator const_iterator;
 
-  static bool compareCoefTerms(const BigCoefTerm& a, const BigCoefTerm& b);
+  static bool compareCoefTermsReverseLex
+	(const BigCoefTerm& a, const BigCoefTerm& b);
 
   VarNames _names;
   vector<BigCoefTerm> _coefTerms;
