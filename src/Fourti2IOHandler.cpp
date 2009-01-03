@@ -24,16 +24,17 @@
 #include "BigPolynomial.h"
 #include "error.h"
 #include "BigTermConsumer.h"
+#include "DataType.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
   IOHandler(staticGetName(),
 			"Format used by the software package 4ti2.", true) {
-  registerInput(MonomialIdeal);
-  registerInput(MonomialIdealList);
-  registerInput(Polynomial);
-  registerOutput(MonomialIdeal);
-  registerOutput(MonomialIdealList);
-  registerOutput(Polynomial);
+  registerInput(DataType::getMonomialIdealType());
+  registerInput(DataType::getMonomialIdealListType());
+  registerInput(DataType::getPolynomialType());
+  registerOutput(DataType::getMonomialIdealType());
+  registerOutput(DataType::getMonomialIdealListType());
+  registerOutput(DataType::getPolynomialType());
 }
 
 const char* Fourti2IOHandler::staticGetName() {

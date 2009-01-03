@@ -23,6 +23,7 @@
 #include "Scanner.h"
 #include "IOHandler.h"
 #include "BigTermConsumer.h"
+#include "DataType.h"
 
 #include <algorithm>
 
@@ -91,7 +92,7 @@ AnalyzeAction::AnalyzeAction():
  "that need information about the ideal.",
  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal),
+  _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()),
 
   _summaryLevel
   ("summaryLevel",

@@ -22,12 +22,11 @@
 #include "IOHandler.h"
 
 class Scanner;
+class DataType;
 
 class IOParameters : public ParameterGroup {
  public:
-  typedef IOHandler::DataType DataType;
-
-  IOParameters(DataType input, DataType output);
+  IOParameters(const DataType& input, const DataType& output);
 
   void setOutputFormat(const string& format);
 
@@ -48,8 +47,8 @@ class IOParameters : public ParameterGroup {
   void validateFormats() const;
 
  private:
-  DataType _inputType;
-  DataType _outputType;
+  const DataType& _inputType;
+  const DataType& _outputType;
 
   auto_ptr<StringParameter> _inputFormat;
   auto_ptr<StringParameter> _outputFormat;

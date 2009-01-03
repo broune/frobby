@@ -22,6 +22,7 @@
 #include "VarNames.h"
 #include "error.h"
 #include "BigTermConsumer.h"
+#include "DataType.h"
 
 #include <cstdio>
 
@@ -29,9 +30,9 @@ NewMonosIOHandler::NewMonosIOHandler():
   IOHandler(staticGetName(),
 			"Newer format used by the program Monos.",
 			false) {
-  registerInput(MonomialIdeal);
-  registerInput(MonomialIdealList);
-  registerOutput(MonomialIdeal);
+  registerInput(DataType::getMonomialIdealType());
+  registerInput(DataType::getMonomialIdealListType());
+  registerOutput(DataType::getMonomialIdealType());
 }
 
 const char* NewMonosIOHandler::staticGetName() {

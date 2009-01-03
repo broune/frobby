@@ -24,6 +24,7 @@
 #include "IdealFacade.h"
 #include "VarSorter.h"
 #include "ElementDeleter.h"
+#include "DataType.h"
 
 IntersectionAction::IntersectionAction():
   Action
@@ -35,7 +36,7 @@ IntersectionAction::IntersectionAction():
  "Note that this operation is currently implemented in a rather slow way.",
  false),
 
-  _io(IOHandler::MonomialIdealList, IOHandler::MonomialIdeal),
+  _io(DataType::getMonomialIdealListType(), DataType::getMonomialIdealType()),
 
   _canonical
   ("canon",

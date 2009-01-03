@@ -22,16 +22,17 @@
 #include "NullTermConsumer.h"
 #include "BigPolynomial.h"
 #include "VarNames.h"
+#include "DataType.h"
 
 NullIOHandler::NullIOHandler():
   IOHandler(staticGetName(), "Ignores input and produces no output.", false) {
-  registerInput(MonomialIdeal);
-  registerInput(Polynomial);
-  registerInput(MonomialIdealList);
+  registerInput(DataType::getMonomialIdealType());
+  registerInput(DataType::getPolynomialType());
+  registerInput(DataType::getMonomialIdealListType());
 
-  registerOutput(MonomialIdeal);
-  registerOutput(Polynomial);
-  registerOutput(MonomialIdealList);
+  registerOutput(DataType::getMonomialIdealType());
+  registerOutput(DataType::getPolynomialType());
+  registerOutput(DataType::getMonomialIdealListType());
 }
 
 const char* NullIOHandler::staticGetName() {

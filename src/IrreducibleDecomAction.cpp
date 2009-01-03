@@ -21,6 +21,7 @@
 #include "SliceFacade.h"
 #include "IOFacade.h"
 #include "Scanner.h"
+#include "DataType.h"
 
 IrreducibleDecomAction::IrreducibleDecomAction():
   Action
@@ -38,7 +39,7 @@ IrreducibleDecomAction::IrreducibleDecomAction():
 		  "Encode the decomposition as monomials generating an ideal.",
 		  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
+  _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
 }
 
 void IrreducibleDecomAction::obtainParameters(vector<Parameter*>& parameters) {

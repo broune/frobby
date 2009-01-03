@@ -21,15 +21,16 @@
 #include "Scanner.h"
 #include "error.h"
 #include "BigTermConsumer.h"
+#include "DataType.h"
 
 #include <cstdio>
 
 MonosIOHandler::MonosIOHandler():
   IOHandlerCommon(staticGetName(), "Older format used by the program Monos.") {
-  registerInput(MonomialIdeal);
-  registerInput(MonomialIdealList);
-  registerOutput(MonomialIdeal);
-  registerOutput(MonomialIdealList);
+  registerInput(DataType::getMonomialIdealType());
+  registerInput(DataType::getMonomialIdealListType());
+  registerOutput(DataType::getMonomialIdealType());
+  registerOutput(DataType::getMonomialIdealListType());
 }
 
 const char* MonosIOHandler::staticGetName() {

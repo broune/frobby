@@ -35,6 +35,7 @@
 #include "BigTermRecorder.h"
 #include "TranslatingTermConsumer.h"
 #include "IrreducibleIdealSplitter.h"
+#include "DataType.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -44,53 +45,28 @@
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
 
-bool IOHandler::supportsInput(DataType type) const {
+bool IOHandler::supportsInput(const DataType& type) const {
   return std::find(_supportedInputs.begin(), _supportedInputs.end(),
-				   type) != _supportedInputs.end();
+				   &type) != _supportedInputs.end();
 }
 
-bool IOHandler::supportsOutput(DataType type) const {
+bool IOHandler::supportsOutput(const DataType& type) const {
   return std::find(_supportedOutputs.begin(), _supportedOutputs.end(),
-				   type) != _supportedOutputs.end();
+				   &type) != _supportedOutputs.end();
 }
 
-const char* IOHandler::getDataTypeName(DataType type) {
-  switch (type) {
-  case None:
-	return "nothing";
-
-  case MonomialIdeal:
-	return "a monomial ideal";
-
-  case Polynomial:
-	return "a polynomial";
-
-  case MonomialIdealList:
-	return "a list of monomial ideals";
-
-  default:
-	ASSERT(false);
-	reportInternalError("Unknown DataType enum in getDataTypeName.");
-	return 0; // To ensure that a static analysis does not report an issue.
-  }
-}
-
-void IOHandler::addDataTypes(vector<DataType>& types) {
-  types.push_back(MonomialIdeal);
-  types.push_back(MonomialIdealList);
-  types.push_back(Polynomial);
-}
-
-void IOHandler::registerInput(DataType type) {
-  ASSERT(type != None);
+void IOHandler::registerInput(const DataType& type) {
+  ASSERT(!type.isNull());
   ASSERT(!supportsInput(type));
-  _supportedInputs.push_back(type);
+
+  _supportedInputs.push_back(&type);
 }
 
-void IOHandler::registerOutput(DataType type) {
-  ASSERT(type != None);
+void IOHandler::registerOutput(const DataType& type) {
+  ASSERT(!type.isNull());
   ASSERT(!supportsOutput(type));
-  _supportedOutputs.push_back(type);
+
+  _supportedOutputs.push_back(&type);
 }
 
 class IdealWriter : public BigTermConsumer {
@@ -345,7 +321,7 @@ IOHandler::IOHandler(const char* formatName,
 }
 
 auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
-  ASSERT(supportsOutput(MonomialIdeal));
+  ASSERT(supportsOutput(DataType::getMonomialIdealType()));
 
   if (_requiresSizeForIdealOutput) {
 	FrobbyStringStream msg;
@@ -685,7 +661,7 @@ private:
 
 auto_ptr<CoefTermConsumer> IOHandler::createPolynomialWriter
 (const TermTranslator* translator, FILE* out) {
-  ASSERT(supportsOutput(Polynomial));
+  ASSERT(supportsOutput(DataType::getPolynomialType()));
 
   if (_requiresSizeForIdealOutput) {
 	FrobbyStringStream msg;

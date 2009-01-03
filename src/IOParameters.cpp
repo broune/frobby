@@ -22,8 +22,9 @@
 #include "Scanner.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
+#include "DataType.h"
 
-IOParameters::IOParameters(DataType input, DataType output):
+IOParameters::IOParameters(const DataType& input, const DataType& output):
   _inputType(input),
   _outputType(output),
   _inputFormat(0),
@@ -33,7 +34,7 @@ IOParameters::IOParameters(DataType input, DataType output):
   string outputFormats;
 
   string defaultOutput;
-  if (_inputType != IOHandler::None)
+  if (!_inputType.isNull())
 	defaultOutput = "input";
 
   vector<string> names;
@@ -55,7 +56,7 @@ IOParameters::IOParameters(DataType input, DataType output):
 	}
   }
 
-  if (_inputType != IOHandler::None) {
+  if (!_inputType.isNull()) {
 	string desc =
       "The format used to read the input. "
 	  "This action supports the formats:\n " + inputFormats + ".\n"
@@ -67,11 +68,11 @@ IOParameters::IOParameters(DataType input, DataType output):
 	addParameter(_inputFormat.get());
   }
 
-  if (output != IOHandler::None) {
+  if (!output.isNull()) {
 	string desc =
 	  "The format used to write the output. "
 	  "This action supports the formats:\n " + outputFormats + ".\n";
-	if (_inputType != IOHandler::None) {
+	if (!_inputType.isNull()) {
 	  desc +=
 		"The format \"input\" instructs Frobby to use the input format.\n";
 	}
@@ -84,25 +85,24 @@ IOParameters::IOParameters(DataType input, DataType output):
 }
 
 void IOParameters::setOutputFormat(const string& format) {
-  ASSERT(_inputType != IOHandler::None);
+  ASSERT(!_inputType.isNull());
   ASSERT(_outputFormat.get() != 0);
 
   *_outputFormat = format;
 }
 
 const string& IOParameters::getInputFormat() const {
-  ASSERT(_inputType != IOHandler::None);
+  ASSERT(!_inputType.isNull());
   ASSERT(_inputFormat.get() != 0);
 
   return *_inputFormat;
 }
 
 const string& IOParameters::getOutputFormat() const {
-  ASSERT(_outputType != IOHandler::None);
+  ASSERT(!_outputType.isNull());
   ASSERT(_outputFormat.get() != 0);
 
-  if (_inputType != IOHandler::None &&
-	  _outputFormat->getValue() == "input") {
+  if (!_inputType.isNull() && _outputFormat->getValue() == "input") {
 	ASSERT(_inputFormat.get() != 0);
 	return *_inputFormat;
   }
@@ -123,7 +123,7 @@ auto_ptr<IOHandler> IOParameters::createOutputHandler() const {
 }
 
 void IOParameters::autoDetectInputFormat(Scanner& in) {
-  ASSERT(_inputType != IOHandler::None);
+  ASSERT(!_inputType.isNull());
   ASSERT(_inputFormat.get() != 0);
 
   if (_inputFormat->getValue() == "autodetect") {
@@ -157,7 +157,7 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
 void IOParameters::validateFormats() const {
   IOFacade facade(false);
 
-  if (_inputType != IOHandler::None) {
+  if (!_inputType.isNull()) {
 	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getInputFormat()));
 	if (handler.get() == 0)
 	  reportError("Unknown input format \"" + getInputFormat() + "\".");
@@ -167,13 +167,13 @@ void IOParameters::validateFormats() const {
 	  errorMsg << "The "
 			   << handler->getName()
 			   << " format does not support input of "
-			   << IOHandler::getDataTypeName(_inputType)
+			   << _inputType.getName()
 			   << '.';
 	  reportError(errorMsg);
 	}
   }
 
-  if (_outputType != IOHandler::None) {
+  if (!_outputType.isNull()) {
 	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getOutputFormat()));
 	if (handler.get() == 0)
 	  reportError("Unknown output format \"" + getOutputFormat() + "\".");
@@ -183,7 +183,7 @@ void IOParameters::validateFormats() const {
 	  errorMsg << "The "
 			   << handler->getName()
 			   << " format does not support output of "
-			   << IOHandler::getDataTypeName(_outputType)
+			   << _outputType.getName()
 			   << '.';
 	  reportError(errorMsg);
 	}

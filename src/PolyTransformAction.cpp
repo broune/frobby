@@ -21,6 +21,7 @@
 #include "IOFacade.h"
 #include "BigPolynomial.h"
 #include "PolynomialFacade.h"
+#include "DataType.h"
 
 PolyTransformAction::PolyTransformAction():
   Action
@@ -31,7 +32,7 @@ PolyTransformAction::PolyTransformAction():
  "various ways.",
  false),
   
-  _io(IOHandler::Polynomial, IOHandler::Polynomial),
+  _io(DataType::getPolynomialType(), DataType::getPolynomialType()),
 
   _canonicalize
   ("canon",
