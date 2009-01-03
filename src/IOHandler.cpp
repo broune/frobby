@@ -36,6 +36,7 @@
 #include "TranslatingTermConsumer.h"
 #include "IrreducibleIdealSplitter.h"
 #include "DataType.h"
+#include "IdealConsolidator.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -129,136 +130,26 @@ public:
 	  _handler->writeRing(_names, _out);
   }
 
+  virtual void consume(const BigIdeal& ideal) {
+	consumeRing(ideal.getNames());
+
+	// We do not just call beginConsuming() because we need to call
+	// the overload of writeIdealHeader that specifies the number of
+	// generators to follow.
+	_handler->writeIdealHeader(_names, _firstIdeal,
+							   ideal.getGeneratorCount(), _out);
+	_firstGenerator = true;
+
+	for (size_t term = 0; term < ideal.getGeneratorCount(); ++term)
+	  consume(ideal.getTerm(term));
+	doneConsuming();
+  }
+
 private:
   IOHandler* _handler;
   FILE* _out;
   bool _firstIdeal;
   bool _firstGenerator;
-  VarNames _names;
-};
-
-// TODO: give this and CanonicalTermConsumer a common base class. Also consider
-// support for passing along whole ideals and even lists of ideals at one
-// time instead of piece-meal.
-// TODO: get translator from consumption only.
-class DelayedIdealWriter : public BigTermConsumer {
- public:
-  DelayedIdealWriter(IOHandler* handler, FILE* out):
-	_handler(handler),
-	_translator(0),
-	_out(out),
-	_ideal(),
-	_bigIdeal(),
-	_firstIdeal(true),
-	_names() {
-	ASSERT(handler != 0);
-	ASSERT(out != 0);
-  }
-
-  DelayedIdealWriter(IOHandler* handler,
-					 const TermTranslator* translator,
-					 FILE* out):
-	_handler(handler),
-	_translator(translator),
-	_out(out),
-	_ideal(translator->getVarCount()),
-	_bigIdeal(translator->getNames()),
-	_firstIdeal(true),
-	_names(translator->getNames()) {
-	ASSERT(handler != 0);
-	ASSERT(translator != 0);
-	ASSERT(out != 0);
-  }
-
-  virtual void consumeRing(const VarNames& names) {
-	ASSERT(_ideal.isZeroIdeal());
-	ASSERT(_bigIdeal.getGeneratorCount() == 0);
-	ASSERT(_translator == 0 || _names == names);
-
-	if (_translator == 0) {
-	  _names = names;
-	  _ideal.clearAndSetVarCount(names.getVarCount());
-	  _bigIdeal.clearAndSetNames(names);
-	}
-  }
-
-  virtual void beginConsumingList() {
-	ASSERT(_ideal.isZeroIdeal());
-	ASSERT(_bigIdeal.getGeneratorCount() == 0);
-	_firstIdeal = true;
-  }
-
-  virtual void beginConsuming() {
-	ASSERT(_ideal.isZeroIdeal());
-	ASSERT(_bigIdeal.getGeneratorCount() == 0);
-  }
-
-  virtual void consume(const Term& term) {
-	// TODO: do not use a translator here, set it to 0.
-	ASSERT(term.getVarCount() == _ideal.getVarCount());
-	_ideal.insert(term);
-  }
-
-  virtual void consume(const Term& term, const TermTranslator& translator) {
-	// TODO: translate everything if this translator is different from
-	// the previous one (by address), and then remember this one.
-	BigTermConsumer::consume(term, translator);
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-	// TODO: this does not preserve order. if this gets called, it should
-	// translate everything into bigIdeal, and only then append the term.
-	ASSERT(term.size() == _bigIdeal.getVarCount());
-	_bigIdeal.newLastTerm();
-	_bigIdeal.getLastTermRef() = term;
-  }
-
-  virtual void doneConsuming() {
-	size_t generatorCount =
-	  _ideal.getGeneratorCount() + _bigIdeal.getGeneratorCount();
-	_handler->writeIdealHeader(_names, _firstIdeal, generatorCount, _out);
-
-	bool firstGenerator = true;
-	{
-	  Term term(_ideal.getVarCount());
-	  Ideal::const_iterator end = _ideal.end();
-	  for (Ideal::const_iterator it = _ideal.begin(); it != end; ++it) {
-		term = *it;
-		ASSERT(_translator != 0); // TODO: remove this limitation.
-		_handler->writeTermOfIdeal(term, _translator, firstGenerator, _out);
-		firstGenerator = false;
-	  }
-	}
-	{
-	  for (size_t term = 0; term < _bigIdeal.getGeneratorCount(); ++term) {
-		_handler->writeTermOfIdeal
-		  (_bigIdeal.getTerm(term), _names, firstGenerator, _out);
-		firstGenerator = false;
-	  }
-	}
-
-	_handler->writeIdealFooter(_names, !firstGenerator, _out);
-
-	_firstIdeal = false;
-	_ideal.clear();
-	_bigIdeal.clear();
-  }
-
-  virtual void doneConsumingList() {
-	ASSERT(_ideal.isZeroIdeal());
-	ASSERT(_bigIdeal.getGeneratorCount() == 0);
-
-	if (_firstIdeal)
-	  _handler->writeRing(_names, _out);
-  }
-
-private:
-  IOHandler* _handler;
-  const TermTranslator* _translator;
-  FILE* _out;
-  Ideal _ideal;
-  BigIdeal _bigIdeal;
-  bool _firstIdeal;
   VarNames _names;
 };
 
@@ -323,7 +214,10 @@ IOHandler::IOHandler(const char* formatName,
 auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
   ASSERT(supportsOutput(DataType::getMonomialIdealType()));
 
-  if (_requiresSizeForIdealOutput) {
+  auto_ptr<BigTermConsumer> writer(new IdealWriter(this, out));
+  if (!_requiresSizeForIdealOutput)
+	return writer;
+  else {
 	FrobbyStringStream msg;
 	msg << "Using the format " << getName() <<
 	  " makes it necessary to store all of the output in "
@@ -331,10 +225,9 @@ auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
 	  "memory consumption and decreases performance.";
 	displayNote(msg);
 
-	return auto_ptr<BigTermConsumer>(new DelayedIdealWriter(this, out));
+	auto_ptr<BigTermConsumer> consolidated(new IdealConsolidator(writer));
+	return consolidated;
   }
-  else
-	return auto_ptr<BigTermConsumer>(new IdealWriter(this, out));
 }
 
 void IOHandler::writeCoefTermProduct(const mpz_class& coef,
