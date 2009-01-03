@@ -34,9 +34,11 @@ $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h src/Scanner
   src/Ideal.h src/Term.h src/TermConsumer.h src/CoefTermConsumer.h \
   src/Polynomial.h src/BigPolynomial.h src/NameFactory.h src/error.h \
   src/FrobbyStringStream.h src/ElementDeleter.h src/BigTermConsumer.h \
-  src/BigTermRecorder.h src/NewMonosIOHandler.h src/MonosIOHandler.h \
-  src/IOHandlerCommon.h src/Macaulay2IOHandler.h src/Fourti2IOHandler.h \
-  src/NullIOHandler.h src/CoCoA4IOHandler.h src/SingularIOHandler.h
+  src/BigTermRecorder.h src/TranslatingTermConsumer.h \
+  src/IrreducibleIdealSplitter.h src/NewMonosIOHandler.h \
+  src/MonosIOHandler.h src/IOHandlerCommon.h src/Macaulay2IOHandler.h \
+  src/Fourti2IOHandler.h src/NullIOHandler.h src/CoCoA4IOHandler.h \
+  src/SingularIOHandler.h
 $(outdir)fourti2.o: src/fourti2.cpp src/stdinc.h src/fourti2.h src/BigIdeal.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
   src/hash_map/hash_fun.h src/Scanner.h src/IOHandler.h src/error.h
@@ -233,7 +235,8 @@ $(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h
   src/IOHandler.h src/BigIdeal.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h \
   src/NullCoefTermConsumer.h src/CoefTermConsumer.h \
-  src/NullTermConsumer.h src/TermConsumer.h src/BigPolynomial.h
+  src/NullTermConsumer.h src/BigTermConsumer.h src/TermConsumer.h \
+  src/BigPolynomial.h
 $(outdir)Minimizer.o: src/Minimizer.cpp src/stdinc.h src/Minimizer.h src/Term.h
 $(outdir)AlexanderDualAction.o: src/AlexanderDualAction.cpp src/stdinc.h \
   src/AlexanderDualAction.h src/Action.h src/BoolParameter.h \
@@ -256,9 +259,9 @@ $(outdir)BigTermConsumer.o: src/BigTermConsumer.cpp src/stdinc.h \
   src/TermTranslator.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h src/BigIdeal.h
 $(outdir)TranslatingTermConsumer.o: src/TranslatingTermConsumer.cpp src/stdinc.h \
-  src/TranslatingTermConsumer.h src/TermConsumer.h src/Term.h \
-  src/TermTranslator.h src/VarNames.h src/hash_map/hash_map \
-  src/hash_map/hashtable.h src/hash_map/hash_fun.h src/BigTermConsumer.h
+  src/TranslatingTermConsumer.h src/BigTermConsumer.h src/TermConsumer.h \
+  src/Term.h src/TermTranslator.h src/VarNames.h src/hash_map/hash_map \
+  src/hash_map/hashtable.h src/hash_map/hash_fun.h
 $(outdir)HilbertAction.o: src/HilbertAction.cpp src/stdinc.h src/HilbertAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h src/IOParameters.h \
   src/ParameterGroup.h src/StringParameter.h src/IOHandler.h \
@@ -307,7 +310,7 @@ $(outdir)SliceFacade.o: src/SliceFacade.cpp src/stdinc.h src/SliceFacade.h \
   src/ElementDeleter.h src/HilbertIndependenceConsumer.h src/SliceEvent.h \
   src/IOHandler.h src/BigPolynomial.h src/TotalDegreeCoefTermConsumer.h \
   src/CoefBigTermRecorder.h src/CanonicalTermConsumer.h src/VarSorter.h \
-  src/StatisticsStrategy.h src/error.h
+  src/StatisticsStrategy.h src/error.h src/IrreducibleIdealSplitter.h
 $(outdir)BigTermRecorder.o: src/BigTermRecorder.cpp src/stdinc.h \
   src/BigTermRecorder.h src/BigTermConsumer.h src/TermConsumer.h \
   src/ElementDeleter.h src/VarNames.h src/hash_map/hash_map \
@@ -350,7 +353,7 @@ $(outdir)VarSorter.o: src/VarSorter.cpp src/stdinc.h src/VarSorter.h \
 $(outdir)SliceEvent.o: src/SliceEvent.cpp src/stdinc.h src/SliceEvent.h
 $(outdir)TermConsumer.o: src/TermConsumer.cpp src/stdinc.h src/TermConsumer.h
 $(outdir)NullTermConsumer.o: src/NullTermConsumer.cpp src/stdinc.h \
-  src/NullTermConsumer.h src/TermConsumer.h
+  src/NullTermConsumer.h src/BigTermConsumer.h src/TermConsumer.h
 $(outdir)CoefTermConsumer.o: src/CoefTermConsumer.cpp src/stdinc.h \
   src/CoefTermConsumer.h
 $(outdir)NullCoefTermConsumer.o: src/NullCoefTermConsumer.cpp src/stdinc.h \
@@ -428,3 +431,7 @@ $(outdir)IOHandlerCommon.o: src/IOHandlerCommon.cpp src/stdinc.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
   src/hash_map/hash_fun.h src/BigTermRecorder.h src/BigTermConsumer.h \
   src/TermConsumer.h src/ElementDeleter.h
+$(outdir)IrreducibleIdealSplitter.o: src/IrreducibleIdealSplitter.cpp src/stdinc.h \
+  src/IrreducibleIdealSplitter.h src/BigTermConsumer.h src/TermConsumer.h \
+  src/Term.h src/VarNames.h src/hash_map/hash_map \
+  src/hash_map/hashtable.h src/hash_map/hash_fun.h

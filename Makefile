@@ -34,7 +34,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   SplitStrategy.cpp CanonicalTermConsumer.cpp StatisticsStrategy.cpp	\
   TestAction.cpp NameFactory.cpp error.cpp DebugAllocator.cpp			\
   FrobbyStringStream.cpp SliceStrategy.cpp PrimaryDecomAction.cpp       \
-  IdealComparator.cpp IOHandlerCommon.cpp
+  IdealComparator.cpp IOHandlerCommon.cpp IrreducibleIdealSplitter.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -193,7 +193,7 @@ clean: tidy
 	rm -rf bin
 
 tidy:
-	find .|grep -x -E ".*~\|.*/\#.*\#|.*\.stackdump\|gmon\.out\|.*\.orig\|.*/core\|core"|xargs rm -f
+	find .|grep -x ".*~\|.*/\#.*\#|.*\.stackdump\|gmon\.out\|.*\.orig\|.*/core\|core"|xargs rm -f
 
 # ***** Mercurial
 

@@ -30,9 +30,6 @@ public:
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
 
-  virtual void writeIdeals(const vector<BigIdeal*>& ideals,
-						   const VarNames& names,
-						   FILE* out);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);

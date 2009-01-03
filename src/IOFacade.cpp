@@ -105,7 +105,7 @@ void IOFacade::writeIdeal(const BigIdeal& ideal,
 
   beginAction("Writing monomial ideal.");
 
-  handler->writeIdeal(ideal, true, out);
+  handler->createIdealWriter(out)->consume(ideal);
 
   endAction();
 }
@@ -118,7 +118,18 @@ void IOFacade::writeIdeals(const vector<BigIdeal*>& ideals,
 
   beginAction("Writing monomial ideals.");
 
-  handler->writeIdeals(ideals, names, out);
+  {
+	auto_ptr<BigTermConsumer> consumer = handler->createIdealWriter(out);
+
+	consumer->beginConsumingList();
+	consumer->consumeRing(names);
+
+	for (vector<BigIdeal*>::const_iterator it = ideals.begin();
+		 it != ideals.end(); ++it)
+	  consumer->consume(**it);
+
+	consumer->doneConsumingList();
+  }
 
   endAction();  
 }

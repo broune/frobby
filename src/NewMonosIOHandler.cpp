@@ -44,15 +44,6 @@ void NewMonosIOHandler::writeTerm(const vector<mpz_class>& term,
   writeTermProduct(term, names, out);
 }
 
-void NewMonosIOHandler::writeIdeals(const vector<BigIdeal*>& ideals,
-									const VarNames& names,
-									FILE* out) {
-  if (ideals.empty())
-	writeRing(names, out);
-  else
-	IOHandler::writeIdeals(ideals, names, out);
-}
-
 void NewMonosIOHandler::writeRing(const VarNames& names, FILE* out) {
   fputs("(lex-order", out);
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {

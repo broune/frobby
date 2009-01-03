@@ -42,15 +42,6 @@ const char* Macaulay2IOHandler::staticGetName() {
   return "m2";
 }
 
-void Macaulay2IOHandler::writeIdeals(const vector<BigIdeal*>& ideals,
-									const VarNames& names,
-									FILE* out) {
-  if (ideals.empty())
-	writeRing(names, out);
-  else
-	IOHandler::writeIdeals(ideals, names, out);
-}
-
 void Macaulay2IOHandler::writeTerm(const vector<mpz_class>& term,
 								   const VarNames& names,
 								   FILE* out) {
