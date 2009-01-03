@@ -30,8 +30,9 @@ TranslatingTermConsumer::TranslatingTermConsumer
 TranslatingTermConsumer::TranslatingTermConsumer
 (auto_ptr<BigTermConsumer> consumer, const TermTranslator& translator):
   _translator(translator),
-  _consumer(*consumer),
-  _consumerOwner(consumer) {
+  _consumer(*consumer) {
+  ASSERT(consumer.get() != 0);
+  _consumerOwner = consumer;
 }
 
 void TranslatingTermConsumer::beginConsumingList() {

@@ -49,19 +49,6 @@ class IOHandler {
 						vector<mpz_class>& term);
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
-  // Writes ideal to out. The format is allowed but not required to omit
-  // a description of the ring if defineNewRing is false.
-  virtual void writeIdeal(const BigIdeal& ideal,
-						  bool defineNewRing,
-						  FILE* out);
-
-  // Writes ideals to out. If ideals is empty, the format is allowed to write
-  // just the ring, or to discard the information about which ring is used.
-  virtual void writeIdeals(const vector<BigIdeal*>& ideals,
-						   const VarNames& names,
-						   FILE* out);
-
-
   virtual void writePolynomial(const BigPolynomial& polynomial, FILE* out);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
@@ -73,9 +60,6 @@ class IOHandler {
   const char* getDescription() const;
 
   virtual auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
-
-  virtual auto_ptr<BigTermConsumer> createIrreducibleIdealWriter
-	(const TermTranslator* translator, FILE* out);
 
   virtual auto_ptr<CoefTermConsumer> createPolynomialWriter
 	(const TermTranslator* translator, FILE* out);

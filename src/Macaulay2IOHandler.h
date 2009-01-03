@@ -31,10 +31,6 @@ public:
 
   virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
 
-  virtual void writeIdeals(const vector<BigIdeal*>& ideals,
-						   const VarNames& names,
-						   FILE* out);
-
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);

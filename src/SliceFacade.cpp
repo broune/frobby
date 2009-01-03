@@ -41,6 +41,7 @@
 #include "VarSorter.h"
 #include "StatisticsStrategy.h"
 #include "error.h"
+#include "IrreducibleIdealSplitter.h"
 
 SliceFacade::SliceFacade(const BigIdeal& ideal,
 						 BigTermConsumer* consumer,
@@ -553,13 +554,17 @@ void SliceFacade::doIrreducibleIdealOutput() {
   ASSERT(_ioHandler != 0);
   ASSERT(_termConsumer == 0);
 
-  _generatedTermConsumer =
-	_ioHandler->createIrreducibleIdealWriter(_translator.get(), _out);
+  auto_ptr<BigTermConsumer> writer = _ioHandler->createIdealWriter(_out);
+  auto_ptr<BigTermConsumer> splitter(new IrreducibleIdealSplitter(writer));
+  auto_ptr<BigTermConsumer> translated
+	(new TranslatingTermConsumer(splitter, *_translator));
+  _generatedTermConsumer = translated;
 
   if (_canonicalOutput) {
-	TermConsumer* newTermConsumer = new CanonicalTermConsumer
-	  (_generatedTermConsumer, _ideal->getVarCount(), _translator.get());
-	_generatedTermConsumer.reset(newTermConsumer);
+	auto_ptr<TermConsumer> newTermConsumer
+	  (new CanonicalTermConsumer
+	   (_generatedTermConsumer, _ideal->getVarCount(), _translator.get()));
+	_generatedTermConsumer = newTermConsumer;
   }
 
   ASSERT(_generatedTermConsumer.get() != 0);

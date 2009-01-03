@@ -34,6 +34,7 @@
 #include "BigTermConsumer.h"
 #include "BigTermRecorder.h"
 #include "TranslatingTermConsumer.h"
+#include "IrreducibleIdealSplitter.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -92,7 +93,6 @@ void IOHandler::registerOutput(DataType type) {
   _supportedOutputs.push_back(type);
 }
 
-// TODO: pick up translator from consumption, not parameter.
 class IdealWriter : public BigTermConsumer {
 public:
   IdealWriter(IOHandler* handler, FILE* out):
@@ -159,114 +159,6 @@ private:
   bool _firstIdeal;
   bool _firstGenerator;
   VarNames _names;
-};
-
-class IrreducibleIdealWriter : public BigTermConsumer {
-public:
-  IrreducibleIdealWriter(IOHandler* handler,
-						 const TermTranslator* translator,
-						 FILE* out):
-	_varCount(translator->getVarCount()),
-	_handler(handler),
-	_translator(translator),
-	_out(out),
-	_tmp(translator->getVarCount()),
-	_bigTmp(translator->getVarCount()),
-	_firstIdeal(true) {
-	ASSERT(handler != 0);
-	ASSERT(translator != 0);
-	ASSERT(out != 0);
-	ASSERT(_tmp.isIdentity());
-  }
-
-  virtual void consumeRing(const VarNames& names) {
-	// TODO: get rid of translator and put something here to pick up the
-	// ring.
-  }
-
-  virtual void beginConsumingList() {
-	_firstIdeal = true;
-  }
-
-  virtual void beginConsuming() {
-  }
-
-  virtual void consume(const Term& term) {
-	consume(term, *_translator);
-  }
-
-  virtual void consume(const Term& term, const TermTranslator& translator) {
-	// TODO: make this a wrapper instead of having direct contact
-	// with the handler.
-	ASSERT(term.getVarCount() == _varCount);
-	ASSERT(_tmp.isIdentity());
-
-	size_t support = 0;
-	for (size_t var = 0; var < _varCount; ++var)
-	  if (translator.getExponent(var, term) != 0)
-		++support;
-
-	_handler->writeIdealHeader(translator.getNames(), _firstIdeal,
-							   support, _out);
-	bool firstGenerator = true;
-	for (size_t var = 0; var < _varCount; ++var) {
-	  if (translator.getExponent(var, term) != 0) {
-		_tmp[var] = term[var];
-		_handler->writeTermOfIdeal(_tmp, &translator, firstGenerator, _out);
-		firstGenerator = false;
-		_tmp[var] = 0;
-	  }
-	}
-	_handler->writeIdealFooter(translator.getNames(), !firstGenerator, _out);
-
-	_firstIdeal = false;
-	ASSERT(_tmp.isIdentity());
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-	// TODO: fix code duplication from other consume.
-	ASSERT(term.size() == _varCount);
-	ASSERT(_bigTmp == vector<mpz_class>(_varCount));
-
-	size_t support = 0;
-	for (size_t var = 0; var < _varCount; ++var)
-	  if (term[var] != 0)
-		++support;
-
-	_handler->writeIdealHeader(_translator->getNames(), _firstIdeal,
-							   support, _out);
-	bool firstGenerator = true;
-	for (size_t var = 0; var < _varCount; ++var) {
-	  if (term[var] != 0) {
-		_bigTmp[var] = term[var];
-		_handler->writeTermOfIdeal
-		  (_bigTmp, _translator->getNames(), firstGenerator, _out);
-		firstGenerator = false;
-		_bigTmp[var] = 0;
-	  }
-	}
-	_handler->writeIdealFooter(_translator->getNames(), !firstGenerator, _out);
-
-	_firstIdeal = false;
-	ASSERT(_bigTmp == vector<mpz_class>(_varCount));
-  }
-
-  virtual void doneConsuming() {
-  }
-
-  virtual void doneConsumingList() {
-	if (_firstIdeal)
-	  _handler->writeRing(_translator->getNames(), _out);
-  }
-
-private:
-  size_t _varCount;
-  IOHandler* _handler;
-  const TermTranslator* _translator;
-  FILE* _out;
-  Term _tmp;
-  vector<mpz_class> _bigTmp;
-  bool _firstIdeal;
 };
 
 // TODO: give this and CanonicalTermConsumer a common base class. Also consider
@@ -420,31 +312,6 @@ void IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
 IOHandler::~IOHandler() {
 }
 
-void IOHandler::writeIdeal(const BigIdeal& ideal,
-						   bool defineNewRing,
-						   FILE* out) {
-  size_t generatorCount = ideal.getGeneratorCount();
-  writeIdealHeader(ideal.getNames(), defineNewRing, generatorCount, out);
-  for (size_t i = 0; i < generatorCount; ++i)
-	writeTermOfIdeal(ideal[i], ideal.getNames(), i == 0, out);
-  writeIdealFooter(ideal.getNames(), generatorCount > 0, out);
-}
-
-void IOHandler::writeIdeals(const vector<BigIdeal*>& ideals,
-							const VarNames& names,
-							FILE* out) {
-  auto_ptr<BigTermConsumer> consumer = createIdealWriter(out);
-
-  consumer->beginConsumingList();
-  consumer->consumeRing(names);
-
-  for (vector<BigIdeal*>::const_iterator it = ideals.begin();
-	   it != ideals.end(); ++it)
-	consumer->consume(**it);
-
-  consumer->doneConsumingList();
-}
-
 void IOHandler::writePolynomial(const BigPolynomial& polynomial, FILE* out) {
   size_t termCount = polynomial.getTermCount();
   writePolynomialHeader(polynomial.getNames(), termCount, out);
@@ -493,13 +360,6 @@ auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
   else
 	return auto_ptr<BigTermConsumer>(new IdealWriter(this, out));
 }
-
-auto_ptr<BigTermConsumer> IOHandler::createIrreducibleIdealWriter
-(const TermTranslator* translator, FILE* out) {
-  return auto_ptr<BigTermConsumer>
-	(new IrreducibleIdealWriter(this, translator, out));
-}
-
 
 void IOHandler::writeCoefTermProduct(const mpz_class& coef,
 									 const Term& term,
