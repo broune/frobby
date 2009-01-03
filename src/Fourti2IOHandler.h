@@ -37,6 +37,8 @@ public:
 						 const VarNames& names,
 						 FILE* out);
 
+  auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
+
   static const char* staticGetName();
 
  protected:

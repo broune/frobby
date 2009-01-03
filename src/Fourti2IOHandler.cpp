@@ -25,6 +25,8 @@
 #include "error.h"
 #include "BigTermConsumer.h"
 #include "DataType.h"
+#include "FrobbyStringStream.h"
+#include "IdealConsolidator.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
   IOHandler(staticGetName(),
@@ -64,6 +66,21 @@ void Fourti2IOHandler::writeTerm(const vector<mpz_class>& term,
 								 const VarNames& names,
 								 FILE* out) {
   writeTermOfIdeal(term, names, false, out);
+}
+
+auto_ptr<BigTermConsumer> Fourti2IOHandler::createIdealWriter(FILE* out) {
+  ASSERT(supportsOutput(DataType::getMonomialIdealType()));
+
+  FrobbyStringStream msg;
+  msg << "Using the format " << getName() <<
+	" makes it necessary to store all of the output in "
+	"memory before writing it out. This increases "
+	"memory consumption and decreases performance.";
+  displayNote(msg);
+
+  auto_ptr<BigTermConsumer> writer(IOHandler::createIdealWriter(out));
+  auto_ptr<BigTermConsumer> consolidated(new IdealConsolidator(writer));
+  return consolidated;
 }
 
 void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,

@@ -215,19 +215,7 @@ auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
   ASSERT(supportsOutput(DataType::getMonomialIdealType()));
 
   auto_ptr<BigTermConsumer> writer(new IdealWriter(this, out));
-  if (!_requiresSizeForIdealOutput)
-	return writer;
-  else {
-	FrobbyStringStream msg;
-	msg << "Using the format " << getName() <<
-	  " makes it necessary to store all of the output in "
-	  "memory before writing it out. This increases "
-	  "memory consumption and decreases performance.";
-	displayNote(msg);
-
-	auto_ptr<BigTermConsumer> consolidated(new IdealConsolidator(writer));
-	return consolidated;
-  }
+  return writer;
 }
 
 void IOHandler::writeCoefTermProduct(const mpz_class& coef,
