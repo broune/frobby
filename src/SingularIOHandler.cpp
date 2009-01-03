@@ -25,17 +25,18 @@
 #include "error.h"
 #include "BigTermConsumer.h"
 #include "FrobbyStringStream.h"
+#include "DataType.h"
 
 #include <cstdio>
 
 SingularIOHandler::SingularIOHandler():
   IOHandlerCommon(staticGetName(),
 				  "Format understandable by the program Singular.") {
-  registerInput(MonomialIdeal);
-  registerInput(MonomialIdealList);
-  registerInput(Polynomial);
-  registerOutput(MonomialIdeal);
-  registerOutput(Polynomial);
+  registerInput(DataType::getMonomialIdealType());
+  registerInput(DataType::getMonomialIdealListType());
+  registerInput(DataType::getPolynomialType());
+  registerOutput(DataType::getMonomialIdealType());
+  registerOutput(DataType::getPolynomialType());
 }
 
 const char* SingularIOHandler::staticGetName() {

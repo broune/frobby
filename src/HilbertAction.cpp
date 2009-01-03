@@ -21,6 +21,7 @@
 #include "IOFacade.h"
 #include "SliceFacade.h"
 #include "Scanner.h"
+#include "DataType.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -35,7 +36,7 @@ HilbertAction::HilbertAction():
  "computes the polynomial in the numerator of this fraction.",
  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::Polynomial),
+  _io(DataType::getMonomialIdealType(), DataType::getPolynomialType()),
 
   _univariate
   ("univariate",

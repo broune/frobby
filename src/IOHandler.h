@@ -28,6 +28,7 @@ class TermConsumer;
 class VarNames;
 class BigPolynomial;
 class BigTermConsumer;
+class DataType;
 
 // An IOHandler implements input and output in some format in such a way
 // that client code does not need to know which format is being used.
@@ -66,20 +67,12 @@ class IOHandler {
 
   // Returns null if name is unknown.
   static auto_ptr<IOHandler> createIOHandler(const string& name);
+
+  // This name is confusing. Change it.
   static void addFormatNames(vector<string>& names);
 
-  enum DataType {
-	None,
-	MonomialIdeal,
-	Polynomial,
-	MonomialIdealList
-  };
-
-  bool supportsInput(DataType type) const;
-  bool supportsOutput(DataType type) const;
-
-  static const char* getDataTypeName(DataType type);
-  static void addDataTypes(vector<DataType>& types);
+  bool supportsInput(const DataType& type) const;
+  bool supportsOutput(const DataType& type) const;
 
  protected:
   // For preserving ring information when writing an empty list of ideals.
@@ -139,8 +132,8 @@ class IOHandler {
 								bool wroteAnyGenerators,
 								FILE* out) = 0;
 
-  void registerInput(DataType type);
-  void registerOutput(DataType type);
+  void registerInput(const DataType& type);
+  void registerOutput(const DataType& type);
 
   IOHandler(const char* formatName,
 			const char* formatDescription,
@@ -173,15 +166,14 @@ class IOHandler {
   static void readVarPower(vector<mpz_class>& term,
 						   const VarNames& names, Scanner& in);
 
-  vector<DataType> _supportedInputs;
-  vector<DataType> _supportedOutputs;
+  vector<const DataType*> _supportedInputs;
+  vector<const DataType*> _supportedOutputs;
 
   const char* _formatName;
   const char* _formatDescription;
   bool _requiresSizeForIdealOutput;
 
   friend class IdealWriter;
-  friend class IrreducibleIdealWriter;
   friend class PolynomialWriter;
   friend class DelayedIdealWriter;
 };

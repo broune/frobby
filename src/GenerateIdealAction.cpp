@@ -21,6 +21,7 @@
 #include "GenerateDataFacade.h"
 #include "IOFacade.h"
 #include "error.h"
+#include "DataType.h"
 
 GenerateIdealAction::GenerateIdealAction():
   Action
@@ -46,7 +47,7 @@ GenerateIdealAction::GenerateIdealAction():
   ("expRange",
    "Exponents are chosen uniformly in the range [0,INTEGER].", 9),
 
-  _io(IOHandler::None, IOHandler::MonomialIdeal) {
+  _io(DataType::getNullType(), DataType::getMonomialIdealType()) {
 }
 
 void GenerateIdealAction::obtainParameters(vector<Parameter*>& parameters) {

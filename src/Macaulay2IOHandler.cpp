@@ -24,18 +24,19 @@
 #include "TermTranslator.h"
 #include "BigTermConsumer.h"
 #include "error.h"
+#include "DataType.h"
 
 #include <cstdio>
 
 Macaulay2IOHandler::Macaulay2IOHandler():
   IOHandlerCommon(staticGetName(),
 				  "Format understandable by the program Macaulay 2.") {
-  registerInput(MonomialIdeal);
-  registerInput(MonomialIdealList);
-  registerInput(Polynomial);
-  registerOutput(MonomialIdeal);
-  registerOutput(MonomialIdealList);
-  registerOutput(Polynomial);
+  registerInput(DataType::getMonomialIdealType());
+  registerInput(DataType::getMonomialIdealListType());
+  registerInput(DataType::getPolynomialType());
+  registerOutput(DataType::getMonomialIdealType());
+  registerOutput(DataType::getMonomialIdealListType());
+  registerOutput(DataType::getPolynomialType());
 }
 
 const char* Macaulay2IOHandler::staticGetName() {

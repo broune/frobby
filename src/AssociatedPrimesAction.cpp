@@ -23,6 +23,7 @@
 #include "SliceParameters.h"
 #include "Scanner.h"
 #include "BigTermConsumer.h"
+#include "DataType.h"
 
 AssociatedPrimesAction::AssociatedPrimesAction():
   Action
@@ -36,7 +37,7 @@ AssociatedPrimesAction::AssociatedPrimesAction():
  "future version of Frobby.",
  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
+  _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
 }
 
 void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {

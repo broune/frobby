@@ -20,6 +20,7 @@
 #include "Parameter.h"
 #include "IOHandler.h"
 #include "error.h"
+#include "DataType.h"
 
 HelpAction::HelpAction():
   Action
@@ -119,11 +120,10 @@ void HelpAction::displayIOHelp() {
 			handler->getDescription());
 
 	
-	vector<IOHandler::DataType> types;
-	IOHandler::addDataTypes(types);
-	for (vector<IOHandler::DataType>::const_iterator typeIt = types.begin();
+	vector<const DataType*> types = DataType::getTypes();
+	for (vector<const DataType*>::const_iterator typeIt = types.begin();
 		 typeIt != types.end(); ++typeIt) {
-	  IOHandler::DataType type = *typeIt;
+	  const DataType& type = **typeIt;
 
 	  bool input = handler->supportsInput(type);
 	  bool output = handler->supportsOutput(type);
@@ -136,7 +136,7 @@ void HelpAction::displayIOHelp() {
 	  else if (output)
 		formatStr = "  - supports output of %s.\n";
 
-	  fprintf(stderr, formatStr, IOHandler::getDataTypeName(type));
+	  fprintf(stderr, formatStr, type.getName());
 	}
 
 	fputc('\n', stderr);

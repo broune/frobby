@@ -21,6 +21,7 @@
 #include "IOFacade.h"
 #include "Scanner.h"
 #include "SliceFacade.h"
+#include "DataType.h"
 
 AlexanderDualAction::AlexanderDualAction():
   Action
@@ -33,7 +34,7 @@ AlexanderDualAction::AlexanderDualAction():
  "details.",
  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal) {
+  _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
 }
 
 void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {

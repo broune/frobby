@@ -23,6 +23,7 @@
 #include "Scanner.h"
 #include "ElementDeleter.h"
 #include "VarSorter.h"
+#include "DataType.h"
 
 #include <algorithm>
 
@@ -34,7 +35,7 @@ TransformAction::TransformAction():
  "number of parameters allow to transform the input ideal in various ways.",
  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdeal),
+  _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()),
 
   _canonicalize
   ("canon",

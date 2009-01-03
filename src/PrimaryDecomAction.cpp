@@ -22,6 +22,7 @@
 #include "error.h"
 #include "Scanner.h"
 #include "SliceFacade.h"
+#include "DataType.h"
 
 PrimaryDecomAction::PrimaryDecomAction():
   Action
@@ -33,7 +34,7 @@ PrimaryDecomAction::PrimaryDecomAction():
  "functionality is coming along.",
  false),
 
-  _io(IOHandler::MonomialIdeal, IOHandler::MonomialIdealList) {
+  _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealListType()) {
 }
 
 void PrimaryDecomAction::obtainParameters(vector<Parameter*>& parameters) {

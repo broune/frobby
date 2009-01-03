@@ -27,17 +27,18 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 #include "BigTermConsumer.h"
+#include "DataType.h"
 
 #include <cstdio>
 
 CoCoA4IOHandler::CoCoA4IOHandler():
   IOHandlerCommon(staticGetName(),
 				  "Format understandable by the program CoCoA 4.") {
-  registerInput(MonomialIdeal);
-  registerInput(MonomialIdealList);
-  registerInput(Polynomial);
-  registerOutput(MonomialIdeal);
-  registerOutput(Polynomial);
+  registerInput(DataType::getMonomialIdealType());
+  registerInput(DataType::getMonomialIdealListType());
+  registerInput(DataType::getPolynomialType());
+  registerOutput(DataType::getMonomialIdealType());
+  registerOutput(DataType::getPolynomialType());
 }
 
 const char* CoCoA4IOHandler::staticGetName() {
