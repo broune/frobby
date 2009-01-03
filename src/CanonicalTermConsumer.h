@@ -19,13 +19,10 @@
 
 #include "TermConsumer.h"
 #include "Ideal.h"
+#include "ElementDeleter.h"
 
 class Term;
 class TermTranslator;
-
-#include "Ideal.h"
-#include "TermConsumer.h"
-#include "ElementDeleter.h"
 
 // Passes consumed items on in a canonical order. This requires
 // storing all items before any can be passed on, which can take a lot
@@ -41,8 +38,8 @@ class CanonicalTermConsumer : public TermConsumer {
 
   // Passes on the call immediately. Thus the ordering between when
   // this gets called and when consume gets called on the wrapped
-  // consumer can be switched around if consumeRing is called in the
-  // middle of consuming an ideal or a list of ideals.
+  // consumer can be switched around if consumeRing is called while
+  // consuming a list of ideals.
   // TODO: fix this.
   virtual void consumeRing(const VarNames& names);
 

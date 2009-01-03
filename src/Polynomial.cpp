@@ -39,7 +39,7 @@ void Polynomial::add(const mpz_class& coef, const Term& term) {
   }
 }
 
-void Polynomial::sortTermsLex(bool collect) {
+void Polynomial::sortTermsReverseLex(bool collect) {
   if (_terms.empty())
 	return;
 
@@ -70,7 +70,8 @@ void Polynomial::sortTermsLex(bool collect) {
 }
 
 bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {
-  return coefTerm.term < term;
+  ASSERT(term.getVarCount() == coefTerm.term.getVarCount());
+  return ::reverseLexCompare(term, coefTerm.term, term.getVarCount()) < 0;
 }
 
 void Polynomial::clear() {
