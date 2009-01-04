@@ -25,6 +25,7 @@
 #include "BigTermConsumer.h"
 #include "error.h"
 #include "DataType.h"
+#include "CoefBigTermConsumer.h"
 
 #include <cstdio>
 
@@ -158,65 +159,27 @@ void Macaulay2IOHandler::readBareIdeal(Scanner& in,
   consumer.doneConsuming();
 }
 
-bool Macaulay2IOHandler::peekRing(Scanner& in) {
-  return in.peek('R') || in.peek('r');
-}
-
-void Macaulay2IOHandler::readPolynomial(Scanner& in,
-										BigPolynomial& polynomial) {
-  {
-	VarNames names;
-	readVars(names, in);
-	polynomial.clearAndSetNames(names);
-  }
+void Macaulay2IOHandler::readBarePolynomial
+(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) {
+  consumer.consumeRing(names);
+  vector<mpz_class> term(names.getVarCount());
+  mpz_class coef;
 
   in.expect('p');
   in.expect('=');
 
+  consumer.beginConsuming();
   bool first = true;
   do {
-	readCoefTerm(polynomial, first, in);
+	readCoefTerm(coef, term, names, first, in);
+	consumer.consume(coef, term);
 	first = false;
   } while (!in.match(';'));
+  consumer.doneConsuming();
 }
 
-void Macaulay2IOHandler::readVars(VarNames& names, Scanner& in) {
-  in.expect('R');
-  in.expect('=');
-
-  in.eatWhite();
-  if (in.peek() == 'Z') {
-	displayNote("In the Macaulay 2 format, writing ZZ as the ground field "
-				"instead of QQ is deprecated and may not work in future "
-				"releases of Frobby.");
-	in.expect("ZZ");
-  } else
-	in.expect("QQ");
-  in.expect('[');
-
-  // The enclosing braces are optional, but if the start brace is
-  // there, then the end brace should be there too.
-  bool readBrace = in.match('{'); 
-  if (readBrace) {
-	displayNote("In the Macaulay 2 format, putting braces { } around the "
-				"variables is deprecated and may not work in future "
-				"releases of Frobby.");
-  }
-
-  if (in.peekIdentifier()) {
-	do {
-	  const char* varName = in.readIdentifier();
-	  if (names.contains(varName))
-		reportSyntaxError
-		  (in, "The variable " + string(varName) + " is declared twice.");
-	  names.addVar(varName);
-	} while (in.match(','));
-  }
-
-  if (readBrace)
-	in.expect('}');
-  in.expect(']');
-  in.expect(';');
+bool Macaulay2IOHandler::peekRing(Scanner& in) {
+  return in.peek('R') || in.peek('r');
 }
 
 void Macaulay2IOHandler::writePolynomialHeader(const VarNames& names,

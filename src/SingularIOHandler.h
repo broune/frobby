@@ -29,7 +29,6 @@ class SingularIOHandler : public IOHandlerCommon {
 public:
   SingularIOHandler();
 
-  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);
@@ -38,11 +37,13 @@ public:
 
  private:
   virtual void readRing(Scanner& in, VarNames& names);
+  virtual bool peekRing(Scanner& in);
+  virtual void writeRing(const VarNames& names, FILE* out);
+
   virtual void readBareIdeal(Scanner& in, const VarNames& names,
 							 BigTermConsumer& consumer);
-  virtual bool peekRing(Scanner& in);
-
-  virtual void writeRing(const VarNames& names, FILE* out);
+  virtual void readBarePolynomial
+	(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer);
 
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,

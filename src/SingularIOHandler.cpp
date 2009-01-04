@@ -26,6 +26,7 @@
 #include "BigTermConsumer.h"
 #include "FrobbyStringStream.h"
 #include "DataType.h"
+#include "CoefBigTermConsumer.h"
 
 #include <cstdio>
 
@@ -178,27 +179,28 @@ void SingularIOHandler::readBareIdeal(Scanner& in, const VarNames& names,
   consumer.doneConsuming();
 }
 
-bool SingularIOHandler::peekRing(Scanner& in) {
-  return in.peek('r') || in.peek('R');
-}
-
-void SingularIOHandler::readPolynomial(Scanner& in,
-									   BigPolynomial& polynomial) {
-  {
-	VarNames names;
-	readRing(in, names);
-	polynomial.clearAndSetNames(names);
-  }
+void SingularIOHandler::readBarePolynomial
+(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) {
+  consumer.consumeRing(names);
+  vector<mpz_class> term(names.getVarCount());
+  mpz_class coef;
 
   in.expect("poly");
   in.expect('p');
   in.expect('=');
 
+  consumer.beginConsuming();
   bool first = true;
   do {
-	readCoefTerm(polynomial, first, in);
+	readCoefTerm(coef, term, names, first, in);
+	consumer.consume(coef, term);
 	first = false;
   } while (!in.match(';'));
+  consumer.doneConsuming();
+}
+
+bool SingularIOHandler::peekRing(Scanner& in) {
+  return in.peek('r') || in.peek('R');
 }
 
 void SingularIOHandler::writeRing(const VarNames& names, FILE* out) {

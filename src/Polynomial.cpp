@@ -19,8 +19,35 @@
 
 #include <algorithm>
 
+Polynomial::Polynomial():
+  _varCount(0) {
+}
+
 Polynomial::Polynomial(size_t varCount):
   _varCount(varCount) {
+}
+
+size_t Polynomial::getVarCount() const {
+  return _varCount;
+}
+
+size_t Polynomial::getTermCount() const {
+  return _terms.size();
+}
+
+const mpz_class& Polynomial::getCoef(size_t index) const {
+  ASSERT(index < getTermCount());
+  return _terms[index].coef;
+}
+
+const Term& Polynomial::getTerm(size_t index) const {
+  ASSERT(index < getTermCount());
+  return _terms[index].term;
+}
+
+void Polynomial::clearAndSetVarCount(size_t varCount) {
+  clear();
+  _varCount = varCount;
 }
 
 void Polynomial::add(const mpz_class& coef, const Term& term) {

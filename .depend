@@ -36,6 +36,7 @@ $(outdir)IOHandler.o: src/IOHandler.cpp src/stdinc.h src/IOHandler.h src/Scanner
   src/FrobbyStringStream.h src/ElementDeleter.h src/BigTermConsumer.h \
   src/BigTermRecorder.h src/TranslatingTermConsumer.h \
   src/IrreducibleIdealSplitter.h src/DataType.h src/IdealConsolidator.h \
+  src/CoefBigTermConsumer.h src/TranslatingCoefTermConsumer.h \
   src/NewMonosIOHandler.h src/MonosIOHandler.h src/IOHandlerCommon.h \
   src/Macaulay2IOHandler.h src/Fourti2IOHandler.h src/NullIOHandler.h \
   src/CoCoA4IOHandler.h src/SingularIOHandler.h
@@ -232,13 +233,14 @@ $(outdir)Fourti2IOHandler.o: src/Fourti2IOHandler.cpp src/stdinc.h \
   src/hash_map/hash_fun.h src/Term.h src/TermTranslator.h \
   src/BigPolynomial.h src/error.h src/BigTermConsumer.h \
   src/TermConsumer.h src/DataType.h src/FrobbyStringStream.h \
-  src/IdealConsolidator.h
+  src/IdealConsolidator.h src/PolynomialConsolidator.h \
+  src/CoefBigTermConsumer.h src/CoefTermConsumer.h
 $(outdir)NullIOHandler.o: src/NullIOHandler.cpp src/stdinc.h src/NullIOHandler.h \
   src/IOHandler.h src/BigIdeal.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h \
-  src/NullCoefTermConsumer.h src/CoefTermConsumer.h \
-  src/NullTermConsumer.h src/BigTermConsumer.h src/TermConsumer.h \
-  src/BigPolynomial.h src/DataType.h
+  src/NullCoefTermConsumer.h src/CoefBigTermConsumer.h \
+  src/CoefTermConsumer.h src/NullTermConsumer.h src/BigTermConsumer.h \
+  src/TermConsumer.h src/BigPolynomial.h src/DataType.h
 $(outdir)Minimizer.o: src/Minimizer.cpp src/stdinc.h src/Minimizer.h src/Term.h
 $(outdir)AlexanderDualAction.o: src/AlexanderDualAction.cpp src/stdinc.h \
   src/AlexanderDualAction.h src/Action.h src/BoolParameter.h \
@@ -279,7 +281,8 @@ $(outdir)HilbertSlice.o: src/HilbertSlice.cpp src/stdinc.h src/HilbertSlice.h \
 $(outdir)Polynomial.o: src/Polynomial.cpp src/stdinc.h src/Polynomial.h src/Term.h
 $(outdir)CanonicalCoefTermConsumer.o: src/CanonicalCoefTermConsumer.cpp \
   src/stdinc.h src/CanonicalCoefTermConsumer.h src/CoefTermConsumer.h \
-  src/Polynomial.h src/Term.h
+  src/Polynomial.h src/Term.h src/VarNames.h src/hash_map/hash_map \
+  src/hash_map/hashtable.h src/hash_map/hash_fun.h
 $(outdir)HilbertStrategy.o: src/HilbertStrategy.cpp src/stdinc.h \
   src/HilbertStrategy.h src/IndependenceSplitter.h src/Partition.h \
   src/Projection.h src/Ideal.h src/MsmSlice.h src/Slice.h src/Term.h \
@@ -361,12 +364,13 @@ $(outdir)NullTermConsumer.o: src/NullTermConsumer.cpp src/stdinc.h \
 $(outdir)CoefTermConsumer.o: src/CoefTermConsumer.cpp src/stdinc.h \
   src/CoefTermConsumer.h
 $(outdir)NullCoefTermConsumer.o: src/NullCoefTermConsumer.cpp src/stdinc.h \
-  src/NullCoefTermConsumer.h src/CoefTermConsumer.h
+  src/NullCoefTermConsumer.h src/CoefBigTermConsumer.h \
+  src/CoefTermConsumer.h
 $(outdir)TranslatingCoefTermConsumer.o: src/TranslatingCoefTermConsumer.cpp \
-  src/stdinc.h src/TranslatingCoefTermConsumer.h src/CoefTermConsumer.h \
-  src/CoefBigTermConsumer.h src/Term.h src/TermTranslator.h \
-  src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
-  src/hash_map/hash_fun.h
+  src/stdinc.h src/TranslatingCoefTermConsumer.h \
+  src/CoefBigTermConsumer.h src/CoefTermConsumer.h src/Term.h \
+  src/TermTranslator.h src/VarNames.h src/hash_map/hash_map \
+  src/hash_map/hashtable.h src/hash_map/hash_fun.h
 $(outdir)PolynomialFacade.o: src/PolynomialFacade.cpp src/stdinc.h \
   src/PolynomialFacade.h src/Facade.h src/Timer.h src/BigPolynomial.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
@@ -448,3 +452,7 @@ $(outdir)CoefBigTermConsumer.o: src/CoefBigTermConsumer.cpp src/stdinc.h \
   src/CoefBigTermConsumer.h src/CoefTermConsumer.h src/BigPolynomial.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
   src/hash_map/hash_fun.h src/Term.h
+$(outdir)PolynomialConsolidator.o: src/PolynomialConsolidator.cpp src/stdinc.h \
+  src/PolynomialConsolidator.h src/CoefBigTermConsumer.h \
+  src/CoefTermConsumer.h src/BigPolynomial.h src/VarNames.h \
+  src/hash_map/hash_map src/hash_map/hashtable.h src/hash_map/hash_fun.h

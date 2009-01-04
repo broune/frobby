@@ -32,9 +32,10 @@ class BigPolynomial {
   size_t getTermCount() const;
   size_t getVarCount() const;
   const VarNames& getNames() const;
-  void clearAndSetNames(const VarNames& names);
 
+  // Removes all terms but does not change getNames().
   void clear();
+  void clearAndSetNames(const VarNames& names);
 
   void sortTermsReverseLex();
   void sortVariables();
@@ -50,7 +51,7 @@ class BigPolynomial {
 
   void add(const mpz_class& coef, const vector<mpz_class> term);
   void add(const mpz_class& coef, const Term& term,
-		   TermTranslator* translator);
+		   const TermTranslator& translator);
 
  private:
   struct BigCoefTerm {

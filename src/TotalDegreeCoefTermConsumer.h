@@ -26,21 +26,28 @@ class TermTranslator;
 #include <map>
 
 // Substitutes the same single variable for each variable, in effect
-// grading by the total degree. Passes consumed items on in ascending
-// order of exponent. This requires storing all items before any can
-// be passed on.
+// grading by the total degree. Passes consumed items on in descending
+// order of exponent, i.e. reverse lex order. This requires storing
+// all items before any can be passed on.
+//
+// TODO: get rid of translator in constructor.
 class TotalDegreeCoefTermConsumer : public CoefTermConsumer {
  public:
   TotalDegreeCoefTermConsumer(auto_ptr<CoefBigTermConsumer> consumer,
-							  TermTranslator* translator);
+							  const TermTranslator& translator);
+  TotalDegreeCoefTermConsumer(CoefBigTermConsumer& consumer,
+							  const TermTranslator& translator);
+
+  virtual void consumeRing(const VarNames& names);
 
   virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
   virtual void doneConsuming();
 
  private:
-  auto_ptr<CoefBigTermConsumer> _consumer;
-  TermTranslator* _translator;
+  CoefBigTermConsumer& _consumer;
+  auto_ptr<CoefBigTermConsumer> _consumerOwner;
+  const TermTranslator& _translator;
   mpz_class _tmp;
 
   // A map from exponents to coefficients.

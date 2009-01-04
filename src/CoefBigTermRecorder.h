@@ -22,15 +22,19 @@
 class TermTranslator;
 class BigPolynomial;
 
+// This records what it is fed into a passed-in polynomial.
 class CoefBigTermRecorder : public CoefBigTermConsumer {
  public:
   CoefBigTermRecorder(BigPolynomial* recordInto);
+
+  // Clears the ideal and sets the ring.
+  virtual void consumeRing(const VarNames& names);
 
   virtual void beginConsuming();
 
   virtual void consume(const mpz_class& coef,
 					   const Term& term,
-					   TermTranslator* translator);
+					   const TermTranslator& translator);
   virtual void consume(const mpz_class& coef,
 					   const vector<mpz_class>& term);
 

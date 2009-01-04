@@ -28,6 +28,7 @@
 #include "FrobbyStringStream.h"
 #include "BigTermConsumer.h"
 #include "DataType.h"
+#include "CoefBigTermConsumer.h"
 
 #include <cstdio>
 
@@ -78,24 +79,6 @@ void CoCoA4IOHandler::writeIdealFooter(const VarNames& names,
 									   bool wroteAnyGenerators,
 									   FILE* out) {
   fputs("\n);\n", out);  
-}
-
-void CoCoA4IOHandler::readPolynomial(Scanner& in,
-									 BigPolynomial& polynomial) {
-  {
-	VarNames names;
-	readRing(in, names);
-	polynomial.clearAndSetNames(names);
-  }
-
-  in.expect('p');
-  in.expect(":=");
-
-  bool first = true;
-  do {
-	readCoCoA4CoefTerm(polynomial, first, in);
-	first = false;
-  } while (!in.match(';'));
 }
 
 void CoCoA4IOHandler::writePolynomialHeader(const VarNames& names,
@@ -227,6 +210,25 @@ void CoCoA4IOHandler::readBareIdeal(Scanner& in, const VarNames& names,
   consumer.doneConsuming();
 }
 
+void CoCoA4IOHandler::readBarePolynomial
+(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) {
+  consumer.consumeRing(names);
+  vector<mpz_class> term(names.getVarCount());
+  mpz_class coef;
+
+  in.expect('p');
+  in.expect(":=");
+
+  consumer.beginConsuming();
+  bool first = true;
+  do {
+	readCoCoA4CoefTerm(coef, term, first, in);
+	consumer.consume(coef, term);
+	first = false;
+  } while (!in.match(';'));
+  consumer.doneConsuming();
+}
+
 bool CoCoA4IOHandler::peekRing(Scanner& in) {
   return in.peek('U') || in.peek('u');
 }
@@ -343,12 +345,13 @@ void CoCoA4IOHandler::readCoCoA4VarPower(vector<mpz_class>& term,
 	term[var] = 1;
 }
 
-void CoCoA4IOHandler::readCoCoA4CoefTerm(BigPolynomial& polynomial,
-										 bool firstTerm,
-										 Scanner& in) {
-  polynomial.newLastTerm();
-  mpz_class& coef = polynomial.getLastCoef();
-  vector<mpz_class>& term = polynomial.getLastTerm();
+void CoCoA4IOHandler::readCoCoA4CoefTerm
+(mpz_class& coef,
+ vector<mpz_class>& term,
+ bool firstTerm,
+ Scanner& in) {
+  for (size_t var = 0; var < term.size(); ++var)
+	term[var] = 0;
 
   bool positive = true;
   if (!firstTerm && in.match('+'))
@@ -376,4 +379,14 @@ void CoCoA4IOHandler::readCoCoA4CoefTerm(BigPolynomial& polynomial,
 
   if (!positive)
 	coef = -coef;
+}
+
+void CoCoA4IOHandler::readCoCoA4CoefTerm(BigPolynomial& polynomial,
+										 bool firstTerm,
+										 Scanner& in) {
+  polynomial.newLastTerm();
+  mpz_class& coef = polynomial.getLastCoef();
+  vector<mpz_class>& term = polynomial.getLastTerm();
+
+  readCoCoA4CoefTerm(coef, term, firstTerm, in);
 }

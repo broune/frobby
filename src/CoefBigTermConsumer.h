@@ -24,18 +24,20 @@
 class Term;
 class TermTranslator;
 class BigPolynomial;
+class VarNames;
 
 class CoefBigTermConsumer : public CoefTermConsumer {
  public:
-  virtual ~CoefBigTermConsumer() {}
+  virtual void consumeRing(const VarNames& names) = 0;
 
   virtual void beginConsuming() = 0;
   virtual void consume(const mpz_class& coef, const Term& term);
-  virtual void consume(const mpz_class& coef,
-					   const Term& term,
-					   TermTranslator* translator) = 0;
-  virtual void consume(const mpz_class& coef,
-					   const vector<mpz_class>& term) = 0;
+  virtual void consume
+	(const mpz_class& coef,
+	 const Term& term,
+	 const TermTranslator& translator) = 0;
+  virtual void consume
+	(const mpz_class& coef, const vector<mpz_class>& term) = 0;
   virtual void doneConsuming() = 0;
 
   virtual void consume(const BigPolynomial& poly);

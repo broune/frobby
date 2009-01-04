@@ -42,11 +42,6 @@ const VarNames& BigPolynomial::getNames() const {
   return _names;
 }
 
-void BigPolynomial::clearAndSetNames(const VarNames& names) {
-  clear();
-  _names = names;
-}
-
 void BigPolynomial::sortTermsReverseLex() {
   sort(_coefTerms.begin(), _coefTerms.end(), compareCoefTermsReverseLex);
 }
@@ -60,7 +55,11 @@ void BigPolynomial::sortVariables() {
 
 void BigPolynomial::clear() {
   _coefTerms.clear();
-  _names.clear();
+}
+
+void BigPolynomial::clearAndSetNames(const VarNames& names) {
+  clear();
+  _names = names;
 }
 
 const mpz_class& BigPolynomial::getCoef(size_t index) const {
@@ -108,9 +107,9 @@ void BigPolynomial::add(const mpz_class& coef,
 
 void BigPolynomial::add(const mpz_class& coef,
 						const Term& term,
-						TermTranslator* translator) {
+						const TermTranslator& translator) {
   ASSERT(term.getVarCount() == getVarCount());
-  ASSERT(translator != 0);
+  ASSERT(translator.getVarCount() == getVarCount());
 
   _coefTerms.resize(_coefTerms.size() + 1);
   _coefTerms.back().coef = coef;
@@ -118,7 +117,7 @@ void BigPolynomial::add(const mpz_class& coef,
   vector<mpz_class>& bigTerm = _coefTerms.back().term;
   bigTerm.reserve(term.getVarCount());
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	bigTerm.push_back(translator->getExponent(var, term));
+	bigTerm.push_back(translator.getExponent(var, term));
 }
 
 bool BigPolynomial::compareCoefTermsReverseLex(const BigCoefTerm& a,

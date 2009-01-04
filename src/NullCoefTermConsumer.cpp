@@ -17,7 +17,7 @@
 #include "stdinc.h"
 #include "NullCoefTermConsumer.h"
 
-NullCoefTermConsumer::~NullCoefTermConsumer() {
+void NullCoefTermConsumer::consumeRing(const VarNames& names) {
 }
 
 void NullCoefTermConsumer::beginConsuming() {
@@ -26,5 +26,16 @@ void NullCoefTermConsumer::beginConsuming() {
 void NullCoefTermConsumer::consume(const mpz_class& coef, const Term& term) {
 }
 
+void NullCoefTermConsumer::consume
+(const mpz_class& coef, const Term& term, const TermTranslator& translator) {
+}
+
+void NullCoefTermConsumer::consume
+(const mpz_class& coef, const vector<mpz_class>& term) {
+}
+
 void NullCoefTermConsumer::doneConsuming() {
+}
+
+void NullCoefTermConsumer::consume(const BigPolynomial& poly) {
 }

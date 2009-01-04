@@ -31,6 +31,7 @@ void CoefBigTermConsumer::consume(const mpz_class& coef, const Term& term) {
 }
 
 void CoefBigTermConsumer::consume(const BigPolynomial& poly) {
+  consumeRing(poly.getNames());
   beginConsuming();
   for (size_t index = 0; index < poly.getTermCount(); ++index)
 	consume(poly.getCoef(index), poly.getTerm(index));

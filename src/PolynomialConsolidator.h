@@ -14,39 +14,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef TRANSLATING_COEF_TERM_CONSUMER_GUARD
-#define TRANSLATING_COEF_TERM_CONSUMER_GUARD
+#ifndef POLYNOMIAL_CONSOLIDATOR_GUARD
+#define POLYNOMIAL_CONSOLIDATOR_GUARD
 
 #include "CoefBigTermConsumer.h"
+#include "BigPolynomial.h"
 
-class CoefBigTermConsumer;
-class Term;
-class TermTranslator;
-
-class TranslatingCoefTermConsumer : public CoefBigTermConsumer {
+// Consolidates polynomials that are consumed one term at a time into
+// a polynomial and then passes the polynomial along in one piece.
+class PolynomialConsolidator : public CoefBigTermConsumer {
  public:
-  TranslatingCoefTermConsumer
-	(CoefBigTermConsumer& consumer, const TermTranslator& translator);
-  TranslatingCoefTermConsumer
-	(auto_ptr<CoefBigTermConsumer> consumer, const TermTranslator& translator);
+  PolynomialConsolidator(auto_ptr<CoefBigTermConsumer> consumer);
 
   virtual void consumeRing(const VarNames& names);
 
   virtual void beginConsuming();
-  virtual void consume(const mpz_class& coef, const Term& term);
-  virtual void consume(const mpz_class& coef,
-					   const Term& term,
-					   const TermTranslator& translator);
-  virtual void consume(const mpz_class& coef,
-					   const vector<mpz_class>& term);
+  virtual void consume
+	(const mpz_class& coef,
+	 const Term& term,
+	 const TermTranslator& translator);
+  virtual void consume
+	(const mpz_class& coef, const vector<mpz_class>& term);
   virtual void doneConsuming();
 
   virtual void consume(const BigPolynomial& poly);
 
  private:
-  const TermTranslator& _translator;
-  CoefBigTermConsumer& _consumer;
-  auto_ptr<CoefBigTermConsumer> _consumerOwner;
+  const auto_ptr<CoefBigTermConsumer> _consumer;
+  BigPolynomial _poly;
 };
 
 #endif

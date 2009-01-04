@@ -23,16 +23,23 @@
 
 TotalDegreeCoefTermConsumer::
 TotalDegreeCoefTermConsumer(auto_ptr<CoefBigTermConsumer> consumer,
-							TermTranslator* translator):
-  _consumer(consumer),
-  _translator(translator),
-  _tmp(0) {
-  ASSERT(_consumer.get() != 0);
-  ASSERT(_translator != 0);
-  ASSERT(_tmp == 0); // This is an invariant.
+							const TermTranslator& translator):
+  _consumer(*consumer),
+  _consumerOwner(consumer),
+  _translator(translator) {
+  ASSERT(_consumerOwner.get() != 0);
+}
 
-  // TODO: This class has an invarint of _tmp == 0. Find out if that
-  // actually serves any purpose. It seems not at first glance.
+TotalDegreeCoefTermConsumer::
+TotalDegreeCoefTermConsumer(CoefBigTermConsumer& consumer,
+							const TermTranslator& translator):
+  _consumer(consumer),
+  _translator(translator) {
+}
+
+void TotalDegreeCoefTermConsumer::consumeRing(const VarNames& names) {
+  // Do nothing since taking the total degree discards the original
+  // ring.
 }
 
 void TotalDegreeCoefTermConsumer::beginConsuming() {
@@ -40,41 +47,42 @@ void TotalDegreeCoefTermConsumer::beginConsuming() {
 
 void TotalDegreeCoefTermConsumer::consume(const mpz_class& coef,
 										  const Term& term) {
-  ASSERT(term.getVarCount() == _translator->getVarCount());
-  ASSERT(coef != 0);
-  ASSERT(_tmp == 0);
+  ASSERT(term.getVarCount() == _translator.getVarCount());
+  if (coef == 0)
+	return;
 
   // Compute total degree using _tmp.
   _tmp = 0;
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	_tmp += _translator->getExponent(var, term);
+	_tmp += _translator.getExponent(var, term);
 
   pair<map<mpz_class, mpz_class>::iterator, bool> insertionResult =
 	_polynomial.insert(make_pair(_tmp, coef));
   map<mpz_class, mpz_class>::iterator entry = insertionResult.first;
-
-  _tmp = 0;
 
   if (!insertionResult.second) {
 	entry->second += coef;
 	if (entry->second == 0)
 	  _polynomial.erase(entry);
   }
-
-  ASSERT(_tmp == 0);
 }
 
 void TotalDegreeCoefTermConsumer::doneConsuming() {
-  _consumer->beginConsuming();
+  VarNames names;
+  names.addVar("t");
+  _consumer.consumeRing(names);
+
+  _consumer.beginConsuming();
   vector<mpz_class> term(1);
 
+  // Reverse direction to get canonical reverse lex order.
   map<mpz_class, mpz_class>::reverse_iterator stop = _polynomial.rend();
   for (map<mpz_class, mpz_class>::reverse_iterator it = _polynomial.rbegin();
 	   it != stop; ++it) {
 	ASSERT(it->second != 0);
 	term[0] = it->first;
-	_consumer->consume(it->second, term);
+	_consumer.consume(it->second, term);
   }
 
-  _consumer->doneConsuming();
+  _consumer.doneConsuming();
 }

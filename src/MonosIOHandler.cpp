@@ -121,3 +121,9 @@ void MonosIOHandler::readBareIdeal(Scanner& in,
 
   consumer.doneConsuming();
 }
+
+void MonosIOHandler::readBarePolynomial
+(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) {
+  ASSERT(false);
+  reportInternalError("Called MonosIOHandler::readBarePolynomial.");
+}

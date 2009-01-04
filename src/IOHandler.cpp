@@ -37,6 +37,8 @@
 #include "IrreducibleIdealSplitter.h"
 #include "DataType.h"
 #include "IdealConsolidator.h"
+#include "CoefBigTermConsumer.h"
+#include "TranslatingCoefTermConsumer.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -171,22 +173,7 @@ void IOHandler::readTerm(Scanner& in,
   } while (in.match('*'));
 }
 
-void IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
-  ASSERT(false);
-  reportInternalError("Called IOHandler::readPolynomial.");
-}
-
 IOHandler::~IOHandler() {
-}
-
-void IOHandler::writePolynomial(const BigPolynomial& polynomial, FILE* out) {
-  size_t termCount = polynomial.getTermCount();
-  writePolynomialHeader(polynomial.getNames(), termCount, out);
-  for (size_t i = 0; i < termCount; ++i) {
-	writeTermOfPolynomial(polynomial.getCoef(i), polynomial.getTerm(i),
-						  polynomial.getNames(), i == 0, out);
-  }
-  writePolynomialFooter(polynomial.getNames(), termCount > 0, out);
 }
 
 bool IOHandler::hasMoreInput(Scanner& in) const {
@@ -323,12 +310,15 @@ void IOHandler::readTerm(BigIdeal& ideal, Scanner& in) {
   } while (in.match('*'));
 }
 
-void IOHandler::readCoefTerm(BigPolynomial& polynomial,
-							 bool firstTerm,
-							 Scanner& in) {
-  polynomial.newLastTerm();
-  mpz_class& coef = polynomial.getLastCoef();
-  vector<mpz_class>& term = polynomial.getLastTerm();
+void IOHandler::readCoefTerm
+(mpz_class& coef,
+ vector<mpz_class>& term,
+ const VarNames& names,
+ bool firstTerm,
+ Scanner& in) {
+  term.resize(names.getVarCount());
+  for (size_t var = 0; var < term.size(); ++var)
+	term[var] = 0;
 
   bool positive = true;
   if (!firstTerm && in.match('+'))
@@ -344,15 +334,25 @@ void IOHandler::readCoefTerm(BigPolynomial& polynomial,
 
   if (in.peekIdentifier()) {
 	coef = 1;
-	readVarPower(term, polynomial.getNames(), in);
+	readVarPower(term, names, in);
   } else
 	in.readInteger(coef);
 
   while (in.match('*'))
-	readVarPower(term, polynomial.getNames(), in);
+	readVarPower(term, names, in);
 
   if (!positive)
 	coef = -coef;
+}
+
+void IOHandler::readCoefTerm(BigPolynomial& polynomial,
+							 bool firstTerm,
+							 Scanner& in) {
+  polynomial.newLastTerm();
+  mpz_class& coef = polynomial.getLastCoef();
+  vector<mpz_class>& term = polynomial.getLastTerm();
+
+  readCoefTerm(coef, term, polynomial.getNames(), firstTerm, in);
 }
 
 void IOHandler::readVarPower(vector<mpz_class>& term,
@@ -446,118 +446,61 @@ void IOHandler::writeIdealHeader(const VarNames& names,
   writeIdealHeader(names, defineNewRing, out);
 }
 
-class PolynomialWriter : public CoefTermConsumer {
+class PolynomialWriter : public CoefBigTermConsumer {
 public:
-  PolynomialWriter(IOHandler* handler,
-				   const TermTranslator* translator,
-				   FILE* out):
+  PolynomialWriter(IOHandler* handler, FILE* out):
 	_handler(handler),
-	_translator(translator),
 	_out(out),
-	_first(true) {
+	_firstTerm(true) {
 	ASSERT(handler != 0);
-	ASSERT(translator != 0);
-	ASSERT(out != 0);
   }
 
-  PolynomialWriter(IOHandler* handler,
-				   const TermTranslator* translator,
-				   size_t termCount,
-				   FILE* out):
-	_handler(handler),
-	_translator(translator),
-	_out(out),
-	_first(true),
-	_termCount(new size_t(termCount)) {
-	ASSERT(handler != 0);
-	ASSERT(translator != 0);
-	ASSERT(out != 0);
+  virtual void consumeRing(const VarNames& names) {
+	_names = names;
   }
 
   virtual void beginConsuming() {
-	if (_termCount.get() == 0)
-	  _handler->writePolynomialHeader(_translator->getNames(), _out);
-	else
-	  _handler->writePolynomialHeader(_translator->getNames(),
-									  *_termCount, _out);
+	_handler->writePolynomialHeader(_names, _out);
+	_firstTerm = true;
   }
 
-  virtual void consume(const mpz_class& coef, const Term& term) {
-	ASSERT(coef != 0);
-	_handler->writeTermOfPolynomial(coef, term, _translator, _first, _out);
-	_first = false;
+  virtual void consume(const mpz_class& coef, const vector<mpz_class>& term) {
+	_handler->writeTermOfPolynomial(coef, term, _names, _firstTerm, _out);
+	_firstTerm = false;	
   }
+
+  virtual void consume
+  (const mpz_class& coef, const Term& term, const TermTranslator& translator) {
+	_handler->writeTermOfPolynomial(coef, term, &translator, _firstTerm, _out);
+	_firstTerm = false;
+  }	
 
   virtual void doneConsuming() {
-	_handler->writePolynomialFooter(_translator->getNames(), !_first, _out);
+	_handler->writePolynomialFooter(_names, !_firstTerm, _out);
+  }
+
+  virtual void consume(const BigPolynomial& poly) {
+	consumeRing(poly.getNames());
+
+	// We do this instead of calling beginConsuming directly so that
+	// we can specify the number of terms.
+	_handler->writePolynomialHeader(_names, poly.getTermCount(), _out);
+
+	for (size_t index = 0; index < poly.getTermCount(); ++index)
+	  consume(poly.getCoef(index), poly.getTerm(index));
+	doneConsuming();
   }
 
 private:
   IOHandler* _handler;
-  const TermTranslator* _translator;
   FILE* _out;
-  bool _first;
-  auto_ptr<size_t> _termCount;
+  bool _firstTerm;
+  VarNames _names;
 };
 
-class DelayedPolynomialWriter : public CoefTermConsumer {
- public:
-  DelayedPolynomialWriter(IOHandler* handler,
-						  const TermTranslator* translator,
-						  FILE* out):
-	_handler(handler),
-	_translator(translator),
-	_out(out),
-	_polynomial(translator->getVarCount()) {
-	ASSERT(handler != 0);
-	ASSERT(translator != 0);
-	ASSERT(out != 0);
-  }
-
-  virtual void beginConsuming() {
-  }
-
-  virtual void consume(const mpz_class& coef, const Term& term) {
-	ASSERT(term.getVarCount() == _polynomial.getVarCount());
-
-	_polynomial.add(coef, term);
-  }
-
-  virtual void doneConsuming() {
-	size_t termCount = _polynomial.getTermCount();
-	PolynomialWriter writer(_handler, _translator, termCount,_out);
-	writer.beginConsuming();
-	for (size_t term = 0; term < termCount; ++term)
-	  writer.consume(_polynomial.getCoef(term), _polynomial.getTerm(term));
-	writer.doneConsuming();
-	_polynomial.clear();
-  }
-
-private:
-  IOHandler* _handler;
-  const TermTranslator* _translator;
-  FILE* _out;
-  Polynomial _polynomial;
-};
-
-auto_ptr<CoefTermConsumer> IOHandler::createPolynomialWriter
-(const TermTranslator* translator, FILE* out) {
+auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
   ASSERT(supportsOutput(DataType::getPolynomialType()));
-
-  if (_requiresSizeForIdealOutput) {
-	FrobbyStringStream msg;
-	msg << "Using the format " << getName() <<
-	  " makes it necessary to store all of the output in "
-	  "memory before writing it out. This increases "
-	  "memory consumption and decreases performance.";
-	displayNote(msg);
-
-	return auto_ptr<CoefTermConsumer>
-	  (new DelayedPolynomialWriter(this, translator, out));
-  }
-  else
-	return auto_ptr<CoefTermConsumer>
-	  (new PolynomialWriter(this, translator, out));
+  return auto_ptr<CoefBigTermConsumer>(new PolynomialWriter(this, out));
 }
 
 void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {

@@ -108,18 +108,21 @@ public:
 	ASSERT(consumer != 0);
   }
 
+  virtual void consumeRing(const VarNames& names) {
+	ASSERT(names.getVarCount() == _varCount);
+  }
+
   virtual void beginConsuming() {
 	_consumer->polynomialBegin(_varCount);
   }
 
   virtual void consume(const mpz_class& coef,
 					   const Term& term,
-					   TermTranslator* translator) {
-	ASSERT(translator != 0);
+					   const TermTranslator& translator) {
 	ASSERT(term.getVarCount() == _varCount);
-	ASSERT(translator->getVarCount() == _varCount);
+	ASSERT(translator.getVarCount() == _varCount);
 
-	setTerm(term, *translator);
+	setTerm(term, translator);
 	_consumer->consume(coef.get_mpz_t(), _term);
   }
 
@@ -285,6 +288,7 @@ void Frobby::univariateHilbertPoincareSeries(const Ideal& ideal,
   facade.computeUnivariateHilbertSeries();
 }
 
+// TODO: This seems redundant with IdealSplitter. Investigate.
 class IrreducibleIdealDecoder : public Frobby::IdealConsumer {
 public:
   IrreducibleIdealDecoder(IdealConsumer* consumer):

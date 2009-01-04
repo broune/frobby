@@ -19,6 +19,7 @@
 
 #include "CoefTermConsumer.h"
 #include "Polynomial.h"
+#include "VarNames.h"
 
 class Term;
 
@@ -26,8 +27,9 @@ class Term;
 // storing all items before any can be passed on.
 class CanonicalCoefTermConsumer : public CoefTermConsumer {
  public:
-  CanonicalCoefTermConsumer(auto_ptr<CoefTermConsumer> consumer,
-							size_t varCount);
+  CanonicalCoefTermConsumer(auto_ptr<CoefTermConsumer> consumer);
+
+  virtual void consumeRing(const VarNames& names);
 
   virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
@@ -36,6 +38,7 @@ class CanonicalCoefTermConsumer : public CoefTermConsumer {
  private:
   auto_ptr<CoefTermConsumer> _consumer;
   Polynomial _polynomial;
+  VarNames _names;
 };
 
 #endif

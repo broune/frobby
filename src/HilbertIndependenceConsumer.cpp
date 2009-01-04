@@ -61,6 +61,9 @@ CoefTermConsumer* HilbertIndependenceConsumer::getLeftConsumer() {
   return this;
 }
 
+void HilbertIndependenceConsumer::consumeRing(const VarNames& names) {
+}
+
 void HilbertIndependenceConsumer::beginConsuming() {
 }
 
@@ -91,6 +94,10 @@ const Projection& HilbertIndependenceConsumer::getRightProjection() const {
 HilbertIndependenceConsumer::RightConsumer::
 RightConsumer(HilbertIndependenceConsumer* parent):
   _parent(parent) {
+}
+
+void HilbertIndependenceConsumer::RightConsumer::consumeRing
+(const VarNames& names) {
 }
 
 void HilbertIndependenceConsumer::RightConsumer::beginConsuming() {
