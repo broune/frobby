@@ -22,6 +22,8 @@
 class Scanner;
 class VarNames;
 class BigIdeal;
+class BigTermConsumer;
+class BigCoefTermConsumer;
 
 class Fourti2IOHandler : public IOHandler {
 public:
@@ -32,12 +34,14 @@ public:
 
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
-  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
+  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);
 
   auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
+  auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
 
   static const char* staticGetName();
 
@@ -83,7 +87,7 @@ public:
 								bool wroteAnyGenerators,
 								FILE* out);
 
-  // These are not supported and calling any one of them is an error.
+  // These are not supported.
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeIdealHeader(const VarNames& names, bool
 								defineNewRing,

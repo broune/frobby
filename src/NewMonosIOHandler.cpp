@@ -127,3 +127,9 @@ void NewMonosIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
 	readIdealNoLeftParen(in, consumer);
   } while (in.match('('));
 }
+
+void NewMonosIOHandler::readPolynomial
+(Scanner& in, CoefBigTermConsumer& consumer) {
+  ASSERT(false);
+  reportInternalError("Called NewMonosIOHandler::readPolynomial.");
+}

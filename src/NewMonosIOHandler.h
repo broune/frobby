@@ -55,6 +55,9 @@ public:
   virtual void writeIdealFooter(const VarNames& names,
 								bool wroteAnyGenerators,
 								FILE* out);
+
+  // Not supported.
+  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 };
 
 #endif

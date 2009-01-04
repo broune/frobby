@@ -15,32 +15,38 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "CoefBigTermRecorder.h"
+#include "PolynomialConsolidator.h"
 
-#include "BigPolynomial.h"
-
-CoefBigTermRecorder::CoefBigTermRecorder(BigPolynomial* recordInto):
-  _recordInto(recordInto) {
-  ASSERT(recordInto != 0);
+PolynomialConsolidator::PolynomialConsolidator
+(auto_ptr<CoefBigTermConsumer> consumer):
+  _consumer(consumer) {
 }
 
-void CoefBigTermRecorder::consumeRing(const VarNames& names) {
-  _recordInto->clearAndSetNames(names);
+void PolynomialConsolidator::consumeRing(const VarNames& names) {
+  _poly.clearAndSetNames(names);
 }
 
-void CoefBigTermRecorder::beginConsuming() {
+void PolynomialConsolidator::beginConsuming() {
+  ASSERT(_poly.getTermCount() == 0);
 }
 
-void CoefBigTermRecorder::consume(const mpz_class& coef,
-								  const Term& term,
-								  const TermTranslator& translator) {
-  _recordInto->add(coef, term, translator);
+void PolynomialConsolidator::consume
+(const mpz_class& coef,
+ const Term& term,
+ const TermTranslator& translator) {
+  _poly.add(coef, term, translator);
 }
 
-void CoefBigTermRecorder::consume(const mpz_class& coef,
-								  const vector<mpz_class>& term) {
-  _recordInto->add(coef, term);
+void PolynomialConsolidator::consume
+(const mpz_class& coef, const vector<mpz_class>& term) {
+  _poly.add(coef, term);
 }
 
-void CoefBigTermRecorder::doneConsuming() {
+void PolynomialConsolidator::doneConsuming() {
+  _consumer->consume(_poly);
+  _poly.clear();
+}
+
+void PolynomialConsolidator::consume(const BigPolynomial& poly) {
+  _consumer->consume(poly);
 }

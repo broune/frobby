@@ -26,6 +26,12 @@ IOHandlerCommon::IOHandlerCommon(const char* formatName,
   IOHandler(formatName, formatDescription, false) {
 }
 
+void IOHandlerCommon::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+  VarNames names;
+  readRing(in, names);
+  readBareIdeal(in, names, consumer);
+}
+
 void IOHandlerCommon::readIdeals(Scanner& in, BigTermConsumer& consumer) {
   VarNames names;
   readRing(in, names);
@@ -42,8 +48,9 @@ void IOHandlerCommon::readIdeals(Scanner& in, BigTermConsumer& consumer) {
   }
 }
 
-void IOHandlerCommon::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+void IOHandlerCommon::readPolynomial
+(Scanner& in, CoefBigTermConsumer& consumer) {
   VarNames names;
   readRing(in, names);
-  readBareIdeal(in, names, consumer);
+  readBarePolynomial(in, names, consumer);
 }

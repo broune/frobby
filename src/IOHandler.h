@@ -29,6 +29,7 @@ class VarNames;
 class BigPolynomial;
 class BigTermConsumer;
 class DataType;
+class CoefBigTermConsumer;
 
 // An IOHandler implements input and output in some format in such a way
 // that client code does not need to know which format is being used.
@@ -48,9 +49,8 @@ class IOHandler {
 
   virtual void readTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
-  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
+  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer) = 0;
 
-  virtual void writePolynomial(const BigPolynomial& polynomial, FILE* out);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out) = 0;
@@ -61,9 +61,7 @@ class IOHandler {
   const char* getDescription() const;
 
   virtual auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
-
-  virtual auto_ptr<CoefTermConsumer> createPolynomialWriter
-	(const TermTranslator* translator, FILE* out);
+  virtual auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
 
   // Returns null if name is unknown.
   static auto_ptr<IOHandler> createIOHandler(const string& name);
@@ -76,7 +74,6 @@ class IOHandler {
 
  protected:
   // For preserving ring information when writing an empty list of ideals.
-  // TODO: and in future polynomials.
   virtual void writeRing(const VarNames& names, FILE* out) = 0;
 
   // Output of polynomials.
@@ -163,6 +160,12 @@ class IOHandler {
   static void readCoefTerm(BigPolynomial& polynomial,
 						   bool firstTerm,
 						   Scanner& in);
+  static void readCoefTerm
+	(mpz_class& coef,
+	 vector<mpz_class>& term,
+	 const VarNames& names,
+	 bool firstTerm,
+	 Scanner& in);
   static void readVarPower(vector<mpz_class>& term,
 						   const VarNames& names, Scanner& in);
 

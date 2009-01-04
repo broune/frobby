@@ -18,10 +18,13 @@
 #define COEF_TERM_CONSUMER_GUARD
 
 class Term;
+class VarNames;
 
 class CoefTermConsumer {
  public:
   virtual ~CoefTermConsumer();
+
+  virtual void consumeRing(const VarNames& names) = 0;
 
   virtual void beginConsuming() = 0;
   virtual void consume(const mpz_class& coef, const Term& term) = 0;

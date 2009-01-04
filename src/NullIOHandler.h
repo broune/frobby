@@ -32,9 +32,9 @@ public:
 
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
+  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
-  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);
@@ -42,7 +42,7 @@ public:
   virtual auto_ptr<BigTermConsumer> createIdealWriter
 	(TermTranslator* translator, FILE* out);
 
-  virtual auto_ptr<CoefTermConsumer> createPolynomialWriter
+  virtual auto_ptr<CoefBigTermConsumer> createPolynomialWriter
 	(const TermTranslator* translator, FILE* out);
 
   static const char* staticGetName();

@@ -22,18 +22,14 @@
 
 class Polynomial {
  public:
+  Polynomial();
   Polynomial(size_t varCount);
 
-  size_t getVarCount() const {return _varCount;}
-  size_t getTermCount() const {return _terms.size();}
-  const mpz_class& getCoef(size_t index) const {
-	ASSERT(index < getTermCount());
-	return _terms[index].coef;
-  }
-  const Term& getTerm(size_t index) const {
-	ASSERT(index < getTermCount());
-	return _terms[index].term;
-  }
+  size_t getVarCount() const;
+  size_t getTermCount() const;
+
+  const mpz_class& getCoef(size_t index) const;
+  const Term& getTerm(size_t index) const;
 
   // Add coef*term to the polynomial. Does not collect terms with the
   // same exponents. Does nothing if coef is zero.
@@ -45,6 +41,7 @@ class Polynomial {
   void sortTermsReverseLex(bool collect = true);
 
   void clear();
+  void clearAndSetVarCount(size_t varCount);
 
  private:
   struct CoefTerm {

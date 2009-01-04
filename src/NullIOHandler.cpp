@@ -101,19 +101,19 @@ void NullIOHandler::writeIdealFooter(const VarNames& names,
 									 FILE* out) {
 }
 
-auto_ptr<CoefTermConsumer> NullIOHandler::createPolynomialWriter
+auto_ptr<CoefBigTermConsumer> NullIOHandler::createPolynomialWriter
 (const TermTranslator* translator, FILE* out) {
-  return auto_ptr<CoefTermConsumer>(new NullCoefTermConsumer());
+  return auto_ptr<CoefBigTermConsumer>(new NullCoefTermConsumer());
 }
 
 void NullIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
   ideal.clearAndSetNames(VarNames());
 }
 
-void NullIOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
-  polynomial.clearAndSetNames(VarNames());
-}
-
 bool NullIOHandler::hasMoreInput(Scanner& scanner) const {
   return false;
+}
+
+void NullIOHandler::readPolynomial
+(Scanner& in, CoefBigTermConsumer& consumer) {
 }

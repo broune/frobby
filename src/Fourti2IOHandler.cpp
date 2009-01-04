@@ -27,6 +27,7 @@
 #include "DataType.h"
 #include "FrobbyStringStream.h"
 #include "IdealConsolidator.h"
+#include "PolynomialConsolidator.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
   IOHandler(staticGetName(),
@@ -80,6 +81,21 @@ auto_ptr<BigTermConsumer> Fourti2IOHandler::createIdealWriter(FILE* out) {
 
   auto_ptr<BigTermConsumer> writer(IOHandler::createIdealWriter(out));
   auto_ptr<BigTermConsumer> consolidated(new IdealConsolidator(writer));
+  return consolidated;
+}
+
+auto_ptr<CoefBigTermConsumer> Fourti2IOHandler::createPolynomialWriter
+(FILE* out) {
+  FrobbyStringStream msg;
+  msg << "Using the format " << getName() <<
+	" makes it necessary to store all of the output in "
+	"memory before writing it out. This increases "
+	"memory consumption and decreases performance.";
+  displayNote(msg);
+
+  auto_ptr<CoefBigTermConsumer> writer(IOHandler::createPolynomialWriter(out));
+  auto_ptr<CoefBigTermConsumer> consolidated
+	(new PolynomialConsolidator(writer));
   return consolidated;
 }
 
@@ -303,7 +319,8 @@ void Fourti2IOHandler::readTerm(Scanner& in, const VarNames& names,
 	in.readIntegerAndNegativeAsZero(term[var]);
 }
 
-void Fourti2IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
+void Fourti2IOHandler::readPolynomial
+(Scanner& in, CoefBigTermConsumer& consumer) {
   size_t generatorCount;
   size_t varCount;
 
@@ -317,7 +334,7 @@ void Fourti2IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
 
   --varCount; // One of columns is the coefficient.
 
-  polynomial.clearAndSetNames(VarNames(varCount));
+  BigPolynomial polynomial((VarNames(varCount)));
 
   for (size_t t = 0; t < generatorCount; ++t) {
 	// Read a term
@@ -342,4 +359,6 @@ void Fourti2IOHandler::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
 	  names.addVar(in.readIdentifier());
 	polynomial.renameVars(names);
   }  
+
+  consumer.consume(polynomial);
 }

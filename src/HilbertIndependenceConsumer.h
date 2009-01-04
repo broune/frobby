@@ -43,7 +43,8 @@ public:
   virtual void dispose();
 
   CoefTermConsumer* getLeftConsumer();
-  
+
+  virtual void consumeRing(const VarNames& names); // Does nothing.	
   virtual void beginConsuming(); // Does nothing.
   virtual void consume(const mpz_class& coef, const Term& term);
   virtual void doneConsuming(); // Does nothing.
@@ -58,7 +59,8 @@ private:
   class RightConsumer : public CoefTermConsumer {
   public:
 	RightConsumer(HilbertIndependenceConsumer* parent);
-	
+
+	virtual void consumeRing(const VarNames& names); // Does nothing.	
 	virtual void beginConsuming(); // Does nothing.
 	virtual void consume(const mpz_class& coef, const Term& term);
 	virtual void doneConsuming(); // Does nothing.

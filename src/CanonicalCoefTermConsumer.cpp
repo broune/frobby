@@ -20,11 +20,14 @@
 #include "Term.h"
 
 CanonicalCoefTermConsumer::
-CanonicalCoefTermConsumer(auto_ptr<CoefTermConsumer> consumer,
-						  size_t varCount):
-  _consumer(consumer),
-  _polynomial(varCount) {
+CanonicalCoefTermConsumer(auto_ptr<CoefTermConsumer> consumer):
+  _consumer(consumer) {
   ASSERT(_consumer.get() != 0);
+}
+
+void CanonicalCoefTermConsumer::consumeRing(const VarNames& names) {
+  _polynomial.clearAndSetVarCount(names.getVarCount());
+  _names = names;
 }
 
 void CanonicalCoefTermConsumer::beginConsuming() {
@@ -39,6 +42,8 @@ void CanonicalCoefTermConsumer::consume
 
 void CanonicalCoefTermConsumer::doneConsuming() {
   _polynomial.sortTermsReverseLex();
+
+  _consumer->consumeRing(_names);
   _consumer->beginConsuming();
   for (size_t index = 0; index < _polynomial.getTermCount(); ++index)
 	_consumer->consume(_polynomial.getCoef(index), _polynomial.getTerm(index));

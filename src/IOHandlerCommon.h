@@ -28,13 +28,16 @@ class IOHandlerCommon : public IOHandler {
 
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
+  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
  protected:
   virtual void readRing(Scanner& in, VarNames& names) = 0;
   virtual bool peekRing(Scanner& in) = 0;
-  virtual void readBareIdeal(Scanner& in,
-							 const VarNames& names,
-							 BigTermConsumer& consumer) = 0;
+
+  virtual void readBareIdeal
+	(Scanner& in, const VarNames& names, BigTermConsumer& consumer) = 0;
+  virtual void readBarePolynomial
+	(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) = 0;
 };
 
 #endif

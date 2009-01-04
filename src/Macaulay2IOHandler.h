@@ -29,8 +29,6 @@ class Macaulay2IOHandler : public IOHandlerCommon {
 public:
   Macaulay2IOHandler();
 
-  virtual void readPolynomial(Scanner& in, BigPolynomial& polynomial);
-
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);
@@ -39,9 +37,13 @@ public:
 
  private:
   virtual void readRing(Scanner& in, VarNames& names);
+  virtual bool peekRing(Scanner& in);
+  virtual void writeRing(const VarNames& names, FILE* out);
+
   virtual void readBareIdeal(Scanner& in, const VarNames& names,
 							 BigTermConsumer& consumer);
-  virtual bool peekRing(Scanner& in);
+  virtual void readBarePolynomial
+	(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer);
 
   virtual void writePolynomialHeader(const VarNames& names, FILE* out);
   virtual void writeTermOfPolynomial(const mpz_class& coef,
@@ -72,9 +74,6 @@ public:
   virtual void writeIdealFooter(const VarNames& names,
 								bool wroteAnyGenerators,
 								FILE* out);
-
-  void readVars(VarNames& names, Scanner& in);
-  void writeRing(const VarNames& names, FILE* out);
 };
 
 #endif

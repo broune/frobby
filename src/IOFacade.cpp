@@ -26,9 +26,10 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 #include "BigTermRecorder.h"
+#include "CoefBigTermConsumer.h"
+#include "CoefBigTermRecorder.h"
 
 #include <iterator>
-
 
 IOFacade::IOFacade(bool printActions):
   Facade(printActions) {
@@ -141,7 +142,8 @@ void IOFacade::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
-  handler->readPolynomial(in, polynomial);
+  CoefBigTermRecorder recorder(&polynomial);
+  handler->readPolynomial(in, recorder);
   in.expectEOF();
 
   endAction();
@@ -155,7 +157,7 @@ void IOFacade::writePolynomial(const BigPolynomial& polynomial,
 
   beginAction("Writing polynomial.");
 
-  handler->writePolynomial(polynomial, out);
+  handler->createPolynomialWriter(out)->consume(polynomial);
 
   endAction();
 }

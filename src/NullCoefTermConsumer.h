@@ -17,14 +17,27 @@
 #ifndef NULL_COEF_TERM_CONSUMER_GUARD
 #define NULL_COEF_TERM_CONSUMER_GUARD
 
-#include "CoefTermConsumer.h"
+#include "CoefBigTermConsumer.h"
 
-class NullCoefTermConsumer : public CoefTermConsumer {
-  virtual ~NullCoefTermConsumer();
+class VarNames;
+class Term;
+class TermTranslator;
+
+#include <vector>
+
+class NullCoefTermConsumer : public CoefBigTermConsumer {
+  virtual void consumeRing(const VarNames& names);
 
   virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
+  virtual void consume
+	(const mpz_class& coef,
+	 const Term& term,
+	 const TermTranslator& translator);
+  virtual void consume(const mpz_class& coef, const vector<mpz_class>& term);
   virtual void doneConsuming();
+
+  virtual void consume(const BigPolynomial& poly);
 };
 
 #endif

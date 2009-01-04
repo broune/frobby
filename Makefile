@@ -35,7 +35,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   TestAction.cpp NameFactory.cpp error.cpp DebugAllocator.cpp			\
   FrobbyStringStream.cpp SliceStrategy.cpp PrimaryDecomAction.cpp		\
   IdealComparator.cpp IOHandlerCommon.cpp IrreducibleIdealSplitter.cpp	\
-  DataType.cpp IdealConsolidator.cpp CoefBigTermConsumer.cpp
+  DataType.cpp IdealConsolidator.cpp CoefBigTermConsumer.cpp			\
+  PolynomialConsolidator.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

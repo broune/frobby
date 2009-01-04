@@ -22,24 +22,47 @@
 #include "TermTranslator.h"
 
 TranslatingCoefTermConsumer::TranslatingCoefTermConsumer
-(CoefBigTermConsumer* consumer, TermTranslator* translator):
-  _consumer(consumer),
-  _translator(translator) {
-  ASSERT(consumer != 0);
-  ASSERT(translator != 0);
+(CoefBigTermConsumer& consumer, const TermTranslator& translator):
+  _translator(translator),
+  _consumer(consumer) {
+}
+
+TranslatingCoefTermConsumer::TranslatingCoefTermConsumer
+(auto_ptr<CoefBigTermConsumer> consumer, const TermTranslator& translator):
+  _translator(translator),
+  _consumer(*consumer),
+  _consumerOwner(consumer) {
+  ASSERT(_consumerOwner.get() != 0);
 }
 
 void TranslatingCoefTermConsumer::beginConsuming() {
-  _consumer->beginConsuming();
+  _consumer.beginConsuming();
+}
+
+void TranslatingCoefTermConsumer::consumeRing(const VarNames& names) {
+  _consumer.consumeRing(names);
+}
+
+void TranslatingCoefTermConsumer::consume
+(const mpz_class& coef, const Term& term, const TermTranslator& translator) {
+  _consumer.consume(coef, term, translator);
+}
+
+void TranslatingCoefTermConsumer::consume
+(const mpz_class& coef, const vector<mpz_class>& term) {
+  _consumer.consume(coef, term);
 }
 
 void TranslatingCoefTermConsumer::
 consume(const mpz_class& coef, const Term& term) {
-  ASSERT(term.getVarCount() == _translator->getVarCount());
-
-  _consumer->consume(coef, term, _translator);
+  ASSERT(term.getVarCount() == _translator.getVarCount());
+  _consumer.consume(coef, term, _translator);
 }
 
 void TranslatingCoefTermConsumer::doneConsuming() {
-  _consumer->doneConsuming();
+  _consumer.doneConsuming();
+}
+
+void TranslatingCoefTermConsumer::consume(const BigPolynomial& poly) {
+  _consumer.consume(poly);
 }

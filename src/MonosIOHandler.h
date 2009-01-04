@@ -36,10 +36,11 @@ public:
  private:
   virtual void readRing(Scanner& in, VarNames& names);
   virtual bool peekRing(Scanner& in);
+  virtual void writeRing(const VarNames& names, FILE* out);
+
   virtual void readBareIdeal(Scanner& in,
 							 const VarNames& names,
 							 BigTermConsumer& consumer);
-  virtual void writeRing(const VarNames& names, FILE* out);
 
   virtual void writeIdealHeader(const VarNames& names,
 								bool defineNewRing,
@@ -55,6 +56,10 @@ public:
   virtual void writeIdealFooter(const VarNames& names,
 								bool wroteAnyGenerators,
 								FILE* out);
+
+  // Not supported.
+  virtual void readBarePolynomial
+	(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer);
 };
 
 #endif
