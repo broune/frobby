@@ -10,11 +10,11 @@ then
   shift;
 
   # Check that -canon agrees with transform without -minimize on.
-  $testhelper transform $test.minimize $test.minimize -canon
+  $testhelper transform $test.minimize $test.minimize $* -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Check that minimize is idempotent.
-  $testhelper transform $test.minimize $test.minimize -minimize -canon
+  $testhelper transform $test.minimize $test.minimize $* -minimize -canon
   if [ $? != 0 ]; then exit 1; fi
 fi
 
