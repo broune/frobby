@@ -17,7 +17,7 @@ then
   shift;
 
   # Check -canon agrees with transform.
-  $testhelper transform $test.alexdual $test.alexdual $* -canon
+  $testhelper transform $test.alexdual $test.alexdual -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Check that double dual on the same point is identity.

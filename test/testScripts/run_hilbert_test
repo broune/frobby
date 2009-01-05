@@ -9,11 +9,12 @@ if [ "$1" = "_full" ];
 then
   shift;
 
-  # Check that -canon agrees with ptransform
-  $testhelper ptransform $test.multi $test.multi $* -canon
+  # Check that -canon agrees with ptransform on multivariate output.
+  $testhelper ptransform $test.multi $test.multi -canon
   if [ $? != 0 ]; then exit 1; fi
 
-  $testhelper ptransform $test.uni $test.uni $* -canon
+  # Check that -canon agrees with ptransform on univariate output.
+  $testhelper ptransform $test.uni $test.uni -canon
   if [ $? != 0 ]; then exit 1; fi
 fi
 

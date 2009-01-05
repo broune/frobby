@@ -11,7 +11,7 @@ then
 
   # Check -canon agrees with transform and that intersection is minimal.
   $testhelper transform $test.intersection $test.intersection \
-    $* -minimize -canon
+    -minimize -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Check that intersecting the same ideals more times, along with
