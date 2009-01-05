@@ -129,14 +129,15 @@ AnalyzeAction::AnalyzeAction():
 }
 
 void AnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
-  Action::obtainParameters(parameters);
-  _io.obtainParameters(parameters);
-
+  parameters.push_back(&_summaryLevel);
   parameters.push_back(&_printLcm);
   parameters.push_back(&_printVarCount);
   parameters.push_back(&_printGeneratorCount);
   parameters.push_back(&_printMaximumExponent);
   parameters.push_back(&_printMinimal);
+
+  _io.obtainParameters(parameters);
+  Action::obtainParameters(parameters);
 }
 
 void AnalyzeAction::perform() {
