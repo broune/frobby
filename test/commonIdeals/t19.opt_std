@@ -1,0 +1,5 @@
+R = QQ[a, b];
+I = monomialIdeal(
+ b^19
+);
+19

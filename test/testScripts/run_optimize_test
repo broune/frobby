@@ -1,0 +1,53 @@
+#!/bin/bash
+
+testHelper=../testScripts/testhelper
+frobby=../../bin/frobby
+test="$1"
+shift
+
+if [ -e "$test.optVector" ];
+then
+  inputFile="$test.test $test.frobInstance"
+else
+  inputFile="$test.test"
+fi
+
+if [ "$1" = "_full" ]; then
+  shift;
+
+  tmpFile="/tmp/frobby_optTmp"
+  # Check that -canon agrees with transform. Transform does not understand
+  # the value at the end, so generate a file without that.
+  $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
+    -canon -displayLevel 2 -displayValue off
+  $testHelper transform $tmpFile $tmpFile -canon
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # And again with -maxstandard.
+  $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
+    -canon -displayLevel 2 -displayValue off -maxStandard
+  $testHelper transform $tmpFile $tmpFile -canon
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # Solve the irreducible decomposition program without the bound optimization.
+  $testHelper optimize "$inputFile" $test.opt_irr $* \
+	  -canon -displayLevel 2 -bound off
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Solve the maximal standard monomial program without the bound optimization.
+  $testHelper optimize "$inputFile" $test.opt_std $* \
+	  -canon -displayLevel 2 -maxStandard -bound off
+  if [ $? != 0 ]; then exit 1; fi
+fi
+
+# Solve the irreducible decomposition program.
+$testHelper optimize "$inputFile" $test.opt_irr $* \
+  -canon -displayLevel 2
+if [ $? != 0 ]; then exit 1; fi
+
+# Solve the maximal standard monomial program.
+$testHelper optimize "$inputFile" $test.opt_std $* \
+  -canon -displayLevel 2 -maxStandard
+if [ $? != 0 ]; then exit 1; fi

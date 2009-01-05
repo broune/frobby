@@ -69,6 +69,8 @@ class IOFacade : private Facade {
   bool readAlexanderDualInstance
 	(Scanner& in, BigIdeal& ideal, vector<mpz_class>& term);
 
+  void readVector(Scanner& in, vector<mpz_class>& v, size_t integerCount);
+
   bool isValidLatticeFormat(const string& format);
   void readLattice(Scanner& in, BigIdeal& ideal);
   void writeLattice(FILE* out, const BigIdeal& ideal, const string& format);

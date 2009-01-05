@@ -35,7 +35,7 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
 
   _useBound
   ("bound",
-   "Use the bound optimization when solving an IDP.",
+   "Use the bound optimization to solve optimization problems faster.",
    true),
 
   _useIndependence
@@ -71,8 +71,7 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
 
   if (_exposeBoundParam)
 	addParameter(&_useBound);
-  else
-	addParameter(&_canonical);
+  addParameter(&_canonical);
 }
 
 void SliceParameters::setUseIndependence(bool value) {

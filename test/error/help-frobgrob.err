@@ -34,7 +34,12 @@ The parameters accepted by frobgrob are as follows.
    Print what the algorithm does at each step.
 
  -bound [BOOL]   (default is on)
-   Use the bound optimization when solving an IDP.
+   Use the bound optimization to solve optimization problems faster.
+
+ -canon [BOOL]   (default is off)
+   Sort the output, including the variables, to get a canonical
+   representation. This requires storing the entire output in memory, which
+   can increase run time modestly and increase memory consumption greatly.
 
  -vector [BOOL]   (default is off)
    Display the vector that achieves the optimal value.

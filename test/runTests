@@ -10,7 +10,7 @@ fi
 TIMEFORMAT=$' (%2lR real)'
 
 normalTests="irrdecom hilbert primdecom intersect assoprimes \
-             minimize alexdual radical frob"
+             minimize alexdual radical frob maxstandard optimize"
 specialTests="error idealFormats polyFormats latticeFormats internal"
 params="$*"
 

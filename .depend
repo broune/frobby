@@ -1,15 +1,17 @@
 $(outdir)main.o: src/main.cpp src/stdinc.h src/main.h src/Action.h \
   src/BoolParameter.h src/Parameter.h src/DebugAllocator.h src/error.h
 $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
-  src/Parameter.h src/IrreducibleDecomAction.h src/IOParameters.h \
-  src/ParameterGroup.h src/StringParameter.h src/IOHandler.h \
-  src/SliceParameters.h src/TransformAction.h src/HelpAction.h \
-  src/DynamicFrobeniusAction.h src/GenerateIdealAction.h \
-  src/IntegerParameter.h src/GenerateFrobeniusAction.h \
-  src/FrobeniusAction.h src/AnalyzeAction.h src/LatticeFormatAction.h \
-  src/IntersectionAction.h src/AssociatedPrimesAction.h \
-  src/AlexanderDualAction.h src/HilbertAction.h src/PolyTransformAction.h \
-  src/TestAction.h src/NameFactory.h src/PrimaryDecomAction.h src/error.h
+  src/Parameter.h src/error.h src/NameFactory.h \
+  src/IrreducibleDecomAction.h src/IOParameters.h src/ParameterGroup.h \
+  src/StringParameter.h src/IOHandler.h src/SliceParameters.h \
+  src/TransformAction.h src/HelpAction.h src/DynamicFrobeniusAction.h \
+  src/GenerateIdealAction.h src/IntegerParameter.h \
+  src/GenerateFrobeniusAction.h src/FrobeniusAction.h src/AnalyzeAction.h \
+  src/LatticeFormatAction.h src/IntersectionAction.h \
+  src/AssociatedPrimesAction.h src/AlexanderDualAction.h \
+  src/HilbertAction.h src/PolyTransformAction.h src/TestAction.h \
+  src/PrimaryDecomAction.h src/OptimizeAction.h \
+  src/MaximalStandardAction.h
 $(outdir)IOParameters.o: src/IOParameters.cpp src/stdinc.h src/IOParameters.h \
   src/ParameterGroup.h src/Parameter.h src/StringParameter.h \
   src/IOHandler.h src/IOFacade.h src/Facade.h src/Timer.h \
@@ -67,7 +69,8 @@ $(outdir)Macaulay2IOHandler.o: src/Macaulay2IOHandler.cpp src/stdinc.h \
   src/Scanner.h src/BigIdeal.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h src/BigPolynomial.h \
   src/TermTranslator.h src/BigTermConsumer.h src/TermConsumer.h \
-  src/error.h src/DataType.h
+  src/error.h src/DataType.h src/CoefBigTermConsumer.h \
+  src/CoefTermConsumer.h
 $(outdir)NewMonosIOHandler.o: src/NewMonosIOHandler.cpp src/stdinc.h \
   src/NewMonosIOHandler.h src/IOHandler.h src/Scanner.h src/BigIdeal.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
@@ -112,7 +115,8 @@ $(outdir)IOFacade.o: src/IOFacade.cpp src/stdinc.h src/IOFacade.h src/Facade.h \
   src/hash_map/hash_map src/hash_map/hashtable.h src/hash_map/hash_fun.h \
   src/fplllIO.h src/Scanner.h src/ElementDeleter.h src/error.h \
   src/FrobbyStringStream.h src/BigTermRecorder.h src/BigTermConsumer.h \
-  src/TermConsumer.h
+  src/TermConsumer.h src/CoefBigTermConsumer.h src/CoefTermConsumer.h \
+  src/CoefBigTermRecorder.h
 $(outdir)DynamicFrobeniusFacade.o: src/DynamicFrobeniusFacade.cpp src/stdinc.h \
   src/DynamicFrobeniusFacade.h src/Facade.h src/Timer.h \
   src/dynamicFrobeniusAlgorithm.h
@@ -328,13 +332,14 @@ $(outdir)CoCoA4IOHandler.o: src/CoCoA4IOHandler.cpp src/stdinc.h \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h src/CoefTermConsumer.h \
   src/Term.h src/TermTranslator.h src/BigPolynomial.h src/error.h \
   src/FrobbyStringStream.h src/BigTermConsumer.h src/TermConsumer.h \
-  src/DataType.h
+  src/DataType.h src/CoefBigTermConsumer.h
 $(outdir)SingularIOHandler.o: src/SingularIOHandler.cpp src/stdinc.h \
   src/SingularIOHandler.h src/IOHandlerCommon.h src/IOHandler.h \
   src/Scanner.h src/BigIdeal.h src/VarNames.h src/hash_map/hash_map \
   src/hash_map/hashtable.h src/hash_map/hash_fun.h src/CoefTermConsumer.h \
   src/BigPolynomial.h src/error.h src/BigTermConsumer.h \
-  src/TermConsumer.h src/FrobbyStringStream.h src/DataType.h
+  src/TermConsumer.h src/FrobbyStringStream.h src/DataType.h \
+  src/CoefBigTermConsumer.h
 $(outdir)TotalDegreeCoefTermConsumer.o: src/TotalDegreeCoefTermConsumer.cpp \
   src/stdinc.h src/TotalDegreeCoefTermConsumer.h src/CoefTermConsumer.h \
   src/CoefBigTermConsumer.h src/TermTranslator.h src/VarNames.h \
@@ -358,7 +363,8 @@ $(outdir)VarSorter.o: src/VarSorter.cpp src/stdinc.h src/VarSorter.h \
   src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
   src/hash_map/hash_fun.h src/Term.h src/TermTranslator.h
 $(outdir)SliceEvent.o: src/SliceEvent.cpp src/stdinc.h src/SliceEvent.h
-$(outdir)TermConsumer.o: src/TermConsumer.cpp src/stdinc.h src/TermConsumer.h
+$(outdir)TermConsumer.o: src/TermConsumer.cpp src/stdinc.h src/TermConsumer.h \
+  src/Term.h src/Ideal.h
 $(outdir)NullTermConsumer.o: src/NullTermConsumer.cpp src/stdinc.h \
   src/NullTermConsumer.h src/BigTermConsumer.h src/TermConsumer.h
 $(outdir)CoefTermConsumer.o: src/CoefTermConsumer.cpp src/stdinc.h \
@@ -456,3 +462,22 @@ $(outdir)PolynomialConsolidator.o: src/PolynomialConsolidator.cpp src/stdinc.h \
   src/PolynomialConsolidator.h src/CoefBigTermConsumer.h \
   src/CoefTermConsumer.h src/BigPolynomial.h src/VarNames.h \
   src/hash_map/hash_map src/hash_map/hashtable.h src/hash_map/hash_fun.h
+$(outdir)OptimizeAction.o: src/OptimizeAction.cpp src/stdinc.h \
+  src/OptimizeAction.h src/Action.h src/BoolParameter.h src/Parameter.h \
+  src/SliceParameters.h src/ParameterGroup.h src/StringParameter.h \
+  src/IntegerParameter.h src/IOParameters.h src/IOHandler.h \
+  src/DataType.h src/IOFacade.h src/Facade.h src/Timer.h \
+  src/SliceFacade.h src/SplitStrategy.h src/Ideal.h src/TermTranslator.h \
+  src/VarNames.h src/hash_map/hash_map src/hash_map/hashtable.h \
+  src/hash_map/hash_fun.h src/TermConsumer.h src/CoefTermConsumer.h \
+  src/Scanner.h src/BigIdeal.h src/BigTermConsumer.h \
+  src/NullTermConsumer.h
+$(outdir)MaximalStandardAction.o: src/MaximalStandardAction.cpp src/stdinc.h \
+  src/MaximalStandardAction.h src/Action.h src/BoolParameter.h \
+  src/Parameter.h src/IOParameters.h src/ParameterGroup.h \
+  src/StringParameter.h src/IOHandler.h src/SliceParameters.h \
+  src/BigIdeal.h src/VarNames.h src/hash_map/hash_map \
+  src/hash_map/hashtable.h src/hash_map/hash_fun.h src/SliceFacade.h \
+  src/SplitStrategy.h src/Ideal.h src/TermTranslator.h src/Facade.h \
+  src/Timer.h src/TermConsumer.h src/CoefTermConsumer.h src/IOFacade.h \
+  src/Scanner.h src/DataType.h

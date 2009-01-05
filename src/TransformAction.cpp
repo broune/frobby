@@ -98,6 +98,7 @@ void TransformAction::perform() {
   VarNames names;
 
   facade.readIdeals(in, ideals, names);
+  in.expectEOF();
 
   if (_product) {
 	auto_ptr<BigIdeal> ideal;

@@ -413,5 +413,6 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 	  canUseBound = false;
   }
 
-  return facade.solveStandardProgram(grading, canUseBound);
+  mpz_class dummy;
+  return facade.solveStandardProgram(grading, dummy, false, canUseBound);
 }

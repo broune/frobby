@@ -63,6 +63,7 @@ void HilbertAction::perform() {
 
 	IOFacade facade(_printActions);
 	facade.readIdeal(in, ideal);
+	in.expectEOF();
   }
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();

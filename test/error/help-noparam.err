@@ -7,6 +7,8 @@ run it by typing `frobby ACTION', where ACTION is one of the following.
  primdecom    - Compute the primary decomposition of monomial ideals.
  alexdual     - Compute the Alexander dual of the input ideal.
  assoprimes   - Compute the associated primes of the input ideal.
+ maxstandard  - Compute the maximal standard monomials of the input ideal.
+ optimize     - Solve optimization problems related to the input ideal.
  transform    - Change the representation of the input ideal.
  ptransform   - Change the representation of the input polynomial.
  intersection - Intersect the input ideals.

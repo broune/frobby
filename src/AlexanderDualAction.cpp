@@ -57,6 +57,7 @@ void AlexanderDualAction::perform() {
 
 	IOFacade ioFacade(_printActions);
 	pointSpecified = ioFacade.readAlexanderDualInstance(in, ideal, point);
+	in.expectEOF();
   }
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();

@@ -61,6 +61,7 @@ void PolyTransformAction::perform() {
 
   BigPolynomial polynomial;
   facade.readPolynomial(in, polynomial);
+  in.expectEOF();
 
   PolynomialFacade polyFacade(_printActions);
   if (_canonicalize)

@@ -1,0 +1,7 @@
+R = QQ[x, y, z];
+I = monomialIdeal(
+ x^3*y^4,
+ x*z^4,
+ y^3*z^3,
+ y*z^4
+);

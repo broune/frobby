@@ -12,7 +12,8 @@ fi
 #######################################
 # The help action
 helpTopics="help hilbert irrdecom alexdual assoprimes transform ptransform io
-            intersection genideal  frobgrob frobdyn genfrob analyze latformat";
+            intersection genideal  frobgrob frobdyn genfrob analyze latformat
+            optimize maxstandard";
 for topic in $helpTopics;
 do
   $t help "blah" help-$topic _expectExitCode 0 $* $topic
@@ -210,3 +211,5 @@ if [ $? != 0 ]; then exit 1; fi
 
 $t hilbert "R=QQ[a,b];I=monomialIdeal(ab" m2-unknownVariable $* -iformat m2
 if [ $? != 0 ]; then exit 1; fi
+
+$t optimize "R=QQ[a,b];I=monomialIdeal(a);3" opt-incompleteVector $*

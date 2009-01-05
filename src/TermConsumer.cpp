@@ -17,6 +17,9 @@
 #include "stdinc.h"
 #include "TermConsumer.h"
 
+#include "Term.h"
+#include "Ideal.h"
+
 TermConsumer::~TermConsumer() {
 }
 
@@ -27,4 +30,14 @@ void TermConsumer::beginConsumingList() {
 }
 
 void TermConsumer::doneConsumingList() {
+}
+
+void TermConsumer::consume(const Ideal& ideal) {
+  beginConsuming();
+  Term tmp(ideal.getVarCount());
+  for (size_t term = 0; term < ideal.getGeneratorCount(); ++term) {
+	tmp = ideal[term];
+	consume(tmp);
+  }
+  doneConsuming(); 
 }
