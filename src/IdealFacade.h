@@ -43,6 +43,11 @@ class IdealFacade : private Facade {
   // Removes redundant generators from ideal.
   void sortAllAndMinimize(BigIdeal& bigIdeal);
 
+  // Adds x_i^(l_i+1) to the ideal for each i where that will be a
+  // minimal generator, where x^l is the lcm of the generators of
+  // bigIdeal.
+  void addPurePowers(BigIdeal& bigIdeal);
+
   // Sorts the generators of ideal and removes duplicates.
   void sortGeneratorsUnique(BigIdeal& ideal);
 

@@ -111,6 +111,22 @@ void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal) {
   endAction();
 }
 
+void IdealFacade::addPurePowers(BigIdeal& bigIdeal) {
+  vector<mpz_class> lcm;
+  bigIdeal.getLcm(lcm);
+
+  vector<mpz_class> purePower(bigIdeal.getVarCount());
+  for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+	purePower[var] = lcm[var] + 1;
+	if (!bigIdeal.contains(purePower))
+	  bigIdeal.insert(purePower);
+
+	ASSERT(bigIdeal.contains(purePower));
+
+	purePower[var] = 0;
+  }
+}
+
 void IdealFacade::sortGeneratorsUnique(BigIdeal& ideal) {
   beginAction("Sorting generators and removing duplicates.");
 
