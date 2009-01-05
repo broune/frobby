@@ -55,7 +55,7 @@ BigIdeal::BigIdeal(const VarNames& names):
 }
 
 void BigIdeal::insert(const Ideal& ideal) {
-  _terms.reserve(_terms.size() + ideal.getGeneratorCount());
+  reserve(_terms.size() + ideal.getGeneratorCount());
 
   Ideal::const_iterator it = ideal.begin();
   for (; it != ideal.end(); ++it) {
@@ -68,7 +68,7 @@ void BigIdeal::insert(const Ideal& ideal) {
 
 void BigIdeal::insert(const Ideal& ideal,
 					  const TermTranslator& translator) {
-  _terms.reserve(_terms.size() + ideal.getGeneratorCount());
+  reserve(_terms.size() + ideal.getGeneratorCount());
 
   Ideal::const_iterator it = ideal.begin();
   for (; it != ideal.end(); ++it) {
@@ -77,6 +77,11 @@ void BigIdeal::insert(const Ideal& ideal,
     for (size_t var = 0; var < _names.getVarCount(); ++var)
       getLastTermExponentRef(var) = translator.getExponent(var, (*it)[var]);
   }
+}
+
+void BigIdeal::insert(const vector<mpz_class>& term) {
+  newLastTerm();
+  getLastTermRef() = term;
 }
 
 void BigIdeal::renameVars(const VarNames& names) {
@@ -203,6 +208,17 @@ bool BigIdeal::containsIdentity() const {
 		goto notIdentity;
 	return true;
   notIdentity:;
+  }
+  return false;
+}
+
+bool BigIdeal::contains(const vector<mpz_class>& term) const {
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
+	for (size_t var = 0; var < getVarCount(); ++var)
+	  if (_terms[gen][var] > term[var])
+		goto notDivisor;
+	return true;
+  notDivisor:;
   }
   return false;
 }

@@ -30,6 +30,7 @@ public:
 
   void insert(const Ideal& ideal);
   void insert(const Ideal& ideal, const TermTranslator& translator);
+  void insert(const vector<mpz_class>& term);
 
   void renameVars(const VarNames& names);
 
@@ -56,6 +57,7 @@ public:
 
   bool empty() const;
   bool containsIdentity() const;
+  bool contains(const vector<mpz_class>& term) const;
 
   void clear();
 

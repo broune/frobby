@@ -71,7 +71,14 @@ TransformAction::TransformAction():
   _product
   ("product",
    "Replace each ideal with the product of its generators.",
-   false) {
+   false),
+
+_addPurePowers
+("addPurePowers",
+ "Adds a pure power for each variable that does not already have a pure "
+ "power\nin the ideal. Each exponent is chosen to be one larger than the"
+ "maximal\nexponent of that variable that appears in the ideal.",
+ false) {
 }
 
 void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -83,6 +90,7 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_deform);
   parameters.push_back(&_radical);
   parameters.push_back(&_product);
+  parameters.push_back(&_addPurePowers);
   Action::obtainParameters(parameters);
 }
 
@@ -124,6 +132,9 @@ void TransformAction::perform() {
 
 	if (_deform)
 	  idealFacade.deform(ideal);
+
+	if (_addPurePowers)
+	  idealFacade.addPurePowers(ideal);
 
 	if (_canonicalize)
 	  idealFacade.sortVariables(ideal);

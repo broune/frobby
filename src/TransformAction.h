@@ -44,6 +44,7 @@ class TransformAction : public Action {
   BoolParameter _deform;
   BoolParameter _radical;
   BoolParameter _product;
+  BoolParameter _addPurePowers;
 };
 
 #endif
