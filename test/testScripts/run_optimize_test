@@ -20,14 +20,14 @@ if [ "$1" = "_full" ]; then
   # the value at the end, so generate a file without that.
   $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
     -canon -displayLevel 2 -displayValue off
-  $testHelper transform $tmpFile $tmpFile $* -canon
+  $testHelper transform $tmpFile $tmpFile -canon
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
 
   # And again with -maxstandard.
   $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
     -canon -displayLevel 2 -displayValue off -maxStandard
-  $testHelper transform $tmpFile $tmpFile $* -canon
+  $testHelper transform $tmpFile $tmpFile -canon
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
 
