@@ -27,7 +27,8 @@ then
   then
     pointFile="$test.alexdual_point";
   else
-    $frobby analyze -lcm < /tmp/$test.test 2>/dev/null > /tmp/alexdual_point;
+    $frobby analyze < /tmp/$test.test 2>/dev/null > /tmp/alexdual_point \
+      -lcm -summaryLevel 0
     pointFile="/tmp/alexdual_point";
   fi
 
