@@ -64,6 +64,7 @@ void FrobeniusAction::perform() {
   IOFacade ioFacade(_printActions);
   Scanner in("", stdin);
   ioFacade.readFrobeniusInstanceWithGrobnerBasis(in, ideal, instance);
+  in.expectEOF();
 
   vector<mpz_class> shiftedDegrees(instance.begin() + 1, instance.end());
   vector<mpz_class> bigVector;
@@ -72,7 +73,9 @@ void FrobeniusAction::perform() {
 
   SliceFacade facade(ideal, &recorder, _printActions);
   _sliceParams.apply(facade);
-  facade.solveStandardProgram(shiftedDegrees, _sliceParams.getUseBound());
+  mpz_class dummy;
+  facade.solveStandardProgram
+	(shiftedDegrees, dummy, false, _sliceParams.getUseBound());
 
   BigIdeal maxSolution = *(recorder.releaseIdeal());
 

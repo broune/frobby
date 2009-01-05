@@ -95,7 +95,7 @@ class Ideal {
 
   // Insert generators into the ideal.
   void insert(const Exponent* term);
-  void insert(const Ideal& term);
+  void insert(const Ideal& ideal);
 
   // This is equivalent to calling insert and then minimize.
   void insertReminimize(const Exponent* term);

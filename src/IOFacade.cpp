@@ -52,7 +52,6 @@ void IOFacade::readIdeal(Scanner& in, BigTermConsumer& consumer) {
   ASSERT(handler.get() != 0);
 
   handler->readIdeal(in, consumer);
-  in.expectEOF();
 
   endAction();
 }
@@ -65,7 +64,6 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
 
   BigTermRecorder recorder;
   handler->readIdeal(in, recorder);
-  in.expectEOF();
 
   // TODO: return value instead of this copy.
   ASSERT(!recorder.empty());
@@ -88,7 +86,6 @@ void IOFacade::readIdeals(Scanner& in,
 
   BigTermRecorder recorder;
   handler->readIdeals(in, recorder);
-  in.expectEOF();
 
   names = recorder.getRing();
   while (!recorder.empty())
@@ -144,7 +141,6 @@ void IOFacade::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
 
   CoefBigTermRecorder recorder(&polynomial);
   handler->readPolynomial(in, recorder);
-  in.expectEOF();
 
   endAction();
 }
@@ -197,6 +193,17 @@ bool IOFacade::readAlexanderDualInstance
   endAction();  
 
   return pointSpecified;
+}
+
+void IOFacade::readVector
+(Scanner& in, vector<mpz_class>& v, size_t integerCount) {
+  beginAction("Reading vector.");
+
+  v.resize(integerCount);
+  for (size_t i = 0; i < integerCount; ++i)
+	in.readInteger(v[i]);
+
+  endAction();
 }
 
 void IOFacade::

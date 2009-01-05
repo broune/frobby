@@ -17,6 +17,9 @@
 #include "stdinc.h"
 #include "Action.h"
 
+#include "error.h"
+#include "NameFactory.h"
+
 #include "IrreducibleDecomAction.h"
 #include "TransformAction.h"
 #include "HelpAction.h"
@@ -33,9 +36,9 @@
 #include "PolyTransformAction.h"
 #include "HelpAction.h"
 #include "TestAction.h"
-#include "NameFactory.h"
 #include "PrimaryDecomAction.h"
-#include "error.h"
+#include "OptimizeAction.h"
+#include "MaximalStandardAction.h"
 
 Action::Action(const char* name,
 			   const char* shortDescription,
@@ -62,6 +65,9 @@ namespace {
 	nameFactoryRegister<PrimaryDecomAction>(factory);
 	nameFactoryRegister<AlexanderDualAction>(factory);
 	nameFactoryRegister<AssociatedPrimesAction>(factory);
+	nameFactoryRegister<MaximalStandardAction>(factory);	
+	nameFactoryRegister<OptimizeAction>(factory);
+
 	nameFactoryRegister<TransformAction>(factory);
 	nameFactoryRegister<PolyTransformAction>(factory);
 

@@ -19,6 +19,7 @@
 
 class Term;
 class VarNames;
+class Ideal;
 
 // This class is used to transfer terms one at a time from one part of
 // the program to another, and possibly to perform computations on
@@ -57,6 +58,11 @@ class TermConsumer {
 
   // Must be called once each time beginConsumingList has been called.
   virtual void doneConsumingList();
+
+  // This is a non-virtual utility method that calls the other methods
+  // to achieve its effect of calling beginConsuming, then consuming
+  // all generators, and then calling doneConsuming.
+  void consume(const Ideal& ideal);
 };
 
 #endif

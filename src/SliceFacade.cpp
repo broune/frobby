@@ -427,8 +427,11 @@ void SliceFacade::computeAssociatedPrimes() {
   endAction();
 }
 
-bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
-									   bool useBound) {
+bool SliceFacade::solveIrreducibleDecompositionProgram
+(const vector<mpz_class>& grading,
+ mpz_class& optimalValue,
+ bool reportAllSolutions,
+ bool useBound) {
   ASSERT(_split.get() != 0);
   ASSERT(_ideal.get() != 0);
   ASSERT(_translator.get() != 0);
@@ -436,35 +439,77 @@ bool SliceFacade::solveStandardProgram(const vector<mpz_class>& grading,
 
   minimize();
 
-  size_t varCount = _ideal->getVarCount();
+  beginAction("Preparing to solve optimization program.");
 
-  beginAction("Solving maximal standard monomial optimization program.");
-
-  _translator->decrement();
-  TermGrader grader(grading, _translator.get());
-
-  Ideal solution(varCount);
-  _generatedTermConsumer.reset(new DecomRecorder(&solution));
-
-  {
-	FrobeniusStrategy strategy
-	  (getTermConsumer(), grader, _split.get(), useBound);
-	runSliceAlgorithmWithOptions(strategy);
-  }
-
-  _generatedTermConsumer.reset(0);
+  if (!_ideal->contains(Term(_ideal->getVarCount())))
+	_translator->addPurePowersAtInfinity(*_ideal);
 
   endAction();
 
+  return solveProgram(grading, optimalValue, reportAllSolutions, useBound);
+}
+
+bool SliceFacade::solveStandardProgram
+(const vector<mpz_class>& grading,
+ mpz_class& optimalValue,
+ bool reportAllSolutions,
+ bool useBound) {
+  ASSERT(_split.get() != 0);
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
+  ASSERT(grading.size() == _ideal->getVarCount());
+
+  minimize();
+
+  _translator->decrement();
+  return solveProgram(grading, optimalValue, reportAllSolutions, useBound);
+}
+
+bool SliceFacade::solveProgram
+(const vector<mpz_class>& grading,
+ mpz_class& optimalValue,
+ bool reportAllSolutions,
+ bool useBound) {
+  ASSERT(_split.get() != 0);
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
+  ASSERT(grading.size() == _ideal->getVarCount());
+  ASSERT(_isMinimallyGenerated);
+
+  for (size_t var = 0; var < grading.size(); ++var) {
+	if (grading[var] < 0) {
+	  displayNote
+		("The bound optimization has been turned on, but the vector to\n"
+		 "optimize contains negative entries. This case of the optimization\n"
+		 "has not currently been implemented, so am now turning the bound\n"
+		 "optimization off.");
+	  useBound = false;
+	  break;
+	}
+  }
+
+  beginAction("Solving optimization program.");
+
+  TermGrader grader(grading, _translator.get());
+
+  FrobeniusStrategy strategy
+	(grader, _split.get(), reportAllSolutions, useBound);
+  runSliceAlgorithmWithOptions(strategy);
+
+  endAction();
+
+  const Ideal& solution = strategy.getMaximalSolutions();
+
+  TermConsumer* consumer = getTermConsumer();
+  consumer->consumeRing(_translator->getNames());
+  consumer->consume(solution);
+
   if (solution.isZeroIdeal())
 	return false;
-
-  getTermConsumer()->consumeRing(_translator->getNames());
-  getTermConsumer()->beginConsuming();
-  getTermConsumer()->consume(Term(*solution.begin(), varCount));
-  getTermConsumer()->doneConsuming();
-
-  return true;
+  else {
+	optimalValue = strategy.getMaximalValue();
+	return true;  
+  }
 }
 
 void SliceFacade::initialize(const BigIdeal& ideal) {

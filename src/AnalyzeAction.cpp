@@ -149,11 +149,14 @@ void AnalyzeAction::perform() {
   // We only read the entire ideal into memory at once if we have to.
   IOFacade ioFacade(_printActions);
   IdealFacade idealFacade(_printActions);
-  if (!_printMinimal)
+  if (!_printMinimal) {
 	ioFacade.readIdeal(in, consumer);
-  else {
+	in.expectEOF();
+  } else {
 	BigIdeal ideal;
 	ioFacade.readIdeal(in, ideal);
+	in.expectEOF();
+
 	consumer.consume(ideal);
 	
 	size_t generatorCount = ideal.getGeneratorCount();

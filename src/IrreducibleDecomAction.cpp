@@ -61,6 +61,7 @@ void IrreducibleDecomAction::perform() {
 
 	IOFacade ioFacade(_printActions);
 	ioFacade.readIdeal(in, ideal);
+	in.expectEOF();
   }
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();

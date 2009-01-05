@@ -70,6 +70,9 @@ public:
   // return value is false. Otherwise, the return value is true.
   bool addVarToClearedIdeal(const char* var);
 
+  // Remove variable from each generator and from the ring.
+  void eraseVar(size_t var);
+
   const VarNames& getNames() const;
 
   // Applies a generic deformation.

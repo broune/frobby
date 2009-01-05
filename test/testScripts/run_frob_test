@@ -5,12 +5,20 @@ shift
 
 if [ ! -e "$testName.frobInstance" ]; then exit 0; fi
 
-if [ "$1" = "_full" ]; then
-  shift;
-fi
-
 inputFile="$testName.test $testName.frobInstance"
 outputFile="$testName.frobNumber"
 
-../testScripts/testhelper frobgrob "$inputFile" $outputFile $*
+if [ "$1" = "_full" ]; then
+  shift;
+
+  # Test the legacy frobgrob action.
+  ../testScripts/testhelper frobgrob "$inputFile" $outputFile $*
+  if [ $? != 0 ]; then exit 1; fi
+
+  # Try it without the bound optimization.
+  ../testScripts/testhelper optimize "$inputFile" $outputFile $* -maxStandard -displayLevel 0 -chopFirstAndSubtract -bound off
+  if [ $? != 0 ]; then exit 1; fi
+fi
+
+../testScripts/testhelper optimize "$inputFile" $outputFile $* -maxStandard -displayLevel 0 -chopFirstAndSubtract
 if [ $? != 0 ]; then exit 1; fi

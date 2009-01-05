@@ -44,6 +44,7 @@ void DynamicFrobeniusAction::perform() {
   IOFacade ioFacade(_printActions);
   Scanner in("", stdin);
   ioFacade.readFrobeniusInstance(in, instance);
+  in.expectEOF();
 
   mpz_class frobeniusNumber;
 

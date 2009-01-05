@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+frobby=../../bin/frobby
+testhelper=../testScripts/testhelper
+test="$1"
+shift
+
+if [ "$1" = "_full" ];
+then
+  shift;
+
+  # Check -canon agrees with transform on ideal
+  $testhelper transform $test.maxstandard $test.maxstandard -canon
+  if [ $? != 0 ]; then exit 1; fi
+fi
+
+$testhelper maxstandard $test.*test $test.maxstandard $* -canon
+if [ $? != 0 ]; then exit 1; fi

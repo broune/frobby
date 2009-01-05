@@ -24,12 +24,22 @@
 class Slice;
 class TermGrader;
 
+// TODO: Rename this class to something more appropriate, such as
+// OptimizationStrategy, since it is no onger specific to Frobenius
+// number computations.
 class FrobeniusStrategy : public MsmStrategy, public TermConsumer {
 public:
-  FrobeniusStrategy(TermConsumer* consumer,
-					TermGrader& grader,
+  FrobeniusStrategy(TermGrader& grader,
 					const SplitStrategy* splitStrategy,
+					bool reportAllSolutions,
 					bool useBound);
+
+  const Ideal& getMaximalSolutions();
+
+  // The optimal value associated to each entry from
+  // getMaximalSolutions(). This method can only be called if
+  // getMaximalSolutions() is not the zero ideal.
+  const mpz_class& getMaximalValue();
 
 private:
   virtual void getPivot(Term& pivot, Slice& slice);
@@ -46,13 +56,12 @@ private:
 
   void getUpperBound(const Slice& slice, Term& bound);
 
-  TermConsumer* _consumer;
   const TermGrader& _grader;
 
   mpz_class _maxValue;
-  Term _maxValueTerm;
-  bool _hasSeenAnyValue;
+  Ideal _maxSolutions;
 
+  bool _reportAllSolutions;
   bool _useBound;
 
   // These are in place of using static variables. The static

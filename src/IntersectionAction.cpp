@@ -61,6 +61,7 @@ void IntersectionAction::perform() {
   IOFacade ioFacade(_printActions);
   VarNames names;
   ioFacade.readIdeals(in, ideals, names);
+  in.expectEOF();
 
   IntersectFacade facade(_printActions);
   auto_ptr<BigIdeal> intersection(facade.intersect(ideals, names));

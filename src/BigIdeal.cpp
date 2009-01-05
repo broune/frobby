@@ -230,6 +230,26 @@ bool BigIdeal::addVarToClearedIdeal(const char* var) {
   return _names.addVar(var);
 }
 
+void BigIdeal::eraseVar(size_t varToErase) {
+  ASSERT(varToErase < getVarCount());
+
+  VarNames newNames;
+  for (size_t var = 0; var < getVarCount(); ++var)
+	if (var != varToErase)
+	  newNames.addVar(_names.getName(var));
+
+  try {
+	_names = newNames;
+	for (size_t term = 0; term < getGeneratorCount(); ++term)
+	  _terms[term].erase(_terms[term].begin() + varToErase);
+  } catch (...) {
+	// To leave in valid state, which requires that _names has the same
+	// number of variables as each generator.
+	clear();
+	throw;
+  }
+}
+
 const VarNames& BigIdeal::getNames() const {
   return _names;
 }

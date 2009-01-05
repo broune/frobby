@@ -20,39 +20,47 @@
 #include "TermGrader.h"
 #include "Slice.h"
 
-FrobeniusStrategy::FrobeniusStrategy(TermConsumer* consumer,
-									 TermGrader& grader,
+FrobeniusStrategy::FrobeniusStrategy(TermGrader& grader,
 									 const SplitStrategy* splitStrategy,
+									 bool reportAllSolutions,
 									 bool useBound):
   MsmStrategy(this, splitStrategy),
-  _consumer(consumer),
   _grader(grader),
-  _hasSeenAnyValue(false),
+  _maxSolutions(grader.getVarCount()),
+  _reportAllSolutions(reportAllSolutions),
   _useBound(useBound),
 
   _simplify_bound(grader.getVarCount()),
   _simplify_oldBound(grader.getVarCount()),
   _simplify_colon(grader.getVarCount()) {
-  ASSERT(consumer != 0);
+}
+
+const Ideal& FrobeniusStrategy::getMaximalSolutions() {
+  return _maxSolutions;
+}
+
+const mpz_class& FrobeniusStrategy::getMaximalValue() {
+  ASSERT(!_maxSolutions.isZeroIdeal());
+  return _maxValue;
 }
 
 void FrobeniusStrategy::beginConsuming() {
+  _maxSolutions.clear();
 }
 
 void FrobeniusStrategy::consume(const Term& term) {
   mpz_class& degree = _consume_degree;
 
   _grader.getDegree(term, degree);
-  if (!_hasSeenAnyValue || degree > _maxValue) {
-	_maxValueTerm = term;
+  if (_maxSolutions.isZeroIdeal() || degree > _maxValue) {
 	_maxValue = degree;
-	_hasSeenAnyValue = true;
-  }
+	_maxSolutions.clear();
+	_maxSolutions.insert(term);
+  } else if (_reportAllSolutions && degree == _maxValue)
+	_maxSolutions.insert(term);
 }
 
 void FrobeniusStrategy::doneConsuming() {
-  if (_hasSeenAnyValue)
-	_consumer->consume(_maxValueTerm);
 }
 
 void FrobeniusStrategy::getPivot(Term& pivot, Slice& slice) {
@@ -94,7 +102,7 @@ void FrobeniusStrategy::simplify(Slice& slice) {
   if (slice.getIdeal().getGeneratorCount() == 0)
 	return;
 
-  if (!_hasSeenAnyValue || !_useBound) {
+  if (!_maxSolutions.isZeroIdeal() || !_useBound) {
 	slice.simplify();
 	return;
   }
@@ -115,7 +123,12 @@ void FrobeniusStrategy::simplify(Slice& slice) {
 	_grader.getDegree(bound, degree);
 
 	// Check if improvement is possible
-	if (degree <= _maxValue) {
+	bool interesting = true;
+	if (_reportAllSolutions)
+	  interesting = (degree >= _maxValue);
+	else
+	  interesting = (degree > _maxValue);
+	if (!interesting) {
 	  slice.clearIdealAndSubtract();
 	  break;
 	}
@@ -161,17 +174,23 @@ improveLowerBound(size_t var,
   baseUpperBoundDegree = upperBoundDegree -
 	_grader.getGrade(var, upperBound[var]);
 
-  // Exponential search followed by binary search.
+  // Exponential search followed by binary search. We cannot just
+  // simply use a formula since the grader can use a translator that
+  // is just a table with no mathematical signifiance.
   Exponent low = 0;
   Exponent high = upperBound[var] - lowerBound[var];
 
+  // The invariant here is that low <= high and high - low decreases
+  // at each iteration. Also, bound(mid - 1) <= _maxValue <
+  // bound(high).
   while (low < high) {
 	Exponent mid;
 	if (low < high - low)
-	  mid = 2 * low;
+	  mid = 2 * low; // Using exponential search.
 	else {
-	  // This way of expressing (low + high) / 2 avoids the
-	  // possibility of low + high causing an overflow.
+	  // Using binary search. Note that this way of expressing (low +
+	  // high) / 2 avoids the possibility of low + high causing an
+	  // overflow.
 	  mid = low + (high - low) / 2;
 	}
 
@@ -185,6 +204,14 @@ improveLowerBound(size_t var,
 	  high = mid;
   }
   ASSERT(low == high);
+  ASSERT(low >= 1);
+
+  // If we just want one solution, we can require strict improvement
+  // when looking at new solutions. When we want all, then we can only
+  // require equal to or better, so we have to decrease the bound by
+  // one.
+  if (_reportAllSolutions)
+	--low;
 
   return low;
 }

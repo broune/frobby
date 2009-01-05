@@ -152,22 +152,45 @@ class SliceFacade : public Facade {
   // square free terms. The terms are provided in arbitrary order.
   void computeAssociatedPrimes();
 
-  // Output an optimal solution to the following optimization problem.
+  // Output one or all optimal solutions to the following optimization problem.
   //   
   //   maximize v * grading subject to x ^ v being a maximal standard
-  //   monomial of ideal
+  //   monomial of ideal.
   //
   // Produces no output and returns false if ideal has no maximal
-  // standard monomials.
+  // standard monomials. reportAllSolutions specifies whether to produce one
+  // optimal solution or all of them.
   //
   // The parameter useBound specifies whether or not to use
   // branch-and-bound to speed the computation up. Note that this is
   // currently only allowed if grading has no strictly negative
   // entries.
-  bool solveStandardProgram(const vector<mpz_class>& grading,
-							bool useBound);
+  //
+  // If there are any feasible solutions, the optimal value of the
+  // program is placed into optimalValue.
+  bool solveStandardProgram
+	(const vector<mpz_class>& grading,
+	 mpz_class& value,
+	 bool reportAllSolutions,
+	 bool useBound);
+
+  // As solveStandardProgram, except that feasible solutions encode irreducible
+  // components of ideal instead of maximal standard monomials.
+  bool solveIrreducibleDecompositionProgram
+	(const vector<mpz_class>& grading,
+	 mpz_class& optimalValue,
+	 bool reportAllSolutions,
+	 bool useBound);
 
  private:
+  // Common code from solveStandardProgram and
+  // solveIrreducibleDecompositionProgram.
+  bool solveProgram
+	(const vector<mpz_class>& grading,
+	 mpz_class& optimalValue,
+	 bool reportAllSolutions,
+	 bool useBound);
+
   // Common code from the constructors.
   void initialize(const BigIdeal& ideal);
 
