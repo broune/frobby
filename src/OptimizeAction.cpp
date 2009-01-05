@@ -98,7 +98,7 @@ void OptimizeAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void OptimizeAction::perform() {
-  _sliceParams.validateSplit(true, false);
+  _sliceParams.validateSplit(true, true);
 
   BigIdeal ideal;
   vector<mpz_class> v;
