@@ -24,7 +24,7 @@ then
 
   # Check that intersection is inverse of irrdecom.
   $frobby transform < `ls $test.*test` > /tmp/$test.test \
-    -canon -minimize 2>/dev/null
+    $* -canon -minimize 2>/dev/null
   $testhelper intersect $test.irrdecom /tmp/$test.test -canon
   if [ $? != 0 ]; then exit 1; fi
   rm /tmp/$test.test
