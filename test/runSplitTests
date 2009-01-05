@@ -3,6 +3,13 @@
 #test/runtests $*
 #if [ $? != 0 ]; then exit 1; fi
 
+if [ "$1" = "_few" ]; then
+  testLevel="few";
+  shift;
+else
+  testLevel="normal"
+fi
+
 TIMEFORMAT=$' (%2lR real)'
 
 pivotSplits="minimum median maximum gcd indep"
@@ -31,6 +38,10 @@ runTests () {
       ../testScripts/runtests $action $params -split $split;
       if [ $? != 0 ]; then exit 1; fi
       cd ../..;
+
+      if [ "$testLevel" = "few" ]; then
+	    break;
+      fi
     done
     echo;
   done
