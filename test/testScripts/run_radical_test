@@ -10,19 +10,20 @@ then
   shift;
 
   # Check that -canon agrees with transform without -radical on.
-  $testhelper transform $test.radical $test.radical -canon
+  $testhelper transform $test.radical $test.radical $* -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Check that radical is idempotent.
-  $testhelper transform $test.radical $test.radical -radical -canon
+  $testhelper transform $test.radical $test.radical $* -radical -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Check that radical is minimized.
-  $testhelper transform $test.radical $test.radical -minimize -canon
+  $testhelper transform $test.radical $test.radical $* -minimize -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Check that radical of minimized is the same.
-  $testhelper transform $test.minimize $test.radical -radical -canon -minimize
+  $testhelper transform $test.minimize $test.radical \
+    $* -radical -canon -minimize
   if [ $? != 0 ]; then exit 1; fi
 fi
 
