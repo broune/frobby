@@ -40,7 +40,9 @@ runTests () {
       cd ../..;
 
       if [ "$testLevel" = "few" ]; then
-	    break;
+        if [ "$t" != "frob" ]; then
+		  break;
+        fi
       fi
     done
     echo;
