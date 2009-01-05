@@ -10,7 +10,8 @@ then
   shift;
 
   # Check -canon agrees with transform and that intersection is minimal.
-  $testhelper transform $test.intersection $test.intersection -minimize -canon
+  $testhelper transform $test.intersection $test.intersection \
+    $* -minimize -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Check that intersecting the same ideals more times, along with
@@ -18,12 +19,12 @@ then
   # result.
   cat $test.*test $test.intersection $test.radical \
      $test.minimize $test.*test > /tmp/$test.test
-  $testhelper intersection /tmp/$test.test $test.intersection -canon
+  $testhelper intersection /tmp/$test.test $test.intersection $* -canon
   if [ $? != 0 ]; then exit 1; fi
 
   # Try again after a canonicalization.
   $frobby transform < /tmp/$test.test > /tmp/$test.test2 2>/dev/null
-  $testhelper intersection /tmp/$test.test2 $test.intersection -canon
+  $testhelper intersection /tmp/$test.test2 $test.intersection $* -canon
   if [ $? != 0 ]; then exit 1; fi
 
   rm /tmp/$test.test /tmp/$test.test2

@@ -10,10 +10,10 @@ then
   shift;
 
   # Check that -canon agrees with ptransform
-  $testhelper ptransform $test.multi $test.multi -canon
+  $testhelper ptransform $test.multi $test.multi $* -canon
   if [ $? != 0 ]; then exit 1; fi
 
-  $testhelper ptransform $test.uni $test.uni -canon
+  $testhelper ptransform $test.uni $test.uni $* -canon
   if [ $? != 0 ]; then exit 1; fi
 fi
 

@@ -18,21 +18,21 @@ then
 
   for format in $formats; do
     # Test same-format transform.
-    $testhelper transform $testName.$format $testName.$format;
+    $testhelper transform $testName.$format $testName.$format $*;
     if [ $? != 0 ]; then exit 1; fi
 
     # And again with specified formats.
     $testhelper transform $testName.$format $testName.$format \
-      -iformat $format -oformat $format;
+      $* -iformat $format -oformat $format;
     if [ $? != 0 ]; then exit 1; fi
   done
 
   # Test same-format transform on canon
-  $testhelper transform $testName.canon $testName.canon;
+  $testhelper transform $testName.canon $testName.canon $*;
   if [ $? != 0 ]; then exit 1; fi
 
   # And again with -canon option
-  $testhelper transform $testName.canon $testName.canon -canon;
+  $testhelper transform $testName.canon $testName.canon $* -canon;
   if [ $? != 0 ]; then exit 1; fi
 fi
 
