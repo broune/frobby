@@ -187,6 +187,25 @@ ifeq ($(MODE), analysis)
 	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
 endif
 
+# ***** Documentation
+
+# It may seem wasteful to run doxygen three times to generate three
+# kinds of output. However, the latex output for creating a pdf file
+# and for creating a PostScript file is different, and so at least two
+# runs are necessary. Making the HTML output a third run is cleaner
+# than tacking it onto one or both of the other two targets.
+doc: docHtml docPdf docPs
+docHtml:
+	cat doc/doxygen.conf doc/doxHtml|doxygen -
+docPdf:
+	rm -rf bin/doc/latexPdf
+	cat doc/doxygen.conf doc/doxPdf|doxygen -
+	cd bin/doc/latexPdf/; make pdf; mv refman.pdf ../frobbyManual.pdf
+docPs:
+	rm -rf bin/doc/latexPs
+	cat doc/doxygen.conf doc/doxPs|doxygen -
+	cd bin/doc/latexPs/; make ps; mv refman.ps ../frobbyManual.ps
+
 # ***** Dependency management
 depend:
 	$(CC) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
