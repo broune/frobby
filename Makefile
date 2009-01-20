@@ -194,14 +194,14 @@ endif
 # and for creating a PostScript file is different, and so at least two
 # runs are necessary. Making the HTML output a third run is cleaner
 # than tacking it onto one or both of the other two targets.
-doc: docHtml docPdf docPs
-docHtml:
+develDoc: develDocHtml develDocPdf develDocPs
+develDocHtml:
 	cat doc/doxygen.conf doc/doxHtml|doxygen -
-docPdf:
+develDocPdf:
 	rm -rf bin/doc/latexPdf
 	cat doc/doxygen.conf doc/doxPdf|doxygen -
 	cd bin/doc/latexPdf/; make pdf; mv refman.pdf ../frobbyManual.pdf
-docPs:
+develDocPs:
 	rm -rf bin/doc/latexPs
 	cat doc/doxygen.conf doc/doxPs|doxygen -
 	cd bin/doc/latexPs/; make ps; mv refman.ps ../frobbyManual.ps
