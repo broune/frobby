@@ -547,6 +547,7 @@ void SliceFacade::getLcmOfIdeal(vector<mpz_class>& bigLcm) {
   _ideal->getLcm(lcm);
 
   bigLcm.clear();
+  bigLcm.reserve(_ideal->getVarCount());
   for (size_t var = 0; var < _ideal->getVarCount(); ++var)
 	bigLcm.push_back(_translator->getExponent(var, lcm));
 }

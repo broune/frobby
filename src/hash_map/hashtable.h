@@ -54,7 +54,7 @@
  *
  */
 
-/** @file backward/hashtable.h
+/**
  *  This file is a GNU extension to the Standard C++ Library (possibly
  *  containing extensions from the HP/SGI STL subset).
  */
