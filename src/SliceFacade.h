@@ -211,7 +211,7 @@ class SliceFacade : public Facade {
    @todo Add a bool encode option to choose between output as actual
    ideals or as it is being done now.
   */
-  computeAssociatedPrimes();
+  void computeAssociatedPrimes();
 
   /** Solve an optimization program over maximal standard monomials.
    The optimization program being solved is
