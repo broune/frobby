@@ -197,14 +197,17 @@ endif
 develDoc: develDocHtml develDocPdf develDocPs
 develDocHtml:
 	cat doc/doxygen.conf doc/doxHtml|doxygen -
+	cat bin/doc/warningLog
 develDocPdf:
 	rm -rf bin/doc/latexPdf
 	cat doc/doxygen.conf doc/doxPdf|doxygen -
 	cd bin/doc/latexPdf/; make pdf; mv refman.pdf ../frobbyManual.pdf
+	cat bin/doc/warningLog
 develDocPs:
 	rm -rf bin/doc/latexPs
 	cat doc/doxygen.conf doc/doxPs|doxygen -
 	cd bin/doc/latexPs/; make ps; mv refman.ps ../frobbyManual.ps
+	cat bin/doc/warningLog
 
 # ***** Dependency management
 depend:
