@@ -47,10 +47,14 @@ ifndef GMP_INC_DIR
 endif
 
 ifndef ldflags
-  ldflags = -lgmpxx -lgmp -L/sw/lib
+  ldflags = $(LDFLAGS) -lgmpxx -lgmp -L/sw/lib
 endif
 
-cflags = -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
+ifndef CXX
+  CXX      = "g++"
+endif
+
+cflags = $(CFLAGS) -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
          -Wno-unused-parameter -isystem $(GMP_INC_DIR)
 program = frobby
 library = libfrobby.a
@@ -105,7 +109,6 @@ $(info $(TMP_CMD) $(shell mkdir -p $(outdir)))
 
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
-CC      = "g++"
 
 # ***** Compilation
 
@@ -159,7 +162,7 @@ ifeq ($(MODE), analysis)
 	echo > $(outdir)$(program)
 endif
 ifneq ($(MODE), analysis)
-	$(CC) $(objs) $(ldflags) -o $(outdir)$(program)
+	$(CXX) $(objs) $(ldflags) -o $(outdir)$(program)
 	if [ -f $(outdir)$(program).exe ]; then \
 	  mv -f $(outdir)$(program).exe $(outdir)$(program); \
 	fi
@@ -173,16 +176,17 @@ library: bin/$(library)
 bin/$(library): $(objs) | bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
-	$(CC) -shared $(ldflags) -o bin/$(library) $(patsubst main.o,,$(objs))
+	$(CXX) -shared -o bin/$(library) $(patsubst $(outdir)main.o,,$(objs)) \
+	  $(ldflags)
 else
-	ar crs bin/$(library) $(patsubst main.o,,$(objs))
+	ar crs bin/$(library) $(patsubst $(outdir)main.o,,$(objs))
 endif
 
 # Compile and output object files.
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
 $(outdir)%.o: src/%.cpp
-	  $(CC) ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
+	  $(CXX) ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
 ifeq ($(MODE), analysis)
 	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
 endif
@@ -211,7 +215,7 @@ develDocPs:
 
 # ***** Dependency management
 depend:
-	$(CC) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
+	$(CXX) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
 -include .depend
 
 clean: tidy
