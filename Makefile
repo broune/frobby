@@ -54,9 +54,7 @@ ifndef CXX
   CXX      = "g++"
 endif
 
-cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -Wextra	\
-         -Wno-uninitialized										\
-         -Wno-unused-parameter -I $(GMP_INC_DIR)
+cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -I $(GMP_INC_DIR)
 program = frobby
 library = libfrobby.a
 
@@ -72,7 +70,8 @@ ifeq ($(MODE), release)
 endif
 ifeq ($(MODE), debug)
   outdir = bin/debug/
-  cflags += -g -D DEBUG -fno-inline -Werror
+  cflags += -g -D DEBUG -fno-inline -Werror -Wextra -Wno-uninitialized \
+            -Wno-unused-parameter
   MATCH=true
 endif
 ifeq ($(MODE), shared)
@@ -89,14 +88,15 @@ ifeq ($(MODE), profile)
 endif
 ifeq ($(MODE), analysis)
   outdir = bin/analysis/
-  cflags += -fsyntax-only -O1 -Wfloat-equal -Wundef                     \
-            -Wno-endif-labels -Wshadow -Wlarger-than-1000               \
-            -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings    \
-            -Wconversion -Wsign-compare -Waggregate-return              \
-            -Wmissing-noreturn -Wmissing-format-attribute               \
-            -Wno-multichar -Wno-deprecated-declarations -Wpacked        \
-            -Wredundant-decls -Wunreachable-code -Winline               \
-            -Wno-invalid-offsetof -Winvalid-pch -Wlong-long             \
+  cflags += -Wextra -Wno-uninitialized -Wno-unused-parameter			\
+            -fsyntax-only -O1 -Wfloat-equal -Wundef						\
+            -Wno-endif-labels -Wshadow -Wlarger-than-1000				\
+            -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings	\
+            -Wconversion -Wsign-compare -Waggregate-return				\
+            -Wmissing-noreturn -Wmissing-format-attribute				\
+            -Wno-multichar -Wno-deprecated-declarations -Wpacked		\
+            -Wredundant-decls -Wunreachable-code -Winline				\
+            -Wno-invalid-offsetof -Winvalid-pch -Wlong-long				\
             -Wdisabled-optimization -D DEBUG -Werror
   MATCH=true
 endif
