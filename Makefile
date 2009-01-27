@@ -54,8 +54,9 @@ ifndef CXX
   CXX      = "g++"
 endif
 
-cflags = $(CFLAGS) -Wall -ansi -pedantic -Wextra -Wno-uninitialized \
-         -Wno-unused-parameter -isystem $(GMP_INC_DIR)
+cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -Wextra	\
+         -Wno-uninitialized										\
+         -Wno-unused-parameter -I $(GMP_INC_DIR)
 program = frobby
 library = libfrobby.a
 
