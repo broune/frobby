@@ -155,7 +155,7 @@ bareTest: all
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
 ifneq ($(MODE), analysis)
-	cd bin; rm -f $(program); link ../$(outdir)$(program) $(program); cd ..
+	cd bin; rm -f $(program); ln -s ../$(outdir)$(program) $(program); cd ..
 endif
 
 # Link object files into executable
