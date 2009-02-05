@@ -39,5 +39,10 @@ The parameters accepted by transform are as follows.
  -product [BOOL]   (default is off)
    Replace each ideal with the product of its generators.
 
+ -addPurePowers [BOOL]   (default is off)
+   Adds a pure power for each variable that does not already have a pure power
+   in the ideal. Each exponent is chosen to be one larger than themaximal
+   exponent of that variable that appears in the ideal.
+
  -time [BOOL]   (default is off)
    Display and time each subcomputation.

@@ -54,7 +54,8 @@ ifndef CXX
   CXX      = "g++"
 endif
 
-cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -I $(GMP_INC_DIR)
+cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -I $(GMP_INC_DIR)	\
+         -Wno-uninitialized -Wno-unused-parameter
 program = frobby
 library = libfrobby.a
 
@@ -88,7 +89,7 @@ ifeq ($(MODE), profile)
 endif
 ifeq ($(MODE), analysis)
   outdir = bin/analysis/
-  cflags += -Wextra -Wno-uninitialized -Wno-unused-parameter			\
+  cflags += -Wextra 			\
             -fsyntax-only -O1 -Wfloat-equal -Wundef						\
             -Wno-endif-labels -Wshadow -Wlarger-than-1000				\
             -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings	\
