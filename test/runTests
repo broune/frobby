@@ -58,3 +58,5 @@ do
   echo
   cd ../..
 done
+
+echo "All tests passed."
