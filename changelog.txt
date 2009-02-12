@@ -1,0 +1,28 @@
+*** Version 0.8.0, 2009-02-12
+
+This version adds support for
+
+ - Hilbert-Poincare series.
+ - Primary decomposition.
+ - Maximal standard monomials.
+ - Linear optimization problems over monomial ideals.
+ - The format cocoa4 that can be processed by CoCoA 4.
+ - The format singular, which can be processed by Singular.
+ - Manipulation of polynomials for formats where it makes sense.
+
+The library interface is expanded and is now tested in the
+testsuite. This interface is being used by Macaulay 2 and CoCoA to
+perform some of their computations on monomial ideals. The library
+interface, and Frobby in general, is now exception-safe and deals
+gracefully with running out of memory. Frobby is also included with
+Sage as an optional package.
+
+The testsuite for every functionality has been greatly extended and
+improved, with the consequence that the tests now take much longer to
+run, as they are testing many more aspects of Frobby and there is more
+testing going on.
+
+Having Frobby included with Macaulay 2 and CoCoA has resulted in a
+number of improvements to make Frobby build correctly on the many
+platforms that these systems support. Thanks goes to Daniel R. Grayson,
+Michael Stillman and Anna Bigatti for their work on this.
