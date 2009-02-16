@@ -14,9 +14,13 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifdef _MSC_VER // For Microsoft Visual Studio.
+#ifdef _MSC_VER // For Microsoft Compiler in Visual Studio C++.
 #pragma warning (push, 1) // Reduce warning level for GMP headers.
 #endif
+
+// Some versions of GMP do not define gmp_fprintf unless cstdio is
+// included first, so we have to include it here.
+#include <cstdio>
 
 #include <gmp.h>
 #include <gmpxx.h>
