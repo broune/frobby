@@ -223,10 +223,15 @@ depend:
 clean: tidy
 	rm -rf bin
 
+# ***** Miscellaneous
+
 tidy:
 	find .|grep -x ".*~\|.*/\#.*\#|.*\.stackdump\|gmon\.out\|.*\.orig\|.*/core\|core"|xargs rm -f
 
-# ***** Mercurial
+# Convert any Windows-style whitespace into Unix-style whitespace. This is
+# a good thing to do before a commit if developing on e.g. Cygwin.
+dos2unix:
+	for f in `find src/ test/ scr/ example/ -type f`; do dos2unix $$f; done
 
 commit: test
 	echo
