@@ -23,8 +23,7 @@
 // while delegating everything to the strategy being wrapped.
 class StatisticsStrategy : public SliceStrategy {
  public:
-  // Takes over ownership of strategy. Does not close out in
-  // destructor.
+  // Does not close out in destructor.
   StatisticsStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~StatisticsStrategy();
 

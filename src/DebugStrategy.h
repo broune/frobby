@@ -24,8 +24,7 @@
 // being wrapped.
 class DebugStrategy : public SliceStrategy {
  public:
-  // Takes over ownership of strategy. Does not close out in
-  // destructor.
+  // Does not close out in destructor.
   DebugStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~DebugStrategy();
 

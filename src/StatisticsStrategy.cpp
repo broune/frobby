@@ -26,7 +26,6 @@ StatisticsStrategy::StatisticsStrategy(SliceStrategy* strategy, FILE* out):
 }
 
 StatisticsStrategy::~StatisticsStrategy() {
-  delete _strategy; // TODO: replace with auto_ptr
 }
 
 void StatisticsStrategy::setUseIndependence(bool use) {
