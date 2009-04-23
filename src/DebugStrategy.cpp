@@ -27,7 +27,6 @@ DebugStrategy::DebugStrategy(SliceStrategy* strategy, FILE* out):
 }
 
 DebugStrategy::~DebugStrategy() {
-  delete _strategy;
 }
 
 void DebugStrategy::setUseIndependence(bool use) {
