@@ -402,23 +402,26 @@ $(outdir)StatisticsStrategy.o: src/StatisticsStrategy.cpp src/stdinc.h \
   src/Term.h
 $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
   src/Action.h src/BoolParameter.h src/Parameter.h \
-  src/../example/include.cpp src/../example/AlexanderDualTests.cpp \
-  src/../example/AlexanderDualTests.h src/../example/../src/frobby.h \
-  src/../example/MyAsserts.h src/../example/MyIdeal.h \
-  src/../example/MyPolynomial.h src/../example/MyIdealCreators.h \
-  src/../example/MyConsumers.h src/../example/HilbertPoincareTests.cpp \
-  src/../example/HilbertPoincareTests.h \
-  src/../example/MyPolynomialCreators.h \
-  src/../example/IrreducibleDecomTests.cpp \
-  src/../example/IrreducibleDecomTests.h \
-  src/../example/standardProgramTests.cpp \
-  src/../example/standardProgramTests.h \
-  src/../example/maximalStandardMonomialTests.cpp \
-  src/../example/maximalStandardMonomialTests.h \
-  src/../example/MyIdeal.cpp src/../example/MyPolynomial.cpp \
-  src/../example/MyAsserts.cpp src/../example/MyConsumers.cpp \
-  src/../example/MyIdealCreators.cpp \
-  src/../example/MyPolynomialCreators.cpp src/../example/example.cpp
+  src/../libraryTest/include.cpp \
+  src/../libraryTest/AlexanderDualTests.cpp \
+  src/../libraryTest/AlexanderDualTests.h \
+  src/../libraryTest/../src/frobby.h src/../libraryTest/MyAsserts.h \
+  src/../libraryTest/MyIdeal.h src/../libraryTest/MyPolynomial.h \
+  src/../libraryTest/MyIdealCreators.h src/../libraryTest/MyConsumers.h \
+  src/../libraryTest/HilbertPoincareTests.cpp \
+  src/../libraryTest/HilbertPoincareTests.h \
+  src/../libraryTest/MyPolynomialCreators.h \
+  src/../libraryTest/IrreducibleDecomTests.cpp \
+  src/../libraryTest/IrreducibleDecomTests.h \
+  src/../libraryTest/standardProgramTests.cpp \
+  src/../libraryTest/standardProgramTests.h \
+  src/../libraryTest/maximalStandardMonomialTests.cpp \
+  src/../libraryTest/maximalStandardMonomialTests.h \
+  src/../libraryTest/MyIdeal.cpp src/../libraryTest/MyPolynomial.cpp \
+  src/../libraryTest/MyAsserts.cpp src/../libraryTest/MyConsumers.cpp \
+  src/../libraryTest/MyIdealCreators.cpp \
+  src/../libraryTest/MyPolynomialCreators.cpp \
+  src/../libraryTest/example.cpp
 $(outdir)NameFactory.o: src/NameFactory.cpp src/stdinc.h src/NameFactory.h
 $(outdir)error.o: src/error.cpp src/stdinc.h src/error.h src/Scanner.h \
   src/FrobbyStringStream.h
