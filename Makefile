@@ -54,6 +54,10 @@ ifndef CXX
   CXX      = "g++"
 endif
 
+ifndef BIN_INSTALL_DIR
+  BIN_INSTALL_DIR = "/usr/bin/"
+endif
+
 cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -I $(GMP_INC_DIR)	\
          -Wno-uninitialized -Wno-unused-parameter
 program = frobby
@@ -192,6 +196,10 @@ $(outdir)%.o: src/%.cpp
 ifeq ($(MODE), analysis)
 	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
 endif
+
+# Installation
+install:
+	install bin/frobby $(BIN_INSTALL_DIR)
 
 # ***** Documentation
 
