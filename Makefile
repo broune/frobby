@@ -211,17 +211,15 @@ install:
 develDoc: develDocHtml develDocPdf develDocPs
 develDocHtml:
 	cat doc/doxygen.conf doc/doxHtml|doxygen -
-	cat bin/doc/warningLog
 develDocPdf:
-	rm -rf bin/doc/latexPdf
+	rm -rf bin/develDoc/latexPdf bin/develDoc/warningLog
 	cat doc/doxygen.conf doc/doxPdf|doxygen -
-	cd bin/doc/latexPdf/; make pdf; mv refman.pdf ../frobbyManual.pdf
-	cat bin/doc/warningLog
+	cd bin/develDoc/latexPdf; for f in `ls *.eps`; do epstopdf $$f; done # Cygwin fix
+	cd bin/develDoc/latexPdf/; make refman.pdf; mv refman.pdf ../develDoc.pdf
 develDocPs:
-	rm -rf bin/doc/latexPs
+	rm -rf bin/develDoc/latexPs bin/develDoc/warningLog
 	cat doc/doxygen.conf doc/doxPs|doxygen -
-	cd bin/doc/latexPs/; make ps; mv refman.ps ../frobbyManual.ps
-	cat bin/doc/warningLog
+	cd bin/develDoc/latexPs/; make refman.ps; mv refman.ps ../develDoc.ps
 
 # ***** Dependency management
 depend:
