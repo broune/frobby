@@ -203,6 +203,22 @@ install:
 
 # ***** Documentation
 
+# We need to run latex three times to make sure that references are done
+# properly in the output.
+doc: docPs docPdf
+docPs:
+	rm -rf bin/doc
+	mkdir bin/doc
+	for i in 1 2 3; do latex doc/manual.tex -output-directory=bin/doc/; done
+	cd bin; dvips doc/manual.dvi
+docPdf:
+	rm -rf bin/doc
+	mkdir bin/doc
+	for i in 1 2 3; do pdflatex doc/manual.tex -output-directory=bin/doc/; done
+	mv bin/doc/manual.pdf bin
+docDviOnce: # Useful to view changes when writing the manual
+	latex doc/manual.tex -output-directory=bin/doc
+
 # It may seem wasteful to run doxygen three times to generate three
 # kinds of output. However, the latex output for creating a pdf file
 # and for creating a PostScript file is different, and so at least two
