@@ -253,7 +253,7 @@ tidy:
 # Convert any Windows-style whitespace into Unix-style whitespace. This is
 # a good thing to do before a commit if developing on e.g. Cygwin.
 dos2unix:
-	for f in `find src/ test/ scr/ example/ -type f`; do dos2unix $$f; done
+	for f in `find src/ test/ scr/ libraryTest/ -type f`; do dos2unix $$f; done
 
 commit: test
 	echo
@@ -276,7 +276,7 @@ ifndef VER
 endif
 	rm -fr frobby_v$(VER).tar.gz frobby_v$(VER)
 	mkdir frobby_v$(VER)
-	cp -r frobgrob COPYING Makefile src test example frobby_v$(VER)
+	cp -r frobgrob COPYING Makefile src test libraryTest frobby_v$(VER)
 	mkdir frobby_v$(VER)/4ti2
 	tar --create --gzip --file=frobby_v$(VER).tar.gz frobby_v$(VER)/
 	rm -fr frobby_v$(VER)	

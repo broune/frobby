@@ -1,3 +1,13 @@
+*** Version 0.8.1, 2009-04-30
+
+This is a minor update.
+
+ - There is now a manual in doc/manual.tex.
+ - Frobby no longer crashes when using the -stats and -debug options.
+ - The developer documentation can now be built on Cygwin.
+ - The example/ directory is now named liraryTest/ to avoid confusion.
+ - The Makefile now has an "install" target.
+
 *** Version 0.8.0, 2009-02-12
 
 This version adds support for
