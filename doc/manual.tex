@@ -82,7 +82,19 @@
 
 \tableofcontents
 
-This is a preliminary draft of a manual for Frobby.
+This is a minimal manual for Frobby. At present it contains
+information on how to install Frobby on your system, as well as
+documentation in the form of a tutorial which shows how to do most
+things that Frobby can do.
+
+The most complete reference for the functionality of Frobby is the
+help system built into Frobby. However that system may be \emph{too}
+complete to serve as a good introduction, and this manual is intended
+to cover that area.
+
+This manual will be expanded in time to cover the algorithms that
+Frobby uses, explain the file formats in detail and cover the
+mathematical meaning of the computations that Frobby performs.
 
 \section{Installation}
 
@@ -146,9 +158,9 @@ To see if your installation of Frobby is working, type
 \begin{verbatim}
 frobby
 \end{verbatim}
-You should now be looking at a lot of information about Frobby and its
-help system. If you instead get a message along the lines of ``command
-not found'', type
+You should now be looking at information about Frobby and its help
+system. If you instead get a message along the lines of ``command not
+found'', type
 \begin{verbatim}
 bin/frobby
 \end{verbatim}
@@ -157,7 +169,7 @@ convenient place on your system, probably because you don't have the
 access rights to install programs centrally on your system. In that
 case you can simply call Frobby as bin/frobby from the directory where
 you unpacked it, or you can place the binary somewhere on your path
-where you do have acess rights to put it.
+where you do have access rights to put it.
 
 If you want to check that your Frobby compiled correctly, type
 \begin{verbatim}
@@ -462,7 +474,7 @@ so the series itself is
 (1-a)(1-b)(1-c)}
 \]
 This is the multivariate, $\N^n$-graded hilbert series. You may want
-the denominator of the univariate \hps{}, which you get by typing
+the numerator of the univariate \hps{}, which you get by typing
 \begin{verbatim}
 frobby hilbert < input -univariate
 \end{verbatim}
@@ -588,10 +600,11 @@ I = monomialIdeal(
  a^3*c^3
 );
 \end{verbatim}
-This format for a list of monomial ideals has a lot of noise. We can
-get a more compact notation by encoding each irreducible ideal as the
-product of its generators, noting that this is a bijection between
-irreducible ideals and monomials. Do this by typing
+This format for a list of the irreducible components takes up a lot of
+space and is not the easiest to read. We can get a more compact
+notation by encoding each irreducible ideal as the product of its
+generators, noting that this is a bijection between irreducible ideals
+and monomials. Do this by typing
 \begin{verbatim}
 frobby irrdecom < input -encode
 \end{verbatim}
@@ -670,7 +683,8 @@ I = monomialIdeal(
 
 The primary decomposition is not unique, but Frobby computes the
 ``nicest'' primary decomposition, which is the one gotten by
-intersecting irreducible components of the same support.
+intersecting irreducible components of the same support, and that
+primary decomposition is unique.
 
 \subsection{Associated primes}
 
