@@ -1,6 +1,6 @@
 # ***** Variables
 
-rawSources = main.cpp Action.cpp IOParameters.cpp						\
+rawSources =  Action.cpp IOParameters.cpp						\
   IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
   randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
   TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp		\
@@ -37,7 +37,9 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   IdealComparator.cpp IOHandlerCommon.cpp IrreducibleIdealSplitter.cpp	\
   DataType.cpp IdealConsolidator.cpp CoefBigTermConsumer.cpp			\
   PolynomialConsolidator.cpp OptimizeAction.cpp							\
-  MaximalStandardAction.cpp
+  MaximalStandardAction.cpp test/Test.cpp test/TestCase.cpp 			\
+  test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp         \
+  test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp test/testmain.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -110,8 +112,7 @@ ifeq ($(MATCH), false)
   $(error Unknown value of MODE: "$(MODE)")
 endif
 
-TMP_CMD = mkdir -p $(outdir)
-$(info $(TMP_CMD) $(shell mkdir -p $(outdir)))
+$(shell mkdir -p $(outdir) $(outdir)test)
 
 sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
