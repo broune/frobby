@@ -1,6 +1,6 @@
 # ***** Variables
 
-rawSources =  Action.cpp IOParameters.cpp						\
+rawRootSources =  Action.cpp IOParameters.cpp						\
   IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
   randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
   TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp		\
@@ -37,9 +37,13 @@ rawSources =  Action.cpp IOParameters.cpp						\
   IdealComparator.cpp IOHandlerCommon.cpp IrreducibleIdealSplitter.cpp	\
   DataType.cpp IdealConsolidator.cpp CoefBigTermConsumer.cpp			\
   PolynomialConsolidator.cpp OptimizeAction.cpp							\
-  MaximalStandardAction.cpp test/Test.cpp test/TestCase.cpp 			\
+  MaximalStandardAction.cpp
+rawTestSources =  test/Test.cpp test/TestCase.cpp 			\
   test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp         \
   test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp test/testmain.cpp
+
+
+rawSources = $(rawRootSources) $(rawTestSources)
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -114,7 +118,9 @@ endif
 
 $(shell mkdir -p $(outdir) $(outdir)test)
 
-sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
+testSources = $(patsubst %.cpp, src/%.cpp, $(rawTestSources))
+rootSources = $(patsubst %.cpp, src/%.cpp, $(rawRootSources))
+sources = $(testSources) $(rootSources)
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 # ***** Compilation
@@ -240,7 +246,8 @@ develDocPs:
 
 # ***** Dependency management
 depend:
-	$(CXX) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
+	$(CXX) ${cflags} -MM $(rootSources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
+	$(CXX) ${cflags} -MM $(testSources) | sed 's/^[^\ ]/$$(outdir)test\/&/' >> .depend
 -include .depend
 
 clean: tidy

@@ -482,26 +482,26 @@ $(outdir)MaximalStandardAction.o: src/MaximalStandardAction.cpp src/stdinc.h \
   src/SplitStrategy.h src/Ideal.h src/TermTranslator.h src/Facade.h \
   src/Timer.h src/TermConsumer.h src/CoefTermConsumer.h src/IOFacade.h \
   src/Scanner.h src/DataType.h
-$(outdir)Test.o: src/test/Test.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)test/Test.o: src/test/Test.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/Test.h
-$(outdir)TestCase.o: src/test/TestCase.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)test/TestCase.o: src/test/TestCase.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/TestCase.h src/test/Test.h src/test/TestVisitor.h
-$(outdir)TestQualifier.o: src/test/TestQualifier.cpp src/test/stdinc.h \
+$(outdir)test/TestQualifier.o: src/test/TestQualifier.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestQualifier.h src/test/TestVisitor.h \
   src/test/TestSuite.h src/test/Test.h
-$(outdir)TestRunner.o: src/test/TestRunner.cpp src/test/stdinc.h \
+$(outdir)test/TestRunner.o: src/test/TestRunner.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestRunner.h src/test/TestQualifier.h \
   src/test/TestVisitor.h src/test/TestCase.h src/test/Test.h
-$(outdir)TestSuite.o: src/test/TestSuite.cpp src/test/stdinc.h \
+$(outdir)test/TestSuite.o: src/test/TestSuite.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestSuite.h src/test/Test.h \
   src/test/TestVisitor.h
-$(outdir)TestVisitor.o: src/test/TestVisitor.cpp src/test/stdinc.h \
+$(outdir)test/TestVisitor.o: src/test/TestVisitor.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestVisitor.h
-$(outdir)macroes.o: src/test/macroes.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)test/macroes.o: src/test/macroes.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/macroes.h src/test/TestSuite.h src/test/Test.h
-$(outdir)asserts.o: src/test/asserts.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)test/asserts.o: src/test/asserts.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/asserts.h
-$(outdir)testmain.o: src/test/testmain.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)test/testmain.o: src/test/testmain.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/all.h src/test/TestCase.h src/test/Test.h src/test/TestSuite.h \
   src/test/macroes.h src/test/TestRunner.h src/test/TestQualifier.h \
   src/test/TestVisitor.h src/test/asserts.h
