@@ -1,33 +1,31 @@
 # ***** Variables
 
-rawRootSources =  Action.cpp IOParameters.cpp						\
+rawSources = main.cpp Action.cpp IOParameters.cpp						\
   IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
   randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
   TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp		\
   HelpAction.cpp stdinc.cpp DynamicFrobeniusAction.cpp					\
   dynamicFrobeniusAlgorithm.cpp GenerateIdealAction.cpp					\
-  GenerateFrobeniusAction.cpp intersect.cpp								\
-  FrobeniusAction.cpp Facade.cpp IOFacade.cpp							\
-  DynamicFrobeniusFacade.cpp GenerateDataFacade.cpp AnalyzeAction.cpp	\
-  IdealFacade.cpp Parameter.cpp ParameterGroup.cpp						\
-  IntegerParameter.cpp SliceParameters.cpp								\
-  BoolParameter.cpp Scanner.cpp Partition.cpp StringParameter.cpp		\
-  Term.cpp TermTranslator.cpp Timer.cpp VarNames.cpp					\
-  LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp					\
+  GenerateFrobeniusAction.cpp intersect.cpp FrobeniusAction.cpp			\
+  Facade.cpp IOFacade.cpp DynamicFrobeniusFacade.cpp					\
+  GenerateDataFacade.cpp AnalyzeAction.cpp IdealFacade.cpp				\
+  Parameter.cpp ParameterGroup.cpp IntegerParameter.cpp					\
+  SliceParameters.cpp BoolParameter.cpp Scanner.cpp Partition.cpp		\
+  StringParameter.cpp Term.cpp TermTranslator.cpp Timer.cpp				\
+  VarNames.cpp LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp		\
   IntersectionAction.cpp IntersectFacade.cpp							\
-  AssociatedPrimesAction.cpp MsmSlice.cpp								\
-  IndependenceSplitter.cpp Projection.cpp MsmStrategy.cpp				\
-  lattice.cpp LatticeFacade.cpp DecomRecorder.cpp TermGrader.cpp		\
-  Fourti2IOHandler.cpp NullIOHandler.cpp Minimizer.cpp					\
-  AlexanderDualAction.cpp frobby.cpp BigTermConsumer.cpp				\
-  TranslatingTermConsumer.cpp HilbertAction.cpp							\
-  HilbertSlice.cpp Polynomial.cpp										\
-  CanonicalCoefTermConsumer.cpp HilbertStrategy.cpp Slice.cpp			\
-  SliceStrategyCommon.cpp DebugStrategy.cpp FrobeniusStrategy.cpp		\
-  SliceFacade.cpp BigTermRecorder.cpp CoCoA4IOHandler.cpp				\
-  SingularIOHandler.cpp TotalDegreeCoefTermConsumer.cpp					\
-  BigPolynomial.cpp CoefBigTermRecorder.cpp PolyTransformAction.cpp		\
-  VarSorter.cpp SliceEvent.cpp TermConsumer.cpp NullTermConsumer.cpp	\
+  AssociatedPrimesAction.cpp MsmSlice.cpp IndependenceSplitter.cpp		\
+  Projection.cpp MsmStrategy.cpp lattice.cpp LatticeFacade.cpp			\
+  DecomRecorder.cpp TermGrader.cpp Fourti2IOHandler.cpp					\
+  NullIOHandler.cpp Minimizer.cpp AlexanderDualAction.cpp frobby.cpp	\
+  BigTermConsumer.cpp TranslatingTermConsumer.cpp HilbertAction.cpp		\
+  HilbertSlice.cpp Polynomial.cpp CanonicalCoefTermConsumer.cpp			\
+  HilbertStrategy.cpp Slice.cpp SliceStrategyCommon.cpp					\
+  DebugStrategy.cpp FrobeniusStrategy.cpp SliceFacade.cpp				\
+  BigTermRecorder.cpp CoCoA4IOHandler.cpp SingularIOHandler.cpp			\
+  TotalDegreeCoefTermConsumer.cpp BigPolynomial.cpp						\
+  CoefBigTermRecorder.cpp PolyTransformAction.cpp VarSorter.cpp			\
+  SliceEvent.cpp TermConsumer.cpp NullTermConsumer.cpp					\
   CoefTermConsumer.cpp NullCoefTermConsumer.cpp							\
   TranslatingCoefTermConsumer.cpp PolynomialFacade.cpp					\
   HilbertBasecase.cpp HilbertIndependenceConsumer.cpp					\
@@ -37,13 +35,17 @@ rawRootSources =  Action.cpp IOParameters.cpp						\
   IdealComparator.cpp IOHandlerCommon.cpp IrreducibleIdealSplitter.cpp	\
   DataType.cpp IdealConsolidator.cpp CoefBigTermConsumer.cpp			\
   PolynomialConsolidator.cpp OptimizeAction.cpp							\
-  MaximalStandardAction.cpp
-rawTestSources =  test/Test.cpp test/TestCase.cpp 			\
-  test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp         \
-  test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp test/testmain.cpp
-
-
-rawSources = $(rawRootSources) $(rawTestSources)
+  MaximalStandardAction.cpp test/Test.cpp test/TestCase.cpp				\
+  test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp			\
+  test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp				\
+  libraryTest/AlexanderDualTest.cpp										\
+  libraryTest/HilbertPoincareTest.cpp									\
+  libraryTest/IrreducibleDecomTest.cpp libraryTest/MyAsserts.cpp		\
+  libraryTest/MyConsumers.cpp libraryTest/MyIdeal.cpp					\
+  libraryTest/MyIdealCreators.cpp libraryTest/MyPolynomial.cpp			\
+  libraryTest/MyPolynomialCreators.cpp									\
+  libraryTest/maximalStandardMonomialTest.cpp							\
+  libraryTest/standardProgramTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -116,11 +118,7 @@ ifeq ($(MATCH), false)
   $(error Unknown value of MODE: "$(MODE)")
 endif
 
-$(shell mkdir -p $(outdir) $(outdir)test)
-
-testSources = $(patsubst %.cpp, src/%.cpp, $(rawTestSources))
-rootSources = $(patsubst %.cpp, src/%.cpp, $(rawRootSources))
-sources = $(testSources) $(rootSources)
+sources = $(patsubst %.cpp, src/%.cpp, $(rawSources))
 objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 # ***** Compilation
@@ -166,22 +164,24 @@ bareTest: all
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
 ifneq ($(MODE), analysis)
+	mkdir -p $(dir $@);
 	cd bin; rm -f $(program); ln -s ../$(outdir)$(program) $(program); cd ..
 endif
 
 # Link object files into executable
 $(outdir)$(program): $(objs) | $(outdir)
+	mkdir -p $(dir $@)
 ifeq ($(MODE), analysis)
-	echo > $(outdir)$(program)
+	echo > $@
 endif
 ifneq ($(MODE), analysis)
-	$(CXX) $(objs) $(ldflags) -o $(outdir)$(program)
-	if [ -f $(outdir)$(program).exe ]; then \
-	  mv -f $(outdir)$(program).exe $(outdir)$(program); \
+	$(CXX) $(objs) $(ldflags) -o $@
+	if [ -f $@.exe ]; then \
+	  mv -f $@.exe $@; \
 	fi
 endif
 ifeq ($(MODE), release)
-	strip $(outdir)$(program)
+	strip $@
 endif
 
 # Link object files into library
@@ -199,9 +199,13 @@ endif
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
 $(outdir)%.o: src/%.cpp
-	  $(CXX) ${cflags} -c $< -o $(outdir)$(subst src/,,$(<:.cpp=.o))
+	mkdir -p $(dir $@)
+	$(CXX) ${cflags} -c $< -o $@
+	echo -n "$(dir $@)" > $(@:.o=.depend)
+	$(CXX) $(cflags) -MM -c $< >> $(@:.o=.depend)
+
 ifeq ($(MODE), analysis)
-	  echo > $(outdir)$(subst src/,,$(<:.cpp=.o))
+	  echo > $@
 endif
 
 # Installation
@@ -246,9 +250,9 @@ develDocPs:
 
 # ***** Dependency management
 depend:
-	$(CXX) ${cflags} -MM $(rootSources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
-	$(CXX) ${cflags} -MM $(testSources) | sed 's/^[^\ ]/$$(outdir)test\/&/' >> .depend
+	$(CXX) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
 -include .depend
+-include $(objs:.o=.depend)
 
 clean: tidy
 	rm -rf bin

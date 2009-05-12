@@ -25,5 +25,6 @@ bool TestRunner::visit(TestCase& test) {
   string qualifiedName = getPath() + test.getName();
   cout << qualifiedName << ": ";
   test.run(qualifiedName.c_str());
+  cout << endl;
   return true;
 }

@@ -14,32 +14,18 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#include "stdinc.h"
-#include "TestAction.h"
 
-#include "test/all.h"
-#include "test/TestRunner.h"
+#include "AlexanderDualTests.cpp"
+#include "HilbertPoincareTests.cpp"
+#include "IrreducibleDecomTests.cpp"
+#include "standardProgramTests.cpp"
+#include "maximalStandardMonomialTests.cpp"
 
-TestAction::TestAction():
-  Action
-(staticGetName(),
- "Perform tests of C++ Frobby library interface.",
- "Perform tests of C++ Frobby library interface.",
- false) {
-}
+#include "MyIdeal.cpp"
+#include "MyPolynomial.cpp"
+#include "MyAsserts.cpp"
+#include "MyConsumers.cpp"
+#include "MyIdealCreators.cpp"
+#include "MyPolynomialCreators.cpp"
 
-void TestAction::obtainParameters(vector<Parameter*>& parameters) {
-}
-
-void TestAction::perform() {
-  try {
-	TestRunner runner;
-	GET_TEST_SUITE(root).accept(runner);
-  } catch (std::exception& e) {
-	fputs(e.what(), stderr);
-  }
-}
-
-const char* TestAction::staticGetName() {
-  return "test";
-}
+#include "example.cpp"

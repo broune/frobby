@@ -14,32 +14,25 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#include "stdinc.h"
-#include "TestAction.h"
 
-#include "test/all.h"
-#include "test/TestRunner.h"
+#ifndef MY_ASSERTS_GUARD
+#define MY_ASSERTS_GUARD
 
-TestAction::TestAction():
-  Action
-(staticGetName(),
- "Perform tests of C++ Frobby library interface.",
- "Perform tests of C++ Frobby library interface.",
- false) {
-}
+#include "MyIdeal.h"
+#include "MyPolynomial.h"
 
-void TestAction::obtainParameters(vector<Parameter*>& parameters) {
-}
+// Print an error and exit if a is not equal to b. Otherwise print a
+// dot to signify that a test passed.
+void assertEqual(const MyIdeal& a, const MyIdeal& b, const char* msg);
+void assertEqual(const MyIdeals& a, const MyIdeals& b, const char* msg);
 
-void TestAction::perform() {
-  try {
-	TestRunner runner;
-	GET_TEST_SUITE(root).accept(runner);
-  } catch (std::exception& e) {
-	fputs(e.what(), stderr);
-  }
-}
+// Print an error and exit if a is not equal to b. Otherwise print a
+// dot to signify that a test passed.
+void assertEqual(const MyPolynomial& a, const MyPolynomial& b,
+				 const char* msg);
 
-const char* TestAction::staticGetName() {
-  return "test";
-}
+// Print an error and exit if b is not true. Otherwise print a dot to
+// signify that a test passed.
+void assertTrue(bool b, const char* msg);
+
+#endif
