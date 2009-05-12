@@ -14,32 +14,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#include "stdinc.h"
-#include "TestAction.h"
 
-#include "test/all.h"
-#include "test/TestRunner.h"
+#ifndef MY_POLYNOMIAL_GUARD
+#define MY_POLYNOMIAL_GUARD
 
-TestAction::TestAction():
-  Action
-(staticGetName(),
- "Perform tests of C++ Frobby library interface.",
- "Perform tests of C++ Frobby library interface.",
- false) {
-}
+#include "MyIdeal.h"
+#include <vector>
+using namespace std;
 
-void TestAction::obtainParameters(vector<Parameter*>& parameters) {
-}
+// Represents a term with a coefficient.
+struct MyTerm {
+  MyTerm(int coef, MyPP exponents);
+  MyTerm(int coef, int e);
+  MyTerm(int coef, int e1, int e2, int e3, int e4);
 
-void TestAction::perform() {
-  try {
-	TestRunner runner;
-	GET_TEST_SUITE(root).accept(runner);
-  } catch (std::exception& e) {
-	fputs(e.what(), stderr);
-  }
-}
+  bool operator<(const MyTerm& term) const;
+  bool operator==(const MyTerm& term) const;
 
-const char* TestAction::staticGetName() {
-  return "test";
-}
+  int coefficient;
+  MyPP exponents;
+};
+
+// Represents a polynomial.
+typedef vector<MyTerm> MyPolynomial;
+
+// Returns true if a is equal to b.
+bool equal(MyPolynomial a, MyPolynomial b);
+
+// Print polynomial to standard out.
+void printPolynomial(MyPolynomial polynomial);
+
+#endif

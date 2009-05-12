@@ -22,6 +22,8 @@
 #include "Ideal.h"
 #include "VarSorter.h"
 
+#include <sstream>
+
 class OffsetTermCompare {
 public:
   OffsetTermCompare(const BigIdeal& ideal): _ideal(ideal) {
@@ -319,16 +321,21 @@ void BigIdeal::sortVariables() {
 }
 
 void BigIdeal::print(FILE* file) const {
-  fprintf(file, "/---- BigIdeal of %lu terms:\n",
-	  (unsigned long)_terms.size());
+  ostringstream out;
+  out << *this;
+  fputs(out.str().c_str(), file);
+}
+
+void BigIdeal::print(ostream& out) const {
+  out << "/---- BigIdeal of " << _terms.size() << " terms:\n";
   for (vector<vector<mpz_class> >::const_iterator it = _terms.begin();
-       it != _terms.end(); ++it) {
-    for (vector<mpz_class>::const_iterator entry = it->begin();
-	 entry != it->end(); ++entry)
-      gmp_fprintf(file, "%Zd ", entry->get_mpz_t());
-    fputc('\n', file);
+	   it != _terms.end(); ++it) {
+	for (vector<mpz_class>::const_iterator entry = it->begin();
+		 entry != it->end(); ++entry)
+	  out << *entry << ' ';
+	out << '\n';
   }
-  fputs("----/ End of list.\n", file);
+  out << "----/ End of list.\n";
 }
 
 const mpz_class& BigIdeal::getExponent(size_t term, size_t var) const {
@@ -362,4 +369,16 @@ bool BigIdeal::bigTermCompare(const vector<mpz_class>& a,
       return false;
   }
   return false;
+}
+
+ostream& operator<<(ostream& out, const BigIdeal& ideal) {
+  ideal.print(out);
+  return out;
+}
+
+ostream& operator<<(ostream& out, const vector<BigIdeal>& ideals) {
+  out << "List of " << ideals.size() << " ideals:\n";
+  for (size_t i = 0; i < ideals.size(); ++i)
+	out << ideals[i];
+  return out;
 }

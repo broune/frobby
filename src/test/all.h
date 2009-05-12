@@ -17,10 +17,12 @@
 #ifndef ALL_GUARD
 #define ALL_GUARD
 
-// This is the file clients of the test system should include.
+// This is the file clients of the test system should include to create
+// new tests. It does not include things such as runners.
 
 #include "TestCase.h"
 #include "TestSuite.h"
 #include "macroes.h"
+#include "asserts.h"
 
 #endif

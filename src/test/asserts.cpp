@@ -38,11 +38,25 @@ void assertFailed(const char* errorMsg,
 
 void assertTrue(bool value, const char* valueString,
 				const char* testName, const char* file, size_t line) {
-  if (value)
+  if (value) {
+	putc('.', stdout);
 	return;
+  }
 
   stringstream msg;
   msg << "Expected \n   " << valueString << "\nto be true, but it was not.\n";
+  assertFailed(msg.str().c_str(), testName, file, line);
+}
+
+void assertFalse(bool value, const char* valueString,
+				 const char* testName, const char* file, size_t line) {
+  if (!value) {
+	putc('.', stdout);
+	return;
+  }
+
+  stringstream msg;
+  msg << "Expected \n   " << valueString << "\nto be false, but it was not.\n";
   assertFailed(msg.str().c_str(), testName, file, line);
 }
 

@@ -1,3 +1,5 @@
+$(outdir)main.o: src/main.cpp src/stdinc.h src/main.h src/Action.h \
+  src/BoolParameter.h src/Parameter.h src/DebugAllocator.h src/error.h
 $(outdir)Action.o: src/Action.cpp src/stdinc.h src/Action.h src/BoolParameter.h \
   src/Parameter.h src/error.h src/NameFactory.h \
   src/IrreducibleDecomAction.h src/IOParameters.h src/ParameterGroup.h \
@@ -399,27 +401,10 @@ $(outdir)StatisticsStrategy.o: src/StatisticsStrategy.cpp src/stdinc.h \
   src/StatisticsStrategy.h src/SliceStrategy.h src/Slice.h src/Ideal.h \
   src/Term.h
 $(outdir)TestAction.o: src/TestAction.cpp src/stdinc.h src/TestAction.h \
-  src/Action.h src/BoolParameter.h src/Parameter.h \
-  src/../libraryTest/include.cpp \
-  src/../libraryTest/AlexanderDualTests.cpp \
-  src/../libraryTest/AlexanderDualTests.h \
-  src/../libraryTest/../src/frobby.h src/../libraryTest/MyAsserts.h \
-  src/../libraryTest/MyIdeal.h src/../libraryTest/MyPolynomial.h \
-  src/../libraryTest/MyIdealCreators.h src/../libraryTest/MyConsumers.h \
-  src/../libraryTest/HilbertPoincareTests.cpp \
-  src/../libraryTest/HilbertPoincareTests.h \
-  src/../libraryTest/MyPolynomialCreators.h \
-  src/../libraryTest/IrreducibleDecomTests.cpp \
-  src/../libraryTest/IrreducibleDecomTests.h \
-  src/../libraryTest/standardProgramTests.cpp \
-  src/../libraryTest/standardProgramTests.h \
-  src/../libraryTest/maximalStandardMonomialTests.cpp \
-  src/../libraryTest/maximalStandardMonomialTests.h \
-  src/../libraryTest/MyIdeal.cpp src/../libraryTest/MyPolynomial.cpp \
-  src/../libraryTest/MyAsserts.cpp src/../libraryTest/MyConsumers.cpp \
-  src/../libraryTest/MyIdealCreators.cpp \
-  src/../libraryTest/MyPolynomialCreators.cpp \
-  src/../libraryTest/example.cpp
+  src/Action.h src/BoolParameter.h src/Parameter.h src/test/all.h \
+  src/test/TestCase.h src/test/Test.h src/test/TestSuite.h \
+  src/test/macroes.h src/test/asserts.h src/test/TestRunner.h \
+  src/test/TestQualifier.h src/test/TestVisitor.h
 $(outdir)NameFactory.o: src/NameFactory.cpp src/stdinc.h src/NameFactory.h
 $(outdir)error.o: src/error.cpp src/stdinc.h src/error.h src/Scanner.h \
   src/FrobbyStringStream.h
@@ -482,26 +467,79 @@ $(outdir)MaximalStandardAction.o: src/MaximalStandardAction.cpp src/stdinc.h \
   src/SplitStrategy.h src/Ideal.h src/TermTranslator.h src/Facade.h \
   src/Timer.h src/TermConsumer.h src/CoefTermConsumer.h src/IOFacade.h \
   src/Scanner.h src/DataType.h
-$(outdir)test/Test.o: src/test/Test.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)Test.o: src/test/Test.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/Test.h
-$(outdir)test/TestCase.o: src/test/TestCase.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)TestCase.o: src/test/TestCase.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/TestCase.h src/test/Test.h src/test/TestVisitor.h
-$(outdir)test/TestQualifier.o: src/test/TestQualifier.cpp src/test/stdinc.h \
+$(outdir)TestQualifier.o: src/test/TestQualifier.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestQualifier.h src/test/TestVisitor.h \
   src/test/TestSuite.h src/test/Test.h
-$(outdir)test/TestRunner.o: src/test/TestRunner.cpp src/test/stdinc.h \
+$(outdir)TestRunner.o: src/test/TestRunner.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestRunner.h src/test/TestQualifier.h \
   src/test/TestVisitor.h src/test/TestCase.h src/test/Test.h
-$(outdir)test/TestSuite.o: src/test/TestSuite.cpp src/test/stdinc.h \
+$(outdir)TestSuite.o: src/test/TestSuite.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestSuite.h src/test/Test.h \
   src/test/TestVisitor.h
-$(outdir)test/TestVisitor.o: src/test/TestVisitor.cpp src/test/stdinc.h \
+$(outdir)TestVisitor.o: src/test/TestVisitor.cpp src/test/stdinc.h \
   src/test/../stdinc.h src/test/TestVisitor.h
-$(outdir)test/macroes.o: src/test/macroes.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)macroes.o: src/test/macroes.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/macroes.h src/test/TestSuite.h src/test/Test.h
-$(outdir)test/asserts.o: src/test/asserts.cpp src/test/stdinc.h src/test/../stdinc.h \
+$(outdir)asserts.o: src/test/asserts.cpp src/test/stdinc.h src/test/../stdinc.h \
   src/test/asserts.h
-$(outdir)test/testmain.o: src/test/testmain.cpp src/test/stdinc.h src/test/../stdinc.h \
-  src/test/all.h src/test/TestCase.h src/test/Test.h src/test/TestSuite.h \
-  src/test/macroes.h src/test/TestRunner.h src/test/TestQualifier.h \
-  src/test/TestVisitor.h src/test/asserts.h
+$(outdir)AlexanderDualTests.o: src/libraryTest/AlexanderDualTests.cpp \
+  src/libraryTest/AlexanderDualTests.h src/libraryTest/../frobby.h \
+  src/libraryTest/MyAsserts.h src/libraryTest/MyIdeal.h \
+  src/libraryTest/MyPolynomial.h src/libraryTest/MyIdealCreators.h \
+  src/libraryTest/MyConsumers.h src/libraryTest/../test/all.h \
+  src/libraryTest/../test/TestCase.h src/libraryTest/../test/Test.h \
+  src/libraryTest/../test/TestSuite.h src/libraryTest/../test/macroes.h \
+  src/libraryTest/../test/asserts.h
+$(outdir)HilbertPoincareTests.o: src/libraryTest/HilbertPoincareTests.cpp \
+  src/libraryTest/HilbertPoincareTests.h src/libraryTest/../frobby.h \
+  src/libraryTest/MyAsserts.h src/libraryTest/MyIdeal.h \
+  src/libraryTest/MyPolynomial.h src/libraryTest/MyIdealCreators.h \
+  src/libraryTest/MyConsumers.h src/libraryTest/MyPolynomialCreators.h
+$(outdir)IrreducibleDecomTests.o: src/libraryTest/IrreducibleDecomTests.cpp \
+  src/libraryTest/IrreducibleDecomTests.h src/libraryTest/../frobby.h \
+  src/libraryTest/MyAsserts.h src/libraryTest/MyIdeal.h \
+  src/libraryTest/MyPolynomial.h src/libraryTest/MyConsumers.h \
+  src/libraryTest/MyIdealCreators.h
+$(outdir)MyAsserts.o: src/libraryTest/MyAsserts.cpp src/libraryTest/MyAsserts.h \
+  src/libraryTest/MyIdeal.h src/libraryTest/../frobby.h \
+  src/libraryTest/MyPolynomial.h
+$(outdir)MyConsumers.o: src/libraryTest/MyConsumers.cpp \
+  src/libraryTest/MyConsumers.h src/libraryTest/../frobby.h \
+  src/libraryTest/MyIdeal.h src/libraryTest/MyPolynomial.h
+$(outdir)MyIdeal.o: src/libraryTest/MyIdeal.cpp src/libraryTest/stdinc.h \
+  src/libraryTest/../stdinc.h src/libraryTest/MyIdeal.h \
+  src/libraryTest/../frobby.h
+$(outdir)MyIdealCreators.o: src/libraryTest/MyIdealCreators.cpp \
+  src/libraryTest/MyIdealCreators.h src/libraryTest/MyIdeal.h \
+  src/libraryTest/../frobby.h
+$(outdir)MyPolynomial.o: src/libraryTest/MyPolynomial.cpp src/libraryTest/stdinc.h \
+  src/libraryTest/../stdinc.h src/libraryTest/MyPolynomial.h \
+  src/libraryTest/MyIdeal.h src/libraryTest/../frobby.h
+$(outdir)MyPolynomialCreators.o: src/libraryTest/MyPolynomialCreators.cpp \
+  src/libraryTest/MyPolynomialCreators.h src/libraryTest/MyPolynomial.h \
+  src/libraryTest/MyIdeal.h src/libraryTest/../frobby.h
+$(outdir)example.o: src/libraryTest/example.cpp src/libraryTest/MyIdeal.h \
+  src/libraryTest/../frobby.h src/libraryTest/MyPolynomial.h \
+  src/libraryTest/MyAsserts.h src/libraryTest/MyConsumers.h \
+  src/libraryTest/MyIdealCreators.h \
+  src/libraryTest/MyPolynomialCreators.h \
+  src/libraryTest/AlexanderDualTests.h \
+  src/libraryTest/HilbertPoincareTests.h \
+  src/libraryTest/IrreducibleDecomTests.h \
+  src/libraryTest/standardProgramTests.h \
+  src/libraryTest/maximalStandardMonomialTests.h
+$(outdir)maximalStandardMonomialTests.o:  \
+ src/libraryTest/maximalStandardMonomialTests.cpp \
+  src/libraryTest/maximalStandardMonomialTests.h \
+  src/libraryTest/../frobby.h src/libraryTest/MyAsserts.h \
+  src/libraryTest/MyIdeal.h src/libraryTest/MyPolynomial.h \
+  src/libraryTest/MyConsumers.h src/libraryTest/MyIdealCreators.h
+$(outdir)standardProgramTests.o: src/libraryTest/standardProgramTests.cpp \
+  src/libraryTest/standardProgramTests.h src/libraryTest/../frobby.h \
+  src/libraryTest/MyAsserts.h src/libraryTest/MyIdeal.h \
+  src/libraryTest/MyPolynomial.h src/libraryTest/MyConsumers.h \
+  src/libraryTest/MyIdealCreators.h
