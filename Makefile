@@ -44,7 +44,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   libraryTest/MyConsumers.cpp libraryTest/MyIdeal.cpp					\
   libraryTest/MyIdealCreators.cpp libraryTest/MyPolynomial.cpp			\
   libraryTest/MyPolynomialCreators.cpp									\
-  libraryTest/maximalStandardMonomialTest.cpp							\
+  libraryTest/maxStdTest.cpp							\
   libraryTest/standardProgramTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
@@ -177,7 +177,7 @@ endif
 ifneq ($(MODE), analysis)
 	$(CXX) $(objs) $(ldflags) -o $@
 	if [ -f $@.exe ]; then \
-	  mv -f $@.exe $@; \
+      ln -s $@.exe $@; \
 	fi
 endif
 ifeq ($(MODE), release)
