@@ -89,9 +89,10 @@ protected:
 	  if (co[var] < maxCount)
 		co[var] = 0;
 
-	// Choose a deterministically random variable among those that are
-	// best. This helps to avoid getting into a bad pattern.
-	return co.getFirstNonZeroExponent();
+	// Choose the middle variable among those that are best. This
+	// is better at avoiding a bad pattern than just choosing the
+	// first one.
+	return co.getMiddleNonZeroExponent();
   }
 };
 

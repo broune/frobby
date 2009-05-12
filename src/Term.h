@@ -170,26 +170,6 @@ inline bool isSquareFree(const Exponent* a, size_t varCount) {
   return true;
 }
 
-// Returns var such that a[var] >= a[i] for all i.
-inline size_t getFirstMaxExponent(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  size_t max = 0;
-  for (size_t var = 1; var < varCount; ++var)
-    if (a[max] < a[var])
-      max = var;
-  return max;
-}
-
-// Returns the least integer var such that a[var] is non-zero.
-// Returns varCount if no such var exists.
-inline size_t getFirstNonZeroExponent(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] != 0)
-      return var;
-  return varCount;
-}
-
 // Returns the number of integers var such that a[var] is non-zero.
 inline size_t getSizeOfSupport(const Exponent* a, size_t varCount) {
   ASSERT(a != 0 || varCount == 0);
@@ -215,6 +195,43 @@ inline bool hasSameSupport(const Exponent* a, const Exponent* b,
 	}
   }
   return true;
+}
+
+// Returns var such that a[var] >= a[i] for all i.
+inline size_t getFirstMaxExponent(const Exponent* a, size_t varCount) {
+  ASSERT(a != 0 || varCount == 0);
+  size_t max = 0;
+  for (size_t var = 1; var < varCount; ++var)
+    if (a[max] < a[var])
+      max = var;
+  return max;
+}
+
+// Returns the least integer var such that a[var] is non-zero.
+// Returns varCount if no such var exists.
+inline size_t getFirstNonZeroExponent(const Exponent* a, size_t varCount) {
+  ASSERT(a != 0 || varCount == 0);
+  for (size_t var = 0; var < varCount; ++var)
+    if (a[var] != 0)
+      return var;
+  return varCount;
+}
+
+// Returns a median element of the set of var's such that a[var] is
+// non-zero. Returns varCount if no such var exists.
+inline size_t getMiddleNonZeroExponent(const Exponent* a, size_t varCount) {
+  ASSERT(a != 0 || varCount == 0);
+  size_t nonZeroOffset = getSizeOfSupport(a, varCount) / 2;
+  for (size_t var = 0; var < varCount; ++var) {
+    if (a[var] != 0) {
+      if (nonZeroOffset == 0)
+	return var;
+      --nonZeroOffset;
+    }
+  }
+
+  ASSERT(isIdentity(a, varCount));
+  return varCount;
 }
 
 // Defines lexicographic order on exponents.
@@ -461,6 +478,10 @@ class Term {
 
   size_t getFirstNonZeroExponent() const {
     return ::getFirstNonZeroExponent(_exponents, _varCount);
+  }
+
+  size_t getMiddleNonZeroExponent() const {
+    return ::getMiddleNonZeroExponent(_exponents, _varCount);
   }
 
   size_t getFirstMaxExponent() const {
