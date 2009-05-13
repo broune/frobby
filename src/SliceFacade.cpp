@@ -476,15 +476,17 @@ bool SliceFacade::solveProgram
   ASSERT(grading.size() == _ideal->getVarCount());
   ASSERT(_isMinimallyGenerated);
 
-  for (size_t var = 0; var < grading.size(); ++var) {
-	if (grading[var] < 0) {
-	  displayNote
-		("The bound optimization has been turned on, but the vector to\n"
-		 "optimize contains negative entries. This case of the optimization\n"
-		 "has not currently been implemented, so am now turning the bound\n"
-		 "optimization off.");
-	  useBound = false;
-	  break;
+  if (useBound) {
+	for (size_t var = 0; var < grading.size(); ++var) {
+	  if (grading[var] < 0) {
+		displayNote
+		  ("The bound optimization has been turned on, but the vector to\n"
+		   "optimize contains negative entries. This case of the optimization\n"
+		   "has not currently been implemented, so am now turning the bound\n"
+		   "optimization off.");
+		useBound = false;
+		break;
+	  }
 	}
   }
 
