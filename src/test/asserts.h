@@ -31,12 +31,12 @@ void assertFailed(const char* errorMsg,
 void assertTrue(bool value, const char* condition,
 				const char* testName, const char* file, size_t line);
 #define ASSERT_TRUE(VALUE) \
-  assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__);
+  assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__)
 
 void assertFalse(bool value, const char* condition,
 				const char* testName, const char* file, size_t line);
 #define ASSERT_FALSE(VALUE) \
-  assertFalse(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__);
+  assertFalse(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__)
 
 void assertEqualFailed(const char* a, const char* b,
 					   const char* aString, const char* bString,
@@ -63,6 +63,6 @@ template<class T1, class T2>
 }
 
 #define ASSERT_EQ(A, B) \
-  assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__);
+  assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__)
 
 #endif

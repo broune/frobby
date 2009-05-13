@@ -22,6 +22,7 @@
 #include "VarSorter.h"
 
 #include <algorithm>
+#include <sstream>
 
 BigPolynomial::BigPolynomial() {
 }
@@ -120,10 +121,42 @@ void BigPolynomial::add(const mpz_class& coef,
 	bigTerm.push_back(translator.getExponent(var, term));
 }
 
+bool BigPolynomial::operator==(const BigPolynomial& poly) const {
+  return _names == poly._names && _coefTerms == poly._coefTerms;
+}
+
+bool BigPolynomial::BigCoefTerm::operator==(const BigCoefTerm& coefTerm) const {
+  return coef == coefTerm.coef && term == coefTerm.term;
+}
+
+void BigPolynomial::print(FILE* file) const {
+  ostringstream out;
+  out << *this;
+  fputs(out.str().c_str(), file);
+}
+
+void BigPolynomial::print(ostream& out) const {
+  out << "/---- BigPolynomial of " << _coefTerms.size() << " terms:\n";
+  for (vector<BigCoefTerm>::const_iterator it = _coefTerms.begin();
+	   it != _coefTerms.end(); ++it) {
+	out << ' ' << it->coef << "  ";
+	for (vector<mpz_class>::const_iterator entry = it->term.begin();
+		 entry != it->term.end(); ++entry)
+	  out << ' ' << *entry;
+	out << '\n';
+  }
+  out << "----/ End of list.\n";  
+}
+
 bool BigPolynomial::compareCoefTermsReverseLex(const BigCoefTerm& a,
 											   const BigCoefTerm& b) {
   for (size_t var = 0; var < a.term.size(); ++var)
 	if (a.term[var] != b.term[var])
 	  return a.term[var] > b.term[var];
   return a.coef < b.coef;
+}
+
+ostream& operator<<(ostream& out, const BigPolynomial& poly) {
+  poly.print(out);
+  return out;
 }

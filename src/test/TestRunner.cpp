@@ -17,14 +17,14 @@
 #include "stdinc.h"
 #include "TestRunner.h"
 
-#include <iostream> // TODO: fix
-
 #include "TestCase.h"
 
 bool TestRunner::visit(TestCase& test) {
   string qualifiedName = getPath() + test.getName();
-  cout << qualifiedName << ": ";
+  fputs(qualifiedName.c_str(), stdout);
+  fputs(": ", stdout);
   test.run(qualifiedName.c_str());
-  cout << endl;
+  fputc('\n', stdout);
+  fflush(stdout);
   return true;
 }
