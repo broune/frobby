@@ -16,48 +16,45 @@
 */
 #include "stdinc.h"
 
-#include "../frobby.h"
-#include "../test/all.h"
-
-#include "MyAsserts.h"
-#include "MyConsumers.h"
-#include "MyIdealCreators.h"
-#include "MyIdeal.h"
+#include "frobby.h"
+#include "tests.h"
+#include "BigIdeal.h"
+#include "IdealFactory.h"
+#include "LibTest.h"
 
 TEST_SUITE2(LibraryInterface, MaxStd)
 
 TEST(MaxStd, Typical) {
-  MyIdeal inputIdeal = make4_xx_yy_zz_t_xz_yz();
-  Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
+  Frobby::Ideal ideal = toLibIdeal(IdealFactory::xx_yy_zz_t_xz_yz());
+  LibIdealConsumer consumer(IdealFactory::ring_xyzt());
 
-  MyIdealConsumer consumer;
-  Frobby::maximalStandardMonomials(frobbyInputIdeal, consumer);
+  Frobby::maximalStandardMonomials(ideal, consumer);
 
-  assertEqual(consumer.getIdeal(), make4_xy_z(), "msm of ideal");
+  ASSERT_EQ(consumer.getIdeal(), IdealFactory::xy_z());
 }
 
 TEST(MaxStd, ZeroIdeal) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal frobbyInputIdeal(varCount);
+	Frobby::Ideal ideal(varCount);
+	LibIdealConsumer consumer((VarNames(varCount)));
 
-	MyIdealConsumer consumer;
-	Frobby::maximalStandardMonomials(frobbyInputIdeal, consumer);
+	Frobby::maximalStandardMonomials(ideal, consumer);
 
-	if (varCount == 0)
-	  assertEqual(consumer.getIdeal(), make_1(0), "msm of zero (zero)");
-	else
-	  assertEqual(consumer.getIdeal(), make_0(), "msm of zero (more)");
+	if (varCount == 0) {
+	  ASSERT_EQ(consumer.getIdeal(), IdealFactory::wholeRing(varCount));
+	} else {
+	  ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
+	}
   }
 }
 
 TEST(MaxStd, WholeRing) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	MyIdeal inputIdeal = make_1(varCount);
-	Frobby::Ideal frobbyInputIdeal = convertToFrobbyIdeal(inputIdeal);
+	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+	LibIdealConsumer consumer((VarNames(varCount)));
 
-	MyIdealConsumer consumer;
-	Frobby::maximalStandardMonomials(frobbyInputIdeal, consumer);
+	Frobby::maximalStandardMonomials(ideal, consumer);
 
-	assertEqual(consumer.getIdeal(), make_0(), "msm of one");
+	ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
   }
 }

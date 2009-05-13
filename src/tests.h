@@ -14,25 +14,14 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef TEST_GUARD
-#define TEST_GUARD
+#ifndef TESTS_GUARD
+#define TESTS_GUARD
 
-#include <vector>
-#include <string>
+// Include this file when writing tests.
 
-class TestVisitor;
-
-class Test {
-public:
-  Test(const string& name);
-  virtual ~Test();
-
-  virtual bool accept(TestVisitor&) = 0;
-
-  const string& getName() const;
-
- private:
-  string _name;
-};
+#include "test/TestCase.h"
+#include "test/TestSuite.h"
+#include "test/macroes.h"
+#include "test/asserts.h"
 
 #endif

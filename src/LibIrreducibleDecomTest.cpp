@@ -1,5 +1,5 @@
 /* Frobby: Software for monomial ideal computations.
-   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+   Copyright (C) 2009 Bjarke Hammersholt Roune (www.broune.com)
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,40 +16,42 @@
 */
 #include "stdinc.h"
 
-#include "../frobby.h"
-#include "../test/all.h"
-#include "MyConsumers.h"
-#include "MyIdealCreators.h"
-#include "MyIdeal.h"
+#include "frobby.h"
+#include "tests.h"
+#include "IdealFactory.h"
+#include "LibTest.h"
+#include "BigIdeal.h"
+
+#include <vector>
 
 TEST_SUITE2(LibraryInterface, IrreducibleDecom)
 
 TEST(IrreducibleDecom, Typical) {
-  Frobby::Ideal ideal = convertToFrobbyIdeal(makeb_xx_yy_xz_yz());
+  Frobby::Ideal ideal = toLibIdeal(IdealFactory::xx_yy_xz_yz());
+  LibIdealConsumer consumer(IdealFactory::ring_xyzt());
 
-  MyIdealConsumer2 consumer(makeRing_xyzt());
   bool returnValue =
 	Frobby::irreducibleDecompositionAsMonomials(ideal, consumer);
 
   ASSERT_TRUE(returnValue);
-  ASSERT_EQ(consumer.getIdeal(), makeb_xy_xxyyz());
+  ASSERT_EQ(consumer.getIdeal(), IdealFactory::xy_xxyyz());
   ASSERT_TRUE(consumer.hasAnyOutput());
 }
 
 TEST(IrreducibleDecom, TypicalEncoded) {
-  Frobby::Ideal ideal = convertToFrobbyIdeal(make4_xx_yy_xz_yz());
+  Frobby::Ideal ideal = toLibIdeal(IdealFactory::xx_yy_xz_yz());
+  LibIdealsConsumer consumer(IdealFactory::ring_xyzt());
 
-  MyIdealsConsumer2 consumer(makeRing_xyzt());
   Frobby::irreducibleDecompositionAsIdeals(ideal, consumer);
 
-  ASSERT_EQ(consumer.getIdeals(), makeIrrdecomb_xx_yy_xz_yz());
+  ASSERT_EQ(consumer.getIdeals(), IdealFactory::irrdecom_xx_yy_xz_yz());
 }
 
 TEST(IrreducibleDecom, ZeroIdeal) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
 	Frobby::Ideal frobbyInputIdeal(varCount);
+	LibIdealConsumer consumer((VarNames(varCount)));
 
-	MyIdealConsumer consumer;
 	bool returnValue =
 	  Frobby::irreducibleDecompositionAsMonomials(frobbyInputIdeal, consumer);
 
@@ -61,37 +63,37 @@ TEST(IrreducibleDecom, ZeroIdeal) {
 TEST(IrreducibleDecom, ZeroIdealEncoded) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
 	Frobby::Ideal frobbyInputIdeal(varCount);
+	LibIdealsConsumer consumer((VarNames(varCount)));
 
-	MyIdealsConsumer2 consumer((VarNames(varCount)));
 	Frobby::irreducibleDecompositionAsIdeals(frobbyInputIdeal, consumer);
 
 	vector<BigIdeal> ideals;
-	ideals.push_back(makeb_0(varCount));
+	ideals.push_back(IdealFactory::zeroIdeal(varCount));
 	ASSERT_EQ(consumer.getIdeals(), ideals);
   }
 }
 
 TEST(IrreducibleDecom, WholeRing) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal = convertToFrobbyIdeal(make_1(varCount));
+	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+	LibIdealConsumer consumer((VarNames(varCount)));
 
-	MyIdealConsumer2 consumer((VarNames(varCount)));
 	bool returnValue =
 	  Frobby::irreducibleDecompositionAsMonomials(ideal, consumer);
 
 	ASSERT_TRUE(returnValue);
 	ASSERT_TRUE(consumer.hasAnyOutput());
-	ASSERT_EQ(consumer.getIdeal(), makeb_0(varCount));
+	ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
   }
 }
 
 TEST(IrreducibleDecom, WholeRingEncoded) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal = convertToFrobbyIdeal(make_1(varCount));
+	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+	LibIdealsConsumer consumer((VarNames(varCount)));
 
-	MyIdealsConsumer2 consumer((VarNames(varCount)));
 	Frobby::irreducibleDecompositionAsIdeals(ideal, consumer);
 
-	ASSERT_EQ(consumer.getIdeals(), vector<BigIdeal>())
+	ASSERT_EQ(consumer.getIdeals(), vector<BigIdeal>());
   }
 }

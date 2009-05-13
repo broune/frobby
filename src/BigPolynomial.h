@@ -53,10 +53,17 @@ class BigPolynomial {
   void add(const mpz_class& coef, const Term& term,
 		   const TermTranslator& translator);
 
+  bool operator==(const BigPolynomial& poly) const;
+
+  void print(FILE* file) const;
+  void print(ostream& out) const;
+
  private:
   struct BigCoefTerm {
 	mpz_class coef;
 	vector<mpz_class> term;
+
+	bool operator==(const BigCoefTerm& coefTerm) const;
   };
   typedef vector<BigCoefTerm>::iterator iterator;
   typedef vector<BigCoefTerm>::const_iterator const_iterator;
@@ -67,5 +74,7 @@ class BigPolynomial {
   VarNames _names;
   vector<BigCoefTerm> _coefTerms;
 };
+
+ostream& operator<<(ostream& out, const BigPolynomial& ideal);
 
 #endif

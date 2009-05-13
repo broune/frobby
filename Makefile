@@ -38,14 +38,9 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   MaximalStandardAction.cpp test/Test.cpp test/TestCase.cpp				\
   test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp			\
   test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp				\
-  libraryTest/AlexanderDualTest.cpp										\
-  libraryTest/HilbertPoincareTest.cpp									\
-  libraryTest/IrreducibleDecomTest.cpp libraryTest/MyAsserts.cpp		\
-  libraryTest/MyConsumers.cpp libraryTest/MyIdeal.cpp					\
-  libraryTest/MyIdealCreators.cpp libraryTest/MyPolynomial.cpp			\
-  libraryTest/MyPolynomialCreators.cpp									\
-  libraryTest/maxStdTest.cpp							\
-  libraryTest/standardProgramTest.cpp
+  LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp					\
+  LibIrreducibleDecomTest.cpp IdealFactory.cpp PolynomialFactory.cpp	\
+  LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -164,20 +159,20 @@ bareTest: all
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
 ifneq ($(MODE), analysis)
-	mkdir -p $(dir $@);
+	@mkdir -p $(dir $@);
 	cd bin; rm -f $(program); ln -s ../$(outdir)$(program) $(program); cd ..
 endif
 
 # Link object files into executable
 $(outdir)$(program): $(objs) | $(outdir)
-	mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)
 ifeq ($(MODE), analysis)
 	echo > $@
 endif
 ifneq ($(MODE), analysis)
 	$(CXX) $(objs) $(ldflags) -o $@
 	if [ -f $@.exe ]; then \
-      ln -s $@.exe $@; \
+      mv -f $@.exe $@; \
 	fi
 endif
 ifeq ($(MODE), release)
@@ -199,11 +194,15 @@ endif
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
 $(outdir)%.o: src/%.cpp
-	mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)
 	$(CXX) ${cflags} -c $< -o $@
-	echo -n "$(dir $@)" > $(@:.o=.depend)
-	$(CXX) $(cflags) -MM -c $< >> $(@:.o=.depend)
-
+	$(CXX) $(cflags) -MM -c $< >> $(@:.o=.d)
+	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
+	@echo -n "$(dir $@)" > $(@:.o=.d)
+	@cat $(@:.o=.d).tmp >> $(@:.o=.d)
+	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
+	@rm -f $(@:.o=.d).tmp
 ifeq ($(MODE), analysis)
 	  echo > $@
 endif
@@ -250,9 +249,9 @@ develDocPs:
 
 # ***** Dependency management
 depend:
-	$(CXX) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .depend
--include .depend
--include $(objs:.o=.depend)
+	$(CXX) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .d
+-include .d
+-include $(objs:.o=.d)
 
 clean: tidy
 	rm -rf bin
@@ -300,8 +299,7 @@ ifndef VER
 	exit 1;
 endif
 	if [ ! -d sage/ ]; then echo "sage/ directory not found."; exit 1; fi
-
-	# Ensure that previous builds have been cleaned up
+# Ensure that previous builds have been cleaned up
 	rm -rf bin/sagetmp bin/frobby-$(VER) bin/frobby-$(VER).spkg
 
 	hg clone sage bin/sagetmp
