@@ -21,7 +21,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   BigTermConsumer.cpp TranslatingTermConsumer.cpp HilbertAction.cpp		\
   HilbertSlice.cpp Polynomial.cpp CanonicalCoefTermConsumer.cpp			\
   HilbertStrategy.cpp Slice.cpp SliceStrategyCommon.cpp					\
-  DebugStrategy.cpp FrobeniusStrategy.cpp SliceFacade.cpp				\
+  DebugStrategy.cpp OptimizeStrategy.cpp SliceFacade.cpp				\
   BigTermRecorder.cpp CoCoA4IOHandler.cpp SingularIOHandler.cpp			\
   TotalDegreeCoefTermConsumer.cpp BigPolynomial.cpp						\
   CoefBigTermRecorder.cpp PolyTransformAction.cpp VarSorter.cpp			\
@@ -196,8 +196,7 @@ endif
 $(outdir)%.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) ${cflags} -c $< -o $@
-	$(CXX) $(cflags) -MM -c $< >> $(@:.o=.d)
-	@mv -f $(@:.o=.d) $(@:.o=.d).tmp
+	$(CXX) $(cflags) -MM -c $< > $(@:.o=.d).tmp
 	@echo -n "$(dir $@)" > $(@:.o=.d)
 	@cat $(@:.o=.d).tmp >> $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | \
@@ -206,6 +205,8 @@ $(outdir)%.o: src/%.cpp
 ifeq ($(MODE), analysis)
 	  echo > $@
 endif
+
+-include $(objs:.o=.d)
 
 # Installation
 install:
@@ -246,12 +247,6 @@ develDocPs:
 	rm -rf bin/develDoc/latexPs bin/develDoc/warningLog
 	cat doc/doxygen.conf doc/doxPs|doxygen -
 	cd bin/develDoc/latexPs/; make refman.ps; mv refman.ps ../develDoc.ps
-
-# ***** Dependency management
-depend:
-	$(CXX) ${cflags} -MM $(sources) | sed 's/^[^\ ]/$$(outdir)&/' > .d
--include .d
--include $(objs:.o=.d)
 
 clean: tidy
 	rm -rf bin
