@@ -24,6 +24,7 @@
 #include "TermGrader.h"
 #include "SplitStrategy.h"
 #include "Slice.h"
+#include "SliceAlgorithm.h"
 
 #include <vector>
 
@@ -41,11 +42,15 @@ namespace {
   }
 }
 
-TEST(OptimizeStrategy, simplify) {
+TEST(OptimizeStrategy, Simplify) {
   Ideal ideal;
-  TermTranslator translator(IdealFactory::xx_yy_zz_t_xz_yz(), ideal);
-  TermGrader grader(makeVector(0, 100, 10000, mpz_class("10000000000000000000000")), &translator);
+  TermTranslator translator(IdealFactory::xx_yy_zz_t_xz_yz(), ideal, false);
+  TermGrader grader(makeVector(0, 100, 10000, mpz_class("300000000000000007")), &translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
   OptimizeStrategy strategy(grader, splitStrategy.get(), false, true);
-  auto_ptr<Slice> slice = strategy.beginComputing(ideal);
+
+  runSliceAlgorithm(ideal, strategy);
+
+  ASSERT_EQ(strategy.getMaximalSolutions(), Ideal(Term("1 1 2 1")));
+  ASSERT_EQ(strategy.getMaximalValue(), mpz_class("300000000000020107"));
 }

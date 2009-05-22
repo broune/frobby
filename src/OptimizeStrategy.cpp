@@ -21,9 +21,9 @@
 #include "Slice.h"
 
 OptimizeStrategy::OptimizeStrategy(TermGrader& grader,
-									 const SplitStrategy* splitStrategy,
-									 bool reportAllSolutions,
-									 bool useBound):
+								   const SplitStrategy* splitStrategy,
+								   bool reportAllSolutions,
+								   bool useBound):
   MsmStrategy(this, splitStrategy),
   _grader(grader),
   _maxSolutions(grader.getVarCount()),
@@ -145,11 +145,7 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	// to consider artinian pivots and to rule out the outer slice
 	// using the above condition. If this can be done, then we can
 	// perform the split and ignore the outer slice.
-	slice.print(stdout);
-	bound.print(stdout);
 	for (size_t var = 0; var < slice.getVarCount(); ++var) {
-	  printf("%d\n", var);
-	  fflush(stdout);
 	  int sign = _grader.getGradeSign(var);
 	  if (sign > 0)
 		colon[var] =

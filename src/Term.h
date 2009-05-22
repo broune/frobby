@@ -21,6 +21,8 @@
 // exponent vectors represented as an array of Exponents along with a
 // length. It also contains a class that wraps these functions.
 
+#include <ostream>
+
 // Sets res equal to the product of a and b.
 inline void product(Exponent* res,
 		    const Exponent* a, const Exponent* b,
@@ -292,8 +294,20 @@ inline void print(FILE* file, const Exponent* e, size_t varCount) {
       fputs(", ", file);
     fprintf(file, "%lu", (unsigned long)e[var]);
   }
-
+  
   fputc(')', file);
+}
+
+inline void print(ostream& out, const Exponent* e, size_t varCount) {
+  ASSERT(e != 0 || varCount == 0);
+
+  out << '(';
+  for (size_t var = 0; var < varCount; ++var) {
+    if (var != 0)
+	  out << ", ";
+	out << e[var];
+  }
+  out << ')';
 }
 
 // Term represents a product of variables and does NOT include a
@@ -310,15 +324,20 @@ class Term {
     initialize(exponents, varCount);
   }
   
-  // Term is initialized to the identity.
+  /** This object is initialized to the identity, i.e. the exponent
+   vector is the zero vector.
+  */
   Term(size_t varCount):
-    _varCount(varCount) {
-    if (varCount > 0) {
-      _exponents = allocate(varCount);
+  _varCount(varCount) {
+	if (varCount > 0) {
+	  _exponents = allocate(varCount);
       setToIdentity();
     } else
       _exponents = 0;
   }
+  
+  /// Accepts a whitespace-separated list of integers as exponent vector.
+  Term(const string& str);
 
   ~Term() {deallocate(_exponents, _varCount);}
 
