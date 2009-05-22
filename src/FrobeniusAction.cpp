@@ -40,7 +40,7 @@ FrobeniusAction::FrobeniusAction():
  "at www.broune.com for more details.",
  false),
   
-  _sliceParams(true),
+  _sliceParams(true, false),
   _displaySolution
 ("vector",
  "Display the vector that achieves the optimal value.",

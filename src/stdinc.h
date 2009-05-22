@@ -71,6 +71,7 @@ _noInline();_noInline();_noInline();_noInline();_noInline();}}
 #endif
 
 #ifdef DEBUG
+#include <iostream> // Useful for debugging.
 #define PRINT
 #define IF_DEBUG(X) X
 #include <cassert>

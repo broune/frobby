@@ -20,8 +20,10 @@
 #include "SliceFacade.h"
 #include "error.h"
 
-SliceParameters::SliceParameters(bool exposeBoundParam):
+SliceParameters::SliceParameters(bool exposeBoundParam,
+								 bool exposeIndependenceParam):
   _exposeBoundParam(exposeBoundParam),
+  _exposeIndependenceParam(exposeIndependenceParam),
 
   _printDebug
   ("debug",
@@ -36,12 +38,12 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
   _useBound
   ("bound",
    "Use the bound optimization to solve optimization problems faster.",
-   true),
+   exposeBoundParam),
 
   _useIndependence
   ("independence",
    "Perform independence splits when possible.",
-   true),
+   exposeIndependenceParam),
   
   _minimal
   ("minimal",
@@ -66,9 +68,9 @@ SliceParameters::SliceParameters(bool exposeBoundParam):
   addParameter(&_minimal);
   addParameter(&_split);
   addParameter(&_printStatistics);
-  addParameter(&_useIndependence);
+  if (exposeIndependenceParam)
+	addParameter(&_useIndependence);
   addParameter(&_printDebug);
-
   if (_exposeBoundParam)
 	addParameter(&_useBound);
   addParameter(&_canonical);

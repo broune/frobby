@@ -1,5 +1,9 @@
 *** Upcoming version
 
+ - Frobby now refuses to use independence splits when solving Frobenius
+   problems and other optimization problems. They are not implemented for
+   that case, and using them before resulted in random crashes and possibly
+   incorrect results.
  - The design for how internal C++ tests are done is much improved.
  - Code file dependency tracking is much improved. It is now fully automatic,
    so the Makefile target depend is removed.

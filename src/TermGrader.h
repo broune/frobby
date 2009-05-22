@@ -46,8 +46,15 @@ public:
 
   void print(FILE* file) const;
 
+  /** Returns 1 if the grade strictly increases with the exponent of
+   var, returns -1 if it strictly decreases, and returns 0 if changing
+   the exponent has no impact on the grade.
+  */
+  int getGradeSign(size_t var) const;
+
 private:
   vector<vector<mpz_class> > _grades;
+  vector<int> _signs;
 };
 
 #endif

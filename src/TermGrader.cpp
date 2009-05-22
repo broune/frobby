@@ -25,6 +25,16 @@ TermGrader::TermGrader(const vector<mpz_class>& varDegrees,
 		       const TermTranslator* translator):
   _grades(varDegrees.size()) {
   
+  // Set up _signs.
+  _signs.resize(varDegrees.size());
+  for (size_t var = 0; var < varDegrees.size(); ++var) {
+	if (varDegrees[var] > 0)
+	  _signs[var] = 1;
+	else if (varDegrees[var] < 0)
+	  _signs[var] = -1;
+  }
+
+  // Set up _grades.
   for (size_t var = 0; var < varDegrees.size(); ++var) {
     size_t maxId = translator->getMaxId(var);
     _grades[var].resize(maxId + 1);
@@ -62,7 +72,7 @@ void TermGrader::getIncrementedDegree(const Term& term,
 const mpz_class& TermGrader::getGrade(size_t var, Exponent exponent) const {
   ASSERT(var < _grades.size());
   ASSERT(exponent < _grades[var].size());
-  
+
   return _grades[var][exponent];
 }
 
@@ -83,4 +93,9 @@ void TermGrader::print(FILE* file) const {
 		  _grades[var][e].get_mpz_t());
     fputc('\n', file);
   }
+}
+
+int TermGrader::getGradeSign(size_t var) const {
+  ASSERT(var < _grades.size());
+  return _signs[var];
 }

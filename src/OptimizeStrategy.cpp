@@ -15,12 +15,12 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "FrobeniusStrategy.h"
+#include "OptimizeStrategy.h"
 
 #include "TermGrader.h"
 #include "Slice.h"
 
-FrobeniusStrategy::FrobeniusStrategy(TermGrader& grader,
+OptimizeStrategy::OptimizeStrategy(TermGrader& grader,
 									 const SplitStrategy* splitStrategy,
 									 bool reportAllSolutions,
 									 bool useBound):
@@ -33,22 +33,28 @@ FrobeniusStrategy::FrobeniusStrategy(TermGrader& grader,
   _simplify_bound(grader.getVarCount()),
   _simplify_oldBound(grader.getVarCount()),
   _simplify_colon(grader.getVarCount()) {
+
+  MsmStrategy::setUseIndependence(false);
 }
 
-const Ideal& FrobeniusStrategy::getMaximalSolutions() {
+const Ideal& OptimizeStrategy::getMaximalSolutions() {
   return _maxSolutions;
 }
 
-const mpz_class& FrobeniusStrategy::getMaximalValue() {
+const mpz_class& OptimizeStrategy::getMaximalValue() {
   ASSERT(!_maxSolutions.isZeroIdeal());
   return _maxValue;
 }
 
-void FrobeniusStrategy::beginConsuming() {
+void OptimizeStrategy::setUseIndependence(bool use) {
+  ASSERT(!use);
+}
+
+void OptimizeStrategy::beginConsuming() {
   _maxSolutions.clear();
 }
 
-void FrobeniusStrategy::consume(const Term& term) {
+void OptimizeStrategy::consume(const Term& term) {
   mpz_class& degree = _consume_degree;
 
   _grader.getDegree(term, degree);
@@ -60,10 +66,10 @@ void FrobeniusStrategy::consume(const Term& term) {
 	_maxSolutions.insert(term);
 }
 
-void FrobeniusStrategy::doneConsuming() {
+void OptimizeStrategy::doneConsuming() {
 }
 
-void FrobeniusStrategy::getPivot(Term& pivot, Slice& slice) {
+void OptimizeStrategy::getPivot(Term& pivot, Slice& slice) {
   if (!_split->isFrobeniusSplit()) {
 	MsmStrategy::getPivot(pivot, slice);
 	return;
@@ -97,7 +103,7 @@ void FrobeniusStrategy::getPivot(Term& pivot, Slice& slice) {
   pivot[maxOffset] = lcm[maxOffset] / 2;
 }
 
-void FrobeniusStrategy::simplify(Slice& slice) {
+void OptimizeStrategy::simplify(Slice& slice) {
   ASSERT(slice.getVarCount() == _grader.getVarCount());
   if (slice.getIdeal().getGeneratorCount() == 0)
 	return;
@@ -115,14 +121,16 @@ void FrobeniusStrategy::simplify(Slice& slice) {
   ASSERT(oldBound.getVarCount() == slice.getVarCount());
   ASSERT(colon.getVarCount() == slice.getVarCount());
 
-  getUpperBound(slice, bound);
+  getMonomialBound(slice, bound);
 
   while (true) {
-	// Obtain bound for degree
+	// Obtain upper bound on the degree of elements of msm(I).
 	mpz_class& degree = _simplify_degree;
 	_grader.getDegree(bound, degree);
 
-	// Check if improvement is possible
+	// Check if improvement on the best value found so far is possible
+	// from this slice according to the bound. If it is not, then
+	// there is no point in looking further at this slice.
 	bool interesting = true;
 	if (_reportAllSolutions)
 	  interesting = (degree >= _maxValue);
@@ -137,32 +145,41 @@ void FrobeniusStrategy::simplify(Slice& slice) {
 	// to consider artinian pivots and to rule out the outer slice
 	// using the above condition. If this can be done, then we can
 	// perform the split and ignore the outer slice.
-	for (size_t var = 0; var < slice.getVarCount(); ++var)
-	  colon[var] =
-		improveLowerBound(var, degree, bound, slice.getMultiply());
+	slice.print(stdout);
+	bound.print(stdout);
+	for (size_t var = 0; var < slice.getVarCount(); ++var) {
+	  printf("%d\n", var);
+	  fflush(stdout);
+	  int sign = _grader.getGradeSign(var);
+	  if (sign > 0)
+		colon[var] =
+		  improveLowerBound(var, degree, bound, slice.getMultiply());
+	  // TODO: implement this for sign < 0 too.
+	}
 
-	// Check if any improvement were made.
+	// Check if any improvement was made on the lower bound.
 	oldBound = bound;
 	if (!colon.isIdentity()) {
 	  slice.innerSlice(colon);
-	  getUpperBound(slice, bound);
+	  getMonomialBound(slice, bound);
 	  if (bound != oldBound)
 		continue; // Iterate process using new bound.
 	}
 
+	// Simplify the slice in the usual non-bound way.
 	slice.simplify();
 	if (slice.getIdeal().getGeneratorCount() == 0)
-	  break;
+	  break; // In this case we had simplified the slice to a basecase.
 
-	getUpperBound(slice, bound);
+	getMonomialBound(slice, bound);
 	if (bound == oldBound)
-	  break;
+	  break; // The bound is unchanged, so no further improvement can be made.
 
 	// Iterate process using new bound.
   }
 }
 
-Exponent FrobeniusStrategy::
+Exponent OptimizeStrategy::
 improveLowerBound(size_t var,
 				  const mpz_class& upperBoundDegree,
 				  const Term& upperBound,
@@ -186,49 +203,51 @@ improveLowerBound(size_t var,
   while (low < high) {
 	Exponent mid;
 	if (low < high - low)
-	  mid = 2 * low; // Using exponential search.
+	  mid = 2 * low + 1; // Using exponential search.
 	else {
 	  // Using binary search. Note that this way of expressing (low +
 	  // high) / 2 avoids the possibility of low + high causing an
 	  // overflow.
-	  mid = low + (high - low) / 2;
+	  mid = low + (high - low + 1) / 2;
 	}
 
 	mpz_class& value = _improveLowerBound_value;
 	value = baseUpperBoundDegree +
 	  _grader.getGrade(var, lowerBound[var] + mid);
 
-	if (value <= _maxValue)
-	  low = mid + 1;
+	// If we just want one solution, we can require strict improvement
+	// when looking at new solutions. When we want all, then we can
+	// only require equal to or better.
+	if (value < _maxValue || (!_reportAllSolutions && value == _maxValue))
+	  low = mid;
 	else
-	  high = mid;
+	  high = mid - 1;
   }
   ASSERT(low == high);
-  ASSERT(low >= 1);
-
-  // If we just want one solution, we can require strict improvement
-  // when looking at new solutions. When we want all, then we can only
-  // require equal to or better, so we have to decrease the bound by
-  // one.
-  if (_reportAllSolutions)
-	--low;
 
   return low;
 }
 
-void FrobeniusStrategy::getUpperBound(const Slice& slice, Term& bound) {
+void OptimizeStrategy::getMonomialBound(const Slice& slice, Term& bound) {
   ASSERT(bound.getVarCount() == slice.getVarCount());
-  bound = slice.getLcm();
 
-  bound.product(bound, slice.getMultiply());
+  // We are combining an upper and a lower monomial bound, using the
+  // upper bound for var if the grading is increasing, and the lower
+  // bound if the grading is decreasing. This implies that the degree
+  // of this bound will be an upper bound on the degree of any element
+  // of msm(I), where I is the ideal represented by the slice.
+  //
+  // The lower bound is simply slice.getMultiply(), while the upper
+  // bound is pi(lcm(min I)), where I is the ideal represented by the
+  // slice, and pi decrements each exponent by one.
 
   for (size_t var = 0; var < bound.getVarCount(); ++var) {
-	ASSERT(bound[var] > 0);
-	--bound[var];
+	int sign = _grader.getGradeSign(var);
+	if (sign > 0) {
+	  bound[var] = slice.getMultiply()[var] + slice.getLcm()[var];
+	  if (bound[var] >= 1)
+		bound[var] -= 1;
+	} else
+	  bound[var] = slice.getMultiply()[var];
   }
-
-  for (size_t var = 0; var < bound.getVarCount(); ++var)
-	if (bound[var] == _grader.getMaxExponent(var) &&
-		slice.getMultiply()[var] < bound[var])
-	  --bound[var];
 }

@@ -56,7 +56,7 @@ OptimizeAction::OptimizeAction():
  "optimization, and thus ends up\ncomputing all irreducible components of I.",
  false),
 
-  _sliceParams(true),
+  _sliceParams(true, false),
 
   _displayLevel
   ("displayLevel",

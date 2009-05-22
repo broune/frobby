@@ -14,8 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef FROBENIUS_STRATEGY_GUARD
-#define FROBENIUS_STRATEGY_GUARD
+#ifndef OPTIMIZE_STRATEGY_GUARD
+#define OPTIMIZE_STRATEGY_GUARD
 
 #include "MsmStrategy.h"
 #include "Term.h"
@@ -24,15 +24,12 @@
 class Slice;
 class TermGrader;
 
-// TODO: Rename this class to something more appropriate, such as
-// OptimizationStrategy, since it is no onger specific to Frobenius
-// number computations.
-class FrobeniusStrategy : public MsmStrategy, public TermConsumer {
+class OptimizeStrategy : public MsmStrategy, public TermConsumer {
 public:
-  FrobeniusStrategy(TermGrader& grader,
-					const SplitStrategy* splitStrategy,
-					bool reportAllSolutions,
-					bool useBound);
+  OptimizeStrategy(TermGrader& grader,
+				   const SplitStrategy* splitStrategy,
+				   bool reportAllSolutions,
+				   bool useBound);
 
   const Ideal& getMaximalSolutions();
 
@@ -41,7 +38,11 @@ public:
   // getMaximalSolutions() is not the zero ideal.
   const mpz_class& getMaximalValue();
 
-private:
+  /** Independence splits are not supported, so calling this method
+   does nothing. Will assert in debug mode if use is true.
+  */
+  virtual void setUseIndependence(bool use);
+
   virtual void getPivot(Term& pivot, Slice& slice);
   virtual void simplify(Slice& slice);
 
@@ -49,12 +50,13 @@ private:
   virtual void consume(const Term& term);
   virtual void doneConsuming();
 
+ private:
   Exponent improveLowerBound(size_t var,
 							 const mpz_class& upperBoundDegree,
 							 const Term& upperBound,
 							 const Term& lowerBound);
 
-  void getUpperBound(const Slice& slice, Term& bound);
+  void getMonomialBound(const Slice& slice, Term& bound);
 
   const TermGrader& _grader;
 

@@ -57,7 +57,7 @@ auto_ptr<Slice> HilbertStrategy::beginComputing(const Ideal& ideal) {
   auto_ptr<Slice> slice
 	(new HilbertSlice(sliceIdeal, Ideal(varCount),
 					  Term(varCount), _consumer));
-  slice->simplify();
+  simplify(*slice);
   return slice;
 }
 
