@@ -108,7 +108,7 @@ void OptimizeStrategy::simplify(Slice& slice) {
   if (slice.getIdeal().getGeneratorCount() == 0)
 	return;
 
-  if (!_maxSolutions.isZeroIdeal() || !_useBound) {
+  if (!_useBound || _maxSolutions.isZeroIdeal()) {
 	slice.simplify();
 	return;
   }
