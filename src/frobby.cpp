@@ -399,12 +399,6 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  ExternalIdealConsumerWrapper wrappedConsumer
-    (&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params;
-  params.apply(facade);
-
   bool canUseBound = true;
   vector<mpz_class> grading;
   for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
@@ -412,6 +406,12 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 	if (grading.back() < 0)
 	  canUseBound = false;
   }
+
+  ExternalIdealConsumerWrapper wrappedConsumer
+    (&consumer, bigIdeal.getVarCount());
+  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
+  SliceParameters params(canUseBound, false);
+  params.apply(facade);
 
   mpz_class dummy;
   return facade.solveStandardProgram(grading, dummy, false, canUseBound);

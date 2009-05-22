@@ -25,7 +25,8 @@ class SliceFacade;
 
 class SliceParameters : public ParameterGroup {
  public:
-  SliceParameters(bool exposeBoundParam = false);
+  SliceParameters(bool exposeBoundParam = false,
+				  bool exposeIndependenceParam = true);
 
   void setUseIndependence(bool value);
   void setSplit(const string& split);
@@ -38,6 +39,7 @@ class SliceParameters : public ParameterGroup {
 
  private:
   bool _exposeBoundParam;
+  bool _exposeIndependenceParam;
 
   BoolParameter _printDebug;
   BoolParameter _printStatistics;

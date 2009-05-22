@@ -40,7 +40,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp				\
   LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp					\
   LibIrreducibleDecomTest.cpp IdealFactory.cpp PolynomialFactory.cpp	\
-  LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp
+  LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp					\
+  OptimizeStrategyTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

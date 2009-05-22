@@ -30,7 +30,7 @@
 #include "SliceAlgorithm.h"
 #include "DecomRecorder.h"
 #include "TermGrader.h"
-#include "FrobeniusStrategy.h"
+#include "OptimizeStrategy.h"
 #include "CanonicalCoefTermConsumer.h"
 #include "HilbertStrategy.h"
 #include "IOHandler.h"
@@ -490,11 +490,18 @@ bool SliceFacade::solveProgram
 	}
   }
 
+  if (_useIndependence) {
+	displayNote
+	  ("Turning off Independence splits as they are not supported\n"
+	   "for optimization.");
+	_useIndependence = false;
+  }
+
   beginAction("Solving optimization program.");
 
   TermGrader grader(grading, _translator.get());
 
-  FrobeniusStrategy strategy
+  OptimizeStrategy strategy
 	(grader, _split.get(), reportAllSolutions, useBound);
   runSliceAlgorithmWithOptions(strategy);
 

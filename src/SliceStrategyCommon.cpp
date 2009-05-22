@@ -46,6 +46,10 @@ void SliceStrategyCommon::setUseIndependence(bool use) {
   _useIndependence = use;
 }
 
+void SliceStrategyCommon::simplify(Slice& slice) {
+  slice.simplify();
+}
+
 auto_ptr<Slice> SliceStrategyCommon::newSlice() {
   auto_ptr<Slice> slice;
   if (!_sliceCache.empty()) {
@@ -78,12 +82,12 @@ void SliceStrategyCommon::pivotSplit(auto_ptr<Slice> slice,
   leftSlice = newSlice();
   *leftSlice = *slice;
   leftSlice->innerSlice(_pivotTmp);
-  leftSlice->simplify();
+  simplify(*leftSlice);
 
   // The outer slice
   rightSlice = slice;
   rightSlice->outerSlice(_pivotTmp);
-  rightSlice->simplify();
+  simplify(*rightSlice);
 
   // Process the smaller one first to preserve memory.
   if (leftSlice->getIdeal().getGeneratorCount() <

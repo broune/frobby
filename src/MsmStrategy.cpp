@@ -37,7 +37,7 @@ auto_ptr<Slice> MsmStrategy::beginComputing(const Ideal& ideal) {
 
   auto_ptr<Slice> slice
 	(new MsmSlice(ideal, Ideal(varCount), sliceMultiply, _consumer));
-  slice->simplify();
+  simplify(*slice);
   return slice;
 }
 
@@ -124,10 +124,10 @@ void MsmStrategy::labelSplit(auto_ptr<MsmSlice> slice,
 
   leftSlice = hasLabelSlice;
   if (leftSlice.get() != 0)
-	leftSlice->simplify();
+	simplify(*leftSlice);
 
   rightSlice = slice;
-  rightSlice->simplify();
+  simplify(*rightSlice);
 }
 
 MsmStrategy::MsmStrategy(TermConsumer* consumer,
