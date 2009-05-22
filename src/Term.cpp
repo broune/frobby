@@ -17,8 +17,26 @@
 #include "stdinc.h"
 #include "Term.h"
 
+#include <sstream>
+#include <vector>
+
 const unsigned int PoolCount = 50;
 const unsigned int ObjectPoolSize = 1000;
+
+Term::Term(const string& str):
+  _exponents(0), _varCount(0) {
+  istringstream in(str);
+
+  vector<Exponent> exponents;
+  mpz_class ex;
+  while (in >> ex) {
+	ASSERT(ex.fits_uint_p());
+	exponents.push_back(ex.get_ui());
+  }
+
+  if (!exponents.empty())
+	initialize(&(exponents[0]), exponents.size());
+}
 
 struct ObjectPool {
   ObjectPool(): objectsStored(0), objects(0) {}

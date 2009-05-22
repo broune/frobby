@@ -19,8 +19,10 @@
 
 #include "Term.h"
 #include "Minimizer.h"
+
 #include <algorithm>
 #include <functional>
+#include <sstream>
 
 Ideal::~Ideal() {
 }
@@ -28,6 +30,12 @@ Ideal::~Ideal() {
 Ideal::Ideal(size_t varCount):
   _varCount(varCount),
   _allocator(varCount) {
+}
+
+Ideal::Ideal(const Term& term):
+  _varCount(term.getVarCount()),
+  _allocator(term.getVarCount()) {
+  insert(term);
 }
 
 Ideal::Ideal(const Ideal& ideal):
@@ -157,12 +165,18 @@ bool Ideal::operator==(const Ideal& ideal) const {
 }
 
 void Ideal::print(FILE* file) const {
-  fputs("//------------ Ideal:\n", file);
+  ostringstream out;
+  print(out);
+  fputs(out.str().c_str(), file);
+}
+
+void Ideal::print(ostream& out) const {
+  out << "//------------ Ideal:\n";
   for (const_iterator it = _terms.begin(); it != _terms.end(); ++it) {
-    ::print(file, *it, _varCount);
-    fputc('\n', file);
+    ::print(out, *it, _varCount);
+	out << '\n';
   }
-  fputs("------------\\\\\n", file);
+  out << "------------\\\\\n";
 }
 
 void Ideal::insert(const Exponent* exponents) {
