@@ -1,3 +1,3 @@
 echo Action optimize on n11d11
-time cat test/bench/n11d11.gro test/bench/n11d11|bin/frobby optimize \
-  -oformat m2 -displayLevel 2 -chopFirstAndSubtract -maxStandard
+time cat test/bench/n11d11.test test/bench/n11d11|bin/frobby optimize \
+  -displayLevel 0 -chopFirstAndSubtract -maxStandard -displayValue off
