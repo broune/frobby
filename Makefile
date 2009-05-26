@@ -157,6 +157,10 @@ bareTest: all
 	test/runTests $(TESTARGS) 
 	test/runSplitTests $(TESTARGS)
 
+# Runs benchmarks to detect performance regressions.
+bench: all
+	test/bench/runbench
+
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
 ifneq ($(MODE), analysis)
