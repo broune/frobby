@@ -77,6 +77,7 @@ void FrobeniusAction::perform() {
   facade.solveStandardProgram
 	(shiftedDegrees, dummy, false, _sliceParams.getUseBound());
 
+  // TODO: is this a memory leak?
   BigIdeal maxSolution = *(recorder.releaseIdeal());
 
   ASSERT(maxSolution.getGeneratorCount() == 1);
