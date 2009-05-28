@@ -27,9 +27,6 @@ The parameters accepted by frobgrob are as follows.
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.
 
- -independence [BOOL]   (default is on)
-   Perform independence splits when possible.
-
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step.
 

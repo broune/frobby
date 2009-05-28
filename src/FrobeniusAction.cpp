@@ -56,6 +56,10 @@ void FrobeniusAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void FrobeniusAction::perform() {
+  fputs("The action frobgrob is DEPRECATED, and will be removed in a future "
+		"release of Frobby. Use the action optimize with options "
+		"-chopFirstAndSubtract and -maxStandard instead.\n", stderr);
+
   _sliceParams.validateSplit(true, true);
 
   vector<mpz_class> instance;
@@ -77,7 +81,6 @@ void FrobeniusAction::perform() {
   facade.solveStandardProgram
 	(shiftedDegrees, dummy, false, _sliceParams.getUseBound());
 
-  // TODO: is this a memory leak?
   BigIdeal maxSolution = *(recorder.releaseIdeal());
 
   ASSERT(maxSolution.getGeneratorCount() == 1);
@@ -99,4 +102,8 @@ void FrobeniusAction::perform() {
 
 const char* FrobeniusAction::staticGetName() {
   return "frobgrob";
+}
+
+bool FrobeniusAction::displayAction() const {
+  return false;
 }

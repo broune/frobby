@@ -60,16 +60,13 @@ The parameters accepted by optimize are as follows.
    generators. Turning this on can improve performance, but if it is not
    true, Frobby may go into an infinite loop or produce incorrect results.
 
- -split STRING   (default is median)
+ -split STRING   (default is frob)
    The split selection strategy to use. Options are maxlabel, minlabel,
    varlabel, minimum, median, maximum, mingen, indep and gcd. Frobenius
    computations support the specialized strategy frob as well.
 
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.
-
- -independence [BOOL]   (default is on)
-   Perform independence splits when possible.
 
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step.

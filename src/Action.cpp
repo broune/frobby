@@ -86,6 +86,10 @@ namespace {
   }
 }
 
+bool Action::displayAction() const {
+  return true;
+}
+
 void Action::addNamesWithPrefix(const string& prefix,
 								vector<string>& names) {
   getActionFactory().addNamesWithPrefix(prefix, names);
