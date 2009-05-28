@@ -29,6 +29,8 @@ class FrobeniusAction : public Action {
 
   virtual void perform();
 
+  virtual bool displayAction() const;
+
   static const char* staticGetName();
 
  private:

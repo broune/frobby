@@ -174,8 +174,7 @@ void HelpAction::perform() {
   for (vector<string>::const_iterator it = names.begin();
        it != names.end(); ++it) {
 	auto_ptr<Action> action(Action::createActionWithPrefix(*it));
-    if (string("help") == action->getName() ||
-		string("test") == action->getName())
+    if (!action->displayAction())
       continue;
 
     size_t length = (string(action->getName())).size();
@@ -200,4 +199,8 @@ void HelpAction::perform() {
 
 const char* HelpAction::staticGetName() {
   return "help";
+}
+
+bool HelpAction::displayAction() const {
+  return false;
 }

@@ -47,6 +47,10 @@ class Action {
 
   virtual void perform() = 0;
 
+  /** Returns whether this action should be shown to the user by the
+	help action.*/
+  virtual bool displayAction() const;
+
   static void addNamesWithPrefix(const string& prefix,
 								 vector<string>& names);
   static auto_ptr<Action> createActionWithPrefix(const string& prefix);

@@ -13,7 +13,6 @@ run it by typing `frobby ACTION', where ACTION is one of the following.
  ptransform   - Change the representation of the input polynomial.
  intersection - Intersect the input ideals.
  genideal     - Generate a random monomial ideal.
- frobgrob     - Compute Frobenius number using a Grobner basis algorithm.
  frobdyn      - Compute Frobenius number using dynamic programming.
  genfrob      - Generate a random Frobenius problem instance.
  analyze      - Display information about the input ideal.

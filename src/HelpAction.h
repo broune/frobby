@@ -31,6 +31,8 @@ class HelpAction : public Action {
 
   static const char* staticGetName();
 
+  virtual bool displayAction() const;
+
  private:
   void displayActionHelp(Action* action);
   void displayIOHelp();

@@ -43,3 +43,7 @@ void TestAction::perform() {
 const char* TestAction::staticGetName() {
   return "test";
 }
+
+bool TestAction::displayAction() const {
+  return false;
+}
