@@ -85,7 +85,7 @@ OptimizeAction::OptimizeAction():
    false),
 
   _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
-  _sliceParams.setSplit("frob");
+  _sliceParams.setSplit("degree");
 }
 
 void OptimizeAction::obtainParameters(vector<Parameter*>& parameters) {

@@ -70,37 +70,7 @@ void OptimizeStrategy::doneConsuming() {
 }
 
 void OptimizeStrategy::getPivot(Term& pivot, Slice& slice) {
-  if (!_split->isFrobeniusSplit()) {
-	MsmStrategy::getPivot(pivot, slice);
-	return;
-  }
-
-  const Term& lcm = slice.getLcm();
-
-  mpz_class& maxDiff = _getPivot_maxDiff;
-  mpz_class& diff = _getPivot_diff;
-
-  maxDiff = -1;
-  size_t maxOffset = (size_t)-1;
-  for (size_t var = 0; var < slice.getVarCount(); ++var) {
-	if (lcm[var] <= 1)
-	  continue;
-
-	Exponent e = lcm[var] / 2;
-	diff =
-	  _grader.getGrade(var, slice.getMultiply()[var] + e) -
-	  _grader.getGrade(var, slice.getMultiply()[var]);
-	ASSERT(diff >= 0);
-
-	if (diff > maxDiff) {
-	  maxOffset = var;
-	  maxDiff = diff;
-	}
-  }
-  ASSERT(maxOffset != (size_t)-1);
-
-  pivot.setToIdentity();
-  pivot[maxOffset] = lcm[maxOffset] / 2;
+  MsmStrategy::getPivot(pivot, slice, _grader);
 }
 
 void OptimizeStrategy::simplify(Slice& slice) {

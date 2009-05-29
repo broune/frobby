@@ -22,6 +22,7 @@
 #include "Ideal.h"
 #include "NameFactory.h"
 #include "error.h"
+#include "TermGrader.h"
 
 SplitStrategy::SplitStrategy() {
 }
@@ -29,13 +30,18 @@ SplitStrategy::SplitStrategy() {
 SplitStrategy::~SplitStrategy() {
 }
 
-// This common base class provides code that is useful for writing
-// pivot split strategies.
+/** This common base class provides code that is useful for writing
+ pivot split strategies.
+*/
 class SplitStrategyCommon : public SplitStrategy {
 public:
   virtual void getPivot(Term& pivot, Slice& slice) const {
 	ASSERT(false);
 	reportInternalError("Requested pivot split of non-pivot split strategy.\n");
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice, const TermGrader& grader) const {
+	getPivot(pivot, slice);
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
@@ -49,10 +55,6 @@ public:
   }
 
   virtual bool isLabelSplit() const {
-	return false;
-  }
-
-  virtual bool isFrobeniusSplit() const {
 	return false;
   }
 
@@ -383,22 +385,86 @@ public:
   }
 };
 
-class FrobeniusSplit : public PivotSplit {
+class DegreeSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
 	return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "frob";
-  }
-
-  virtual bool isFrobeniusSplit() const {
-	return true;
+	return "degree";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
 	reportInternalError("Called getPivot directly on FrobeniusSplit.");
+  }
+
+  virtual void getPivot(Term& pivot, Slice& slice, const TermGrader& grader) const {
+	const Term& lcm = slice.getLcm();
+
+	// TODO: pick a middle variable in case of ties.
+
+	_maxDiff = -1;
+	size_t maxOffset = (size_t)-1;
+	for (size_t var = 0; var < slice.getVarCount(); ++var) {
+	  if (lcm[var] <= 1)
+		continue;
+
+	  Exponent base = slice.getMultiply()[var];
+	  Exponent mid = base + lcm[var] / 2;
+
+	  // We could be looking at an added pure power whose exponent is
+	  // defined to have degree 0. We don't want to look at that.
+	  if (mid == grader.getMaxExponent(var) &&
+		  grader.getGrade(var, mid) == 0 &&
+		  mid > base)
+		--mid;
+
+	  _diff = grader.getGrade(var, mid) - grader.getGrade(var, base);
+	  ASSERT(_diff >= 0);
+
+	  if (_diff > _maxDiff) {
+		maxOffset = var;
+		_maxDiff = _diff;
+	  }
+	}
+	ASSERT(maxOffset != (size_t)-1);
+
+	pivot.setToIdentity();
+	pivot[maxOffset] = lcm[maxOffset] / 2;
+  }
+
+private:
+  /** This is member variable used by getPivot. It has been made a
+	  field of the object to avoid having to reinitialize the object with
+	  each call.
+  */ 
+  mutable mpz_class _maxDiff;
+
+  /** This is member variable used by getPivot. It has been made a
+	  field of the object to avoid having to reinitialize the object with
+	  each call.
+  */ 
+  mutable mpz_class _diff;
+};
+
+/// This class is deprecated and is only here to create the alias
+/// "frob" for the degree split.
+class DeprecatedFrobeniusSplit : public DegreeSplit {
+public:
+  DeprecatedFrobeniusSplit() {
+	displayNote
+	  ("The split selection strategy \"frob\" is deprecated and will be "
+	   "removed in a future version of Frobby. Use the name \"degree\" "
+	   "to achieve the same thing.");
+  }
+
+  virtual const char* getName() const {
+	return staticGetName();
+  }
+
+  static const char* staticGetName() {
+	return "frob";
   }
 };
 
@@ -417,7 +483,8 @@ namespace {
 	nameFactoryRegister<MinGenSplit>(factory);
 	nameFactoryRegister<IndependencePivotSplit>(factory);
 	nameFactoryRegister<GcdSplit>(factory);
-	nameFactoryRegister<FrobeniusSplit>(factory);
+	nameFactoryRegister<DegreeSplit>(factory);
+	nameFactoryRegister<DeprecatedFrobeniusSplit>(factory);
 
 	return factory;
   }
