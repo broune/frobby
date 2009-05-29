@@ -25,8 +25,27 @@
 #include "ElementDeleter.h"
 
 #include <iterator>
-#include <set>
 #include <algorithm>
+#include <sstream>
+#include <set>
+
+TermTranslator::TermTranslator(size_t varCount, size_t upToExponent):
+  _exponents(varCount),
+  _names(varCount) {
+  // If we had included upToExponent as a translated exponent, we
+  // would have to allocate a vector of size upToExponent + 1, which
+  // would have added a corner case precondition that upToExponent
+  // could not be the largest representable size_t, as that would lead
+  // to an overflow.
+
+  if (varCount > 0) {
+	_exponents[0].reserve(upToExponent);
+	for (size_t i = 0; i < upToExponent; ++i)
+	  _exponents[0].push_back(i);
+	for (size_t var = 1; var < varCount; ++var)
+	  _exponents[var] = _exponents[0];
+  }
+}
 
 TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal,
 							   bool sortVars) {
@@ -308,18 +327,22 @@ void TermTranslator::swapVariables(size_t a, size_t b) {
   _names.swapVariables(a, b);
 }
 
-void TermTranslator::print(FILE* file) const {
-  fputs("TermTranslator(\n", file);
-  for (size_t variable = 0; variable < _exponents.size(); ++variable) {
-    fprintf(file, " variable %lu: ", (unsigned long)(variable + 1));
-    for (size_t e = 0; e < _exponents[variable].size(); ++e) {
-      if (e != 0)
-		fputc(' ', file);
-      gmp_fprintf(file, "%Zd", _exponents[variable][e].get_mpz_t());
+void TermTranslator::print(ostream& out) const {
+  out << "TermTranslator(\n";
+  for (size_t var = 0; var < _exponents.size(); ++var) {
+    out << " var " << var + 1 << ':';
+    for (size_t e = 0; e < _exponents[var].size(); ++e) {
+	  out << ' ' << _exponents[var][e];
     }
-    fputc('\n', file);
+	out << '\n';
   }
-  fputs(")\n", file);
+  out << ")\n";
+}
+
+string TermTranslator::toString() const {
+  ostringstream out;
+  print(out);
+  return out.str();
 }
 
 void TermTranslator::makeStrings(bool includeVar) const {
@@ -350,6 +373,17 @@ void TermTranslator::makeStrings(bool includeVar) const {
       strings[i][j] = str;
     }
   }
+}
+
+TermTranslator::TermTranslator(const TermTranslator& translator) {
+  *this = translator;
+}
+
+TermTranslator& TermTranslator::operator=(const TermTranslator& translator) {
+  clearStrings();
+  _exponents = translator._exponents;
+  _names = translator._names;
+  return *this;
 }
 
 TermTranslator::~TermTranslator() {
@@ -444,4 +478,9 @@ bool TranslatedReverseLexComparator::operator()(const Exponent* a,
   ASSERT(b != 0 || _translator.getVarCount() == 0);
 
   return _translator.lessThanReverseLex(a, b);
+}
+
+ostream& operator<<(ostream& out, const TermTranslator& translator) {
+  translator.print(out);
+  return out;
 }

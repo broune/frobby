@@ -55,4 +55,7 @@ TestSuite& GET_TEST_SUITE(root);
   } static _helper_testCase_##SUITE##_##TEST_NAME; \
   void _testCase_##SUITE##_##TEST_NAME::run(const char* __nameOfTest)
 
+#define FRIEND_TEST(SUITE, TEST_NAME) \
+  friend class _testCase_##SUITE##_##TEST_NAME
+
 #endif

@@ -499,7 +499,7 @@ bool SliceFacade::solveProgram
 
   beginAction("Solving optimization program.");
 
-  TermGrader grader(grading, _translator.get());
+  TermGrader grader(grading, *_translator);
 
   OptimizeStrategy strategy
 	(grader, _split.get(), reportAllSolutions, useBound);
