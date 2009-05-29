@@ -47,6 +47,7 @@ class MsmStrategy : public SliceStrategyCommon {
 
  protected:
   virtual void getPivot(Term& pivot, Slice& slice);
+  virtual void getPivot(Term& pivot, Slice& slice, const TermGrader& grader);
 
  private:
   auto_ptr<MsmSlice> newMsmSlice();

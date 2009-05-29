@@ -20,25 +20,52 @@
 class Term;
 class Slice;
 class Ideal;
+class TermGrader;
 
+/** A SplitStrategy is an implementation of a split selection strategy
+ for the Slice Algorithm. Specifically, it makes a decision about what
+ kind of splits to perform, and how to make any choices involved in
+ performing such a split.
+
+ Some methods can only be called on certain kinds of strategies, which
+ is a violation of Liskov's Substitution principle. This is
+ unfortunate, but this design makes everything work smoothly, and I
+ don't see a much cleaner design.
+*/
 class SplitStrategy {
  public:
-  SplitStrategy();
   virtual ~SplitStrategy();
 
+  /// Sets pivot to the pivot of a pivot split on slice.
   virtual void getPivot(Term& pivot, Slice& slice) const = 0;
+
+  /** Sets pivot to the pivot of a pivot split on slice. Some pivot
+   selection strategies make use of a grading.
+  */
+  virtual void getPivot(Term& pivot, Slice& slice, const TermGrader& grader) const = 0;
+
+  /// Returns the variable to perform a label split on.
   virtual size_t getLabelSplitVariable(const Slice& slice) const = 0;
 
+  /// If returns true, only call getPivot.
   virtual bool isPivotSplit() const = 0;
-  virtual bool isLabelSplit() const = 0;
-  virtual bool isFrobeniusSplit() const = 0;
 
+  /// If returns true, only call getLabelSplitVariable.
+  virtual bool isLabelSplit() const = 0;
+
+  /// Returns the name of the strategy.
   virtual const char* getName() const = 0;
 
+  /** Returns a strategy with the given name. Returns null if no
+   strategy has that name. This is the only way to create a
+   SplitStrategy.
+  */
   static auto_ptr<SplitStrategy> createStrategy(const string& name);
 
  protected:
-  // To make these inaccessible.
+  SplitStrategy();
+
+  // To make these inaccessible. They are not implemented.
   SplitStrategy(const SplitStrategy&);
   SplitStrategy& operator=(const SplitStrategy&);
   bool operator==(const SplitStrategy&);

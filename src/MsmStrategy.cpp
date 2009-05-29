@@ -275,3 +275,10 @@ void MsmStrategy::getPivot(Term& pivot, Slice& slice) {
 
   _split->getPivot(pivot, slice);
 }
+
+void MsmStrategy::getPivot(Term& pivot, Slice& slice, const TermGrader& grader) {
+  ASSERT(_split != 0);
+  ASSERT(_split->isPivotSplit());
+
+  _split->getPivot(pivot, slice, grader);
+}

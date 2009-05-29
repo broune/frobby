@@ -62,8 +62,8 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
   _split
   ("split",
    "The split selection strategy to use. Options are maxlabel, minlabel,\n"
-   "varlabel, minimum, median, maximum, mingen, indep and gcd. Frobenius\n"
-   "computations support the specialized strategy frob as well.",
+   "varlabel, minimum, median, maximum, mingen, indep and gcd. Optimization\n"
+   "computations support the specialized strategy degree as well.",
    "median") {
   addParameter(&_minimal);
   addParameter(&_split);
@@ -89,20 +89,29 @@ bool SliceParameters::getUseBound() const {
 }
 
 void SliceParameters::validateSplit(bool allowLabel,
-											   bool allowFrob) {
+									bool allowDegree) {
   auto_ptr<SplitStrategy>
 	split(SplitStrategy::createStrategy(_split.getValue().c_str()));
 
   if (split.get() == 0)
 	reportError("Unknown split strategy \"" + _split.getValue() + "\".");
 
-  if (split->isFrobeniusSplit() && !allowFrob)
-	reportError("Frobenius split strategy is not appropriate "
-				"in this context.");
-
   if (!allowLabel && split->isLabelSplit())
 	reportError("Label split strategy is not appropriate "
 				"in this context.");
+
+  // TODO: implement degree when there is no grading too, so that it
+  // is always appropriate.
+  if (!allowDegree && _split.getValue() == "degree") {
+	reportError("The split strategy degree is not appropriate "
+				"in this context.");
+  }
+
+  // TODO: remove the deprecated frob.
+  if (!allowDegree && _split.getValue() == "frob") {
+	reportError("The split strategy frob is not appropriate "
+				"in this context.");
+  }
 }
 
 void SliceParameters::apply(SliceFacade& facade) const {

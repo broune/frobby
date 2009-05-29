@@ -33,7 +33,7 @@ class SliceParameters : public ParameterGroup {
 
   bool getUseBound() const;
 
-  void validateSplit(bool allowLabel, bool allowFrob);
+  void validateSplit(bool allowLabel, bool allowDegree);
 
   void apply(SliceFacade& facade) const;
 
