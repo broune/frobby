@@ -20,70 +20,93 @@
 #include "VarNames.h"
 
 #include <vector>
+#include <ostream>
 
 class BigIdeal;
 class Ideal;
 class Term;
 
-// TermTranslator handles translation between terms whose exponents
-// are infinite precision integers and terms whose exponents are 32
-// bit integers.
-//
-// This is done by assigning the big integers IDs that are 32 bit
-// integers such that the assignment of IDs preserves order of
-// exponents for each variable.
-//
-// The translation is done at the level of whole ideals.
-//
-// The big integer 0 is always assigned the ID 0.
+/** TermTranslator handles translation between terms whose exponents
+ are infinite precision integers and terms whose exponents are 32
+ bit integers.
+
+ This is done by assigning the big integers IDs that are 32 bit
+ integers such that the assignment of IDs preserves order of
+ exponents for each variable.
+
+ The translation is done at the level of whole ideals.
+
+ The big integer 0 is always assigned the ID 0.
+*/
 class TermTranslator {
 public:
-  // The constructors translate BigIdeals into Ideals, while
-  // initializing *this to do the reverse translation. sortVars
-  // indicates whether or not the order of the variable names should
-  // be sorted. This cannot be turned off for the version taking
-  // several ideals.
+  /** Constructs a translator of varCount variables that translates each
+   number to itself, up to and not including upToExponent.
+  */
+  TermTranslator(size_t varCount, size_t upToExponent);
+
+  /** Translates bigIdeal into ideal, and construct a translator to
+   translate back. sortVars indicates whether or not the order of the
+   variable names should be sorted.
+  */
   TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal, bool sortVars = true);
+
+  /** Translates bigIdeals into ideals, while constructing a
+   translator to translate back. The variable names will be sorted,
+   and the ideals will be embedded in a ring with the union of all
+   variables present in bigIdeals.
+  */
   TermTranslator(const vector<BigIdeal*>& bigIdeals, vector<Ideal*>& ideals);
+
+  TermTranslator(const TermTranslator& translator);
   ~TermTranslator();
 
-  // These methods translate from IDs to infinite precision integers.
+  TermTranslator& operator=(const TermTranslator& translator);
+
+  /// This method translates from IDs to infinite precision integers.
   const mpz_class& getExponent(size_t variable, Exponent exponent) const;
+
+  /// This method translates from IDs to infinite precision integers.
   const mpz_class& getExponent(size_t variable, const Term& term) const;
 
-  // As getExponent, except the string "var^e" is returned or null if
-  // the exponent is zero, where var is the variable and e is the
-  // exponent.
+  /** As getExponent, except the string "var^e" is returned or null if
+   the exponent is zero, where var is the variable and e is the
+   exponent.
+  */
   const char* getVarExponentString(size_t variable, Exponent exponent) const;
 
-  // as getExponent, except the string "e" is returned, where e is the
-  // exponent.
+  /** as getExponent, except the string "e" is returned, where e is the
+   exponent.
+  */
   const char* getExponentString(size_t variable, Exponent exponent) const;
 
-  // The assigned IDs are those in the range [0, getMaxId()].
+  /// The assigned IDs are those in the range [0, getMaxId()].
   Exponent getMaxId(size_t variable) const;
 
-  // Adds a generator of the form v^e, e > 0, for any variable v where
-  // generator of that form is not already present. e is chosen to be
-  // larger than any exponent (i.e. ID) already present, and it maps
-  // to 0. Note that this does NOT preserve order - the highest ID
-  // always maps to 0. The reason for this is that this is what is
-  // needed for computing irreducible decompositions.
+  /** Adds a generator of the form v^e, e > 0, for any variable v where
+   generator of that form is not already present. e is chosen to be
+   larger than any exponent (i.e. ID) already present, and it maps
+   to 0. Note that this does NOT preserve order - the highest ID
+   always maps to 0. The reason for this is that this is what is
+   needed for computing irreducible decompositions.
+  */
   void addPurePowersAtInfinity(Ideal& ideal) const;
 
-  // The method addPurePowersAtInfinity adds high exponents that map to
-  // zero. This method replaces those high powers with the power
-  // zero.
+  /** The method addPurePowersAtInfinity adds high exponents that map to
+   zero. This method replaces those high powers with the power
+   zero.
+  */
   void setInfinityPowersToZero(Ideal& ideal) const;
 
   const VarNames& getNames() const;
   size_t getVarCount() const;
 
-  // Replaces var^v by var^(a[i] - v) except that var^0 is left
-  // alone.
+  /** Replaces var^v by var^(a[i] - v) except that var^0 is left
+   alone.
+  */
   void dualize(const vector<mpz_class>& a);
 
-  // Replaces var^v by var^(v-1).
+  /// Replaces var^v by var^(v-1).
   void decrement();
 
   void renameVariables(const VarNames& names);
@@ -91,14 +114,12 @@ public:
 
   bool lessThanReverseLex(const Exponent* a, const Exponent* b) const;
 
-  void print(FILE* file) const;
+  void print(ostream& out) const;
+  string toString() const;
 
 private:
   void makeStrings(bool includeVar) const;
   void clearStrings();
-
-  TermTranslator(const TermTranslator&); // not suported
-  TermTranslator& operator=(const TermTranslator&); // not supported
 
   void initialize(const vector<BigIdeal*>& bigIdeals, bool sortVars);
   void shrinkBigIdeal(const BigIdeal& bigIdeal, Ideal& ideal) const;
@@ -110,8 +131,9 @@ private:
   VarNames _names;
 };
 
-// A predicate that sorts according to reverse lexicographic order
-// on the translated values of a term.
+/** A predicate that sorts according to reverse lexicographic order
+ on the translated values of a term.
+*/
 class TranslatedReverseLexComparator {
  public:
  TranslatedReverseLexComparator(const TermTranslator& translator):
@@ -124,5 +146,7 @@ class TranslatedReverseLexComparator {
  private:
   const TermTranslator& _translator;
 };
+
+ostream& operator<<(ostream& out, const TermTranslator& translator);
 
 #endif

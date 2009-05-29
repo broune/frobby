@@ -1,5 +1,5 @@
 /* Frobby: Software for monomial ideal computations.
-   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+   Copyright (C) 2009 Bjarke Hammersholt Roune (www.broune.com)
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ namespace {
 TEST(OptimizeStrategy, Simplify) {
   Ideal ideal;
   TermTranslator translator(IdealFactory::xx_yy_zz_t_xz_yz(), ideal, false);
-  TermGrader grader(makeVector(0, 100, 10000, mpz_class("300000000000000007")), &translator);
+  TermGrader grader(makeVector(0, 100, 10000, mpz_class("300000000000000007")), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
   OptimizeStrategy strategy(grader, splitStrategy.get(), false, true);
 
@@ -53,4 +53,36 @@ TEST(OptimizeStrategy, Simplify) {
 
   ASSERT_EQ(strategy.getMaximalSolutions(), Ideal(Term("1 1 2 1")));
   ASSERT_EQ(strategy.getMaximalValue(), mpz_class("300000000000020107"));
+}
+
+TEST(OptimizeStrategy, improveLowerBound) {
+  TermTranslator translator(4, 100);
+  TermGrader grader(makeVector(100, 10, 1, 0), translator);
+  auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
+
+  OptimizeStrategy reportAll(grader, splitStrategy.get(), true, true);
+  OptimizeStrategy reportOne(grader, splitStrategy.get(), false, true);
+
+  reportAll.beginConsuming();
+  reportAll.consume(Term("1 2 3 4"));
+  ASSERT_EQ(reportAll.getMaximalValue(), mpz_class("123"));
+
+  reportOne.beginConsuming();
+  reportOne.consume(Term("1 2 3 4"));
+  ASSERT_EQ(reportOne.getMaximalValue(), mpz_class("123"));
+
+  // Can improve var 2 by 1 or 2 depending on how many solutions are to be reported
+  ASSERT_EQ(reportAll.improveLowerBound(2, 125, Term("1 2 5 4"), Term("1 2 1 4")), 1u);
+  ASSERT_EQ(reportOne.improveLowerBound(2, 125, Term("1 2 5 4"), Term("1 2 1 4")), 2u);
+
+  // Can improve var 0 by 1 only when reporting only one solution.
+  ASSERT_EQ(reportAll.improveLowerBound(0, 523, Term("5 2 3 4"), Term("0 2 3 4")), 0u);
+  ASSERT_EQ(reportOne.improveLowerBound(0, 523, Term("5 2 3 4"), Term("0 2 3 4")), 1u);
+
+  // Cannot improve by anything in either case.
+  ASSERT_EQ(reportAll.improveLowerBound(0, 223, Term("2 2 3 4"), Term("1 2 3 4")), 0u);
+  ASSERT_EQ(reportOne.improveLowerBound(0, 223, Term("2 2 3 4"), Term("1 2 3 4")), 0u);
+
+  reportAll.doneConsuming();
+  reportOne.doneConsuming();
 }

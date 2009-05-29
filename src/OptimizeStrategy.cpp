@@ -180,48 +180,22 @@ improveLowerBound(size_t var,
 				  const mpz_class& upperBoundDegree,
 				  const Term& upperBound,
 				  const Term& lowerBound) {
+  ASSERT(_grader.getDegree(upperBound) == upperBoundDegree);
+  ASSERT(_grader.getGradeSign(var) > 0);
+  ASSERT((_reportAllSolutions && upperBoundDegree >= _maxValue) ||
+		 (!_reportAllSolutions && upperBoundDegree > _maxValue));
+
   if (upperBound[var] == lowerBound[var])
 	return 0;
 
-  mpz_class& baseUpperBoundDegree = _improveLowerBound_baseUpperBoundDegree;
-  baseUpperBoundDegree = upperBoundDegree -
-	_grader.getGrade(var, upperBound[var]);
+  mpz_class& maxExponent = _improveLowerBound_maxExponent;
+  maxExponent = _maxValue - upperBoundDegree;
+  maxExponent += _grader.getGrade(var, upperBound[var]);
 
-  // Exponential search followed by binary search. We cannot just
-  // simply use a formula since the grader can use a translator that
-  // is just a table with no mathematical signifiance.
-  Exponent low = 0;
-  Exponent high = upperBound[var] - lowerBound[var];
+  Exponent newLowerBound = _grader.getLargestLessThan
+	(var, lowerBound[var], upperBound[var], maxExponent, _reportAllSolutions);
 
-  // The invariant here is that low <= high and high - low decreases
-  // at each iteration. Also, bound(mid - 1) <= _maxValue <
-  // bound(high).
-  while (low < high) {
-	Exponent mid;
-	if (low < high - low)
-	  mid = 2 * low + 1; // Using exponential search.
-	else {
-	  // Using binary search. Note that this way of expressing (low +
-	  // high) / 2 avoids the possibility of low + high causing an
-	  // overflow.
-	  mid = low + (high - low + 1) / 2;
-	}
-
-	mpz_class& value = _improveLowerBound_value;
-	value = baseUpperBoundDegree +
-	  _grader.getGrade(var, lowerBound[var] + mid);
-
-	// If we just want one solution, we can require strict improvement
-	// when looking at new solutions. When we want all, then we can
-	// only require equal to or better.
-	if (value < _maxValue || (!_reportAllSolutions && value == _maxValue))
-	  low = mid;
-	else
-	  high = mid - 1;
-  }
-  ASSERT(low == high);
-
-  return low;
+  return newLowerBound - lowerBound[var];
 }
 
 void OptimizeStrategy::getMonomialBound(const Slice& slice, Term& bound) {
