@@ -87,7 +87,15 @@ public:
 							 const Term& upperBound,
 							 const Term& lowerBound);
 
-  void getMonomialBound(const Slice& slice, Term& bound);
+  /** Sets bound[var] to be an upper bound if var is positively
+   graded, and a lower bound if bound is negatively graded. Thus the
+   degree of bound will be an upper bound on the degree of any element
+   of msm(I), where I is the ideal represented by the slice.
+
+   Returns false (and clears slice) only if slice is a base case
+   slice, but may return true even if it is a base case slice.
+  */
+  bool getMonomialBound(Slice& slice, Term& bound);
 
   const TermGrader& _grader;
 

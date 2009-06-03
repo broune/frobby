@@ -573,6 +573,10 @@ class Term {
     ::print(file, _exponents, _varCount);
   }
 
+  void print(ostream& out) const {
+    ::print(out, _exponents, _varCount);
+  }
+
   // A predicate that sorts according to lexicographic order.
   class LexComparator {
   public:
@@ -699,6 +703,11 @@ namespace std {
   template<> inline void swap<Term>(Term& a, Term& b) {
     a.swap(b);
   }
+}
+
+inline ostream& operator<<(ostream& out, const Term& term) {
+  term.print(out);
+  return out;
 }
 
 #endif
