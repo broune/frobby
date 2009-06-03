@@ -181,6 +181,9 @@ void OptimizeStrategy::getMonomialBound(const Slice& slice, Term& bound) {
   // bound is pi(lcm(min I)), where I is the ideal represented by the
   // slice, and pi decrements each exponent by one.
 
+  // TODO: the rest of this code doesn't fit this pattern. Find a good
+  // way to manage all this.
+
   for (size_t var = 0; var < bound.getVarCount(); ++var) {
 	int sign = _grader.getGradeSign(var);
 	if (sign > 0) {
