@@ -30,6 +30,10 @@
    variable. This makes no difference for most inputs, but leads to
    dramatic speed-ups for some particular highly non-generic inputs.
 
+ - The amount of information in the developer documentation, which is
+   generated based on source code comments, has increased
+   substantially.
+
 *** Version 0.8.1, 2009-04-30
 
 This is a minor update.

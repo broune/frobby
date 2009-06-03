@@ -67,13 +67,11 @@ public:
   virtual void consume(const Term& term);
   virtual void doneConsuming();
 
-  FRIEND_TEST(OptimizeStrategy, improveLowerBound);
-
  private:
-  /** We are considering a slice where each msm d in the content has
-    lowerBound divides d and d divides upperBound. upperBoundDegree is
-    the degree of upperBound and is passed as a parameter so that it
-    does not have to be recomputed.
+  /** We are considering a slice where each msm d in the content
+    fulfills that lowerBound divides d and d divides
+    upperBound. upperBoundDegree is the degree of upperBound and is
+    passed as a parameter so that it does not have to be recomputed.
 
 	Suppose we perform a pivot split on var^e for some e. Then the
 	outer slice will have a monomial upper bound whose exponent of var
@@ -114,13 +112,13 @@ public:
   // seperate is negligible.
   mpz_class _improveLowerBound_maxExponent;
   mpz_class _consume_degree;
-  mpz_class _getPivot_maxDiff;
-  mpz_class _getPivot_diff;
   mpz_class _simplify_degree;
 
   Term _simplify_bound;
   Term _simplify_oldBound;
   Term _simplify_colon;
+
+  FRIEND_TEST(OptimizeStrategy, improveLowerBound);
 };
 
 #endif
