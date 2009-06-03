@@ -91,9 +91,16 @@ void OptimizeStrategy::simplify(Slice& slice) {
   ASSERT(oldBound.getVarCount() == slice.getVarCount());
   ASSERT(colon.getVarCount() == slice.getVarCount());
 
-  getMonomialBound(slice, bound);
+  if (!getMonomialBound(slice, bound))
+	return;
 
   while (true) {
+	// A basecase we don't want to consider.
+	if (slice.getLcm().getSizeOfSupport() < slice.getVarCount()) {
+	  slice.clearIdealAndSubtract();
+	  return;
+	}
+
 	// Obtain upper bound on the degree of elements of msm(I).
 	mpz_class& degree = _simplify_degree;
 	_grader.getDegree(bound, degree);
@@ -127,7 +134,8 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	oldBound = bound;
 	if (!colon.isIdentity()) {
 	  slice.innerSlice(colon);
-	  getMonomialBound(slice, bound);
+	  if (!getMonomialBound(slice, bound))
+		return;
 	  if (bound != oldBound)
 		continue; // Iterate process using new bound.
 	}
@@ -137,7 +145,8 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	if (slice.getIdeal().getGeneratorCount() == 0)
 	  break; // In this case we had simplified the slice to a basecase.
 
-	getMonomialBound(slice, bound);
+	if (!getMonomialBound(slice, bound))
+	  return;
 	if (bound == oldBound)
 	  break; // The bound is unchanged, so no further improvement can be made.
 
@@ -168,7 +177,7 @@ improveLowerBound(size_t var,
   return newLowerBound - lowerBound[var];
 }
 
-void OptimizeStrategy::getMonomialBound(const Slice& slice, Term& bound) {
+bool OptimizeStrategy::getMonomialBound(Slice& slice, Term& bound) {
   ASSERT(bound.getVarCount() == slice.getVarCount());
 
   // We are combining an upper and a lower monomial bound, using the
@@ -181,16 +190,36 @@ void OptimizeStrategy::getMonomialBound(const Slice& slice, Term& bound) {
   // bound is pi(lcm(min I)), where I is the ideal represented by the
   // slice, and pi decrements each exponent by one.
 
-  // TODO: the rest of this code doesn't fit this pattern. Find a good
-  // way to manage all this.
-
+  const Term& lcm = slice.getLcm();
   for (size_t var = 0; var < bound.getVarCount(); ++var) {
+	if (lcm[var] == 0) {
+	  slice.clearIdealAndSubtract();
+	  return false;
+	}
+
 	int sign = _grader.getGradeSign(var);
 	if (sign > 0) {
-	  bound[var] = slice.getMultiply()[var] + slice.getLcm()[var];
-	  if (bound[var] >= 1)
+	  bound[var] = slice.getMultiply()[var] + lcm[var] - 1;
+
+	  // Artinian powers added for the purpose of computing Alexander
+	  // dual or irreducible decomposition map to zero, so the very
+	  // highest exponent is not necessarily the exponent that has the
+	  // greatest degree.
+	  ASSERT(bound[var] <= _grader.getMaxExponent(var));
+	  if (bound[var] == _grader.getMaxExponent(var) && // Cheap test to exclude most cases.
+		  _grader.getGrade(var, bound[var]) == 0 && // The real test.
+		  bound[var] > slice.getMultiply()[var]) { // Don't reduce below lower bound
+		ASSERT(_grader.getGrade(var, bound[var]) <=
+			   _grader.getGrade(var, bound[var] - 1));
 		bound[var] -= 1;
-	} else
+	  }
+	} else if (sign < 0)
 	  bound[var] = slice.getMultiply()[var];
+	else {
+	  ASSERT(sign == 0);
+	  bound[var] = 0; // In this case it doesn't matter what the value is.
+	}
   }
+
+  return true;
 }
