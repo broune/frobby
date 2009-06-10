@@ -81,21 +81,36 @@ public:
 	consider the inner slice, which will have lowerBound increased by
 	var^e. This method returns the largest value of e for which this
 	works.
-   */
-  Exponent improveLowerBound(size_t var,
-							 const mpz_class& upperBoundDegree,
-							 const Term& upperBound,
-							 const Term& lowerBound);
 
-  /** Sets bound[var] to be an upper bound if var is positively
-   graded, and a lower bound if bound is negatively graded. Thus the
-   degree of bound will be an upper bound on the degree of any element
-   of msm(I), where I is the ideal represented by the slice.
+	TODO: update.
+   */
+
+  bool boundSimplify
+	(Slice& slice,
+	 const Term& dominator,
+	 const mpz_class& degree);
+
+  bool getInnerSimplify
+	(const Term& divisor,
+	 const Term& dominator,
+	 const mpz_class& degree,
+	 Term& pivot);
+  bool getOuterSimplify
+	(const Term& divisor,
+	 const Term& dominator,
+	 const mpz_class& degree,
+	 Term& pivot);
+
+
+  /** Sets dominator to be a term dominating every element of the
+   content of slice.
 
    Returns false (and clears slice) only if slice is a base case
    slice, but may return true even if it is a base case slice.
   */
-  bool getMonomialBound(Slice& slice, Term& bound);
+  bool getDominator(Slice& slice, Term& dominator);
+
+  size_t getVarCount() const;
 
   const TermGrader& _grader;
 
@@ -122,11 +137,14 @@ public:
   mpz_class _consume_degree;
   mpz_class _simplify_degree;
 
-  Term _simplify_bound;
-  Term _simplify_oldBound;
-  Term _simplify_colon;
+  Term _simplify_dominator;
+  Term _simplify_oldDominator;
 
-  FRIEND_TEST(OptimizeStrategy, improveLowerBound);
+  Term _improvement;
+
+  FRIEND_TEST(OptimizeStrategy, improveBoundExponent);
+  FRIEND_TEST(OptimizeStrategy, simplifyPositiveGrading);
+  FRIEND_TEST(OptimizeStrategy, simplifyNegativeGrading);
 };
 
 #endif

@@ -30,9 +30,9 @@ OptimizeStrategy::OptimizeStrategy(TermGrader& grader,
   _reportAllSolutions(reportAllSolutions),
   _useBound(useBound),
 
-  _simplify_bound(grader.getVarCount()),
-  _simplify_oldBound(grader.getVarCount()),
-  _simplify_colon(grader.getVarCount()) {
+  _simplify_dominator(grader.getVarCount()),
+  _simplify_oldDominator(grader.getVarCount()),
+  _improvement(grader.getVarCount()) {
 
   MsmStrategy::setUseIndependence(false);
 }
@@ -83,27 +83,19 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	return;
   }
 
-  Term& bound = _simplify_bound;
-  Term& oldBound = _simplify_oldBound;
-  Term& colon = _simplify_colon;
+  Term& dominator = _simplify_dominator;
+  Term& oldDominator = _simplify_oldDominator;
 
-  ASSERT(bound.getVarCount() == slice.getVarCount());
-  ASSERT(oldBound.getVarCount() == slice.getVarCount());
-  ASSERT(colon.getVarCount() == slice.getVarCount());
+  ASSERT(dominator.getVarCount() == slice.getVarCount());
+  ASSERT(oldDominator.getVarCount() == slice.getVarCount());
 
-  if (!getMonomialBound(slice, bound))
+  if (!getDominator(slice, dominator))
 	return;
 
   while (true) {
-	// A basecase we don't want to consider.
-	if (slice.getLcm().getSizeOfSupport() < slice.getVarCount()) {
-	  slice.clearIdealAndSubtract();
-	  return;
-	}
-
 	// Obtain upper bound on the degree of elements of msm(I).
 	mpz_class& degree = _simplify_degree;
-	_grader.getDegree(bound, degree);
+	_grader.getUpperBound(slice.getMultiply(), dominator, degree);
 
 	// Check if improvement on the best value found so far is possible
 	// from this slice according to the bound. If it is not, then
@@ -115,111 +107,161 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	  interesting = (degree > _maxValue);
 	if (!interesting) {
 	  slice.clearIdealAndSubtract();
-	  break;
+	  return;
 	}
 
-	// Use above bound to obtain improved lower bound. The idea is
-	// to consider artinian pivots and to rule out the outer slice
-	// using the above condition. If this can be done, then we can
-	// perform the split and ignore the outer slice.
-	for (size_t var = 0; var < slice.getVarCount(); ++var) {
-	  int sign = _grader.getGradeSign(var);
-	  if (sign > 0)
-		colon[var] =
-		  improveLowerBound(var, degree, bound, slice.getMultiply());
-	  // TODO: implement this for sign < 0 too.
-	}
+	oldDominator = dominator;
 
-	// Check if any improvement was made on the lower bound.
-	oldBound = bound;
-	if (!colon.isIdentity()) {
-	  slice.innerSlice(colon);
-	  if (!getMonomialBound(slice, bound))
-		return;
-	  if (bound != oldBound)
-		continue; // Iterate process using new bound.
+	if (boundSimplify(slice, dominator, degree)) {
+	  if (!getDominator(slice, dominator))
+		return; // Slice is now a basecase.
+	  if (dominator != oldDominator)
+		continue; // Iterate using new dominator.	  
 	}
 
 	// Simplify the slice in the usual non-bound way.
 	slice.simplify();
-	if (slice.getIdeal().getGeneratorCount() == 0)
-	  break; // In this case we had simplified the slice to a basecase.
+	if (!getDominator(slice, dominator))
+	  return; // Slice is now a basecase.
+	if (dominator != oldDominator)
+	  continue; // Iterate using new dominator.
 
-	if (!getMonomialBound(slice, bound))
-	  return;
-	if (bound == oldBound)
-	  break; // The bound is unchanged, so no further improvement can be made.
-
-	// Iterate process using new bound.
+	break;
   }
 }
 
-Exponent OptimizeStrategy::
-improveLowerBound(size_t var,
-				  const mpz_class& upperBoundDegree,
-				  const Term& upperBound,
-				  const Term& lowerBound) {
-  ASSERT(_grader.getDegree(upperBound) == upperBoundDegree);
-  ASSERT(_grader.getGradeSign(var) > 0);
-  ASSERT((_reportAllSolutions && upperBoundDegree >= _maxValue) ||
-		 (!_reportAllSolutions && upperBoundDegree > _maxValue));
+bool OptimizeStrategy::boundSimplify
+(Slice& slice,
+ const Term& dominator,
+ const mpz_class& degree) {
 
-  if (upperBound[var] == lowerBound[var])
-	return 0;
+  if (getInnerSimplify
+	  (slice.getMultiply(), dominator, degree, _improvement))
+	slice.innerSlice(_improvement);
+  else if (getOuterSimplify
+		   (slice.getMultiply(), dominator, degree, _improvement))
+	slice.outerSlice(_improvement);
+  else
+	return false;
 
-  mpz_class& maxExponent = _improveLowerBound_maxExponent;
-  maxExponent = _maxValue - upperBoundDegree;
-  maxExponent += _grader.getGrade(var, upperBound[var]);
-
-  Exponent newLowerBound = _grader.getLargestLessThan
-	(var, lowerBound[var], upperBound[var], maxExponent, _reportAllSolutions);
-
-  return newLowerBound - lowerBound[var];
+  return true;
 }
 
-bool OptimizeStrategy::getMonomialBound(Slice& slice, Term& bound) {
-  ASSERT(bound.getVarCount() == slice.getVarCount());
+bool OptimizeStrategy::getInnerSimplify
+(const Term& divisor,
+ const Term& dominator,
+ const mpz_class& degree,
+ Term& pivot) {
 
-  // We are combining an upper and a lower monomial bound, using the
-  // upper bound for var if the grading is increasing, and the lower
-  // bound if the grading is decreasing. This implies that the degree
-  // of this bound will be an upper bound on the degree of any element
-  // of msm(I), where I is the ideal represented by the slice.
-  //
-  // The lower bound is simply slice.getMultiply(), while the upper
-  // bound is pi(lcm(min I)), where I is the ideal represented by the
-  // slice, and pi decrements each exponent by one.
+  bool simplifiedAny = false;
+  for (size_t var = 0; var < getVarCount(); ++var) {
+	ASSERT(_grader.getGrade(var, 0) ==
+		   _grader.getGrade(var, _grader.getMaxExponent(var)));
 
+	int sign = _grader.getGradeSign(var);
+	if (sign > 0) {
+	  mpz_class maxExponent = _maxValue - degree;
+	  maxExponent += _grader.getGrade(var, dominator[var]);
+
+	  Exponent improve;
+	  bool canSimplify = _grader.getMaxIndexLessThan
+		(var, divisor[var], dominator[var] - 1, improve,
+		 maxExponent, _reportAllSolutions);
+
+	  if (canSimplify) {
+		simplifiedAny = true;
+		pivot[var] = improve - divisor[var] + 1;
+		continue;
+	  }
+	} else if (sign < 0 &&
+			   dominator[var] == _grader.getMaxExponent(var) &&
+			   divisor[var] < dominator[var]) {
+	  mpz_class maxExponent = degree - _grader.getGrade(var, dominator[var]);
+	  maxExponent += _grader.getGrade(var, divisor[var]);
+
+	  if (_reportAllSolutions ?
+		  maxExponent < _maxValue : maxExponent <= _maxValue) {
+		simplifiedAny = true;
+		pivot[var] = dominator[var] - divisor[var];
+		continue;
+	  }
+	}
+
+	pivot[var] = 0;
+  }
+
+  ASSERT(simplifiedAny == !pivot.isIdentity());
+  return simplifiedAny;
+}
+
+bool OptimizeStrategy::getOuterSimplify
+(const Term& divisor,
+ const Term& dominator,
+ const mpz_class& degree,
+ Term& pivot) {
+
+  for (size_t var = 0; var < getVarCount(); ++var) {
+	int sign = _grader.getGradeSign(var);
+	if (sign < 0) {
+	  mpz_class maxExponent = _maxValue - degree;
+	  maxExponent += _grader.getGrade(var, divisor[var]);
+	  
+	  Exponent improve;
+	  bool canImprove = _grader.getMinIndexLessThan
+		(var, divisor[var] + 1, dominator[var], improve,
+		 maxExponent, _reportAllSolutions);
+	  
+	  if (canImprove) {
+		pivot.setToIdentity();
+		pivot[var] = improve - divisor[var];
+		ASSERT(pivot[var] > 0);
+		
+		return true;
+	  }
+	} else if (sign > 0 &&
+			   dominator[var] == _grader.getMaxExponent(var) &&
+			   divisor[var] < dominator[var]) {
+	  mpz_class maxExponent = degree - _grader.getGrade(var, dominator[var] - 1);
+	  maxExponent += _grader.getGrade(var, dominator[var]);
+	  bool canImprove;
+	  if (_reportAllSolutions)
+		canImprove = maxExponent < _maxValue;
+	  else
+		canImprove = maxExponent <= _maxValue;
+	  if (canImprove) {
+		pivot.setToIdentity();
+		pivot[var] = dominator[var] - divisor[var];
+		ASSERT(pivot[var] > 0);
+
+		return true;
+	  }
+	}
+  }
+
+  return false;
+}
+
+bool OptimizeStrategy::getDominator(Slice& slice, Term& dominator) {
+  ASSERT(dominator.getVarCount() == slice.getVarCount());
+
+  // The dominator is pi(lcm(min I)), where I is the ideal represented
+  // by the slice, and pi decrements each exponent by one.
+
+  const Term& multiply = slice.getMultiply();
   const Term& lcm = slice.getLcm();
-  for (size_t var = 0; var < bound.getVarCount(); ++var) {
+
+  for (size_t var = 0; var < dominator.getVarCount(); ++var) {
 	if (lcm[var] == 0) {
 	  slice.clearIdealAndSubtract();
 	  return false;
 	}
 
-	int sign = _grader.getGradeSign(var);
-	if (sign > 0) {
-	  bound[var] = slice.getMultiply()[var] + lcm[var] - 1;
-
-	  // Artinian powers added for the purpose of computing Alexander
-	  // dual or irreducible decomposition map to zero, so the very
-	  // highest exponent is not necessarily the exponent that has the
-	  // greatest degree.
-	  ASSERT(bound[var] <= _grader.getMaxExponent(var));
-	  if (bound[var] == _grader.getMaxExponent(var) && // Cheap test to exclude most cases.
-		  _grader.getGrade(var, bound[var]) == 0 && // The real test.
-		  bound[var] > slice.getMultiply()[var]) { // Don't reduce below lower bound
-		ASSERT(_grader.getGrade(var, bound[var]) <=
-			   _grader.getGrade(var, bound[var] - 1));
-		bound[var] -= 1;
-	  }
-	} else if (sign < 0)
-	  bound[var] = slice.getMultiply()[var];
-	else {
-	  ASSERT(sign == 0);
-	  bound[var] = 0; // In this case it doesn't matter what the value is.
-	}
+	dominator[var] = multiply[var] + lcm[var] - 1;
   }
 
   return true;
+}
+
+size_t OptimizeStrategy::getVarCount() const {
+  return _improvement.getVarCount();
 }
