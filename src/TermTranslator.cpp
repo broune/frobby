@@ -32,16 +32,11 @@
 TermTranslator::TermTranslator(size_t varCount, size_t upToExponent):
   _exponents(varCount),
   _names(varCount) {
-  // If we had included upToExponent as a translated exponent, we
-  // would have to allocate a vector of size upToExponent + 1, which
-  // would have added a corner case precondition that upToExponent
-  // could not be the largest representable size_t, as that would lead
-  // to an overflow.
-
   if (varCount > 0) {
-	_exponents[0].reserve(upToExponent);
+	_exponents[0].reserve(upToExponent + 1);
 	for (size_t i = 0; i < upToExponent; ++i)
 	  _exponents[0].push_back(i);
+	_exponents[0].push_back(0);
 	for (size_t var = 1; var < varCount; ++var)
 	  _exponents[var] = _exponents[0];
   }

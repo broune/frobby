@@ -391,6 +391,14 @@ class Term {
 	return equals(_exponents, term, _varCount);
   }
 
+  bool operator!=(const Term& term) const {
+	return !(*this == term);
+  }
+
+  bool operator!=(const Exponent* term) const {
+	return !(*this == term);
+  }
+
   Term& operator=(const Term& term) {
     if (_varCount != term._varCount) {
 	  Exponent* newBuffer = allocate(term._varCount);

@@ -66,39 +66,154 @@ void TermGrader::getDegree(const Term& term,
     degree += getGrade(projection.inverseProjectVar(var), term[var]);
 }
 
+void TermGrader::getUpperBound(const Term& divisor,
+							   const Term& dominator,
+							   mpz_class& bound) const {
+  ASSERT(divisor.getVarCount() == getVarCount());
+  ASSERT(dominator.getVarCount() == getVarCount());
+  ASSERT(divisor.divides(dominator));
+
+  bound = 0;
+  size_t varCount = getVarCount();
+  for (size_t var = 0; var < varCount; ++var) {
+	int sign = getGradeSign(var);
+	if (sign == 0)
+	  continue;
+
+	Exponent div = divisor[var];
+	Exponent dom = dominator[var];
+
+	Exponent optimalExponent;
+	if (div == dom)
+	  optimalExponent = div; // Nothing to decide in this case.
+	else if (sign > 0) {
+	  // In this case we normally prefer a high exponent.
+	  //
+	  // When computing irreducible decomposition or Alexander dual,
+	  // we add pure powers of maximal degree that map to zero, in
+	  // which case we want to avoid using that degree. This happens
+	  // for dom == getMaxExponent(var).
+	  if (dom == getMaxExponent(var)) {
+		ASSERT(getGrade(var, dom - 1) > getGrade(var, dom));
+		optimalExponent = dom - 1; // OK as div < dom.
+	  } else
+		optimalExponent = dom;
+	} else {
+	  ASSERT(sign < 0);
+
+	  // In this case we normally prefer a low exponent. However, as
+	  // above, we need to consider that the highest exponent could
+	  // map to zero, which may be better.
+	  if (dom == getMaxExponent(var)) {
+		ASSERT(getGrade(var, dom) > getGrade(var, div));
+		optimalExponent = dom;
+	  } else
+		optimalExponent = div;
+	}
+
+	bound += getGrade(var, optimalExponent);
+  }
+}
+
+mpz_class TermGrader::getUpperBound(const Term& divisor,
+									const Term& dominator) const {
+  mpz_class bound;
+  getUpperBound(divisor, dominator, bound);
+  return bound;
+}
+
+bool TermGrader::getMinIndexLessThan
+(size_t var,
+ Exponent from,
+ Exponent to,
+ Exponent& index,
+ const mpz_class& maxDegree,
+ bool strict) const {
+  ASSERT(var < getVarCount());
+  ASSERT(from < _grades[var].size());
+  ASSERT(to < _grades[var].size());
+
+  if (from > to)
+	return false;
+
+  Exponent e = from;
+  while (true) {
+	const mpz_class& exp = _grades[var][e];
+	if (strict ? exp < maxDegree : exp <= maxDegree) {
+	  index = e;
+	  return true;
+	}
+
+	if (e == to)
+	  return false;
+	++e;
+  }
+}
+
+bool TermGrader::getMaxIndexLessThan
+(size_t var,
+ Exponent from,
+ Exponent to,
+ Exponent& index,
+ const mpz_class& maxDegree,
+ bool strict) const {
+  ASSERT(var < getVarCount());
+  ASSERT(from < _grades[var].size());
+  ASSERT(to < _grades[var].size());
+
+  if (from > to)
+	return false;
+
+  Exponent e = to;
+  while (true) {
+	const mpz_class& exp = _grades[var][e];
+	if (strict ? exp < maxDegree : exp <= maxDegree) {
+	  index = e;
+	  return true;
+	}
+
+	if (e == from)
+	  return false;
+	--e;
+  }
+}
+
 Exponent TermGrader::getLargestLessThan
 (size_t var, const mpz_class& value, bool strict) const {
   ASSERT(var < getVarCount());
   ASSERT(!_grades[var].empty());
 
-  if (getGradeSign(var) > 0) {
-    if (_grades[var][0] >= value)
-	  return 0;
+  bool first = true;
+  size_t best = 0;
 
-	size_t size = _grades[var].size();
-	for (size_t e = 1; e < size; ++e) {
-	  const mpz_class& exp = _grades[var][e];
-	  if (exp >= value) {
-		if (strict || exp != value)
-		  return e - 1;
-		else
-		  return e;
+  for (size_t e = 1; e < _grades[var].size(); ++e) {
+	const mpz_class& exp = _grades[var][e];
+
+	if (strict) {
+	  if (exp < value && (first || exp > _grades[var][best])) {
+		best = e;
+		first = false;
+	  }
+	} else {
+	  if (exp <= value && (first || exp > _grades[var][best])) {
+		best = e;
+		first = false;
 	  }
 	}
-
-	return size - 1;
   } 
 
-  if (getGradeSign(var) < 0) {
-	ASSERT(false);
-  }
-
-  return 0;
+  return best;
 }
 
 Exponent TermGrader::getLargestLessThan(size_t var, Exponent from, Exponent to,
 										const mpz_class& value, bool strict) const {
   ASSERT(from <= to);
+
+  // If sign is negative, reverse the roles of < and > below.
+  int sign = getGradeSign(var);
+  if (sign == 0)
+	return 0;
+  bool positive = sign > 0;
 
   // We are expecting that the correct value will usually be close to
   // from, so we start with an exponential search starting at from and
@@ -108,9 +223,9 @@ Exponent TermGrader::getLargestLessThan(size_t var, Exponent from, Exponent to,
   Exponent high = to;
 
   // We carry on as though strict is true, and adjust the value
-  // below. The invariant is that degree(low) < value <= degree(high +
+  // below. The invariant is that degree(low) <= value < degree(high +
   // 1), if that is true to begin with. You can check that both the
-  // cases value <= degree(from) and degree(high + 1) < value work out
+  // cases value < degree(from) and degree(high + 1) <= value work out
   // also.
   while (true) {
 	ASSERT(low <= high);
@@ -136,19 +251,30 @@ Exponent TermGrader::getLargestLessThan(size_t var, Exponent from, Exponent to,
 	ASSERT(low < pivot);
 	ASSERT(pivot <= high);
 
-	if (getGrade(var, pivot) < value)
+	if (positive ? getGrade(var, pivot) <= value : getGrade(var, pivot) >= value) {
 	  low = pivot;
-	else
+	}
+	else {
 	  high = pivot - 1;
+	}
   }
   ASSERT(low == high);
 
-  if (!strict && low < to && getGrade(var, low + 1) == value)
-	++low;
+  if (strict) {
+	if (positive && low > from && getGrade(var, low) == value)
+	  --low;
+	if (!positive && low < to && getGrade(var, low) == value)
+	  ++low;
+  }
 
-  ASSERT((low == from && getLargestLessThan(var, value, strict) <= from) ||
-		 (low == to && getLargestLessThan(var, value, strict) >= to) ||
-		 (low == getLargestLessThan(var, value, strict)));
+#ifdef DEBUG
+  Exponent reference = getLargestLessThan(var, value, strict);
+  if (reference < from)
+	reference = from;
+  if (reference > to)
+	reference = to;
+  ASSERT(low == reference);
+#endif
 
   return low;
 }
