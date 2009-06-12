@@ -32,9 +32,9 @@ class TermGrader;
  amounts to having a bound, which is a function that assigns a value
  to each slice. This value is an non-strict upper bound on the value
  of each maximal standard monomial in the content of that slice. If
- the value of the bound is worse than the best value of a msm found so
- far, then we do not have to consider that slice further. Such a slice
- is called non-improving.
+ the value of the bound is worse than the best value of an msm found
+ so far, then we do not have to consider that slice further. Such a
+ slice is called non-improving.
 
  Whenever a slice is non-improving, we avoid some computation by
  ignoring it. We exploit this further, by purposefully seeking to
