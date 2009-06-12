@@ -203,7 +203,9 @@ $(outdir)%.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) ${cflags} -c $< -o $@
 	$(CXX) $(cflags) -MM -c $< > $(@:.o=.d).tmp
-	@echo -n "$(dir $@)" > $(@:.o=.d)
+# using /usr/bin/env echo to get the non-built-in echo on OS X, since
+# the built-in one does not understand the parameter -n.
+	@/usr/bin/env echo -n "$(dir $@)" > $(@:.o=.d)
 	@cat $(@:.o=.d).tmp >> $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | \
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
