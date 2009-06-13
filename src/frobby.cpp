@@ -242,25 +242,26 @@ void Frobby::alexanderDual(const Ideal& ideal,
 						   IdealConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  vector<mpz_class> point;
-  if (exponentVector != 0) {
-    point.resize(bigIdeal.getVarCount());
-    for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
-      mpz_set(point[var].get_mpz_t(), exponentVector[var]);
-  } else
-    bigIdeal.getLcm(point);
-
-  // We guarantee not to retain a reference to exponentVector when providing
-  // terms to the consumer.
-  exponentVector = 0;
-
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
   SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
-  facade.computeAlexanderDual(point);
+  if (exponentVector == 0)
+	facade.computeAlexanderDual();
+  else {
+	vector<mpz_class> point;
+    point.resize(bigIdeal.getVarCount());
+    for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+      mpz_set(point[var].get_mpz_t(), exponentVector[var]);
+
+	// We guarantee not to retain a reference to exponentVector when providing
+	// terms to the consumer.
+	exponentVector = 0;
+
+	facade.computeAlexanderDual(point);
+  }
 }
 
 void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
