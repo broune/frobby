@@ -157,111 +157,129 @@ bool OptimizeStrategy::getInnerSimplify
   for (size_t var = 0; var < getVarCount(); ++var) {
 	ASSERT(_grader.getGrade(var, 0) ==
 		   _grader.getGrade(var, _grader.getMaxExponent(var)));
+	ASSERT(divisor[var] <= dominator[var]);
+	pivot[var] = 0;
+
+	if (divisor[var] == dominator[var])
+	  continue;
 
 	int sign = _grader.getGradeSign(var);
 	if (sign > 0) {
-	  mpz_class maxExponent = _maxValue - degree;
-	  maxExponent += _grader.getGrade(var, dominator[var]);
-
-	  Exponent improve;
-	  bool canSimplify = _grader.getMaxIndexLessThan
-		(var, divisor[var], dominator[var] - 1, improve,
-		 maxExponent, _reportAllSolutions);
-
-	  if (canSimplify) {
-		simplifiedAny = true;
-		pivot[var] = improve - divisor[var] + 1;
-		continue;
+	  Exponent B;
+	  if (dominator[var] != _grader.getMaxExponent(var))
+		B = dominator[var];
+	  else {
+		B = dominator[var] - 1;
+		if (divisor[var] == B)
+		  continue;
 	  }
-	} else if (sign < 0 &&
-			   dominator[var] == _grader.getMaxExponent(var) &&
-			   divisor[var] < dominator[var]) {
-	  mpz_class maxExponent = degree - _grader.getGrade(var, dominator[var]);
-	  maxExponent += _grader.getGrade(var, divisor[var]);
+
+	  mpz_class C = _maxValue - degree;
+	  C += _grader.getGrade(var, B);
+		
+	  Exponent tPrime;
+	  bool foundNonImproving = _grader.getMaxIndexLessThan
+		(var, divisor[var], B - 1, tPrime,
+		 C, _reportAllSolutions);
+	  
+	  if (foundNonImproving) {
+		simplifiedAny = true;
+		pivot[var] = tPrime - divisor[var] + 1;
+		ASSERT(pivot[var] > 0);
+	  }
+	} else if (sign < 0) {
+	  if (dominator[var] != _grader.getMaxExponent(var))
+		continue;
+	  mpz_class outerBound = degree - _grader.getGrade(var, dominator[var]);
+	  outerBound += _grader.getGrade(var, divisor[var]);
 
 	  if (_reportAllSolutions ?
-		  maxExponent < _maxValue : maxExponent <= _maxValue) {
+		  outerBound < _maxValue : outerBound <= _maxValue) {
 		simplifiedAny = true;
 		pivot[var] = dominator[var] - divisor[var];
-		continue;
+		ASSERT(pivot[var] > 0);
 	  }
 	}
-
-	pivot[var] = 0;
   }
 
   ASSERT(simplifiedAny == !pivot.isIdentity());
   return simplifiedAny;
 }
 
-bool OptimizeStrategy::getOuterSimplify
-(const Term& divisor,
- const Term& dominator,
- const mpz_class& degree,
- Term& pivot) {
+  bool OptimizeStrategy::getOuterSimplify
+	(const Term& divisor,
+	 const Term& dominator,
+	 const mpz_class& degree,
+	 Term& pivot) {
 
-  for (size_t var = 0; var < getVarCount(); ++var) {
-	int sign = _grader.getGradeSign(var);
-	if (sign < 0) {
-	  mpz_class maxExponent = _maxValue - degree;
-	  maxExponent += _grader.getGrade(var, divisor[var]);
+	for (size_t var = 0; var < getVarCount(); ++var) {
+	  ASSERT(_grader.getGrade(var, 0) ==
+			 _grader.getGrade(var, _grader.getMaxExponent(var)));
+	  ASSERT(divisor[var] <= dominator[var]);
+	  if (divisor[var] == dominator[var])
+		continue;
+
+	  int sign = _grader.getGradeSign(var);
+	  if (sign < 0) {
+		if (dominator[var] == _grader.getMaxExponent(var))
+		  continue;
+
+		mpz_class C = _maxValue - degree;
+		C += _grader.getGrade(var, divisor[var]);
 	  
-	  Exponent improve;
-	  bool canImprove = _grader.getMinIndexLessThan
-		(var, divisor[var] + 1, dominator[var], improve,
-		 maxExponent, _reportAllSolutions);
+		Exponent tPrime;
+		bool foundNonImproving = _grader.getMinIndexLessThan
+		  (var, divisor[var] + 1, dominator[var], tPrime,
+		   C, _reportAllSolutions);
 	  
-	  if (canImprove) {
-		pivot.setToIdentity();
-		pivot[var] = improve - divisor[var];
-		ASSERT(pivot[var] > 0);
+		if (foundNonImproving) {
+		  pivot.setToIdentity();
+		  pivot[var] = tPrime - divisor[var];
+		  ASSERT(pivot[var] > 0);
 		
-		return true;
-	  }
-	} else if (sign > 0 &&
-			   dominator[var] == _grader.getMaxExponent(var) &&
-			   divisor[var] < dominator[var]) {
-	  mpz_class maxExponent = degree - _grader.getGrade(var, dominator[var] - 1);
-	  maxExponent += _grader.getGrade(var, dominator[var]);
-	  bool canImprove;
-	  if (_reportAllSolutions)
-		canImprove = maxExponent < _maxValue;
-	  else
-		canImprove = maxExponent <= _maxValue;
-	  if (canImprove) {
-		pivot.setToIdentity();
-		pivot[var] = dominator[var] - divisor[var];
-		ASSERT(pivot[var] > 0);
+		  return true;
+		}
+	  } else if (sign > 0) {
+		if (dominator[var] != _grader.getMaxExponent(var))
+		  continue;
 
-		return true;
+		mpz_class C = degree - _grader.getGrade(var, dominator[var] - 1);
+		C += _grader.getGrade(var, dominator[var]);
+
+		if (_reportAllSolutions ? C < _maxValue : C <= _maxValue) {
+		  pivot.setToIdentity();
+		  pivot[var] = dominator[var] - divisor[var];
+		  ASSERT(pivot[var] > 0);
+
+		  return true;
+		}
 	  }
 	}
+	
+	return false;
   }
 
-  return false;
-}
+  bool OptimizeStrategy::getDominator(Slice& slice, Term& dominator) {
+	ASSERT(dominator.getVarCount() == slice.getVarCount());
 
-bool OptimizeStrategy::getDominator(Slice& slice, Term& dominator) {
-  ASSERT(dominator.getVarCount() == slice.getVarCount());
+	// The dominator is pi(lcm(min I)), where I is the ideal represented
+	// by the slice, and pi decrements each exponent by one.
 
-  // The dominator is pi(lcm(min I)), where I is the ideal represented
-  // by the slice, and pi decrements each exponent by one.
+	const Term& multiply = slice.getMultiply();
+	const Term& lcm = slice.getLcm();
 
-  const Term& multiply = slice.getMultiply();
-  const Term& lcm = slice.getLcm();
+	for (size_t var = 0; var < dominator.getVarCount(); ++var) {
+	  if (lcm[var] == 0) {
+		slice.clearIdealAndSubtract();
+		return false;
+	  }
 
-  for (size_t var = 0; var < dominator.getVarCount(); ++var) {
-	if (lcm[var] == 0) {
-	  slice.clearIdealAndSubtract();
-	  return false;
+	  dominator[var] = multiply[var] + lcm[var] - 1;
 	}
 
-	dominator[var] = multiply[var] + lcm[var] - 1;
+	return true;
   }
 
-  return true;
-}
-
-size_t OptimizeStrategy::getVarCount() const {
-  return _improvement.getVarCount();
-}
+  size_t OptimizeStrategy::getVarCount() const {
+	return _improvement.getVarCount();
+  }

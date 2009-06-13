@@ -115,8 +115,11 @@ TEST(OptimizeStrategy, simplifyPositiveGrading) {
   OUTER_SIMP_TEST(one, "1 2 3 4", "1 10 3 4", 193,  "0 8 0 0");
 
   // No improvement as 10 to zero does not get below bound.
-  OUTER_SIMP_TEST(all, "2 2 3 4", "1 10 3 4", 293,  "0 0 0 0");
-  OUTER_SIMP_TEST(one, "2 2 3 4", "1 10 3 4", 293,  "0 0 0 0");
+  OUTER_SIMP_TEST(all, "2 2 3 4", "2 10 3 4", 293,  "0 0 0 0");
+  OUTER_SIMP_TEST(one, "2 2 3 4", "2 10 3 4", 293,  "0 0 0 0");
+
+  // Regressions, i.e. tests that capture past actual bugs.
+  INNER_SIMP_TEST(one, "1 2 0 1", "1 2 10 1", 129, "0 0 4 0");
 }
 
 TEST(OptimizeStrategy, simplifyNegativeGrading) {
