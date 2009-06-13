@@ -67,14 +67,14 @@ public:
    If the sign is zero, then 0 is returned. Uses a linear scan, and is
    only really used to check the output of the other overload.
   */
-  Exponent getLargestLessThan(size_t var,
-							  const mpz_class& value, bool strict = true) const;
+  Exponent getLargestLessThan2(size_t var,
+							   const mpz_class& value, bool strict = true) const;
 
   /** Returns the value in the interval [from, to] that is closest to
    getLargestLessThan(var, value, strict). Only uses a logarithmic
    number of comparisons.
   */
-  Exponent getLargestLessThan(size_t var, Exponent from, Exponent to,
+  Exponent getLargestLessThan2(size_t var, Exponent from, Exponent to,
 							  const mpz_class& value, bool strict =
 							  true) const;
 
@@ -82,29 +82,23 @@ public:
 							const Projection& projection,
 							mpz_class& degree) const;
 
-  /** Finds minimal index in [from, to] to such that degree(t) is less
-   than maxDegree. If strict is true, then degree(t) is strictly less
-   than maxDegree. Returns true if such a t exists, and false
-   otherwise.
+  /** Finds minimal index in [from, to] to such that degree(t) <=
+   maxDegree. Returns true if such a t exists, and false otherwise.
   */
   bool getMinIndexLessThan(size_t var,
 						   Exponent from,
 						   Exponent to,
 						   Exponent& index,
-						   const mpz_class& maxDegree,
-						   bool strict) const;
+						   const mpz_class& maxDegree) const;
 
-  /** Finds maximal index in [from, to] to such that degree(t) is less
-   than maxDegree. If strict is true, then degree(t) is strictly less
-   than maxDegree. Returns true if such a t exists, and false
-   otherwise.
+  /** Finds maximal index in [from, to] to such that degree(t) <=
+   maxDegree. Returns true if such a t exists, and false otherwise.
   */
   bool getMaxIndexLessThan(size_t var,
 						   Exponent from,
 						   Exponent to,
 						   Exponent& index,
-						   const mpz_class& maxDegree,
-						   bool strict) const;
+						   const mpz_class& maxDegree) const;
 
 
   const mpz_class& getGrade(size_t var, Exponent exponent) const;

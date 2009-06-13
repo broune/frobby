@@ -59,7 +59,10 @@ public:
 				   bool reportAllSolutions,
 				   bool useBound);
 
-  /** Returns the msm's with optimal value found so far. */
+  /** Returns one of or all of the msm's with optimal value found so
+   far, depending on the value of reportAllSolutions passed to the
+   constructor.
+  */
   const Ideal& getMaximalSolutions();
 
   /** The optimal value associated to all entries from
@@ -75,6 +78,9 @@ public:
 
   virtual void getPivot(Term& pivot, Slice& slice);
 
+  /** Perform the usual simplification, but also use the bound
+   optimization to simplify more than this.
+  */
   virtual void simplify(Slice& slice);
 
   virtual void beginConsuming();
@@ -153,7 +159,7 @@ public:
    @param dominator The dominator of slice (passed as a parameter to
     avoid recomputation).
 
-   @param degree The upper bound \f$d(a,b)\f$ associated to slice (to
+   @param upperBound The upper bound \f$d(a,b)\f$ associated to slice (to
     avoid recomputation).
 
    @return Returns true if and only if slice changed.
@@ -162,7 +168,7 @@ public:
   bool boundSimplify
 	(Slice& slice,
 	 const Term& dominator,
-	 const mpz_class& degree);
+	 const mpz_class& upperBound);
 
   /** Find an outer slice that is non-improving, allowing us to
    replace the current slice with the inner slice. We only need to
@@ -197,15 +203,15 @@ public:
    \f$t\f$ to be large anyway in order to make the inner slice as
    simple as possible, so it only makes sense to check this for
    \f$t=b_i-a_i\f$. As the sign is negative, we get that \f[
-     d(a,b^\prime)=d(a,b)-d_i(b_i)+d_i(a_i),
+     d(a,b^\prime)=d(a,b)-d_i(b_i)+d_i(a_i)=:C,
    \f] where we are noting that \f$d_i(b_i)=d_i(0)\f$. The question is then
-   whether \f$d(a,b^\prime)\leq\max\f$.
+   whether \f$C\leq\max\f$.
 
    @param divisor The divisor \f$a\f$ associated to the slice.
 
    @param dominator The dominator \f$b\f$ associated to the slice.
 
-   @param degree The upper bound \f$d(a,b)\f$ associated to the slice
+   @param upperBound The upper bound \f$d(a,b)\f$ associated to the slice
    (passed as a parameter to avoid recomputation).
 
    @param pivot Is set to a pivot that generates a non-improving
@@ -217,7 +223,7 @@ public:
   bool getInnerSimplify
 	(const Term& divisor,
 	 const Term& dominator,
-	 const mpz_class& degree,
+	 const mpz_class& upperBound,
 	 Term& pivot);
 
   /** Find an inner slice that is non-improving, allowing us to
@@ -264,7 +270,7 @@ public:
 
    @param dominator The dominator \f$b\f$ associated to the slice.
 
-   @param degree The upper bound \f$d(a,b)\f$ associated to the slice
+   @param upperBound The upper bound \f$d(a,b)\f$ associated to the slice
     (passed as a parameter to avoid recomputation).
 
    @param pivot Is set to a pivot that generates a non-improving
@@ -276,7 +282,7 @@ public:
   bool getOuterSimplify
 	(const Term& divisor,
 	 const Term& dominator,
-	 const mpz_class& degree,
+	 const mpz_class& upperBound,
 	 Term& pivot);
 
   /** Sets dominator to be a term dominating every element of the
@@ -287,37 +293,75 @@ public:
   */
   bool getDominator(Slice& slice, Term& dominator);
 
+  /// The number of varibles this object was initialized with.
   size_t getVarCount() const;
 
+  /// We use _grader to assign values to solutions.
   const TermGrader& _grader;
 
+  /** The best value of any solution found so far. The value is
+   undefined if no solution has been found so far.
+  */
   mpz_class _maxValue;
+
+  /** Is equal to _maxValue minus _reportAllSolutions, except when no
+   solution has been found so far, in which case the value is
+   undefined. We use _maxValueToBeat in place of _maxValue as a way to
+   handle both values of _reportAllSolutions without having a lot of
+   code of the type
+
+    if (_reportAllSolutions ? a < _maxValue : a <= _maxValue) ...
+
+   The point is that we can replace this by
+
+     if (a <= _maxValueToBeat) ...
+  */
+  mpz_class _maxValueToBeat;
+  
+  /** Stores the optimal solutions found so far, according to the best
+   value found so far.
+  */
   Ideal _maxSolutions;
 
+  /** Indicates whether to compute all optimal solutions, as opposed
+   to computing just one (when there are any).
+  */
   bool _reportAllSolutions;
+
+  /// Indicates whether to use the bound optimization.
   bool _useBound;
 
-  // These are in place of using static variables. The static
-  // variables were introduced because constructing these objects took
-  // around 10% of the running time, and sticking static in front of
-  // the variable names was a very easy way to improving speed by
-  // 10%. They changed into this form because a compiler bug on OS X
-  // gcc made it impossible to do static mpz_class's, and because the
-  // memory contained in these really should be freed when the
-  // strategy is deleted.
-  //
-  // The format is _methodOfUse_nameOfVariable. Several of these could
-  // be merged into one variable, but this could easily introduce a
-  // bug through an unexpected alias and the cost of keeping them
-  // seperate is negligible.
-  mpz_class _improveLowerBound_maxExponent;
-  mpz_class _consume_degree;
-  mpz_class _simplify_degree;
+  /** Temporary variable used in consume. Is a member variable in
+   order to avoid the cost of initializing an mpz_class every time.
+  */
+  mpz_class _consume_tmpDegree;
 
-  Term _simplify_dominator;
-  Term _simplify_oldDominator;
+  /** Temporary variable used in simplify. Is a member variable in
+   order to avoid the cost of initializing an mpz_class every time.
+  */
+  mpz_class _simplify_tmpUpperBound;
 
-  Term _improvement;
+  /** Temporary variable used in simplify. Is a member variable in
+   order to avoid the cost of initializing a Term every time.
+  */
+  Term _simplify_tmpDominator;
+
+  /** Temporary variable used in simplify. Is a member variable in
+   order to avoid the cost of initializing a Term every time.
+  */
+  Term _simplify_tmpOldDominator;
+
+  /** Temporary variable used in getInnerSimplify and
+   getOuterSimplify. Is a member variable in order to avoid the cost
+   of initializing an mpz_class every time.
+  */
+  mpz_class _tmpC;
+
+  /** Temporary variable used in simplify. Is a member variable in
+   order to avoid the cost of initializing a Term every time.
+  */
+  Term _boundSimplify_tmpPivot;
+
 
   FRIEND_TEST(OptimizeStrategy, improveBoundExponent);
   FRIEND_TEST(OptimizeStrategy, simplifyPositiveGrading);
