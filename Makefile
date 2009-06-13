@@ -134,7 +134,8 @@ endif
 #  _valgrind to run under valgrind.
 #  _debugAlloc to test recovery when running out of memory.
 #  _full to obtain extra tests by verifying relations
-#    between outputs of different actions.
+#    between outputs of different actions, and generally testing
+#    everything that can be tested.
 # _full cannot follow the other options because it is picked up at an earlier
 # point in the test system than they are. There are more options - see
 # test/testScripts/testhelper for a full list.
@@ -142,10 +143,15 @@ endif
 # Only miniTest and bareTest support TESTARGS, and some options are not
 # available unless MODE=debug.
 
-# The correct choice to test an installation of Frobby.
+# The correct choice to do a reasonably thorough test of an
+# installation of Frobby.
 test: all
+	test/runTests
+
+# Run all tests that it makes sense to run.
+fullTest: all
 	test/runTests _full
-	test/runSplitTests
+	test/runSplitTests _few
 
 # Good for testing Frobby after a small change.
 microTest: all
