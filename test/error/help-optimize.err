@@ -18,11 +18,6 @@ displaying zero, one or all of the optimal solutions. The algorithm used to
 solve the optimization program is the Slice Algorithm using the bound
 optimization. Thus this action also has options related to that.
 
-The implementation (not the algorithm) is currently limited by the requirement
-that all entries of v be non-negative. If this condition is not met, Frobby
-falls back on the Slice Algorithm without the bound optimization, and thus ends up
-computing all irreducible components of I.
-
 The parameters accepted by optimize are as follows.
 
  -displayLevel INTEGER   (default is 0)
@@ -40,8 +35,11 @@ The parameters accepted by optimize are as follows.
 
  -chopFirstAndSubtract [BOOL]   (default is off)
    Remove the first variable from generators, from the ring and from v, and
-   subtract the value of the first entry of v from the reportedoptimal value.
+   subtract the value of the first entry of v from the reported optimal value.
    This is useful for Frobenius number calculations.
+
+ -maximizeValue [BOOL]   (default is on)
+   Maximize the value of v * e above. If this option is off, minimize v * e instead.
 
  -iformat STRING   (default is autodetect)
    The format used to read the input. This action supports the formats:
@@ -60,10 +58,10 @@ The parameters accepted by optimize are as follows.
    generators. Turning this on can improve performance, but if it is not
    true, Frobby may go into an infinite loop or produce incorrect results.
 
- -split STRING   (default is frob)
+ -split STRING   (default is degree)
    The split selection strategy to use. Options are maxlabel, minlabel,
-   varlabel, minimum, median, maximum, mingen, indep and gcd. Frobenius
-   computations support the specialized strategy frob as well.
+   varlabel, minimum, median, maximum, mingen, indep and gcd. Optimization
+   computations support the specialized strategy degree as well.
 
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.

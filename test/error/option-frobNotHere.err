@@ -1,1 +1,2 @@
-ERROR: Frobenius split strategy is not appropriate in this context.
+NOTE: The split selection strategy "frob" is deprecated and will be removed in a future version of Frobby. Use the name "degree" to achieve the same thing.
+ERROR: The split strategy frob is not appropriate in this context.

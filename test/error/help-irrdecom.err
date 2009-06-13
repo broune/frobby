@@ -30,8 +30,8 @@ The parameters accepted by irrdecom are as follows.
 
  -split STRING   (default is median)
    The split selection strategy to use. Options are maxlabel, minlabel,
-   varlabel, minimum, median, maximum, mingen, indep and gcd. Frobenius
-   computations support the specialized strategy frob as well.
+   varlabel, minimum, median, maximum, mingen, indep and gcd. Optimization
+   computations support the specialized strategy degree as well.
 
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.
