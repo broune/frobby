@@ -127,8 +127,7 @@ bool TermGrader::getMinIndexLessThan
  Exponent from,
  Exponent to,
  Exponent& index,
- const mpz_class& maxDegree,
- bool strict) const {
+ const mpz_class& maxDegree) const {
   ASSERT(var < getVarCount());
   ASSERT(from < _grades[var].size());
   ASSERT(to < _grades[var].size());
@@ -139,7 +138,7 @@ bool TermGrader::getMinIndexLessThan
   Exponent e = from;
   while (true) {
 	const mpz_class& exp = _grades[var][e];
-	if (strict ? exp < maxDegree : exp <= maxDegree) {
+	if (exp <= maxDegree) {
 	  index = e;
 	  return true;
 	}
@@ -155,8 +154,7 @@ bool TermGrader::getMaxIndexLessThan
  Exponent from,
  Exponent to,
  Exponent& index,
- const mpz_class& maxDegree,
- bool strict) const {
+ const mpz_class& maxDegree) const {
   ASSERT(var < getVarCount());
   ASSERT(from < _grades[var].size());
   ASSERT(to < _grades[var].size());
@@ -167,7 +165,7 @@ bool TermGrader::getMaxIndexLessThan
   Exponent e = to;
   while (true) {
 	const mpz_class& exp = _grades[var][e];
-	if (strict ? exp < maxDegree : exp <= maxDegree) {
+	if (exp <= maxDegree) {
 	  index = e;
 	  return true;
 	}
@@ -178,7 +176,7 @@ bool TermGrader::getMaxIndexLessThan
   }
 }
 
-Exponent TermGrader::getLargestLessThan
+Exponent TermGrader::getLargestLessThan2
 (size_t var, const mpz_class& value, bool strict) const {
   ASSERT(var < getVarCount());
   ASSERT(!_grades[var].empty());
@@ -189,23 +187,16 @@ Exponent TermGrader::getLargestLessThan
   for (size_t e = 1; e < _grades[var].size(); ++e) {
 	const mpz_class& exp = _grades[var][e];
 
-	if (strict) {
-	  if (exp < value && (first || exp > _grades[var][best])) {
-		best = e;
-		first = false;
-	  }
-	} else {
-	  if (exp <= value && (first || exp > _grades[var][best])) {
-		best = e;
-		first = false;
-	  }
+	if (exp <= value && (first || exp > _grades[var][best])) {
+	  best = e;
+	  first = false;
 	}
   } 
 
   return best;
 }
 
-Exponent TermGrader::getLargestLessThan(size_t var, Exponent from, Exponent to,
+Exponent TermGrader::getLargestLessThan2(size_t var, Exponent from, Exponent to,
 										const mpz_class& value, bool strict) const {
   ASSERT(from <= to);
 
@@ -260,15 +251,8 @@ Exponent TermGrader::getLargestLessThan(size_t var, Exponent from, Exponent to,
   }
   ASSERT(low == high);
 
-  if (strict) {
-	if (positive && low > from && getGrade(var, low) == value)
-	  --low;
-	if (!positive && low < to && getGrade(var, low) == value)
-	  ++low;
-  }
-
 #ifdef DEBUG
-  Exponent reference = getLargestLessThan(var, value, strict);
+  Exponent reference = getLargestLessThan2(var, value, strict);
   if (reference < from)
 	reference = from;
   if (reference > to)

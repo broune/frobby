@@ -49,7 +49,7 @@ TEST(TermGrader, getUpperBound) {
   { \
     Exponent foundIndex = 0; \
     bool returnValue = grader.getMinIndexLessThan \
-      (0, from, to, foundIndex, maxDegree, strict); \
+      (0, from, to, foundIndex, maxDegree - strict); \
     if (expectFind) { \
       ASSERT_TRUE(returnValue); \
       ASSERT_EQ(foundIndex, (Exponent)expectedIndex);	\
@@ -146,7 +146,7 @@ TEST(TermGrader, getMinIndexLessThanZero) {
   { \
     Exponent foundIndex = 0; \
     bool returnValue = grader.getMaxIndexLessThan \
-      (0, from, to, foundIndex, maxDegree, strict); \
+      (0, from, to, foundIndex, maxDegree - strict); \
     if (expectFind) { \
       ASSERT_TRUE(returnValue); \
       ASSERT_EQ(foundIndex, (Exponent)expectedIndex);	\
