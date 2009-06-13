@@ -246,18 +246,10 @@ namespace Frobby {
    return value is false, and nothing is written to the consumer.
   
    l must be an array of at least ideal.getVarCount() entries.
-  
+
    The algorithm used is significantly faster than computing all the
    maximal standard monomials and seeing which exponent vector yields
-   a maximum value. The current implementation has the limitation that
-   this only works if the entries of l are non-negative. Frobby will
-   still compute the correct value if some entry of l is strictly
-   negative, but it will simply fall back to computing all the maximal
-   standard monomials. This is a limitation of this particular
-   implementation rather than the algorithm, and the implementation
-   can be extended to the case of negative entries without too much
-   trouble. Feel free to contact the author of Frobby if you have a
-   use for this.
+   a maximum value.
   */
   bool solveStandardMonomialProgram(const Ideal& ideal,
 									const mpz_t* l,

@@ -405,7 +405,7 @@ public:
 	// TODO: pick a middle variable in case of ties.
 
 	_maxDiff = -1;
-	size_t maxOffset = (size_t)-1;
+	size_t maxOffset = 0u;
 	for (size_t var = 0; var < slice.getVarCount(); ++var) {
 	  if (lcm[var] <= 1)
 		continue;
@@ -415,20 +415,21 @@ public:
 
 	  // We could be looking at an added pure power whose exponent is
 	  // defined to have degree 0. We don't want to look at that.
-	  if (mid == grader.getMaxExponent(var) &&
-		  grader.getGrade(var, mid) == 0 &&
-		  mid > base)
+	  if (mid == grader.getMaxExponent(var) && mid > base)
 		--mid;
 
 	  _diff = grader.getGrade(var, mid) - grader.getGrade(var, base);
-	  ASSERT(_diff >= 0);
+		
+	  if (grader.getGradeSign(var) < 0)
+		_diff = -_diff;
+	  
+	  ASSERT(_diff >= 0 || base == mid);
 
 	  if (_diff > _maxDiff) {
 		maxOffset = var;
 		_maxDiff = _diff;
 	  }
 	}
-	ASSERT(maxOffset != (size_t)-1);
 
 	pivot.setToIdentity();
 	pivot[maxOffset] = lcm[maxOffset] / 2;

@@ -48,12 +48,7 @@ OptimizeAction::OptimizeAction():
  "This action has options for displaying the optimal value or not and for\n"
  "displaying zero, one or all of the optimal solutions. The algorithm used "
  "to\nsolve the optimization program is the Slice Algorithm using the bound\n"
- "optimization. Thus this action also has options related to that.\n"
- "\n"
- "The implementation (not the algorithm) is currently limited by the "
- "requirement\nthat all entries of v be non-negative. If this condition is "
- "not met, Frobby\nfalls back on the Slice Algorithm without the bound "
- "optimization, and thus ends up\ncomputing all irreducible components of I.",
+ "optimization. Thus this action also has options related to that.",
  false),
 
   _sliceParams(true, false),
@@ -80,9 +75,15 @@ OptimizeAction::OptimizeAction():
   _chopFirstAndSubtract
   ("chopFirstAndSubtract",
    "Remove the first variable from generators, from the ring and from v, "
-   "and\nsubtract the value of the first entry of v from the reported"
+   "and\nsubtract the value of the first entry of v from the reported "
    "optimal value.\nThis is useful for Frobenius number calculations.",
    false),
+
+  _maximize
+  ("maximizeValue",
+   "Maximize the value of v * e above. If this option is off, minimize "
+   "v * e instead.",
+   true),
 
   _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
   _sliceParams.setSplit("degree");
@@ -93,6 +94,7 @@ void OptimizeAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_displayValue);
   parameters.push_back(&_maxStandard);
   parameters.push_back(&_chopFirstAndSubtract);
+  parameters.push_back(&_maximize);
   _io.obtainParameters(parameters);
   _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
@@ -115,6 +117,11 @@ void OptimizeAction::perform() {
 	else
 	  fill_n(back_inserter(v), ideal.getVarCount(), 1);
 	in.expectEOF();
+  }
+
+  if (!_maximize) {
+	for (size_t var = 0; var < v.size(); ++var)
+	  v[var] = -v[var];
   }
 
   mpz_class subtract = 0;
