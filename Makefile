@@ -98,16 +98,14 @@ ifeq ($(MODE), profile)
 endif
 ifeq ($(MODE), analysis)
   outdir = bin/analysis/
-  cflags += -Wextra 			\
-            -fsyntax-only -O1 -Wfloat-equal -Wundef						\
-            -Wno-endif-labels -Wshadow -Wlarger-than-1000				\
-            -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings	\
-            -Wconversion -Wsign-compare -Waggregate-return				\
-            -Wmissing-noreturn -Wmissing-format-attribute				\
-            -Wno-multichar -Wno-deprecated-declarations -Wpacked		\
-            -Wredundant-decls -Wunreachable-code -Winline				\
-            -Wno-invalid-offsetof -Winvalid-pch -Wlong-long				\
-            -Wdisabled-optimization -D DEBUG -Werror
+  cflags += -Wextra -fsyntax-only -O1 -Wfloat-equal -Wundef				\
+  -Wno-endif-labels -Wshadow -Wlarger-than-1000 -Wpointer-arith			\
+  -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare	\
+  -Waggregate-return -Wmissing-noreturn -Wmissing-format-attribute		\
+  -Wno-multichar -Wno-deprecated-declarations -Wpacked					\
+  -Wno-redundant-decls -Wunreachable-code -Winline						\
+  -Wno-invalid-offsetof -Winvalid-pch -Wlong-long						\
+  -Wdisabled-optimization -D DEBUG -Werror
   MATCH=true
 endif
 
