@@ -251,7 +251,7 @@ bool OptimizeStrategy::getOuterSimplify
 	  }
 	}
   }
-	
+
   return false;
 }
 
