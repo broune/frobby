@@ -69,17 +69,6 @@ Slice& HilbertSlice::operator=(const Slice& slice) {
   return *this;
 }
 
-void HilbertSlice::simplify() {
-  ASSERT(!normalize());
-
-  applyLowerBound();
-  pruneSubtract();
-
-  ASSERT(!normalize());
-  ASSERT(!pruneSubtract());
-  ASSERT(!applyLowerBound());
-}
-
 bool HilbertSlice::simplifyStep() {
   if (applyLowerBound())
 	return true;

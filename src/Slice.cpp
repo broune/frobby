@@ -175,6 +175,17 @@ bool Slice::normalize() {
   return removedAny;
 }
 
+void Slice::simplify() {
+  ASSERT(!normalize());
+
+  applyLowerBound();
+  pruneSubtract();
+
+  ASSERT(!normalize());
+  ASSERT(!pruneSubtract());
+  ASSERT(!applyLowerBound());
+}
+
 void Slice::setToProjOf
 (const Slice& slice, const Projection& projection) {
   resetAndSetVarCount(projection.getRangeVarCount());
