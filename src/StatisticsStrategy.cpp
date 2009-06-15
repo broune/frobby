@@ -32,6 +32,10 @@ void StatisticsStrategy::setUseIndependence(bool use) {
   _strategy->setUseIndependence(use);
 }
 
+void StatisticsStrategy::setUseSimplification(bool use) {
+  _strategy->setUseSimplification(use);
+}
+
 auto_ptr<Slice> StatisticsStrategy::beginComputing(const Ideal& ideal) {
   return _strategy->beginComputing(ideal);
 }
@@ -73,6 +77,10 @@ void StatisticsStrategy::split(auto_ptr<Slice> slice,
   _subtractGeneratorCountSum += slice->getSubtract().getGeneratorCount();
 
   _strategy->split(slice, leftEvent, leftSlice, rightEvent, rightSlice);
+}
+
+bool StatisticsStrategy::processIfBaseCase(Slice& slice) {
+  return _strategy->processIfBaseCase(slice);
 }
 
 void StatisticsStrategy::freeSlice(auto_ptr<Slice> slice) {

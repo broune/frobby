@@ -19,15 +19,17 @@
 
 #include "SliceStrategy.h"
 
-// A wrapper for a slice that collects statistics on what is going on,
-// while delegating everything to the strategy being wrapped.
+/** A wrapper for a slice that collects statistics on what is going on,
+ while delegating everything to the strategy being wrapped.
+*/
 class StatisticsStrategy : public SliceStrategy {
  public:
-  // Does not close out in destructor.
+  /** Does not close out in destructor. */
   StatisticsStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~StatisticsStrategy();
 
   virtual void setUseIndependence(bool use);
+  virtual void setUseSimplification(bool use);
 
   virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
   virtual void doneComputing();
@@ -36,6 +38,7 @@ class StatisticsStrategy : public SliceStrategy {
 					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
 					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
+  virtual bool processIfBaseCase(Slice& slice);
   virtual void freeSlice(auto_ptr<Slice> slice);
 
  private:

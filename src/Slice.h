@@ -129,11 +129,12 @@ class Slice {
   /** @name Mutators */
   //@{
 
-  /** Returns true if this slice is a base case slice, and in that case
-   produces output in a derivative-specific way. The slice must be
-   fully simplified when calling baseCase().
+  /** Returns true if this slice is a base case slice, and in that
+   case produces output in a derivative-specific way. If simplified is
+   true, then the slice must be fully simplified when calling
+   baseCase(), while otherwise there is no such requirement.
   */
-  virtual bool baseCase() = 0;
+  virtual bool baseCase(bool simplified) = 0;
 
   /** Performs a deep copy of slice into this object. */
   virtual Slice& operator=(const Slice& slice) = 0;

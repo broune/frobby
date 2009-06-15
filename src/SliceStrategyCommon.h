@@ -35,9 +35,11 @@ class SliceStrategyCommon : public SliceStrategy {
   SliceStrategyCommon(const SplitStrategy* splitStrategy);
   virtual ~SliceStrategyCommon();
 
+  virtual bool processIfBaseCase(Slice& slice);
   virtual void freeSlice(auto_ptr<Slice> slice);
 
   virtual void setUseIndependence(bool use);
+  virtual void setUseSimplification(bool use);
 
  protected:
   /* Simplifies the slice. The default implementation simply calls
@@ -72,12 +74,19 @@ class SliceStrategyCommon : public SliceStrategy {
   /// Used by pivotSplit to obtain a pivot.
   virtual void getPivot(Term& pivot, Slice& slice) = 0;
 
+  /** Returns true if independence splits should be performed when
+   possible.
+  */
   bool getUseIndependence() const;
+
+  /** Returns true if slices should be simplified. */
+  bool getUseSimplification() const;
 
   const SplitStrategy* _split;
 
  private:
   bool _useIndependence;
+  bool _useSimplification;
 
   /** This is the cache maintained through newSlice and freeSlice. It
    would make more sense with a stack, but that class has
