@@ -83,7 +83,7 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	return;
 
   if (!_useBound || _maxSolutions.isZeroIdeal()) {
-	slice.simplify();
+	MsmStrategy::simplify(slice);
 	return;
   }
 
@@ -119,7 +119,7 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	}
 
 	// Simplify the slice in the usual non-bound way.
-	slice.simplify();
+	MsmStrategy::simplify(slice);
 	if (!getDominator(slice, dominator))
 	  return; // Slice is now a basecase.
 	if (dominator != oldDominator)

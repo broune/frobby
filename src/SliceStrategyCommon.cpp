@@ -22,7 +22,8 @@
 
 SliceStrategyCommon::SliceStrategyCommon(const SplitStrategy* splitStrategy):
   _split(splitStrategy),
-  _useIndependence(true) {
+  _useIndependence(true),
+  _useSimplification(true) {
   ASSERT(splitStrategy != 0);
 }
 
@@ -32,6 +33,10 @@ SliceStrategyCommon::~SliceStrategyCommon() {
 	delete _sliceCache.back();
 	_sliceCache.pop_back();
   }
+}
+
+bool SliceStrategyCommon::processIfBaseCase(Slice& slice) {
+  return slice.baseCase(getUseSimplification());
 }
 
 void SliceStrategyCommon::freeSlice(auto_ptr<Slice> slice) {
@@ -46,8 +51,13 @@ void SliceStrategyCommon::setUseIndependence(bool use) {
   _useIndependence = use;
 }
 
+void SliceStrategyCommon::setUseSimplification(bool use) {
+  _useSimplification = use;
+}
+
 void SliceStrategyCommon::simplify(Slice& slice) {
-  slice.simplify();
+  if (getUseSimplification())
+	slice.simplify();
 }
 
 auto_ptr<Slice> SliceStrategyCommon::newSlice() {
@@ -102,4 +112,8 @@ void SliceStrategyCommon::pivotSplit(auto_ptr<Slice> slice,
 
 bool SliceStrategyCommon::getUseIndependence() const {
   return _useIndependence;
+}
+
+bool SliceStrategyCommon::getUseSimplification() const {
+  return _useSimplification;
 }

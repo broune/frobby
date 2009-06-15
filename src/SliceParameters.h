@@ -45,6 +45,7 @@ class SliceParameters : public ParameterGroup {
   BoolParameter _printStatistics;
   BoolParameter _useBound;
   BoolParameter _useIndependence;
+  BoolParameter _useSimplification;
   BoolParameter _minimal;
   BoolParameter _canonical;
 

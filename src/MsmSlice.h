@@ -39,7 +39,7 @@ class MsmSlice : public Slice {
   // A base case is reached if not all variables divide the lcm of
   // getIdeal(), or if getGeneratorCount() is 2, or if getIdeal() is
   // square free.
-  virtual bool baseCase();
+  virtual bool baseCase(bool simplified);
 
   virtual Slice& operator=(const Slice& slice);
 

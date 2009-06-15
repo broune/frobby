@@ -76,17 +76,17 @@ class SliceFacade : public Facade {
 			  FILE* out,
 			  bool printActions = false);
 
-  /** Print debug output to standard error as the algorithm runs. The
-   default is to not do so. */
+  /** Print debug output to standard error as the algorithm runs. */
   void setPrintDebug(bool printDebug);
 
-  /** Print statistics related to the run of the algorithm. The
-   default is to not do so. */
+  /** Print statistics related to the run of the algorithm. */
   void setPrintStatistics(bool printStatistics);
 
-  /** Specify whether to use independence splits. The default is to
-   use them. */
+  /** Specify whether to use independence splits. */
   void setUseIndependence(bool useIndependence);
+
+  /** Specify whether to use simplification. */
+  void setUseSimplification(bool useSimplification);
 
   /** Specify whether the input ideal is known to be minimally
    generated. An ideal is minimally generated if no generator divides
@@ -303,6 +303,9 @@ class SliceFacade : public Facade {
 
   /// Use independence splits in the Slice Algorithm.
   bool _useIndependence;
+
+  /// Use simplification in the Slice Algorithm.
+  bool _useSimplification;
 
   /// The ideal is minimally generated.
   bool _isMinimallyGenerated;

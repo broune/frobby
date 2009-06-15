@@ -50,6 +50,7 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
   _printDebug(false), 
   _printStatistics(false),
   _useIndependence(false),
+  _useSimplification(true),
   _isMinimallyGenerated(false),
   _canonicalOutput(false),
   _out(0),
@@ -72,6 +73,7 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
   _printDebug(false), 
   _printStatistics(false),
   _useIndependence(false),
+  _useSimplification(true),
   _isMinimallyGenerated(false),
   _canonicalOutput(false),
   _out(0),
@@ -95,6 +97,7 @@ SliceFacade::SliceFacade(const BigIdeal& ideal,
   _printDebug(false), 
   _printStatistics(false),
   _useIndependence(false),
+  _useSimplification(true),
   _isMinimallyGenerated(false),
   _canonicalOutput(false),
   _out(out),
@@ -123,6 +126,10 @@ void SliceFacade::setUseIndependence(bool useIndependence) {
   _useIndependence = useIndependence;
 }
 
+void SliceFacade::setUseSimplification(bool useSimplification) {
+  _useSimplification = useSimplification;
+}
+
 void SliceFacade::setIsMinimallyGenerated(bool isMinimallyGenerated) {
   _isMinimallyGenerated = isMinimallyGenerated;
 }
@@ -147,6 +154,12 @@ void SliceFacade::setCanonicalOutput() {
 void SliceFacade::computeMultigradedHilbertSeries() {
   ASSERT(_ideal.get() != 0);
 
+  if (!_useSimplification) {
+	displayNote("Turning on simplification since the Hilbert-Poincare series\n"
+				"code requires it at this time.\n");
+	_useSimplification = true;
+  }
+
   minimize();
 
   beginAction("Computing multigraded Hilbert-Poincare series.");
@@ -165,6 +178,12 @@ void SliceFacade::computeMultigradedHilbertSeries() {
 }
 
 void SliceFacade::computeUnivariateHilbertSeries() {
+  if (!_useSimplification) {
+	displayNote("Turning on simplification since the Hilbert-Poincare series\n"
+				"code requires it at this time.\n");
+	_useSimplification = true;
+  }
+
   minimize();
 
   ASSERT(_translator.get() != 0);
@@ -549,6 +568,7 @@ void SliceFacade::getLcmOfIdeal(vector<mpz_class>& bigLcm) {
 
 void SliceFacade::runSliceAlgorithmWithOptions(SliceStrategy& strategy) {
   strategy.setUseIndependence(_useIndependence);
+  strategy.setUseSimplification(_useSimplification);
 
   SliceStrategy* strategyWithOptions = &strategy;
 

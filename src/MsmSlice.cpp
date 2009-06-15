@@ -33,7 +33,7 @@ MsmSlice::MsmSlice(const Ideal& ideal,
   ASSERT(consumer != 0);
 }
 
-bool MsmSlice::baseCase() {
+bool MsmSlice::baseCase(bool simplified) {
   ASSERT(_consumer != 0);
 
   if (getIdeal().getGeneratorCount() < _varCount)
@@ -52,6 +52,14 @@ bool MsmSlice::baseCase() {
   if (_varCount == 1) {
     _consumer->consume(_multiply);
     return true;
+  }
+
+  if (!simplified) {
+	if (!getLcm().isSquareFree())
+	  return false;
+	if (getIdeal().isIrreducible())
+	  _consumer->consume(_multiply);
+	return true;
   }
 
   if (_varCount == 2) {
