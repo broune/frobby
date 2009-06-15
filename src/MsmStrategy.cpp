@@ -64,6 +64,7 @@ bool MsmStrategy::debugIsValidSlice(Slice* slice) {
 void MsmStrategy::labelSplit(auto_ptr<MsmSlice> slice,
 							 auto_ptr<Slice>& leftSlice,
 							 auto_ptr<Slice>& rightSlice) {
+  ASSERT(!slice->adjustMultiply());
   ASSERT(!slice->normalize());
   ASSERT(_split != 0);
   size_t var = _split->getLabelSplitVariable(*slice);

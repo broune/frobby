@@ -24,6 +24,11 @@
 class TermConsumer;
 class Projection;
 
+/** Invariant: either the slice is a trivial base case, or
+ removeDoubleLcm returns false.
+
+ @todo expand and check comments.
+*/
 class MsmSlice : public Slice {
  public:
   MsmSlice();

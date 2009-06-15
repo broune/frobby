@@ -84,6 +84,7 @@ void DebugStrategy::split(auto_ptr<Slice> slice,
 
 bool DebugStrategy::processIfBaseCase(Slice& slice) {
   fputs("DEBUG: Examining whether slice is base case.\n", _out);  
+  slice.print(stderr);
   bool isBaseCase = _strategy->processIfBaseCase(slice);
   if (isBaseCase)
 	fputs("DEBUG: Determined that slice is base case.\n", _out);

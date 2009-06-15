@@ -37,7 +37,6 @@ MsmSlice::MsmSlice(const Ideal& ideal,
 
 bool MsmSlice::baseCase(bool simplified) {
   ASSERT(_consumer != 0);
-  ASSERT(!removeDoubleLcm());
 
   if (getIdeal().getGeneratorCount() < _varCount)
     return true;
@@ -45,6 +44,8 @@ bool MsmSlice::baseCase(bool simplified) {
   // Check that each variable appears in some minimal generator.
   if (getLcm().getSizeOfSupport() < _varCount)
     return true;
+
+  ASSERT(!removeDoubleLcm());
 
   if (_varCount == 0) {
 	if (getIdeal().isZeroIdeal())
@@ -58,11 +59,30 @@ bool MsmSlice::baseCase(bool simplified) {
   }
 
   if (!simplified) {
-	if (!getLcm().isSquareFree())
-	  return false;
-	if (getIdeal().isIrreducible())
+	if (getLcm().isSquareFree()) {
+	  // We know this since !removeDoubleLcm().
+	  ASSERT(getIdeal().isIrreducible());
+
 	  _consumer->consume(_multiply);
-	return true;
+	  return true;
+	}
+
+	if (getIdeal().getGeneratorCount() == _varCount) {
+	  if (getSubtract().isZeroIdeal()) {
+		_lcm.decrement();
+		_multiply.product(_multiply, _lcm);
+	  } else {
+		Term tmp(getLcm());
+		tmp.decrement();
+		innerSlice(tmp);
+		if (getIdeal().getGeneratorCount() < _varCount)
+		  return true;
+	  }
+	  _consumer->consume(_multiply);
+	  return true;
+	}
+
+	return false;
   }
 
   if (_varCount == 2) {
@@ -125,7 +145,7 @@ bool MsmSlice::innerSlice(const Term& pivot) {
   if (!_lcmUpdated)
 	changedMuch = removeDoubleLcm() || changedMuch;
 
-  ASSERT(!removeDoubleLcm());
+  ASSERT(getLcm().getSizeOfSupport() < getVarCount() || !removeDoubleLcm());
 
   return changedMuch;
 }
