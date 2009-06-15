@@ -28,15 +28,20 @@ Slice::Slice():
 }
 
 Slice::Slice(const Ideal& ideal, const Ideal& subtract, const Term& multiply):
-  _varCount(multiply.getVarCount()),
-  _multiply(multiply),
-  _lcm(multiply.getVarCount()),
-  _lcmUpdated(false),
   _ideal(ideal),
   _subtract(subtract),
+  _multiply(multiply),
+  _varCount(multiply.getVarCount()),
+  _lcm(multiply.getVarCount()),
+  _lcmUpdated(false),
   _lowerBoundHint(0) {
   ASSERT(multiply.getVarCount() == ideal.getVarCount());
   ASSERT(multiply.getVarCount() == subtract.getVarCount());
+}
+
+Slice::~Slice() {
+  // We are defining this do-nothing destructor in order to make it
+  // virtual.
 }
 
 const Term& Slice::getLcm() const {

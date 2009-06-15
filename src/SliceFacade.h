@@ -224,10 +224,7 @@ class SliceFacade : public Facade {
    @param reportAllSolutions Output all optimal solutions if true,
      otherwise report some optimal solution if there are any.
    @param useBound Specifies whether or not to use branch-and-bound to
-   speed the computation up. Note that this is currently only allowed
-   if grading has no strictly negative entries.
-
-   @todo Make useBound work for non-positive gradings.
+   speed the computation up.
   */
   bool solveStandardProgram
 	(const vector<mpz_class>& grading,
@@ -246,10 +243,7 @@ class SliceFacade : public Facade {
    @param reportAllSolutions Output all optimal solutions if true,
      otherwise report some optimal solution if there are any.
    @param useBound Specifies whether or not to use branch-and-bound to
-   speed the computation up. Note that this is currently only allowed
-   if grading has no strictly negative entries.
-
-   @todo Make useBound work for non-positive gradings.
+   speed the computation up.
   */
   bool solveIrreducibleDecompositionProgram
 	(const vector<mpz_class>& grading,
