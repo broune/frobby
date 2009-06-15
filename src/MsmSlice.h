@@ -54,6 +54,9 @@ class MsmSlice : public Slice {
   // copies.
   void swap(MsmSlice& slice);
 
+  virtual bool innerSlice(const Term& pivot);
+  virtual void outerSlice(const Term& pivot);
+
  private:
   // Removes those generators g of getIdeal() such that g[i] equals
   // getLcm()[i] for two distinct i. This is done iteratively until no
