@@ -1,3 +1,30 @@
-echo " *** Action optimize on n11d11 (last time on Angel: 16.0s) "
+echo " *** Action optimize on n11d11.test (ref. time on Angel: 16.0s)"
 time cat test/bench/n11d11.test test/bench/n11d11|bin/frobby optimize \
   -displayLevel 0 -chopFirstAndSubtract -maxStandard -displayValue off $*
+
+echo " *** Action optimize on sqfreeV25G1000.test (ref. time on Angel: ?s)"
+time bin/frobby optimize < sqfreeV25G1000.test -displayLevel 0 -displayValue off $*
+
+echo " *** Action optimize on nearGenericV15G50.test (ref. time on Angel: ?s) "
+time bin/frobby optimize < nearGenericV15G50.test -displayLevel 0 \
+ -displayValue off $*
+
+
+echo " *** Action irrdecom on n11d11.test (ref. time on Angel: ?s)"
+time bin/frobby irrdecom < n11d11.test -oformat null $*
+
+echo " *** Action irrdecom on sqfreeV25G1000.test (ref. time on Angel: ?s)"
+time bin/frobby irrdecom < sqfreeV25G1000.test -oformat null $*
+
+echo " *** Action irrdecom on nearGenericV15G50.test (ref. time on Angel: ?s)"
+time bin/frobby irrdecom < nearGenericV15G50.test -oformat null $*
+
+
+echo " *** Action hilbert on nearGenericV15G50.test (ref. time on Angel: ?s)"
+time bin/frobby hilbert < nearGenericV15G50.test -oformat null $*
+
+echo " *** Action hilbert on sqfreeV20G1000.test (ref. time on Angel: ?s)"
+time bin/frobby hilbert < nearGenericV15G50.test -oformat null $*
+
+echo " *** Action hilbert on n8d30.test (ref. time on Angel: ?s)"
+time bin/frobby hilbert < n8d30.test -oformat null $*
