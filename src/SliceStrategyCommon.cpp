@@ -58,6 +58,8 @@ void SliceStrategyCommon::setUseSimplification(bool use) {
 void SliceStrategyCommon::simplify(Slice& slice) {
   if (getUseSimplification())
 	slice.simplify();
+  else if (_split->isLabelSplit())
+	slice.adjustMultiply();
 }
 
 auto_ptr<Slice> SliceStrategyCommon::newSlice() {

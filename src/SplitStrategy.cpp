@@ -108,6 +108,8 @@ protected:
 
   mutable Term _oneCounts;
   void setOneCounts(const Slice& slice) const {
+	ASSERT(!const_cast<Slice&>(slice).adjustMultiply());
+	ASSERT(!const_cast<Slice&>(slice).baseCase(false));
 	// For each variable, count number of terms with exponent equal to 1,
 	// not counting pure powers.
 	_oneCounts.reset(slice.getVarCount());
@@ -158,7 +160,6 @@ public:
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
 	setOneCounts(slice);
-
 	for (size_t var = 0; ; ++var) {
 		ASSERT(var < slice.getVarCount());
 		if (_oneCounts[var] > 0)

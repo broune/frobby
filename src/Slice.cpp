@@ -102,16 +102,10 @@ void Slice::singleDegreeSortIdeal(size_t var) {
   _ideal.singleDegreeSort(var);
 }
 
-void Slice::insertIntoIdeal(const Exponent* term) {
-  _ideal.insert(term);
-  if (_lcmUpdated)
-    _lcm.lcm(_lcm, term);
-}
-
 bool Slice::innerSlice(const Term& pivot) {
   ASSERT(getVarCount() == pivot.getVarCount());
 
-  size_t size = _ideal.getGeneratorCount();
+  size_t count = _ideal.getGeneratorCount();
 
   _multiply.product(_multiply, pivot);
   bool idealChanged = _ideal.colonReminimize(pivot);
@@ -122,7 +116,7 @@ bool Slice::innerSlice(const Term& pivot) {
 	_lowerBoundHint = pivot.getFirstNonZeroExponent();
   }
 
-  if (_ideal.getGeneratorCount() == size)
+  if (_ideal.getGeneratorCount() == count)
     _lcm.colon(_lcm, pivot);
   else
     _lcmUpdated = false;
@@ -160,6 +154,33 @@ private:
   size_t _varCount;
 };
 
+bool Slice::adjustMultiply() {
+  bool changed = false;
+  while (true) {
+	Term lowerBound(_varCount);
+
+	Ideal::const_iterator end = getIdeal().end();
+	for (Ideal::const_iterator it = getIdeal().begin(); it != end; ++it) {
+	  for (size_t var = 0; var < _varCount; ++var) {
+		if ((*it)[var] == 0)
+		  continue;
+		if (lowerBound[var] == 0 || lowerBound[var] > (*it)[var])
+		  lowerBound[var] = (*it)[var];
+	  }
+	}
+	lowerBound.decrement();
+
+	if (lowerBound.isIdentity())
+	  break;
+
+	changed = true;
+	bool sawRealChange = innerSlice(lowerBound);
+	if (!sawRealChange)
+	  break;
+  }
+  return changed;
+}
+
 bool Slice::normalize() {
   bool removedAny = false;
 
@@ -196,8 +217,9 @@ void Slice::setToProjOf
 
     size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
 	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
+	  // Use _lcm as temporary.
 	  projection.project(_lcm, *it);
-	  insertIntoIdeal(_lcm);
+	  _ideal.insert(_lcm);
 	}
   }
 

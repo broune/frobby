@@ -156,9 +156,6 @@ class Slice {
   /** Calls Ideal::singleDegreeSort on getIdeal(). */
   void singleDegreeSortIdeal(size_t var);
 
-  /** Calls Ideal::insert on getIdeal(). */
-  void insertIntoIdeal(const Exponent* term);
-
   /** Sets this object to the inner slice according to pivot. To be
    precise, the slice \f$(I,S,q)\f$ is replaced by \f$(I:p,S:p,qp)\f$
    where \f$p\f$ is the pivot, and the slice is then normalized (see
@@ -189,12 +186,15 @@ class Slice {
   */
   bool normalize();
 
-  /** Simplifies this object such that \ref normalize, \ref
-   pruneSubtract, \ref removeDoubleLcm and \ref applyLowerBound all
-   return false. It is a precondition that the slice is already
-   normalized.
+  /** Ensure that for each var, var appears to the first power in some
+   generator of getIdeal(). Note that this does not change the content
+   of the slice. Returns true if the slice changed.
+  */
+  bool adjustMultiply();
 
-   @todo what is removedoublelcm?
+  /** Simplifies this object such that it may become simpler without
+   changing the content. It is a precondition that the slice is
+   already normalized.
   */
   virtual void simplify();
 
