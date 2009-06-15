@@ -196,7 +196,7 @@ class Slice {
 
    @todo what is removedoublelcm?
   */
-  virtual void simplify() = 0;
+  virtual void simplify();
 
   /** Like \ref simplify, except that only one simplification step is
    performed. If the return value is true, then the Slice may not be

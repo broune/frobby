@@ -39,7 +39,6 @@ class HilbertSlice : public Slice {
 
   virtual Slice& operator=(const Slice& slice);
 
-  virtual void simplify();
   virtual bool simplifyStep();
 
   void setToProjOf(const Slice& slice,

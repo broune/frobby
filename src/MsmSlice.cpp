@@ -97,19 +97,6 @@ Slice& MsmSlice::operator=(const Slice& slice) {
   return *this;
 }
 
-void MsmSlice::simplify() {
-  ASSERT(!normalize());
-  ASSERT(!removeDoubleLcm());
-
-  applyLowerBound();
-  pruneSubtract();
-
-  ASSERT(!normalize());
-  ASSERT(!pruneSubtract());
-  ASSERT(!removeDoubleLcm());
-  ASSERT(!applyLowerBound());
-}
-
 bool MsmSlice::simplifyStep() {
   ASSERT(!removeDoubleLcm());
 
