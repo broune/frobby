@@ -42,6 +42,9 @@ The parameters accepted by hilbert are as follows.
  -independence [BOOL]   (default is on)
    Perform independence splits when possible.
 
+ -simplify [BOOL]   (default is on)
+   Perform simplification when possible.
+
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step.
 
