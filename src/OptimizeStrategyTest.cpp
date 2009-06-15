@@ -58,6 +58,43 @@ TEST(OptimizeStrategy, Simplify) {
   ASSERT_EQ(strategy.getMaximalValue(), mpz_class("300000000000020107"));
 }
 
+TEST(OptimizeStrategy, changedInWayRelevantToBound) {
+  TermTranslator translator(4, 10);
+  TermGrader grader(makeVector(1, -1, 0, 0), translator);
+  auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
+  OptimizeStrategy opt(grader, splitStrategy.get(), true, true);
+
+  // Case 1 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term("0 0 0 0"), Term("0 2 0 0"),
+			   Term("0 1 0 0"), Term("0 2 0 0")));
+
+  // Case 2 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term("0 0 0 0"), Term("0 10 0 0"),
+			   Term("0 0 0 0"), Term("0 9 0 0")));
+
+  // Case 3 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term("0 0 0 0"), Term("9 0 0 0"),
+			   Term("0 0 0 0"), Term("8 0 0 0")));
+
+  // Case 4 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term(" 9 0 0 0"), Term("10 0 0 0"),
+			   Term("10 0 0 0"), Term("10 0 0 0")));
+
+  // Nothing changed.
+  ASSERT_FALSE(opt.changedInWayRelevantToBound
+			   (Term("0 0 0 0"), Term("0 0 0 0"),
+				Term("0 0 0 0"), Term("0 0 0 0")));
+
+  // No case applies.
+  ASSERT_FALSE(opt.changedInWayRelevantToBound
+			   (Term("1 2 3 3"), Term("10 9 10 9"),
+				Term("1 2 4 4"), Term(" 9 5  9 4")));
+}
+
 #define INNER_SIMP_TEST(strat, div, dom, degree, expectPivot) \
   { \
     Term gotPivot(Term(expectPivot).getVarCount()); \
