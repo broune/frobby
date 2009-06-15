@@ -154,12 +154,6 @@ void SliceFacade::setCanonicalOutput() {
 void SliceFacade::computeMultigradedHilbertSeries() {
   ASSERT(_ideal.get() != 0);
 
-  if (!_useSimplification) {
-	displayNote("Turning on simplification since the Hilbert-Poincare series\n"
-				"code requires it at this time.\n");
-	_useSimplification = true;
-  }
-
   minimize();
 
   beginAction("Computing multigraded Hilbert-Poincare series.");
@@ -178,12 +172,6 @@ void SliceFacade::computeMultigradedHilbertSeries() {
 }
 
 void SliceFacade::computeUnivariateHilbertSeries() {
-  if (!_useSimplification) {
-	displayNote("Turning on simplification since the Hilbert-Poincare series\n"
-				"code requires it at this time.\n");
-	_useSimplification = true;
-  }
-
   minimize();
 
   ASSERT(_translator.get() != 0);
