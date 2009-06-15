@@ -34,7 +34,6 @@ HilbertSlice::HilbertSlice(const Ideal& ideal, const Ideal& subtract,
 
 bool HilbertSlice::baseCase(bool simplified) {
   ASSERT(_consumer != 0);
-  ASSERT(simplified);
 
   // Check that each variable appears in some minimal generator.
   if (getLcm().getSizeOfSupport() < _varCount)
