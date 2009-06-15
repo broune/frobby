@@ -31,10 +31,13 @@ MsmSlice::MsmSlice(const Ideal& ideal,
   Slice(ideal, subtract, multiply),
   _consumer(consumer) {
   ASSERT(consumer != 0);
+
+  removeDoubleLcm();
 }
 
 bool MsmSlice::baseCase(bool simplified) {
   ASSERT(_consumer != 0);
+  ASSERT(!removeDoubleLcm());
 
   if (getIdeal().getGeneratorCount() < _varCount)
     return true;
@@ -96,12 +99,9 @@ Slice& MsmSlice::operator=(const Slice& slice) {
 
 void MsmSlice::simplify() {
   ASSERT(!normalize());
+  ASSERT(!removeDoubleLcm());
 
-  removeDoubleLcm();
-  while (applyLowerBound() &&
-		 removeDoubleLcm())
-    ;
-
+  applyLowerBound();
   pruneSubtract();
 
   ASSERT(!normalize());
@@ -111,12 +111,14 @@ void MsmSlice::simplify() {
 }
 
 bool MsmSlice::simplifyStep() {
-  if (removeDoubleLcm())
-	return true;
+  ASSERT(!removeDoubleLcm());
+
   if (applyLowerBound())
 	return true;
 
   pruneSubtract();
+
+  ASSERT(!removeDoubleLcm());
   return false;
 }
 
@@ -127,6 +129,28 @@ void MsmSlice::setToProjOf(const MsmSlice& slice,
 
   Slice::setToProjOf(slice, projection);
   _consumer = consumer;
+}
+
+bool MsmSlice::innerSlice(const Term& pivot) {
+  ASSERT(!removeDoubleLcm());
+
+  bool changedMuch = Slice::innerSlice(pivot);
+  if (!_lcmUpdated)
+	changedMuch = removeDoubleLcm() || changedMuch;
+
+  ASSERT(!removeDoubleLcm());
+
+  return changedMuch;
+}
+
+void MsmSlice::outerSlice(const Term& pivot) {
+  ASSERT(!removeDoubleLcm());
+
+  Slice::outerSlice(pivot);
+  if (!_lcmUpdated)
+	removeDoubleLcm();
+
+  ASSERT(!removeDoubleLcm());
 }
 
 void MsmSlice::swap(MsmSlice& slice) {

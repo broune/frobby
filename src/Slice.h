@@ -168,7 +168,7 @@ class Slice {
    were non-trivial in the sense that it changed the support of any
    minimal generator.
   */
-  bool innerSlice(const Term& pivot);
+  virtual bool innerSlice(const Term& pivot);
 
   /** Sets this object to the outer slice according to pivot. To be
    precise, the slice \f$(I,S,q)\f$ is replaced by \f$(I,S+\ideal
@@ -179,7 +179,7 @@ class Slice {
    inserted into \f$S\f$ since doing so has no effect on the content
    after the normalization.
   */
-  void outerSlice(const Term& pivot);
+  virtual void outerSlice(const Term& pivot);
 
   /** Removes those generators of getIdeal() that are strictly
    divisible by some generator of getSubtract(). Note that this does
