@@ -66,6 +66,9 @@ The parameters accepted by optimize are as follows.
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.
 
+ -simplify [BOOL]   (default is on)
+   Perform simplification when possible.
+
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step.
 
