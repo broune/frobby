@@ -198,7 +198,7 @@ class Slice {
   */
   virtual void simplify();
 
-  /** Like \ref simplify, except that only one simplification step is
+  /** Like simplify(), except that only one simplification step is
    performed. If the return value is true, then the Slice may not be
    fully simplified yet. Iterating simplifyStep() has the same
    result as calling simplify(), though the performance
@@ -231,12 +231,12 @@ class Slice {
   */
   bool pruneSubtract();
 
-  /** Calculates a lower bound on the content of the slice using \ref
-   getLowerBound and calls innerSlice with that lower bound. Note that
-   this does not change the content of the slice. This is repeated
-   until a fixed point is reached. Returns false if no minimal
-   generator of getIdeal() or getSubtract() has had their support
-   changed or if a trivial base case is detected.
+  /** Calculates a lower bound on the content of the slice using
+   getLowerBound() and calls innerSlice with that lower bound. Note
+   that this does not change the content of the slice. This is
+   repeated until a fixed point is reached. Returns false if no
+   minimal generator of getIdeal() or getSubtract() has had their
+   support changed or if a trivial base case is detected.
 
    @todo Rename lower bound to divisor.
   */

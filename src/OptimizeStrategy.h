@@ -88,6 +88,29 @@ public:
   virtual void doneConsuming();
 
  private:
+  /** Returns true if iterating bound-based simplification might do
+   something. There are four cases where it makes sense to iterate the
+   bound-based simplification after the slice has changed.
+
+	- Case 1: The sign is negative, and the divisor has increased. This is
+      relevant whether or not we are using a fake power, since if so
+      there still is an effect on the bound for a split that gets rid
+      of the pure power.
+
+    - Case 2: The sign is negative, and we were using a fake power to get the
+      value of zero, but now it is gone.
+
+    - Case 3: The sign is positive, and the dominator has decreased,
+      and it did not just remove a fake power exponent.
+
+    - Case 4: The sign is positive, and the dominator has a fake power
+      exponent, and the divisor has increased so that we are forced to
+      use it.
+  */
+  bool changedInWayRelevantToBound
+	(const Term& oldDivisor, const Term& oldDominator,
+	 const Term& newDivisor, const Term& newDominator) const;
+
   /** This method simplifies a slice based on generating non-improving
    outer and inner slices. The idea is conceptually simple, but it has
    been quite a challenge to get the code to be correct, efficient and
@@ -164,7 +187,6 @@ public:
 
    @return Returns true if and only if slice changed.
   */
-
   bool boundSimplify
 	(Slice& slice,
 	 const Term& dominator,
@@ -351,6 +373,11 @@ public:
   */
   Term _simplify_tmpOldDominator;
 
+  /** Temporary variable used in simplify. Is a member variable in
+   order to avoid the cost of initializing a Term every time.
+  */
+  Term _simplify_tmpOldDivisor;
+
   /** Temporary variable used in getInnerSimplify and
    getOuterSimplify. Is a member variable in order to avoid the cost
    of initializing an mpz_class every time.
@@ -363,6 +390,7 @@ public:
   Term _boundSimplify_tmpPivot;
 
 
+  FRIEND_TEST(OptimizeStrategy, changedInWayRelevantToBound);
   FRIEND_TEST(OptimizeStrategy, improveBoundExponent);
   FRIEND_TEST(OptimizeStrategy, simplifyPositiveGrading);
   FRIEND_TEST(OptimizeStrategy, simplifyNegativeGrading);
