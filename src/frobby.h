@@ -21,13 +21,14 @@
 
 #include "gmp.h"
 
-/// The namespace FrobbyImpl is for internal use inside Frobby only.
-/// It is not part of the public interface of Frobby.
+/** The namespace FrobbyImpl is for internal use inside Frobby only.
+ It is not part of the public interface of Frobby.
+*/
 namespace FrobbyImpl {
   class FrobbyIdealHelper;
 }
 
-/// The namespace Frobby contains the public interface of Frobby.
+/** The namespace Frobby contains the public interface of Frobby. */
 namespace Frobby {
   class Ideal {
   public:
@@ -71,7 +72,7 @@ namespace Frobby {
   */
   class IdealConsumer {
   public:
-	/// The provided implementation does nothing.
+	/** The provided implementation does nothing. */
     virtual ~IdealConsumer();
 
 	/** Called before output of a monomial ideal. varCount is the
@@ -108,7 +109,7 @@ namespace Frobby {
   */
   class PolynomialConsumer {
   public:
-	/// The provided implementation does nothing.
+	/** The provided implementation does nothing. */
 	virtual ~PolynomialConsumer();
 
 	/** Called before output of a polynomial. varCount is the number

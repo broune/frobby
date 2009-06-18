@@ -117,7 +117,7 @@ protected:
 	Ideal::const_iterator end = slice.getIdeal().end();
 	for (Ideal::const_iterator it = slice.getIdeal().begin();
 		 it != end; ++it) {
-	  if (getSizeOfSupport(*it, slice.getVarCount()) == 1)
+	  if (Term::getSizeOfSupport(*it, slice.getVarCount()) == 1)
 		continue; // Not counting pure powers.
 	  for (size_t var = 0; var < slice.getVarCount(); ++var)
 		if ((*it)[var] == 1)
@@ -366,13 +366,13 @@ public:
 	Ideal::const_iterator end = slice.getIdeal().end();
 	for (Ideal::const_iterator it = slice.getIdeal().begin();
 		 it != end; ++it)
-	  if (!::isSquareFree(*it, slice.getVarCount()))
+	  if (!Term::isSquareFree(*it, slice.getVarCount()))
 		++nonSquareFreeCount;
 	
 	size_t selected = rand() % nonSquareFreeCount;
 	for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
 	  ASSERT(it != end);
-	  if (::isSquareFree(*it, slice.getVarCount()))
+	  if (Term::isSquareFree(*it, slice.getVarCount()))
 		continue;
 	  
 	  if (selected == 0) {
@@ -450,8 +450,9 @@ private:
   mutable mpz_class _diff;
 };
 
-/// This class is deprecated and is only here to create the alias
-/// "frob" for the degree split.
+/** This class is deprecated and is only here to create the alias
+ "frob" for the degree split.
+*/
 class DeprecatedFrobeniusSplit : public DegreeSplit {
 public:
   DeprecatedFrobeniusSplit() {

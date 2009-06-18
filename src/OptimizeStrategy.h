@@ -335,10 +335,10 @@ public:
   */
   bool getDominator(Slice& slice, Term& dominator);
 
-  /// The number of varibles this object was initialized with.
+  /** The number of varibles this object was initialized with. */
   size_t getVarCount() const;
 
-  /// We use _grader to assign values to solutions.
+  /** We use _grader to assign values to solutions. */
   const TermGrader& _grader;
 
   /** The best value of any solution found so far. The value is

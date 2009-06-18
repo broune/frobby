@@ -20,21 +20,23 @@
 #include "Term.h"
 #include <algorithm>
 
-typedef vector<Exponent*>::iterator iterator;
+namespace {
+  typedef vector<Exponent*>::iterator TermIterator;
+}
 
-::iterator simpleMinimize(::iterator begin, ::iterator end, size_t varCount) {
+TermIterator simpleMinimize(TermIterator begin, TermIterator end, size_t varCount) {
   if (begin == end)
 	return end;
 
   std::sort(begin, end, Term::LexComparator(varCount));
 
-  ::iterator newEnd = begin;
+  TermIterator newEnd = begin;
   ++newEnd; // The first one is always kept
-  ::iterator dominator = newEnd;
+  TermIterator dominator = newEnd;
   for (; dominator != end; ++dominator) {
 	bool remove = false;
-	for (::iterator divisor = begin; divisor != newEnd; ++divisor) {
-	  if (::divides(*divisor, *dominator, varCount)) {
+	for (TermIterator divisor = begin; divisor != newEnd; ++divisor) {
+	  if (Term::divides(*divisor, *dominator, varCount)) {
 		remove = true;
 		break;
 	  }
@@ -48,14 +50,14 @@ typedef vector<Exponent*>::iterator iterator;
   return newEnd;
 }
 
-::iterator twoVarMinimize(::iterator begin, ::iterator end) {
+TermIterator twoVarMinimize(TermIterator begin, TermIterator end) {
   if (begin == end)
 	return end;
 
   std::sort(begin, end, Term::LexComparator(2));
 
-  ::iterator last = begin;
-  ::iterator it = begin;
+  TermIterator last = begin;
+  TermIterator it = begin;
   ++it;
   for (; it != end; ++it) {
 	if ((*it)[1] < (*last)[1]) {
@@ -152,7 +154,7 @@ public:
 	  ASSERT(_greater == 0);
 
 	  for (iterator it = _begin; it != _end; ++it)
-		if (dominates(term, *it, _varCount))
+		if (Term::dominates(term, *it, _varCount))
 		  return true;
 	  return false;
 	} else {
@@ -211,7 +213,7 @@ public:
 	  fprintf(out, "NODE (_varCount = %lu terms:\n", (unsigned long)_varCount);
 	  for (iterator it = _begin; it != _end; ++it) {
 		fputc(' ', out);
-		::print(out, *it, _varCount);
+		Term::print(out, *it, _varCount);
 		fprintf(out, " %p\n", (void*)*it);
 	  }
 	  fputs(")\n", out);
@@ -250,8 +252,8 @@ pair<Minimizer::iterator, bool> Minimizer::colonReminimize
 (iterator begin, iterator end, const Exponent* colon) {
   ASSERT(isMinimallyGenerated(begin, end));
 
-  if (::getSizeOfSupport(colon, _varCount) == 1) {
-	size_t var = ::getFirstNonZeroExponent(colon, _varCount);
+  if (Term::getSizeOfSupport(colon, _varCount) == 1) {
+	size_t var = Term::getFirstNonZeroExponent(colon, _varCount);
 	return colonReminimize(begin, end, var, colon[var]);
   }
 
@@ -302,7 +304,8 @@ bool Minimizer::isMinimallyGenerated
   if (distance(begin, end) < 1000 || _varCount == 0) {
 	for (const_iterator divisor = begin; divisor != end; ++divisor)
 	  for (const_iterator dominator = begin; dominator != end; ++dominator)
-		if (::divides(*divisor, *dominator, _varCount) && divisor != dominator)
+		if (Term::divides(*divisor, *dominator, _varCount) &&
+			divisor != dominator)
 		  return false;
 	return true;
   }
@@ -320,7 +323,7 @@ bool Minimizer::isMinimallyGenerated
 bool Minimizer::dominatesAny
 (iterator begin, iterator end, const Exponent* term) {
   for (; begin != end; ++begin)
-	if (::dominates(term, *begin, _varCount))
+	if (Term::dominates(term, *begin, _varCount))
 	  return true;
   return false;
 }
@@ -328,7 +331,7 @@ bool Minimizer::dominatesAny
 bool Minimizer::dividesAny
 (iterator begin, iterator end, const Exponent* term) {
   for (; begin != end; ++begin)
-	if (::divides(term, *begin, _varCount))
+	if (Term::divides(term, *begin, _varCount))
 	  return true;
   return false;
 }
@@ -385,7 +388,7 @@ pair<Minimizer::iterator, bool> Minimizer::colonReminimize
     bool remove = false;
 
     for (iterator divisor = begin; divisor != previousBlockEnd; ++divisor) {
-      if (::divides(*divisor, *it, _varCount)) {
+      if (Term::divides(*divisor, *it, _varCount)) {
 		remove = true;
 		break;
       }
