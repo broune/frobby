@@ -36,7 +36,7 @@ then
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-for format in $formats; do
+for format in $formats null count; do
   # Test format conversion to $format
   outputFile="$testName.$format";
   $testhelper transform $inputFile $outputFile $* -oformat $format;

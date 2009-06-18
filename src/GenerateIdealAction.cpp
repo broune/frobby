@@ -83,6 +83,7 @@ void GenerateIdealAction::perform() {
 
   IOFacade ioFacade(_printActions);
   auto_ptr<IOHandler> output = _io.createOutputHandler();
+
   ioFacade.writeIdeal(ideal, output.get(), stdout);
 }
 

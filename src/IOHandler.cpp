@@ -39,6 +39,7 @@
 #include "IdealConsolidator.h"
 #include "CoefBigTermConsumer.h"
 #include "TranslatingCoefTermConsumer.h"
+#include "CountingIOHandler.h"
 
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
@@ -390,6 +391,7 @@ namespace {
 	nameFactoryRegister<NewMonosIOHandler>(factory);
 	nameFactoryRegister<Fourti2IOHandler>(factory);
 	nameFactoryRegister<NullIOHandler>(factory);
+	nameFactoryRegister<CountingIOHandler>(factory);
 
 	return factory;
   }
