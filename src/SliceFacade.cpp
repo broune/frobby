@@ -438,7 +438,8 @@ bool SliceFacade::solveIrreducibleDecompositionProgram
 (const vector<mpz_class>& grading,
  mpz_class& optimalValue,
  bool reportAllSolutions,
- bool useBound) {
+ bool useBoundElimination,
+ bool useBoundSimplification) {
   ASSERT(_split.get() != 0);
   ASSERT(_ideal.get() != 0);
   ASSERT(_translator.get() != 0);
@@ -453,14 +454,17 @@ bool SliceFacade::solveIrreducibleDecompositionProgram
 
   endAction();
 
-  return solveProgram(grading, optimalValue, reportAllSolutions, useBound);
+  return solveProgram
+	(grading, optimalValue, reportAllSolutions,
+	 useBoundElimination, useBoundSimplification);
 }
 
 bool SliceFacade::solveStandardProgram
 (const vector<mpz_class>& grading,
  mpz_class& optimalValue,
  bool reportAllSolutions,
- bool useBound) {
+ bool useBoundElimination,
+ bool useBoundSimplification) {
   ASSERT(_split.get() != 0);
   ASSERT(_ideal.get() != 0);
   ASSERT(_translator.get() != 0);
@@ -469,14 +473,17 @@ bool SliceFacade::solveStandardProgram
   minimize();
 
   _translator->decrement();
-  return solveProgram(grading, optimalValue, reportAllSolutions, useBound);
+  return solveProgram
+	(grading, optimalValue, reportAllSolutions,
+	 useBoundElimination, useBoundSimplification);
 }
 
 bool SliceFacade::solveProgram
 (const vector<mpz_class>& grading,
  mpz_class& optimalValue,
  bool reportAllSolutions,
- bool useBound) {
+ bool useBoundElimination,
+ bool useBoundSimplification) {
   ASSERT(_split.get() != 0);
   ASSERT(_ideal.get() != 0);
   ASSERT(_translator.get() != 0);
@@ -490,12 +497,28 @@ bool SliceFacade::solveProgram
 	_useIndependence = false;
   }
 
+  if (useBoundSimplification && !useBoundElimination) {
+	displayNote
+	  ("Bound simplification requires using the bound to eliminate\n"
+	   "non-improving slices, which has been turned off. Am now turning\n"
+	   "this on.");
+	useBoundElimination = true;			   
+  }
+
   beginAction("Solving optimization program.");
 
-  TermGrader grader(grading, *_translator);
+  OptimizeStrategy::BoundSetting boundSetting;
+  if (useBoundSimplification) {
+	ASSERT(useBoundElimination);
+	boundSetting = OptimizeStrategy::UseBoundToEliminateAndSimplify;
+  } else if (useBoundElimination)
+	boundSetting = OptimizeStrategy::UseBoundToEliminate;
+  else
+	boundSetting = OptimizeStrategy::DoNotUseBound;
 
+  TermGrader grader(grading, *_translator);
   OptimizeStrategy strategy
-	(grader, _split.get(), reportAllSolutions, useBound);
+	(grader, _split.get(), reportAllSolutions, boundSetting);
   runSliceAlgorithmWithOptions(strategy);
 
   endAction();

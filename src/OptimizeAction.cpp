@@ -146,14 +146,17 @@ void OptimizeAction::perform() {
   mpz_class optimalValue = 0;
 
   bool displayAll = (_displayLevel >= 2);
-  bool useBound = _sliceParams.getUseBound();
+  bool useBoundElimination = _sliceParams.getUseBoundElimination();
+  bool useBoundSimplification = _sliceParams.getUseBoundSimplification();
   bool anySolution;
   if (_maxStandard)
 	anySolution = facade.solveStandardProgram
-	  (v, optimalValue, displayAll, useBound);
+	  (v, optimalValue, displayAll,
+	   useBoundElimination, useBoundSimplification);
   else
 	anySolution = facade.solveIrreducibleDecompositionProgram
-	  (v, optimalValue, displayAll, useBound);
+	  (v, optimalValue, displayAll,
+	   useBoundElimination, useBoundSimplification);
 
   if (_displayValue) {
 	if (!anySolution)

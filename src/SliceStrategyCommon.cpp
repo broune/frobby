@@ -55,11 +55,14 @@ void SliceStrategyCommon::setUseSimplification(bool use) {
   _useSimplification = use;
 }
 
-void SliceStrategyCommon::simplify(Slice& slice) {
+bool SliceStrategyCommon::simplify(Slice& slice) {
   if (getUseSimplification())
-	slice.simplify();
-  else if (_split->isLabelSplit())
-	slice.adjustMultiply();
+	return slice.simplify();
+  else if (_split->isLabelSplit()) {
+	// The label split code requires at least this simplification.
+	return slice.adjustMultiply(); 
+  }
+  return false;
 }
 
 auto_ptr<Slice> SliceStrategyCommon::newSlice() {

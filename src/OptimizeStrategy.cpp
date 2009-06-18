@@ -23,12 +23,12 @@
 OptimizeStrategy::OptimizeStrategy(TermGrader& grader,
 								   const SplitStrategy* splitStrategy,
 								   bool reportAllSolutions,
-								   bool useBound):
+								   BoundSetting boundSetting):
   MsmStrategy(this, splitStrategy),
   _grader(grader),
   _maxSolutions(grader.getVarCount()),
   _reportAllSolutions(reportAllSolutions),
-  _useBound(useBound),
+  _boundSetting(boundSetting),
 
   _simplify_tmpDominator(grader.getVarCount()),
   _simplify_tmpOldDominator(grader.getVarCount()),
@@ -78,15 +78,13 @@ void OptimizeStrategy::getPivot(Term& pivot, Slice& slice) {
   MsmStrategy::getPivot(pivot, slice, _grader);
 }
 
-void OptimizeStrategy::simplify(Slice& slice) {
+bool OptimizeStrategy::simplify(Slice& slice) {
   ASSERT(slice.getVarCount() == getVarCount());
   if (slice.getIdeal().getGeneratorCount() == 0)
-	return;
+	return false;
 
-  if (!_useBound || _maxSolutions.isZeroIdeal()) {
-	MsmStrategy::simplify(slice);
-	return;
-  }
+  if (_boundSetting == DoNotUseBound || _maxSolutions.isZeroIdeal())
+	return MsmStrategy::simplify(slice);
 
   Term& dominator = _simplify_tmpDominator;
   Term& oldDominator = _simplify_tmpOldDominator;
@@ -96,9 +94,13 @@ void OptimizeStrategy::simplify(Slice& slice) {
   ASSERT(oldDominator.getVarCount() == getVarCount());
 
   if (!getDominator(slice, dominator))
-	return;
+	return true; // Slice is now a base case.
 
-  while (true) {
+  bool changedSlice = false;
+  for (bool firstLoop = true; true ; firstLoop = false) {
+	// It is an invariant at this point that dominator is what is
+	// gotten by calling getDominator(slice, dominator).
+
 	// Obtain upper bound on the degree of elements of msm(I).
 	mpz_class& upperBound = _simplify_tmpUpperBound;
 	_grader.getUpperBound(slice.getMultiply(), dominator, upperBound);
@@ -108,30 +110,50 @@ void OptimizeStrategy::simplify(Slice& slice) {
 	// there is no point in looking further at this slice.
 	if (upperBound <= _maxValueToBeat) {
 	  slice.clearIdealAndSubtract();
-	  return;
+	  return true;
 	}
+
+	if (_boundSetting == UseBoundToEliminate) {
+	  // This achieves the sequence 1) check bound, 2) simplify and
+	  // then 3) check bound again if changed. As checking the bound
+	  // takes much less time than simplifying, this is the best way
+	  // to do it. I haven't actually benchmarked that claim, though.
+	  bool changed = MsmStrategy::simplify(slice);
+	  if (firstLoop && changed) {
+		changedSlice = true;
+		continue;
+	  }
+	  return changedSlice || changed;
+	}
+	ASSERT(_boundSetting == UseBoundToEliminateAndSimplify);
 
 	oldDivisor = slice.getMultiply();
 	oldDominator = dominator;
 
 	if (boundSimplify(slice, dominator, upperBound)) {
+	  changedSlice = true;
 	  if (!getDominator(slice, dominator))
-		return; // Slice is now a basecase.
+		return true; // Slice is now a base case.
 	  if (changedInWayRelevantToBound
 		  (oldDivisor, oldDominator, slice.getMultiply(), dominator))
-		continue; // Iterate using new dominator.
+		continue; // Iterate using new divisor/dominator.
 	}
 
 	// Simplify the slice in the usual non-bound way.
-	MsmStrategy::simplify(slice);
-	if (!getDominator(slice, dominator))
-	  return; // Slice is now a basecase.
-	if (changedInWayRelevantToBound
-		(oldDivisor, oldDominator, slice.getMultiply(), dominator))
-	  continue; // Iterate using new dominator.
+	if (MsmStrategy::simplify(slice)) {
+	  changedSlice = true;
+	  if (!getDominator(slice, dominator))
+		return true; // Slice is now a base case.
+	  if (changedInWayRelevantToBound
+		  (oldDivisor, oldDominator, slice.getMultiply(), dominator))
+		continue; // Iterate using new divisor/dominator.
+	}
 
+	// Slice is now a fixed point of the operations above.
 	break;
   }
+
+  return changedSlice;
 }
 
 bool OptimizeStrategy::changedInWayRelevantToBound

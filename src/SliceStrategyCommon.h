@@ -27,8 +27,8 @@
 class Slice;
 class SplitStrategy;
 
-/** This class adds code to the SliceStrategy base class that is useful
- for derived classes.
+/** This class adds code to the SliceStrategy base class that is
+ useful for derived classes. The public interface is unchanged.
 */
 class SliceStrategyCommon : public SliceStrategy {
  public:
@@ -42,12 +42,10 @@ class SliceStrategyCommon : public SliceStrategy {
   virtual void setUseSimplification(bool use);
 
  protected:
-  /* Simplifies the slice. The default implementation simply calls
-   simplify on the slice.
-  */
-  virtual void simplify(Slice& slice);
+  /** Simplifies slice and returns true if it changed. */
+  virtual bool simplify(Slice& slice);
 
-  /// Directly allocate a slice of the correct type using new.
+  /** Directly allocate a slice of the correct type using new. */
   virtual auto_ptr<Slice> allocateSlice() = 0;
 
   /** Check that this slice is valid for use with this strategy. No
@@ -71,7 +69,7 @@ class SliceStrategyCommon : public SliceStrategy {
 						  auto_ptr<Slice>& leftSlice,
 						  auto_ptr<Slice>& rightSlice);
 
-  /// Used by pivotSplit to obtain a pivot.
+  /** Used by pivotSplit to obtain a pivot. */
   virtual void getPivot(Term& pivot, Slice& slice) = 0;
 
   /** Returns true if independence splits should be performed when

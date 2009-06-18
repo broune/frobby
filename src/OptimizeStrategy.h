@@ -42,6 +42,21 @@ class TermGrader;
 */
 class OptimizeStrategy : public MsmStrategy, public TermConsumer {
 public:
+  /** The values of BoundSetting indicate how to use the bound. */
+  enum BoundSetting {
+	/** Make no use of the bound. */
+	DoNotUseBound,
+
+	/** Eliminate non-improving slices, achieving a branch-and-bound
+	 algorithm in place of the usual backtracking. */
+	UseBoundToEliminate,
+
+	/** Eliminate non-improving slices and simplify slices by trying
+	 to generate non-improving slices that are then eliminated,
+	 allowing to move to the other slice. */
+	UseBoundToEliminateAndSimplify
+  };
+
   /** Construct an OptimizeStrategy.
 
    @param grader This object assigns values to monomials.
@@ -51,13 +66,12 @@ public:
    @param reportAllSolutions Compute all msm's of optimal value if
    true. Otherwise compute a single msm of optimal value.
 
-   @param useBound If true, make use of the branch-and-bound
-    optimization based on eliminating non-improving slices.
+   @param boundSetting Indicates how much to use the bound.
   */
   OptimizeStrategy(TermGrader& grader,
 				   const SplitStrategy* splitStrategy,
 				   bool reportAllSolutions,
-				   bool useBound);
+				   BoundSetting boundSetting);
 
   /** Returns one of or all of the msm's with optimal value found so
    far, depending on the value of reportAllSolutions passed to the
@@ -78,10 +92,16 @@ public:
 
   virtual void getPivot(Term& pivot, Slice& slice);
 
-  /** Perform the usual simplification, but also use the bound
-   optimization to simplify more than this.
+  /** This method calls MsmStrategy::simplify to perform the usual
+   simplification of slice, which then occurs if and only if the usual
+   simplification has been turned on.
+
+   Independent of whether usual simplification has been turned on,
+   this method also eliminates non-improving slices, and uses
+   bound-driven simplification, depending on the value of BoundSetting
+   passed to the constructor.
   */
-  virtual void simplify(Slice& slice);
+  virtual bool simplify(Slice& slice);
 
   virtual void beginConsuming();
   virtual void consume(const Term& term);
@@ -350,8 +370,8 @@ public:
   */
   bool _reportAllSolutions;
 
-  /// Indicates whether to use the bound optimization.
-  bool _useBound;
+  /** Indicates how to use the bound. */
+  BoundSetting _boundSetting;
 
   /** Temporary variable used in consume. Is a member variable in
    order to avoid the cost of initializing an mpz_class every time.
