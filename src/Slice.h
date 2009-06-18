@@ -196,7 +196,7 @@ class Slice {
    changing the content. It is a precondition that the slice is
    already normalized.
   */
-  virtual void simplify();
+  virtual bool simplify();
 
   /** Like simplify(), except that only one simplification step is
    performed. If the return value is true, then the Slice may not be

@@ -35,9 +35,17 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
    "Print statistics on what the algorithm did.",
    false),
 
-  _useBound
+  _useBoundElimination
   ("bound",
-   "Use the bound optimization to solve optimization problems faster.",
+   "Use the bound optimization to solve optimization problems faster\n"
+   "by eliminating non-improving slices.",
+   exposeBoundParam),
+
+  _useBoundSimplification
+  ("boundSimplify",
+   "Use the bound optimization to solve optimization problems faster by\n"
+   "simplifying slices through seeking to generate non-improving slices.\n"
+   "This requires turning elimination of non-improving slices on.",
    exposeBoundParam),
 
   _useIndependence
@@ -77,8 +85,10 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
 	addParameter(&_useIndependence);
   addParameter(&_useSimplification);
   addParameter(&_printDebug);
-  if (_exposeBoundParam)
-	addParameter(&_useBound);
+  if (_exposeBoundParam) {
+	addParameter(&_useBoundSimplification);
+	addParameter(&_useBoundElimination);
+  }
   addParameter(&_canonical);
 }
 
@@ -90,8 +100,12 @@ void SliceParameters::setSplit(const string& split) {
   _split = split;
 }
 
-bool SliceParameters::getUseBound() const {
-  return _useBound;
+bool SliceParameters::getUseBoundElimination() const {
+  return _useBoundElimination;
+}
+
+bool SliceParameters::getUseBoundSimplification() const {
+  return _useBoundSimplification;
 }
 
 void SliceParameters::validateSplit(bool allowLabel,

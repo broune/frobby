@@ -223,14 +223,19 @@ class SliceFacade : public Facade {
    @param value Will be set to the value of the program, if any.
    @param reportAllSolutions Output all optimal solutions if true,
      otherwise report some optimal solution if there are any.
-   @param useBound Specifies whether or not to use branch-and-bound to
-   speed the computation up.
+   @param useBoundElimination Specifies whether or not to use
+     branch-and-bound to speed the computation up by eliminating
+     non-improving slices.
+   @param useBoundSimplification Specifies whether or not to simplify
+     slices by seeking to generate non-improving slices that are then
+     eliminated. This requires useBoundElimination to be true.
   */
   bool solveStandardProgram
 	(const vector<mpz_class>& grading,
 	 mpz_class& value,
 	 bool reportAllSolutions,
-	 bool useBound);
+	 bool useBoundElimination,
+	 bool useBoundSimplification);
 
   /** Solve an optimization program over irreducible components.
    The optimization program being solved is
@@ -242,34 +247,40 @@ class SliceFacade : public Facade {
    @param optimalValue Will be set to the value of the program, if any.
    @param reportAllSolutions Output all optimal solutions if true,
      otherwise report some optimal solution if there are any.
-   @param useBound Specifies whether or not to use branch-and-bound to
-   speed the computation up.
+   @param useBoundElimination Specifies whether or not to use
+     branch-and-bound to speed the computation up by eliminating
+     non-improving slices.
+   @param useBoundSimplification Specifies whether or not to simplify
+     slices by seeking to generate non-improving slices that are then
+     eliminated. This requires useBoundElimination to be true.
   */
   bool solveIrreducibleDecompositionProgram
 	(const vector<mpz_class>& grading,
 	 mpz_class& optimalValue,
 	 bool reportAllSolutions,
-	 bool useBound);
+	 bool useBoundElimination,
+	 bool useBoundSimplification);
 
  private:
-  /// Common code from solveStandardProgram and
-  /// solveIrreducibleDecompositionProgram.
+  /** Common code from solveStandardProgram and
+   solveIrreducibleDecompositionProgram.
+  */
   bool solveProgram
 	(const vector<mpz_class>& grading,
 	 mpz_class& optimalValue,
 	 bool reportAllSolutions,
-	 bool useBound);
+	 bool useBoundElimination,
+	 bool useBoundSimplification);
 
-  /// Common code from the constructors.
+  /** Common code from the constructors. */
   void initialize(const BigIdeal& ideal);
 
-  /** Remove non-minimal generators.
+  /** Remove any non-minimal generators of the input ideal.
 
    This does nothing if the ideal has been specified to be already
-   minimally generated. This can be done by calling
-   setIsMinimallyGenerated(true). Thus calling this method more than
-   once is not inefficient, since it records that the ideal is now
-   minimally generated.
+   minimally generated, which can be done by calling
+   setIsMinimallyGenerated(true). This is done by this method itself,
+   so calling it many times performs only one minimization.
   */
   void minimize();
 
@@ -278,7 +289,7 @@ class SliceFacade : public Facade {
   */
   void getLcmOfIdeal(vector<mpz_class>& lcm);
 
-  /// Run the Slice algorithm according to the options set.
+  /** Run the Slice algorithm according to the options set. */
   void runSliceAlgorithmWithOptions(SliceStrategy& strategy);
 
   /** Output each term as the corresponding irreducible ideal.
@@ -289,56 +300,57 @@ class SliceFacade : public Facade {
   */
   void doIrreducibleIdealOutput();
 
-  /// Returns the consumer for monomial ideal output.
+  /** Returns the consumer for monomial ideal output. */
   TermConsumer* getTermConsumer();
 
-  /// Returns the consumer for polynomial output.
+  /** Returns the consumer for polynomial output. */
   CoefTermConsumer* getCoefTermConsumer();
 
-  /// Print debug information on the Slice Algorithm.
+  /** Print debug information on the Slice Algorithm. */
   bool _printDebug;
 
-  /// Print statistics on the Slice Algorithm.  
+  /** Print statistics on the Slice Algorithm. */
   bool _printStatistics;
 
-  /// Use independence splits in the Slice Algorithm.
+  /** Use independence splits in the Slice Algorithm. */
   bool _useIndependence;
 
-  /// Use simplification in the Slice Algorithm.
+  /** Use simplification in the Slice Algorithm. */
   bool _useSimplification;
 
-  /// The ideal is minimally generated.
+  /** The ideal is minimally generated. */
   bool _isMinimallyGenerated;
 
-  /// Produce a canonical representation of the output.
+  /** Produce a canonical representation of the output. */
   bool _canonicalOutput;
 
-  /// The file to write output to, if any. 
+  /** The file to write output to, if any. */
   FILE* _out;
 
-  /// The format in which to write output to the file, if any.
+  /** The format in which to write output to the file, if any. */
   IOHandler* _ioHandler;
 
-  /// The passed-in consumer for monomial ideal output.
+  /** The passed-in consumer for monomial ideal output. */
   BigTermConsumer* _termConsumer;
 
-  /// The passed-in consumer for polynomial output.
+  /** The passed-in consumer for polynomial output. */
   CoefBigTermConsumer* _coefTermConsumer;
 
-  /// Cache for getTermConsumer().
+  /** Cache for getTermConsumer(). */
   auto_ptr<TermConsumer> _generatedTermConsumer;
 
-  /// Cache for getCoefTermConsumer().
+  /** Cache for getCoefTermConsumer(). */
   auto_ptr<CoefTermConsumer> _generatedCoefTermConsumer;
 
-  /// The split selection strategy to use in the Slice Algorithm.
+  /** The split selection strategy to use in the Slice Algorithm. */
   auto_ptr<SplitStrategy> _split;
 
-  /// The translator to apply to \p int exponents to get the external
-  /// big integers those \p int exponents correspond to.
+  /** The translator to apply to \p int exponents to get the external
+   big integers those \p int exponents correspond to.
+  */
   auto_ptr<TermTranslator> _translator;
 
-  /// The passed-in ideal after translation to \p int exponents.
+  /** The passed-in ideal after translation to \p int exponents. */
   auto_ptr<Ideal> _ideal;
 };
 

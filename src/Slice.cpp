@@ -196,15 +196,17 @@ bool Slice::normalize() {
   return removedAny;
 }
 
-void Slice::simplify() {
+bool Slice::simplify() {
   ASSERT(!normalize());
 
-  applyLowerBound();
-  pruneSubtract();
+  bool lowerBoundChange = applyLowerBound();
+  bool pruneSubtractChange = pruneSubtract();
 
   ASSERT(!normalize());
   ASSERT(!pruneSubtract());
   ASSERT(!applyLowerBound());
+
+  return lowerBoundChange || pruneSubtractChange;
 }
 
 void Slice::setToProjOf
@@ -252,24 +254,24 @@ void Slice::swap(Slice& slice) {
   std::swap(_lowerBoundHint, slice._lowerBoundHint);
 }
 
-// Helper class for pruneSubtract().
-class PruneSubtractPredicate {
-public:
-  PruneSubtractPredicate(const Ideal& ideal, const Term& lcm):
-    _ideal(ideal), _lcm(lcm) {}
+namespace {
+  /** This is a helper class for Slice::pruneSubtract(). */
+  class PruneSubtractPredicate {
+  public:
+	PruneSubtractPredicate(const Ideal& ideal, const Term& lcm):
+	  _ideal(ideal), _lcm(lcm) {}
 
-  bool operator()(const Exponent* term) {
-    return
-      !::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
-      _ideal.contains(term);
-  }
+	bool operator()(const Exponent* term) {
+	  return
+		!::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
+		_ideal.contains(term);
+	}
   
-private:
-  void operator=(const PruneSubtractPredicate&); // To make inaccessible.
-
-  const Ideal& _ideal;
-  const Term& _lcm;
-};
+  private:
+	const Ideal& _ideal;
+	const Term& _lcm;
+  };
+}
 
 bool Slice::pruneSubtract() {
   if (_subtract.getGeneratorCount() == 0)
@@ -294,9 +296,12 @@ bool Slice::applyLowerBound() {
       return true;
     }
 
-	if (!bound.isIdentity() && innerSlice(bound)) {
+	if (!bound.isIdentity()) {
 	  changed = true;
-	  stepsWithNoChange = 0;
+	  if (innerSlice(bound))
+		stepsWithNoChange = 0;
+	  else
+		++stepsWithNoChange;
 	} else
       ++stepsWithNoChange;
 

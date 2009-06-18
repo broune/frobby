@@ -50,8 +50,9 @@ TEST(OptimizeStrategy, Simplify) {
   TermTranslator translator(IdealFactory::xx_yy_zz_t_xz_yz(), ideal, false);
   TermGrader grader(makeVector(0, 100, 10000, mpz_class("300000000000000007")), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
-  OptimizeStrategy strategy(grader, splitStrategy.get(), false, true);
-
+  OptimizeStrategy strategy
+	(grader, splitStrategy.get(), false,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
   runSliceAlgorithm(ideal, strategy);
 
   ASSERT_EQ(strategy.getMaximalSolutions(), Ideal(Term("1 1 2 1")));
@@ -62,7 +63,9 @@ TEST(OptimizeStrategy, changedInWayRelevantToBound) {
   TermTranslator translator(4, 10);
   TermGrader grader(makeVector(1, -1, 0, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
-  OptimizeStrategy opt(grader, splitStrategy.get(), true, true);
+  OptimizeStrategy opt
+	(grader, splitStrategy.get(), true,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
 
   // Case 1 from the documentation.
   ASSERT_TRUE(opt.changedInWayRelevantToBound
@@ -124,8 +127,12 @@ TEST(OptimizeStrategy, simplifyPositiveGrading) {
   TermGrader grader(makeVector(100, 10, 1, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
 
-  OptimizeStrategy all(grader, splitStrategy.get(), true, true);
-  OptimizeStrategy one(grader, splitStrategy.get(), false, true);
+  OptimizeStrategy all // Report all optimal solutions.
+	(grader, splitStrategy.get(), true,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+  OptimizeStrategy one // Report one optimal solution.
+	(grader, splitStrategy.get(), false,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
 
   all.beginConsuming();
   all.consume(Term("1 2 3 4"));
@@ -164,8 +171,12 @@ TEST(OptimizeStrategy, simplifyNegativeGrading) {
   TermGrader grader(makeVector(-100, -10, -1, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
 
-  OptimizeStrategy all(grader, splitStrategy.get(), true, true); // report all
-  OptimizeStrategy one(grader, splitStrategy.get(), false, true); // report one
+  OptimizeStrategy all // Report all optimal solutions.
+	(grader, splitStrategy.get(), true,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+  OptimizeStrategy one // Report one optimal solution.
+	(grader, splitStrategy.get(), false,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
 
   all.beginConsuming();
   all.consume(Term("1 2 3 4"));
