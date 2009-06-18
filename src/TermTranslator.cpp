@@ -237,10 +237,10 @@ void TermTranslator::addPurePowersAtInfinity(Ideal& ideal) const {
 
   Ideal::const_iterator stop = ideal.end();
   for (Ideal::const_iterator term = ideal.begin(); term != stop; ++term) {
-    if (getSizeOfSupport(*term, varCount) > 1)
+    if (Term::getSizeOfSupport(*term, varCount) > 1)
       continue;
 
-    size_t var = getFirstNonZeroExponent(*term, varCount);
+    size_t var = Term::getFirstNonZeroExponent(*term, varCount);
     if (var == varCount)
       return; // The ideal is <1> so we need add nothing.
 
@@ -272,7 +272,7 @@ void TermTranslator::setInfinityPowersToZero(Ideal& ideal) const {
 	}
 	++term;
 	continue;
-	if (changed && ::isIdentity(*term, varCount)) {
+	if (changed && Term::isIdentity(*term, varCount)) {
 	  bool last = (term + 1 == ideal.end());
 	  ideal.remove(term);
 	  if (last)

@@ -146,7 +146,7 @@ public:
   }
 
   bool operator()(const Exponent* term) {
-    return ::strictlyDivides(_term, term, _varCount);
+    return Term::strictlyDivides(_term, term, _varCount);
   }
   
 private:
@@ -217,7 +217,7 @@ void Slice::setToProjOf
   for (Ideal::const_iterator it = slice.getIdeal().begin();
 	   it != stop; ++it) {
 
-    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
+    size_t var = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
 	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
 	  // Use _lcm as temporary.
 	  projection.project(_lcm, *it);
@@ -229,7 +229,7 @@ void Slice::setToProjOf
   for (Ideal::const_iterator it = slice.getSubtract().begin();
 	   it != stop; ++it) {
 
-    size_t var = getFirstNonZeroExponent(*it, slice.getVarCount());
+    size_t var = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
 	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
 	  projection.project(_lcm, *it);
 	  getSubtract().insert(_lcm);
@@ -263,7 +263,7 @@ namespace {
 
 	bool operator()(const Exponent* term) {
 	  return
-		!::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
+		!Term::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
 		_ideal.contains(term);
 	}
   

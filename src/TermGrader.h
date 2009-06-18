@@ -29,10 +29,10 @@ public:
   TermGrader(const vector<mpz_class>& varDegrees,
 			 const TermTranslator& translator);
 
-  /// Returns the degree of term.
+  /** Returns the degree of term. */
   mpz_class getDegree(const Term& term) const;
 
-  /// Assigns the degree of term to degree.
+  /** Assigns the degree of term to degree. */
   void getDegree(const Term& term, mpz_class& degree) const;
 
   /** Assigns the degree of the preimage of term through the

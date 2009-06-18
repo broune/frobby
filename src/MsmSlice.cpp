@@ -294,7 +294,7 @@ void MsmSlice::oneMoreGeneratorBaseCase() {
   // the possibilities for that generator to be a label.
 
   Ideal::const_iterator it = getIdeal().begin();
-  while (getSizeOfSupport(*it, _varCount) == 1) {
+  while (Term::getSizeOfSupport(*it, _varCount) == 1) {
     ++it;
     ASSERT(it != getIdeal().end());
   }
