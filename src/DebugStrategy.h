@@ -19,13 +19,14 @@
 
 #include "SliceStrategy.h"
 
-/** A wrapper for a slice that prints out some of what is going out for
- debugging purposes, while delegating everything to the strategy
+/** A wrapper for a SliceStrategy that prints out what is going out
+ for debugging purposes, while delegating everything to the strategy
  being wrapped.
 */
 class DebugStrategy : public SliceStrategy {
  public:
-  /** Does not close out in destructor. */
+  /** Debug information is written to out, and every call is delegated
+   to strategy. */
   DebugStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~DebugStrategy();
 
