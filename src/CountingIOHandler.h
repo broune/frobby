@@ -1,4 +1,3 @@
-
 /* Frobby: Software for monomial ideal computations.
    Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
 
@@ -15,8 +14,8 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef NULL_IO_HANDLER_GUARD
-#define NULL_IO_HANDLER_GUARD
+#ifndef COUNTING_IO_HANDLER_GUARD
+#define COUNTING_IO_HANDLER_GUARD
 
 #include "IOHandler.h"
 
@@ -25,12 +24,13 @@ class Scanner;
 class BigIdeal;
 class BigPolynomial;
 
-/** This IO format reads the empty ideal without actually consulting
-the input, and does nothing when asked to writed output.
+/** This IO format does not support input, and merely displaythe
+ number of things written to output, without actually displaying the
+ output.
 */
-class NullIOHandler : public IOHandler {
+class CountingIOHandler : public IOHandler {
 public:
-  NullIOHandler();
+  CountingIOHandler();
 
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
@@ -41,11 +41,8 @@ public:
 						 const VarNames& names,
 						 FILE* out);
 
-  virtual auto_ptr<BigTermConsumer> createIdealWriter
-	(TermTranslator* translator, FILE* out);
-
-  virtual auto_ptr<CoefBigTermConsumer> createPolynomialWriter
-	(const TermTranslator* translator, FILE* out);
+  virtual auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
+  virtual auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
 
   static const char* staticGetName();
 

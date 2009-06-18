@@ -19,8 +19,9 @@
 
 #include "BigTermConsumer.h"
 
-// This class is an instance of the Null Object pattern. None of its
-// methods do anything.
+/** This follows the null object pattern. None of the methods do
+ anything.
+*/
 class NullTermConsumer : public BigTermConsumer {
  public:
   virtual void beginConsumingList();

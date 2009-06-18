@@ -19,11 +19,11 @@
 
 #include "IOHandler.h"
 
-// IOHandlerCommon is an abstract base class that implements functionality
-// that is useful for most but not all derivates of IOHandler.
+/** IOHandlerCommon is an abstract base class that implements functionality
+ that is useful for most but not all derivates of IOHandler.
+*/
 class IOHandlerCommon : public IOHandler {
  public:
-  // TODO: make protected.
   IOHandlerCommon(const char* formatName, const char* formatDescription);
 
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
