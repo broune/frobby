@@ -21,47 +21,58 @@ class Term;
 class VarNames;
 class Ideal;
 
-// This class is used to transfer terms one at a time from one part of
-// the program to another, and possibly to perform computations on
-// those terms. These can be divided into ideals (lists of terms) and
-// lists of ideals.
-//
-// Using a consumer for output, for example, allows to move the output from
-// memory onto the disk without having to wait for the entire computation to
-// be done, while still making it possible to store the output in memory
-// in a convenient form just by using a different consumer.
-//
-// TODO: consider merging this with BigTermConsumer;
+/** This class is used to transfer terms one at a time from one part of
+ the program to another, and possibly to perform computations on
+ those terms. These can be divided into ideals (lists of terms) and
+ lists of ideals.
+
+ Using a consumer for output, for example, allows to move the output from
+ memory onto the disk without having to wait for the entire computation to
+ be done, while still making it possible to store the output in memory
+ in a convenient form just by using a different consumer.
+
+ TODO: consider merging this with BigTermConsumer;
+*/
 class TermConsumer {
  public:
   virtual ~TermConsumer();
 
-  // Tell the consumer which ring is being used.
+  /** Tell the consumer which ring is being used. */
   virtual void consumeRing(const VarNames& names);
 
-  // Tell the consumer that the ideals that are consumed until the next
-  // call to doneConsumingList are to be considered as one list of ideals,
-  // rather than as a number of separate ideals. The default implementation
-  // is to ignore this, but the consumer is free to do something special
-  // in this case. It is thus not in general required to call this method.
+  /** Tell the consumer that the ideals that are consumed until the
+   next call to doneConsumingList are to be considered as one list of
+   ideals, rather than as a number of separate ideals. The default
+   implementation is to ignore this, but the consumer is free to do
+   something special in this case. It is thus not in general required
+   to call this method, but if you don't, make sure that every
+   consumer that you want to use does what you want if you output more
+   than a single ideal.
+  */
   virtual void beginConsumingList();
 
-  // Tell the consumer to begin consuming an ideal. It is required to call
-  // this method before calling consume().
+  /** Tell the consumer to begin consuming an ideal. It is required to call
+   this method before calling consume().
+  */
   virtual void beginConsuming() = 0;
 
-  // Consume a term.
+  /** Consume a term. */
   virtual void consume(const Term& term) = 0;
 
-  // Must be called once each time beginConsuming has been called.
+  /** Must be called once after each time beginConsuming has been
+   called.
+  */
   virtual void doneConsuming() = 0;
 
-  // Must be called once each time beginConsumingList has been called.
+  /** Must be called once after each time beginConsumingList has been
+   called.
+  */
   virtual void doneConsumingList();
 
-  // This is a non-virtual utility method that calls the other methods
-  // to achieve its effect of calling beginConsuming, then consuming
-  // all generators, and then calling doneConsuming.
+  /** This is a non-virtual utility method that calls the other methods
+   to achieve its effect of calling beginConsuming, then consuming
+   all generators, and then calling doneConsuming.
+  */
   void consume(const Ideal& ideal);
 };
 

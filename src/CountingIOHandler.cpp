@@ -24,6 +24,9 @@
 #include "BigPolynomial.h"
 
 namespace {
+  /** This class is a helper class for CountingIOHandler. It
+   the number of terms that it consumes.
+  */
   class CountingConsumer :
 	public BigTermConsumer, public CoefBigTermConsumer {
   public:
@@ -32,8 +35,23 @@ namespace {
 	  _out(out) {
 	}
 
+	/** This destructor writes the final number out.
+
+	 @todo This should not be happening in a destructor. Make a
+	  doneAllConsuming or something like that to do the output.
+	*/
 	virtual ~CountingConsumer() {
-	  gmp_fprintf(_out, "%Zd\n", _termCount.get_mpz_t());
+	  // Destructors must not throw exceptions. As far as I know,
+	  // bad_alloc is the only thing that should conceivably be thrown
+	  // from gmp_fprintf.
+	  try {
+		gmp_fprintf(_out, "%Zd\n", _termCount.get_mpz_t());
+	  } catch (std::bad_alloc) {
+		// Not good to ignore this, but what can we do...
+	  } catch (...) {
+		ASSERT(false);
+		throw;
+	  }
 	}
 
 	virtual void consumeRing(const VarNames& names) {
@@ -89,7 +107,7 @@ namespace {
 
 
 CountingIOHandler::CountingIOHandler():
-  IOHandler(staticGetName(), "Writes the size of the output.", false) {
+  IOHandler(staticGetName(), "Writes the number of output terms.", false) {
 
   registerOutput(DataType::getMonomialIdealType());
   registerOutput(DataType::getPolynomialType());
