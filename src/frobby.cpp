@@ -289,7 +289,9 @@ void Frobby::univariateHilbertPoincareSeries(const Ideal& ideal,
   facade.computeUnivariateHilbertSeries();
 }
 
-// TODO: This seems redundant with IdealSplitter. Investigate.
+/**
+ @todo: This seems redundant with IdealSplitter. Investigate.
+*/
 class IrreducibleIdealDecoder : public Frobby::IdealConsumer {
 public:
   IrreducibleIdealDecoder(IdealConsumer* consumer):
@@ -297,26 +299,22 @@ public:
 	_consumer(consumer),
 	_term(0) {
 	ASSERT(_consumer != 0);
-
-	mpz_init_set_ui(_zero, 0);
   }
 
   ~IrreducibleIdealDecoder() {
-	mpz_clear(_zero);
   }
 
   virtual void idealBegin(size_t varCount) {
 	ASSERT(_term == 0);
 
 	_varCount = varCount;
-	_term = new mpz_ptr[varCount];
+	_term.resize(varCount);
 	for (size_t var = 0; var < _varCount; ++var)
-	  _term[var] = _zero;
+	  _term[var] = _zero.get_mpz_t();
   }
 
   virtual void idealEnd() {
     ASSERT(_term != 0);
-	delete[] _term;
   }
 
   virtual void consume(mpz_ptr* exponentVector) {
@@ -328,12 +326,12 @@ public:
 	  if (mpz_cmp_ui(exponentVector[var], 0) != 0) {
 		isIdentity = false;
 		_term[var] = exponentVector[var];
-		_consumer->consume(_term);
-		_term[var] = _zero;
+		_consumer->consume(&*(_term.begin()));
+		_term[var] = _zero.get_mpz_t();
 	  }
 	}
 	if (isIdentity)
-	  _consumer->consume(_term);
+	  _consumer->consume(&*(_term.begin()));
 
 	_consumer->idealEnd();
   }
@@ -341,8 +339,8 @@ public:
 private:
   size_t _varCount;
   IdealConsumer* _consumer;
-  mpz_ptr* _term;
-  mpz_t _zero;
+  vector<mpz_ptr> _term;
+  mpz_class _zero;
 };
 
 void Frobby::irreducibleDecompositionAsIdeals(const Ideal& ideal,
