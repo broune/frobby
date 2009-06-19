@@ -142,7 +142,7 @@ namespace Frobby {
    are used. Note that this lcm does not include any non-minimal
    generators that may have been added to ideal. If exponentVector is
    not null, then it must be divisible by this lcm.
-  
+
    The parameter exponentVector must be either null or an array of
    size at least the number of variables of ideal. Frobby does not
    alter or retain a reference to the passed-in exponentVector or
@@ -154,7 +154,7 @@ namespace Frobby {
    is a reliable error handling mechanism for the case where
    exponentVector is not divisible by the lcm, but this is not
    documented as this method may change in future. Thus client code
-   has to ensure this for itself.
+   has to check that the lcm divides exponentVector for itself.
   */
   void alexanderDual(const Ideal& ideal,
                      const mpz_t* exponentVector,

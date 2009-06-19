@@ -37,6 +37,8 @@ class CoefBigTermConsumer;
  track state, that state is either passed through each method call, or
  the IOHandler returns an object that takes care of further IO and
  which itself has state.
+
+ @ingroup IO
 */
 class IOHandler {
  public:

@@ -19,11 +19,7 @@
 
 #include <ostream>
 
-// This file contains a number of functions designed to manipulate
-// exponent vectors represented as an array of Exponents along with a
-// length. It also contains a class that wraps these functions.
-
-/** Term represents a product of variables and does NOT include a
+/** Term represents a product of variables which does not include a
  coefficient. This concept is also sometimes called a monomial or
  power product.
 
@@ -41,6 +37,12 @@
  Most methods on Term are inline to avoid function call overhead. This
  is significant because these methods tend to be called in the
  innermost loops of monomial ideal algorithms.
+
+ @todo Move the inline code out of the class declaration and add them
+ as inline below the class declaration.
+
+ @todo Duplicate the comments for overloads using the copydoc Doxygen
+ command.
 */
 class Term {
  public:
@@ -50,7 +52,7 @@ class Term {
     initialize(exponents, varCount);
   }
   
-  /** This object is initialized to the identity, i.e. the exponent
+  /** This object is initialized to the identity, i.e.\ the exponent
 	  vector is the zero vector.
   */
  Term(size_t varCount):
@@ -163,10 +165,10 @@ class Term {
     return divides(_exponents, term, _varCount);
   }
 
-  /** Returns whether a dominates b, i.e. whether b divides a.
+  /** Returns whether a dominates b, i.e.\ whether b divides a.
    */
   inline static bool dominates(const Exponent* a, const Exponent* b,
-						size_t varCount) {
+							   size_t varCount) {
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
 	for (size_t var = 0; var < varCount; ++var)
@@ -184,14 +186,12 @@ class Term {
     return dominates(_exponents, term, _varCount);
   }
 
-  /** Returns whether a strictly divides b. 
-
-	  \f$a\f$ strictly divides \f$b\f$ if \f$a * gcd(a, x_1...x_n)\f$
-	  divides \f$b\f$, i.e. if, for each $i$, \f$u_i<b_i\f$ or $v_i=0$
-	  where $a=x^u$ and $b=x^v$.
+  /** Returns whether a strictly divides b. \f$a\f$ strictly divides
+	  \f$b\f$ if \f$a * gcd(a, x_1...x_n)\f$ divides \f$b\f$, i.e.\ if,
+	  for each $i$, \f$u_i<b_i\f$ or $v_i=0$ where $a=x^u$ and $b=x^v$.
   */
   inline static bool strictlyDivides(const Exponent* a, const Exponent* b,
-							  size_t varCount) {
+									 size_t varCount) {
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
 	for (size_t var = 0; var < varCount; ++var)
@@ -211,8 +211,8 @@ class Term {
 
   /** Sets res equal to the least commom multiple of a and b. */
   inline static void lcm(Exponent* res,
-				  const Exponent* a, const Exponent* b,
-				  size_t varCount) {
+						 const Exponent* a, const Exponent* b,
+						 size_t varCount) {
 	ASSERT(res != 0 || varCount == 0);
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
@@ -228,9 +228,9 @@ class Term {
     ASSERT(_varCount == a._varCount);
     ASSERT(_varCount == b._varCount);
     lcm(_exponents + position,
-		  a._exponents + position,
-		  b._exponents + position,
-		  _varCount - position);
+		a._exponents + position,
+		b._exponents + position,
+		_varCount - position);
   }
 
   void lcm(const Term& a, const Term& b) {
@@ -245,8 +245,8 @@ class Term {
 
   /** Sets res equal to the greatest common divisor of a and b. */
   inline static void gcd(Exponent* res,
-				  const Exponent* a, const Exponent* b,
-				  size_t varCount) {
+						 const Exponent* a, const Exponent* b,
+						 size_t varCount) {
 	ASSERT(res != 0 || varCount == 0);
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
@@ -279,8 +279,8 @@ class Term {
 
   /** Sets res equal to the product of a and b. */
   inline static void product(Exponent* res,
-					  const Exponent* a, const Exponent* b,
-					  size_t varCount) {
+							 const Exponent* a, const Exponent* b,
+							 size_t varCount) {
 	ASSERT(res != 0 || varCount == 0);
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
@@ -299,8 +299,9 @@ class Term {
     product(_exponents, a, b, _varCount);
   }
 
-  /** Set res equal to \f$1=x^{(0,\ldots,0)}\f$, i.e. set each entry of
-	  res equal to 0. */
+  /** Set res equal to \f$1=x^{(0,\ldots,0)}\f$, i.e.\ set each entry
+	  of res equal to 0.
+  */
   inline static void setToIdentity(Exponent* res, size_t varCount) {
 	ASSERT(res != 0 || varCount == 0);
 	for (size_t var = 0; var < varCount; ++var)
@@ -311,8 +312,7 @@ class Term {
     setToIdentity(_exponents, _varCount);
   }
 
-
-  /** Returns whether a is 1, i.e. whether all entries of a are 0.
+  /** Returns whether a is 1, i.e.\ whether all entries of a are 0.
    */
   inline static bool isIdentity(const Exponent* a, size_t varCount) {
 	ASSERT(a != 0 || varCount == 0);
@@ -326,7 +326,7 @@ class Term {
     return isIdentity(_exponents, _varCount);
   }
 
-  /** Returns whether a is square free, i.e. $v_i\leq 1$ for each
+  /** Returns whether a is square free, i.e.\ \f$v_i\leq 1\f$ for each
 	  \f$i\f$ where $a=x^v$.
   */
   inline static bool isSquareFree(const Exponent* a, size_t varCount) {
@@ -412,7 +412,7 @@ class Term {
 	  variable \f$x_i\f$.
   */
   inline static bool hasSameSupport(const Exponent* a, const Exponent* b,
-							 size_t varCount) {
+									size_t varCount) {
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
 	for (size_t var = 0; var < varCount; ++var) {
@@ -442,8 +442,8 @@ class Term {
 	  / b\f$.
   */
   inline static void colon(Exponent* res,
-					const Exponent* a, const Exponent* b,
-					size_t varCount) {
+						   const Exponent* a, const Exponent* b,
+						   size_t varCount) {
 	ASSERT(res != 0 || varCount == 0);
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
@@ -471,8 +471,8 @@ class Term {
 	  that dualOf divides point, as otherwise that dual is not defined.
   */
   inline static void encodedDual(Exponent* res,
-						  const Exponent* dualOf, const Exponent* point,
-						  size_t varCount) {
+								 const Exponent* dualOf, const Exponent* point,
+								 size_t varCount) {
 	ASSERT(res != 0 || varCount == 0);
 	ASSERT(dualOf != 0 || varCount == 0);
 	ASSERT(point != 0 || varCount == 0);
@@ -553,7 +553,7 @@ class Term {
 	  x^(1,0)\f$.
   */
   inline static int lexCompare(const Exponent* a, const Exponent* b,
-						size_t varCount) {
+							   size_t varCount) {
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
 
@@ -596,7 +596,7 @@ class Term {
   */
   // Defines reverse lexicographic order on exponents.
   inline static int reverseLexCompare(const Exponent* a, const Exponent* b,
-							   size_t varCount) {
+									  size_t varCount) {
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
 	for (size_t var = 0; var < varCount; ++var) {
