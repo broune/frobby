@@ -32,11 +32,16 @@ public:
   Test(const string& name);
   virtual ~Test();
 
-  /** Method to visit this object as per the Visitor Pattern. */
-  virtual bool accept(TestVisitor&) = 0;
+  /** Makes the visitor visit this object as per the Visitor
+	  Pattern.
+  */
+  virtual bool accept(TestVisitor& visitor) = 0;
 
   /** Returns the name passed to the constructor. */
   const string& getName() const;
+
+  /** Compares names lexicographically. */
+  bool operator<(const Test& test) const;
 
  private:
   /** The name passed to the constructor. */
