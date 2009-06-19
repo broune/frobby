@@ -59,7 +59,7 @@ TEST(OptimizeStrategy, Simplify) {
   ASSERT_EQ(strategy.getMaximalValue(), mpz_class("300000000000020107"));
 }
 
-TEST(OptimizeStrategy, changedInWayRelevantToBound) {
+TEST(OptimizeStrategy, ChangedInWayRelevantToBound) {
   TermTranslator translator(4, 10);
   TermGrader grader(makeVector(1, -1, 0, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
@@ -122,7 +122,7 @@ TEST(OptimizeStrategy, changedInWayRelevantToBound) {
     } \
   }
 
-TEST(OptimizeStrategy, simplifyPositiveGrading) {
+TEST(OptimizeStrategy, SimplifyPositiveGrading) {
   TermTranslator translator(4, 10);
   TermGrader grader(makeVector(100, 10, 1, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
@@ -166,7 +166,7 @@ TEST(OptimizeStrategy, simplifyPositiveGrading) {
   INNER_SIMP_TEST(one, "1 2 0 1", "1 2 10 1", 129, "0 0 4 0");
 }
 
-TEST(OptimizeStrategy, simplifyNegativeGrading) {
+TEST(OptimizeStrategy, SimplifyNegativeGrading) {
   TermTranslator translator(4, 10);
   TermGrader grader(makeVector(-100, -10, -1, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");

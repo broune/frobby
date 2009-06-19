@@ -410,10 +410,9 @@ public:
   Term _boundSimplify_tmpPivot;
 
 
-  FRIEND_TEST(OptimizeStrategy, changedInWayRelevantToBound);
-  FRIEND_TEST(OptimizeStrategy, improveBoundExponent);
-  FRIEND_TEST(OptimizeStrategy, simplifyPositiveGrading);
-  FRIEND_TEST(OptimizeStrategy, simplifyNegativeGrading);
+  FRIEND_TEST(OptimizeStrategy, ChangedInWayRelevantToBound);
+  FRIEND_TEST(OptimizeStrategy, SimplifyPositiveGrading);
+  FRIEND_TEST(OptimizeStrategy, SimplifyNegativeGrading);
 };
 
 #endif
