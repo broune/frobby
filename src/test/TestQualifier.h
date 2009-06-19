@@ -14,6 +14,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
+
 #ifndef TEST_QUALIFIER_GUARD
 #define TEST_QUALIFIER_GUARD
 
@@ -21,11 +22,17 @@
 
 class TestSuite;
 
+/** Visits a tree of Test while keeping track of the path taken from
+ the root to the current node as a dot-separated string.
+*/
 class TestQualifier : public TestVisitor {
 public:
   virtual bool visitEnter(TestSuite& suite);
   virtual bool visitLeave(TestSuite& suite);
 
+  /** Returns the path taken from the root of the tree to the current
+   node as a dot-separated string.
+  */
   const string& getPath() const;
 
 private:

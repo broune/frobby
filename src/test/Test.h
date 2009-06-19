@@ -22,16 +22,24 @@
 
 class TestVisitor;
 
+/** This class represents a test or a suite of tests according to the
+ Composite Pattern. The hierarchy of tests can be traversed according
+ to the Visitor Pattern.
+*/
 class Test {
 public:
+  /** Construct a Test with the given name. */
   Test(const string& name);
   virtual ~Test();
 
+  /** Method to visit this object as per the Visitor Pattern. */
   virtual bool accept(TestVisitor&) = 0;
 
+  /** Returns the name passed to the constructor. */
   const string& getName() const;
 
  private:
+  /** The name passed to the constructor. */
   string _name;
 };
 

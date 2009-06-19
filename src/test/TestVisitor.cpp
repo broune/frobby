@@ -17,11 +17,28 @@
 #include "stdinc.h"
 #include "TestVisitor.h"
 
+#include "TestSuite.h"
+
 TestVisitor::~TestVisitor() {
 }
 
 bool TestVisitor::visitEnter(TestSuite&) {
   return true;
+}
+
+bool TestVisitor::visit(TestCase& testCase) {
+  return true;
+}
+
+bool TestVisitor::visit(TestSuite& testSuite) {
+  if (visitEnter(testSuite)) {
+	TestSuite::TestIterator end = testSuite.end();
+	for (TestSuite::TestIterator it = testSuite.begin(); it != end; ++it)
+	  if (!(*it)->accept(*this))
+		return false;
+  }
+  
+  return visitLeave(testSuite);
 }
 
 bool TestVisitor::visitLeave(TestSuite&) {
