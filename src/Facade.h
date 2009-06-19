@@ -19,23 +19,53 @@
 
 #include "Timer.h"
 
+/** This is the super class of all facades. It offers protected
+	methods that are convenient for derived classes to print out what
+	they are doing and how long it took, and to be able to turn this
+	on and off with a boolean flag.
+
+	@ingroup Facade
+*/
 class Facade {
  protected:
+  /** Constructs a facade that prints out what it is doing if
+	  printActions is true. */
   Facade(bool printActions);
   virtual ~Facade();
 
+  /** Prints message to standard error if printing is turned on. */
   void printMessage(const char* message);
+
+  /** Prints message to standard error if printing is turned on, and
+	  records the time when the action started. endAction() must be
+	  called in-between two calls to beginAction.
+  */
   void beginAction(const char* message);
+
+  /** Prints to standard error the time since the last call to
+	  beginAction. endAction() can only be called once after each call
+	  to beginAction.
+  */
   void endAction();
 
- protected:
+  /** Returns true if printing actions. */
   bool isPrintingActions() const;
 
  private:
+  /** Keeps track of the time between calls to beginAction() and
+	  endAction().
+  */
   Timer _timer;
+
+  /** Keeps track of whether we are printing. */
   bool _printActions;
 
 #ifdef DEBUG
+  /** A debug field to assert if beginAction() is called twice without
+	  a call to endAction() in between, or if endAction() is called
+	  without a preceding call to beginAction() that has not already
+	  been ended.
+  */
   bool _doingAnAction;
 #endif
 };

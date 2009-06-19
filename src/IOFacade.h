@@ -27,22 +27,27 @@ class BigPolynomial;
 class VarNames;
 class BigTermConsumer;
 
-// TODO: Consider letting Scanner play the role of IOFacade.
+/** A facade for input and output of mathematical objects.
+	
+	@ingroup Facade
+	@ingroup IO
+*/
 class IOFacade : private Facade {
  public:
   IOFacade(bool printActions);
 
   bool isValidMonomialIdealFormat(const string& format);
 
-  // Read an ideal from in and feed it to consumer.
+  /** Read an ideal from in and feed it to consumer. */
   void readIdeal(Scanner& in, BigTermConsumer& consumer);
 
-  // Read an ideal from in and place it in the parameter ideal.
+  /** Read an ideal from in and place it in the parameter ideal. */
   void readIdeal(Scanner& in, BigIdeal& ideal);
 
-  // Insert the ideals that are read into the parameter ideals. The
-  // parameter ideals is required to be empty. Names contains the last
-  // ring read, even if there are no ideals.
+  /** Insert the ideals that are read into the parameter ideals. The
+	  parameter ideals is required to be empty. Names contains the last
+	  ring read, even if there are no ideals.
+  */
   void readIdeals(Scanner& in, vector<BigIdeal*>& ideals, VarNames& names);
 
   void writeIdeal(const BigIdeal& ideal, IOHandler* handler, FILE* out);

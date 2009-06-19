@@ -35,10 +35,10 @@ class TermTranslator;
 class SliceStrategy;
 class IOHandler;
 
-/** This class acts as a simpler interface to the slice-like
- algorithms. This class is an instance of the <a
- href="http://en.wikipedia.org/wiki/Facade_pattern">Facade design
- pattern</a>.
+/** A facade for operations on monomial ideals using the Slice
+ Algorithm.
+
+ @ingroup Facade
 */
 class SliceFacade : public Facade {
  public:

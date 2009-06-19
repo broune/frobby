@@ -21,14 +21,18 @@
 
 class BigPolynomial;
 
+/** A facade for operations on polynomials.
+
+	@ingroup Facade
+ */
 class PolynomialFacade : private Facade {
  public:
   PolynomialFacade(bool printActions);
 
-  // Sort the terms of poly.
+  /** Sort the terms of poly. */
   void sortTerms(BigPolynomial& poly);
 
-  // Sort the variables of poly.
+  /** Sort the variables of poly. */
   void sortVariables(BigPolynomial& poly);
 };
 

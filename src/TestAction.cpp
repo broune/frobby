@@ -17,6 +17,7 @@
 #include "stdinc.h"
 #include "TestAction.h"
 
+#include "error.h"
 #include "test/all.h"
 #include "test/TestSorter.h"
 #include "test/TestRunner.h"
@@ -39,7 +40,7 @@ void TestAction::perform() {
 
 	TestRunner runner;
 	GET_TEST_SUITE(root).accept(runner);
-  } catch (std::exception& e) {
+  } catch (const FrobbyException& e) {
 	fputs(e.what(), stderr);
   }
 }
