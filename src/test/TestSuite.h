@@ -20,16 +20,42 @@
 #include "Test.h"
 class TestVisitor;
 
+/** Represents a collection of tests, be they individual tests or yet
+ other collections of tests. This class is a composite as per the
+ Composite pattern, and can be visited by a TestVisitor according to
+ the Visitor Pattern.
+*/
 class TestSuite : public Test {
  public:
+  /** Constructs a test suite with the given name. */
   TestSuite(const string& name);
 
+  /** Adds a test to the test suite. This can be another TestSuite or
+   an individual TestCase.
+  */
   void add(Test* test);
+
+  /** Sorts the added tests in some canonical order. */
+  void sortTests();
+
+  /** An iterator for the added tests*/
+  typedef vector<Test*>::iterator TestIterator;
+
+  /** Returns an iterator to the beginning of the range of added
+   tests.
+  */
+  TestIterator begin();
+
+  /** Returns an iterator just past the end of the range of added
+   tests.
+  */
+  TestIterator end();
 
   virtual bool accept(TestVisitor& visitor);
 
  private:
-	vector<Test*> _tests;
+  /** The collection of tests of added tests. */
+  vector<Test*> _tests;
 };
 
 #endif

@@ -14,32 +14,19 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#include "stdinc.h"
-#include "TestSuite.h"
+#ifndef TEST_SORTER_GUARD
+#define TEST_SORTER_GUARD
 
 #include "TestVisitor.h"
 
-TestSuite::TestSuite(const string& name):
-  Test(name) {
-}
+class TestCase;
 
-void TestSuite::add(Test* test) {
-  ASSERT(test != 0);
-  _tests.push_back(test);
-}
+/** Sorts tests to avoid using the order imposed by the order of
+ construction of global objects, since this is inconsistent across
+ compilers and platforms.
+*/
+class TestSorter : public TestVisitor {
+  virtual bool visitEnter(TestSuite& testSuite);
+};
 
-void TestSuite::sortTests() {
-  sort(begin(), end());
-}
-
-TestSuite::TestIterator TestSuite::begin() {
-  return _tests.begin();
-}
-
-TestSuite::TestIterator TestSuite::end() {
-  return _tests.end();
-}
-
-bool TestSuite::accept(TestVisitor& visitor) {
-  return visitor.visit(*this);
-}
+#endif

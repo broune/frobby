@@ -21,6 +21,7 @@
 
 class TestCase;
 
+/** Runs every test in forward order. */
 class TestRunner : public TestQualifier {
   virtual bool visit(TestCase& test);
 };

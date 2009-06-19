@@ -15,31 +15,14 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
+#include "TestSorter.h"
+
 #include "TestSuite.h"
 
-#include "TestVisitor.h"
-
-TestSuite::TestSuite(const string& name):
-  Test(name) {
-}
-
-void TestSuite::add(Test* test) {
-  ASSERT(test != 0);
-  _tests.push_back(test);
-}
-
-void TestSuite::sortTests() {
-  sort(begin(), end());
-}
-
-TestSuite::TestIterator TestSuite::begin() {
-  return _tests.begin();
-}
-
-TestSuite::TestIterator TestSuite::end() {
-  return _tests.end();
-}
-
-bool TestSuite::accept(TestVisitor& visitor) {
-  return visitor.visit(*this);
+bool TestSorter::visitEnter(TestSuite& suite) {
+  // This does not invalidate or alter the value of an iterator in
+  // visit(TestSuite&), since visitEnter is called before any other
+  // processing of a TestSuite.
+  suite.sortTests();
+  return true;
 }
