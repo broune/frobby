@@ -28,8 +28,19 @@ void TestSuite::add(Test* test) {
   _tests.push_back(test);
 }
 
+namespace {
+  /** Follows pointers before comparing values. Helper function for
+	  TestSuite::sortTests.
+   */
+  bool comparePointedToValue(const Test* a, const Test* b) {
+	ASSERT(a != 0);
+	ASSERT(b != 0);
+	return *a < *b;
+  }
+}
+
 void TestSuite::sortTests() {
-  sort(begin(), end());
+  sort(begin(), end(), comparePointedToValue);
 }
 
 TestSuite::TestIterator TestSuite::begin() {

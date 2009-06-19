@@ -27,3 +27,7 @@ Test::~Test() {
 const string& Test::getName() const {
   return _name;
 }
+
+bool Test::operator<(const Test& test) const {
+  return getName() < test.getName();
+}
