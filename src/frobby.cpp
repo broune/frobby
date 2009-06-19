@@ -305,8 +305,6 @@ public:
   }
 
   virtual void idealBegin(size_t varCount) {
-	ASSERT(_term == 0);
-
 	_varCount = varCount;
 	_term.resize(varCount);
 	for (size_t var = 0; var < _varCount; ++var)
@@ -314,11 +312,10 @@ public:
   }
 
   virtual void idealEnd() {
-    ASSERT(_term != 0);
+	_term.clear();
   }
 
   virtual void consume(mpz_ptr* exponentVector) {
-	ASSERT(_term != 0);
 	_consumer->idealBegin(_varCount);
 
 	bool isIdentity = true;
