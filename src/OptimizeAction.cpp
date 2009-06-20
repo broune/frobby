@@ -123,8 +123,6 @@ void OptimizeAction::perform() {
   mpz_class subtract = 0;
   if (_chopFirstAndSubtract) {
 	if (v.empty()) {
-	  displayNote("Option -chopFirstAndSubtract is ignored since there are\n"
-				  "no variables to chop.");
 	  _chopFirstAndSubtract = false;
 	} else {
 	  subtract = v[0];

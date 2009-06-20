@@ -1,17 +1,25 @@
 #!/usr/bin/env bash
 
+profileFile=../../bin/profile.optimize
 frobby=../../bin/frobby
-TIMEFORMAT="%1Us (user CPU time)"
+if [ "$1" = "_profile" ];
+then
+  rm -f gmon.out
+fi
 
-echo -n "optimize nearGenericV15G50 "
-time $frobby optimize < nearGenericV15G50.test \
-  -displayLevel 0 -displayValue off $*
+./benchHelper optimize nearGenericV15G50.test $* \
+  -displayLevel 0 -displayValue off
 
-echo -n "optimize sqfreev25g1000    "
-time $frobby optimize < sqfreeV25G1000.test \
-  -displayLevel 0 -displayValue off $*
+./benchHelper optimize sqfreeV25G1000.test $* \
+  -displayLevel 0 -displayValue off
 
-echo -n "optimize n11d11            "
-time cat n11d11.test n11d11|$frobby optimize \
-  -displayLevel 0 -chopFirstAndSubtract -maxStandard \
-  -displayValue off $*
+cat n11d11.test n11d11 > /tmp/n11d11.test
+./benchHelper optimize /tmp/n11d11.test $* \
+  -displayLevel 0 -displayValue off -chopFirstAndSubtract
+rm -f /tmp/n11d11.test
+
+if [ "$1" = "_profile" ];
+then
+  gprof $frobby > $profileFile
+  rm -f gmon.out
+fi
