@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+frobby=../../bin/frobby
+TIMEFORMAT="%1Us (user CPU time)"
+
+echo -n "optimize nearGenericV15G50 "
+time $frobby optimize < nearGenericV15G50.test \
+  -displayLevel 0 -displayValue off $*
+
+echo -n "optimize sqfreev25g1000    "
+time $frobby optimize < sqfreeV25G1000.test \
+  -displayLevel 0 -displayValue off $*
+
+echo -n "optimize n11d11            "
+time cat n11d11.test n11d11|$frobby optimize \
+  -displayLevel 0 -chopFirstAndSubtract -maxStandard \
+  -displayValue off $*
