@@ -33,14 +33,14 @@ if [ "$1" = "_full" ]; then
 
   # and again for minimizing.
   $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
-    -canon -displayLevel 2 -displayValue off -maximizeValue off
+    -canon -displayLevel 2 -displayValue off -minValue
   $testHelper transform $tmpFile $tmpFile -canon
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
 
   # And again for minimizing with -maxStandard.
   $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
-    -canon -displayLevel 2 -displayValue off -maxStandard -maximizeValue off
+    -canon -displayLevel 2 -displayValue off -maxStandard -minValue
   $testHelper transform $tmpFile $tmpFile -canon
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
@@ -67,14 +67,14 @@ if [ "$1" = "_full" ]; then
   # minimize, irreducible
   tail -n 1 < $test.opt_irr_min > $tmpFile # pick out value at end
   $testHelper optimize "$inputFile" $tmpFile -displayLevel 0 -displayValue \
-	  $* -maxStandard off -maximizeValue off
+	  $* -maxStandard off -minValue
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
 
   # minimize, msm
   tail -n 1 < $test.opt_std_min > $tmpFile # pick out value at end
   $testHelper optimize "$inputFile" $tmpFile -displayLevel 0 -displayValue \
-	  $* -maxStandard on -maximizeValue off
+	  $* -maxStandard on -minValue
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
 
@@ -95,12 +95,12 @@ if [ "$1" = "_full" ]; then
 
   # minimize, irreducible
   $testHelper optimize "$inputFile" $test.opt_irr_min \
-	  $* -canon -displayLevel 2 -bound off -maximizeValue off
+	  $* -canon -displayLevel 2 -bound off -minValue
   if [ $? != 0 ]; then exit 1; fi
 
   # minimize, msm
   $testHelper optimize "$inputFile" $test.opt_std_min \
-	  $* -canon -displayLevel 2 -maxStandard -bound off -maximizeValue off
+	  $* -canon -displayLevel 2 -maxStandard -bound off -minValue
   if [ $? != 0 ]; then exit 1; fi
 fi
 
@@ -116,10 +116,10 @@ if [ $? != 0 ]; then exit 1; fi
 
 # Solve the minimize irreducible decomposition program.
 $testHelper optimize "$inputFile" $test.opt_irr_min \
-  $* -canon -displayLevel 2 -maximizeValue off
+  $* -canon -displayLevel 2 -minValue
 if [ $? != 0 ]; then exit 1; fi
 
 # Solve the minimize maximal standard monomial program.
 $testHelper optimize "$inputFile" $test.opt_std_min \
-  $* -canon -displayLevel 2 -maxStandard -maximizeValue off
+  $* -canon -displayLevel 2 -maxStandard -minValue
 if [ $? != 0 ]; then exit 1; fi

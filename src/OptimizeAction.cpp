@@ -79,11 +79,11 @@ OptimizeAction::OptimizeAction():
    "optimal value.\nThis is useful for Frobenius number calculations.",
    false),
 
-  _maximize
-  ("maximizeValue",
-   "Maximize the value of v * e above. If this option is off, minimize "
-   "v * e instead.",
-   true),
+  _minimizeValue
+  ("minValue",
+   "Minimize the value of v * e above. If this option is not set, maximize "
+   "v * e\ninstead, as is the stated default above.",
+   false),
 
   _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
   _sliceParams.setSplit("degree");
@@ -94,7 +94,7 @@ void OptimizeAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_displayValue);
   parameters.push_back(&_maxStandard);
   parameters.push_back(&_chopFirstAndSubtract);
-  parameters.push_back(&_maximize);
+  parameters.push_back(&_minimizeValue);
   _io.obtainParameters(parameters);
   _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
@@ -119,7 +119,7 @@ void OptimizeAction::perform() {
 	in.expectEOF();
   }
 
-  if (!_maximize) {
+  if (_minimizeValue) {
 	for (size_t var = 0; var < v.size(); ++var)
 	  v[var] = -v[var];
   }
