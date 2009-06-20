@@ -122,9 +122,11 @@ objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 all: bin/$(program) $(outdir)$(program) setup
 ifeq ($(MODE), profile)
-	rm -f gmon.out
-	./bench
-	gprof bin/frobby > prof
+	rm -f test/bench/gmon.out
+	cd test/bench; ./runbench $(FROBBYARGS)
+	mv test/bench/gmon.out .
+	gprof bin/frobby > profile
+	rm gmon.out
 endif
 
 # ****************** Testing
