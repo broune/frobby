@@ -42,7 +42,7 @@ TestSuite& GET_TEST_SUITE(root);
   TestSuite& GET_TEST_SUITE(SUITE); \
   class _testCase_##SUITE##_##TEST_NAME : public TestCase { \
    public: \
-    void run(const char* __nameOfTest); \
+    void run(const char* __nameOfTest, bool _printDots); \
     _testCase_##SUITE##_##TEST_NAME(): \
       TestCase(#TEST_NAME) {} \
   }; \
@@ -53,7 +53,8 @@ TestSuite& GET_TEST_SUITE(root);
 	  GET_TEST_SUITE(SUITE).add(&test); \
     } \
   } static _helper_testCase_##SUITE##_##TEST_NAME; \
-  void _testCase_##SUITE##_##TEST_NAME::run(const char* __nameOfTest)
+  void _testCase_##SUITE##_##TEST_NAME::run \
+    (const char* __nameOfTest, bool __printDots)
 
 #define FRIEND_TEST(SUITE, TEST_NAME) \
   friend class _testCase_##SUITE##_##TEST_NAME

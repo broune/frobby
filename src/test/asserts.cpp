@@ -23,6 +23,13 @@ AssertException::AssertException(const string& str):
   logic_error(str) {
 }
 
+void assertSucceeded(bool printDot) {
+  if (printDot) {
+	fputc('.', stdout);
+	fflush(stdout);
+  }
+}
+
 void assertFailed(const char* errorMsg,
 				  const char* testName, const char* file, size_t line) {
   if (testName == 0)
@@ -37,9 +44,10 @@ void assertFailed(const char* errorMsg,
 }
 
 void assertTrue(bool value, const char* valueString,
-				const char* testName, const char* file, size_t line) {
+				const char* testName, const char* file, size_t line,
+				bool printDot) {
   if (value) {
-	putc('.', stdout);
+	assertSucceeded(printDot);
 	return;
   }
 
@@ -49,9 +57,10 @@ void assertTrue(bool value, const char* valueString,
 }
 
 void assertFalse(bool value, const char* valueString,
-				 const char* testName, const char* file, size_t line) {
+				 const char* testName, const char* file, size_t line,
+				 bool printDot) {
   if (!value) {
-	putc('.', stdout);
+	assertSucceeded(printDot);
 	return;
   }
 
