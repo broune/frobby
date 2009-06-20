@@ -42,6 +42,8 @@ void TestAction::perform() {
 	GET_TEST_SUITE(root).accept(runner);
   } catch (const FrobbyException& e) {
 	fputs(e.what(), stderr);
+  } catch (const AssertException& e) {
+	fputs(e.what(), stderr);
   }
 }
 

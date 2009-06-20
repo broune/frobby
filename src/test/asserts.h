@@ -23,6 +23,7 @@
 class AssertException : public logic_error {
  public:
   AssertException(const string& str);
+  AssertException(const AssertException& e);
 };
 
 void assertSucceeded(bool printDot);

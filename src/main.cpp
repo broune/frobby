@@ -107,11 +107,23 @@ int main(int argc, const char** argv) {
 	reportErrorNoThrow(e);
 	return ExitCodeError;
   } catch (...) {
-	reportErrorNoThrow("An unexpected error occured.");
+	try {
+	  reportErrorNoThrow("An unexpected error occured (uncaught exception.)");
+	} catch(...) {
+	  try {
+		// If we are lucky a direct call to fputs might succeed.
+		fputs("Unable to report unexpected error!\n", stderr);
+	  } catch (...) {
+		// At this point there is nothing that can be done.
+	  }
+	}
 	try {
 	  throw;
 	} catch (const exception& e) {
-	  reportErrorNoThrow(e.what());
+	  try {
+		reportErrorNoThrow(e.what());
+	  } catch (...) {
+	  }
 	} catch (...) {
 	}
 	return ExitCodeUnknownError;
