@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 
+profileFile=../../bin/profile.alexdual
 frobby=../../bin/frobby
-TIMEFORMAT="%1Us (user CPU time)"
+if [ "$1" = "_profile" ];
+then
+  rm -f gmon.out
+fi
 
-echo -n "alexdual nearGenericV15G50 "
-time $frobby irrdecom < nearGenericV15G50.test \
-  -oformat null $*
+./benchHelper alexdual nearGenericV15G50.test $*
+./benchHelper alexdual sqfreeV25G1000.test $*
+./benchHelper alexdual n11d11.test $*
 
-echo -n "alexdual sqfreeV25G1000    "
-time $frobby irrdecom < sqfreeV25G1000.test \
-  -oformat null $*
-
-echo -n "alexdual n11d11            "
-time $frobby alexdual < n11d11.test \
-  -oformat null $*
+if [ "$1" = "_profile" ];
+then
+  gprof $frobby > $profileFile
+  rm -f gmon.out
+fi

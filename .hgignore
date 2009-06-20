@@ -7,10 +7,6 @@ frobby.lnk
 core
 *.orig
 4ti2/*
-profile
-gmon.out
 disttmp
 tmp
-frobby
 sage
-test/bench/log

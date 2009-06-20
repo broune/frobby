@@ -67,6 +67,7 @@ cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -I $(GMP_INC_DIR)	\
          -Wno-uninitialized -Wno-unused-parameter
 program = frobby
 library = libfrobby.a
+benchArgs = $(FROBBYARGS)
 
 ifndef MODE
  MODE=release
@@ -92,9 +93,10 @@ ifeq ($(MODE), shared)
 endif
 ifeq ($(MODE), profile)
   outdir = bin/profile/
-  cflags += -g -pg -O2
+  cflags += -g -pg -O2 -D PROFILE
   ldflags += -pg
   MATCH=true
+  benchArgs = _profile $(FROBBYARGS)
 endif
 ifeq ($(MODE), analysis)
   outdir = bin/analysis/
@@ -118,16 +120,9 @@ objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 # ***** Compilation
 
-.PHONY: all depend clean bin/$(program) test library distribution clear setup
+.PHONY: all depend clean bin/$(program) test library distribution clear
 
-all: bin/$(program) $(outdir)$(program) setup
-ifeq ($(MODE), profile)
-	rm -f test/bench/gmon.out
-	cd test/bench; ./runbench $(FROBBYARGS)
-	mv test/bench/gmon.out .
-	gprof bin/frobby > profile
-	rm gmon.out
-endif
+all: bin/$(program) $(outdir)$(program)
 
 # ****************** Testing
 # use TESTARGS of
@@ -164,15 +159,16 @@ bareTest: all
 	test/runTests $(TESTARGS) 
 	test/runSplitTests $(TESTARGS)
 
-# Run benchmarks to detect performance regressions.
+# Run benchmarks to detect performance regressions. When MODE=profile,
+# profile files for the benchmarked actions will be placed in bin/.
 bench: all
-	cd test/bench; ./runbench
+	cd test/bench; ./runbench $(benchArgs)
 benchHilbert: all
-	cd test/bench; ./run_hilbert_bench
+	cd test/bench; ./run_hilbert_bench $(benchArgs)
 benchOptimize: all
-	cd test/bench; ./run_optimize_bench
+	cd test/bench; ./run_optimize_bench $(benchArgs)
 benchAlexdual: all
-	cd test/bench; ./run_alexdual_bench
+	cd test/bench; ./run_alexdual_bench $(benchArgs)
 
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)

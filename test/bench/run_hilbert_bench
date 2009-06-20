@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 
+profileFile=../../bin/profile.hilbert
 frobby=../../bin/frobby
-TIMEFORMAT="%1Us (user CPU time)"
+if [ "$1" = "_profile" ];
+then
+  rm -f gmon.out
+fi
 
-echo -n "hilbert  nearGenericV15G50 "
-time $frobby hilbert < nearGenericV15G50.test \
-  -oformat null $*
+./benchHelper hilbert nearGenericV15G50.test $*
+./benchHelper hilbert nearGenericV15G50.test $*
+./benchHelper hilbert n8d30.test $*
 
-echo -n "hilbert  sqfreeV20G1000    "
-time $frobby hilbert < nearGenericV15G50.test \
-  -oformat null $*
-
-echo -n "hilbert  n8d30             "
-time $frobby hilbert < n8d30.test \
-  -oformat null $*
+if [ "$1" = "_profile" ];
+then
+  gprof $frobby > $profileFile
+  rm -f gmon.out
+fi
