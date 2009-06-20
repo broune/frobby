@@ -2,4 +2,4 @@ R = QQ[a];
 I = monomialIdeal(
  a
 );
--1
+1

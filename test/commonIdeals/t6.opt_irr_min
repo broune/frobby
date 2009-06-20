@@ -5,4 +5,4 @@ I = monomialIdeal(
  x*y^3,
  y^3*z
 );
--4
+4

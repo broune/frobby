@@ -2,4 +2,4 @@ R = QQ[a, b];
 I = monomialIdeal(
  a^3*b^4
 );
--7
+7
