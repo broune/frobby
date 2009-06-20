@@ -40,6 +40,16 @@ void assertFailed(const char* errorMsg,
 	  << " failed in file " << file
 	  << " on line " << line << ".\n"
 	  << errorMsg;
+  if (!msg) {
+	// This means msg has run out of memory, and so no message will be
+	// printed. In this case it is better to indicate running out of
+	// memory. As it happens, this also avoids the need for some
+	// special cases for tests when being run as a test for recovery
+	// from running out of memory. E.g. when precisely this thing
+	// happens with stringstream just ignoring its input without an
+	// exception causes tests to fail.
+	throw bad_alloc();
+  }
   throw AssertException(msg.str());
 }
 

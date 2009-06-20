@@ -57,7 +57,11 @@ void displayDebugNote(const string& msg) {
 }
 
 void reportErrorNoThrow(const string& errorMsg) {
-  fprintf(stderr, "ERROR: %s\n", errorMsg.c_str());
+  reportErrorNoThrow(errorMsg.c_str());
+}
+
+void reportErrorNoThrow(const char* errorMsg) {
+  fprintf(stderr, "ERROR: %s\n", errorMsg);
 }
 
 void reportErrorNoThrow(const FrobbyException& e) {
