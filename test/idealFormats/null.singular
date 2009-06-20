@@ -1,0 +1,2 @@
+ring R = 0, (dummy), lp;
+int noVars = 1;

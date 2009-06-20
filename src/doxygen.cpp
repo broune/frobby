@@ -56,6 +56,9 @@
 	and m has maximal exponent in some var, and has the unique minimum
 	exponent in some other var, than we can do an inner split on that
 	other var.
+
+	@todo Grep for TODO in upper case and add everything found by that
+	as Doxygen todo's.
 */
 
 /** \defgroup Facade The Facade Module 
