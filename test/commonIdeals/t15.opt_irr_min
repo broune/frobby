@@ -126,4 +126,4 @@ I = monomialIdeal(
  x3*x5*x6*x7*x9,
  x3*x5*x7*x8*x9
 );
--5
+5

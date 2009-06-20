@@ -2,4 +2,4 @@ R = QQ[a, b, c, d, e];
 I = monomialIdeal(
  a^2*d
 );
--3
+3

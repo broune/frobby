@@ -3,4 +3,4 @@ I = monomialIdeal(
  b^2*c,
  b*c^2
 );
--3
+3

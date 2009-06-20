@@ -3,4 +3,4 @@ I = monomialIdeal(
  a^3*b^2,
  a*b^4
 );
--5
+5

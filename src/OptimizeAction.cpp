@@ -119,17 +119,17 @@ void OptimizeAction::perform() {
 	in.expectEOF();
   }
 
-  if (_minimizeValue) {
-	for (size_t var = 0; var < v.size(); ++var)
-	  v[var] = -v[var];
-  }
-
   mpz_class subtract = 0;
   if (_chopFirstAndSubtract) {
 	subtract = v[0];
 
 	v.erase(v.begin());
 	ideal.eraseVar(0);
+  }
+
+  if (_minimizeValue) {
+	for (size_t var = 0; var < v.size(); ++var)
+	  v[var] = -v[var];
   }
 
   auto_ptr<IOHandler> handler;
@@ -162,6 +162,11 @@ void OptimizeAction::perform() {
 	if (!anySolution)
 	  fputs("no solution.\n", stdout);
 	else {
+	  if (_minimizeValue) {
+		// We flipped the sign of the vector to optimize before, so we
+		// need to flip the sign of the value again.
+		optimalValue = -optimalValue;
+	  }
 	  if (_chopFirstAndSubtract)
 		optimalValue -= subtract;
 	  gmp_fprintf(stdout, "%Zd\n", optimalValue.get_mpz_t());
