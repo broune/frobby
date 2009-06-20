@@ -44,9 +44,10 @@ int frobbyMain(int argc, const char** argv) {
 // not call this method or cause it to be called.
 void frobbyTerminate() {
   fputs("INTERNAL ERROR: Something caused terminate() to be called. "
-		"This should never happen - please contact the Frobby developers.\n",
+		"This should never happen.\nPlease contact the Frobby developers.\n",
 		stderr);
   fflush(stderr);
+  ASSERT(false);
   abort();
 }
 
@@ -54,9 +55,10 @@ void frobbyTerminate() {
 // function. Do not call this method or cause it to be called.
 void frobbyUnexpected() {
   fputs("INTERNAL ERROR: Something caused unexpected() to be called. "
-		"This should never happen - please contact the Frobby developers.\n",
+		"This should never happen.\nPlease contact the Frobby developers.\n",
 		stderr);
   fflush(stderr);
+  ASSERT(false);
   abort();
 }
 
