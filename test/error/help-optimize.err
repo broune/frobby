@@ -38,8 +38,9 @@ The parameters accepted by optimize are as follows.
    subtract the value of the first entry of v from the reported optimal value.
    This is useful for Frobenius number calculations.
 
- -maximizeValue [BOOL]   (default is on)
-   Maximize the value of v * e above. If this option is off, minimize v * e instead.
+ -minValue [BOOL]   (default is off)
+   Minimize the value of v * e above. If this option is not set, maximize v * e
+   instead, as is the stated default above.
 
  -iformat STRING   (default is autodetect)
    The format used to read the input. This action supports the formats:
