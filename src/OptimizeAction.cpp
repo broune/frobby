@@ -24,6 +24,7 @@
 #include "BigIdeal.h"
 #include "BigTermConsumer.h"
 #include "NullTermConsumer.h"
+#include "error.h"
 
 #include <algorithm>
 
@@ -121,10 +122,16 @@ void OptimizeAction::perform() {
 
   mpz_class subtract = 0;
   if (_chopFirstAndSubtract) {
-	subtract = v[0];
+	if (v.empty()) {
+	  displayNote("Option -chopFirstAndSubtract is ignored since there are\n"
+				  "no variables to chop.");
+	  _chopFirstAndSubtract = false;
+	} else {
+	  subtract = v[0];
 
-	v.erase(v.begin());
-	ideal.eraseVar(0);
+	  v.erase(v.begin());
+	  ideal.eraseVar(0);
+	}
   }
 
   if (_minimizeValue) {
