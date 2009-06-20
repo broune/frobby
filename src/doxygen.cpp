@@ -46,6 +46,16 @@
 	believe there is a command for this in Doxygen. Especially specify
 	what happens with the zero ideal, the whole ring ideal and when
 	there are no variables.
+
+	@todo Take a look at MsmSlice::baseCase for the case where the
+	ideal is not simplified. Some of the base cases for the simplified
+	case should apply as well for the non-simplified case, or at least
+	it should be possible to modify them to apply.
+
+	@todo See if this idea works: If m is a minimal generator of I,
+	and m has maximal exponent in some var, and has the unique minimum
+	exponent in some other var, than we can do an inner split on that
+	other var.
 */
 
 /** \defgroup Facade The Facade Module 
