@@ -162,9 +162,15 @@ bareTest: all
 	test/runTests $(TESTARGS) 
 	test/runSplitTests $(TESTARGS)
 
-# Runs benchmarks to detect performance regressions.
+# Run benchmarks to detect performance regressions.
 bench: all
-	test/bench/runbench
+	cd test/bench; ./runbench
+benchHilbert: all
+	cd test/bench; ./run_hilbert_bench
+benchOptimize: all
+	cd test/bench; ./run_optimize_bench
+benchAlexdual: all
+	cd test/bench; ./run_alexdual_bench
 
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
