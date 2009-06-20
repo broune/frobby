@@ -36,9 +36,10 @@ class TestCase : public Test {
   /** Run the test and record the name of the test as
    __nameOfTest. This can be a more detailed name, and it can be
    derived from the name that is returned by getName(), or it can be
-   unrelated. This provides needed flexibility.
+   unrelated. This provides needed flexibility. printDots indicates
+   whether to print dots when individual assertions succeed.
   */
-  virtual void run(const char* __nameOfTest) = 0;
+  virtual void run(const char* nameOfTest, bool printDots) = 0;
 };
 
 #endif

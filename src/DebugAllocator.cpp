@@ -20,6 +20,7 @@
 #include "main.h"
 #include "error.h"
 #include "Ideal.h"
+#include "test/TestCase.h"
 
 #ifdef DEBUG
 #undef new
@@ -39,8 +40,12 @@ void DebugAllocator::rewindInput() {
 	  reportError("Could not open file \"" + _inputFile + "\" for input.");
 }
 
-/** @todo consider off-by-one conditions oh the allocation limit
+/** @todo consider off-by-one conditions on the allocation limit
 	conditions in this method.
+
+    @todo at the end, make sure each identifiable allocation site has
+	been hit. Some can be missed now when the stepsize is larger than
+	1. This would require having a set of sites that have been hit.
 */
 int DebugAllocator::runDebugMain(int argc, const char** argv) {
   processDebugOptions(argc, argv);
@@ -53,7 +58,7 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
   _allocationCount = 0;
   int exitCode = frobbyMain(argc, argv);
   size_t maxAllocations = _allocationCount;
-  if (!_debugAllocation)
+  if (_actionIsTest || !_debugAllocation)
 	return exitCode;
 
   fclose(stdout); // Output has already been produced.
@@ -92,9 +97,6 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
   for (size_t limit = AllocationLimitsTryFirst;
 	   limit < maxAllocations - AllocationLimitsTryLast; limit += stepSize)
 	runWithLimit(argc, argv, limit);
-
-  // TODO: at the end, make sure each identifiable allocation site has
-  // been hit.
 
   return ExitCodeSuccess;
 }
@@ -151,7 +153,48 @@ void DebugAllocator::processDebugOptions(int& argc, const char**& argv) {
 	} else
 	  reportError("Unknown debug option \"" + option + "\".");
   }
+
+  if (argc >= 2 && string(argv[1]) == "test")
+	_actionIsTest = true;
+
   argv[0] = originalArgvZero;
+}
+
+void DebugAllocator::runTest(TestCase& test, const string& name) {
+  test.run(name.c_str(), true);
+
+  if (!_debugAllocation)
+	return;
+
+  _limitAllocation = true;
+
+  for (_allocationLimit = 0; _allocationLimit < numeric_limits<size_t>::max();
+	   ++_allocationLimit) {
+	if (_detailAllocation)
+	  fprintf(stderr, "DEBUG: Trying test allocation limit of %i\n",
+			  (int)_allocationLimit);
+
+	// To make each run more similar.
+	Ideal::clearStaticCache();
+
+	_allocationCount = 0;
+	_expectBadAllocException = false;
+
+	rewindInput();
+
+	try {
+	  test.run(name.c_str(), false);
+
+	  // At this point test has completed within allocation limit.
+	  break;
+	} catch (const bad_alloc&) {
+	  if (!_expectBadAllocException)
+		throw;
+	  // Continue and try next limit.
+	}
+  }
+
+  _limitAllocation = false;
 }
 
 void* DebugAllocator::allocate(size_t size) {
@@ -182,14 +225,12 @@ void* DebugAllocator::allocate(size_t size,
   return malloc(size);
 }
 
-void DebugAllocator::deallocate(void* buffer) {
-}
-
 DebugAllocator::DebugAllocator():
   _debugAllocation(false),
   _detailAllocation(false),
   _limitAllocation(false),
   _expectBadAllocException(false),
+  _actionIsTest(false),
   _allocationCount(0),
   _allocationLimit(0) {
 }

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # This runs a test while providing diagnostic output on error.
-# $1  The Frobby action to run (e.g. alexdual)
-# $2  The name of one or more space-seperated input files
-# $3  The reference output file
-# $4+ Parameters to frobby
+#  $1  The Frobby action to run (e.g. alexdual)
+#  $2  The name of one or more space-seperated input files
+#  $3  The reference output file
+#  $4+ Parameters to Frobby or additional instructions to this script
 #
 # Parameter 2 can contain more than one file if this script has been called
 # as e.g. "../thisscript action "file1 file2" reference
@@ -68,7 +68,7 @@ inputFile="$2"
 referenceOutputFile="$3"
 
 # Note that we *must* use echo $inputFile|... instead of ... < $inputFile,
-# because the latter does not work if $inputFile ha more than one file
+# because the latter does not work if $inputFile has more than one file
 # name in it.
 
 shift

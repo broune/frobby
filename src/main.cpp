@@ -24,6 +24,10 @@
 #include <ctime>
 #include <cstdlib>
 
+/** This function runs the Frobby console interface. the ::main
+	function calls this function after having set up DEBUG-specific
+	things, catching exceptions, setting the random seed and so on.
+*/
 int frobbyMain(int argc, const char** argv) {
   string prefix;
   if (argc > 1) {
@@ -40,8 +44,9 @@ int frobbyMain(int argc, const char** argv) {
   return ExitCodeSuccess;
 }
 
-// A replacement for the default C++ built-in terminate() function. Do
-// not call this method or cause it to be called.
+/** A replacement for the default C++ built-in terminate() function. Do
+ not call this method or cause it to be called.
+*/
 void frobbyTerminate() {
   fputs("INTERNAL ERROR: Something caused terminate() to be called. "
 		"This should never happen.\nPlease contact the Frobby developers.\n",
@@ -51,8 +56,9 @@ void frobbyTerminate() {
   abort();
 }
 
-// A replacement for the default C++ built-in unexpected()
-// function. Do not call this method or cause it to be called.
+/** A replacement for the default C++ built-in unexpected()
+ function. Do not call this method or cause it to be called.
+*/
 void frobbyUnexpected() {
   fputs("INTERNAL ERROR: Something caused unexpected() to be called. "
 		"This should never happen.\nPlease contact the Frobby developers.\n",
@@ -62,6 +68,10 @@ void frobbyUnexpected() {
   abort();
 }
 
+/** This function is the entry point for Frobby as a console
+	program. It does some DEBUG-specific things, sets the random seed
+	and so on before calling ::frobbyMain.
+*/
 int main(int argc, const char** argv) {
   try {
 	set_terminate(frobbyTerminate);
@@ -81,8 +91,6 @@ int main(int argc, const char** argv) {
 	fputs("This is a DEBUG build of Frobby. It is therefore SLOW.\n",
 		  stderr);
 #endif
-
-
 
 #ifdef DEBUG
 	return DebugAllocator::getSingleton().runDebugMain(argc, argv);
