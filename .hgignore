@@ -7,7 +7,7 @@ frobby.lnk
 core
 *.orig
 4ti2/*
-prof
+profile
 gmon.out
 disttmp
 tmp
