@@ -39,6 +39,9 @@ void DebugAllocator::rewindInput() {
 	  reportError("Could not open file \"" + _inputFile + "\" for input.");
 }
 
+/** @todo consider off-by-one conditions oh the allocation limit
+	conditions in this method.
+*/
 int DebugAllocator::runDebugMain(int argc, const char** argv) {
   processDebugOptions(argc, argv);
 
@@ -58,9 +61,6 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
   fputs("DEBUG: Now debugging out-of-memory conditions.\n", stderr);
   fprintf(stderr, "DEBUG: There are %i allocations in total on this input.\n",
 		  (int)maxAllocations);
-
-  // TODO: consider off-by-one conditions on these allocation limit
-  // conditions.
 
   // If maxAllocations is small then just try every possible limit.
   if (maxAllocations < AllocationLimitsTryFirst + AllocationLimitsTryLast) {
@@ -220,20 +220,24 @@ void operator delete[](void* buffer) throw() {
   free(buffer);
 }
 
-// Note that these overloads to operator delete are strictly
-// necessary, even though they will only be called in the very special
-// circumstance where an exception gets thrown while an object
-// allocated using the new above has been *partially* constructed.
-//
-// However, when that happens, this overload gets called. The compiler
-// will happily substitute its own automatically generated version,
-// which does *not* deallocate the memory, leading to a memory leak.
-//
-// It is also important that these overloads are declared in each
-// translation unit, as otherwise the compiler generated do-nothing
-// version will be used in those translation units that have no such
-// declaration. To me this all falls into the category of "Insane but
-// true".
+/** Note that these overloads to operator delete are strictly
+ necessary, even though they will only be called in the very special
+ circumstance where an exception gets thrown while an object
+ allocated using the new above has been *partially* constructed.
+
+ However, when that happens, this overload gets called. The compiler
+ will happily substitute its own automatically generated version,
+ which does *not* deallocate the memory, leading to a memory leak.
+
+ It is also important that these overloads are declared in each
+ translation unit, as otherwise the compiler generated do-nothing
+ version will be used in those translation units that have no such
+ declaration. To me this all falls into the category of "Insane but
+ true".
+
+ @todo Make sure this doc. is displayed and apply it to the array
+ operator delete too.
+*/
 void operator delete(void* buffer, const char* file, size_t line) {
   free(buffer);
 }

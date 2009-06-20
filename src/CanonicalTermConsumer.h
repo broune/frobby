@@ -24,28 +24,33 @@
 class Term;
 class TermTranslator;
 
-// Passes consumed items on in a canonical order. This requires
-// storing all items before any can be passed on, which can take a lot
-// of memory. The ideals are not minimized, so adding non-minimal
-// generators can have an effect on the sorted order.
+/** Passes consumed items on in a canonical order. This requires
+ storing all items before any can be passed on, which can take a lot
+ of memory. The ideals are not minimized, so adding non-minimal
+ generators can have an effect on the sorted order.
+*/
 class CanonicalTermConsumer : public TermConsumer {
  public:
-  // The translator, if non-null, is used to identify exponents that
-  // map to zero, which influences the sorted order.
+  /** The translator, if non-null, is used to identify exponents that
+   map to zero, which influences the sorted order.
+  */
   CanonicalTermConsumer(auto_ptr<TermConsumer> consumer,
 						size_t varCount,
 						TermTranslator* translator = 0);
 
-  // Passes on the call immediately. Thus the ordering between when
-  // this gets called and when consume gets called on the wrapped
-  // consumer can be switched around if consumeRing is called while
-  // consuming a list of ideals.
-  // TODO: fix this.
+  /** Passes on the call immediately. Thus the ordering between when
+   this gets called and when consume gets called on the wrapped
+   consumer can be switched around if consumeRing is called while
+   consuming a list of ideals.
+   
+   @todo fix this.
+  */
   virtual void consumeRing(const VarNames& names);
 
-  // This method is not required to be called. If it is called, the list
-  // of ideals will be sorted and then passed on. If it is not called, each
-  // ideal will be passed on immediately.
+  /** This method is not required to be called. If it is called, the
+   list of ideals will be sorted and then passed on. If it is not
+   called, each ideal will be passed on immediately.
+  */
   virtual void beginConsumingList();
 
   virtual void beginConsuming();
