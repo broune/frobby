@@ -40,6 +40,7 @@ const char* NullIOHandler::staticGetName() {
 }
 
 void NullIOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+  consumer.consume(BigIdeal());
 }
 
 void NullIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
