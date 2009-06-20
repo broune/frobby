@@ -13,3 +13,4 @@ disttmp
 tmp
 frobby
 sage
+test/bench/log

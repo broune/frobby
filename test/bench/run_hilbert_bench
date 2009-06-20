@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+frobby=../../bin/frobby
+TIMEFORMAT="%1Us (user CPU time)"
+
+echo -n "hilbert  nearGenericV15G50 "
+time $frobby hilbert < nearGenericV15G50.test \
+  -oformat null $*
+
+echo -n "hilbert  sqfreeV20G1000    "
+time $frobby hilbert < nearGenericV15G50.test \
+  -oformat null $*
+
+echo -n "hilbert  n8d30             "
+time $frobby hilbert < n8d30.test \
+  -oformat null $*
