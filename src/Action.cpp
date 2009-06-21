@@ -39,6 +39,7 @@
 #include "PrimaryDecomAction.h"
 #include "OptimizeAction.h"
 #include "MaximalStandardAction.h"
+#include "DimensionAction.h"
 
 Action::Action(const char* name,
 			   const char* shortDescription,
@@ -66,6 +67,7 @@ namespace {
 	nameFactoryRegister<AlexanderDualAction>(factory);
 	nameFactoryRegister<AssociatedPrimesAction>(factory);
 	nameFactoryRegister<MaximalStandardAction>(factory);	
+	nameFactoryRegister<DimensionAction>(factory);	
 	nameFactoryRegister<OptimizeAction>(factory);
 
 	nameFactoryRegister<TransformAction>(factory);

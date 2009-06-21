@@ -13,7 +13,7 @@ fi
 # The help action
 helpTopics="help hilbert irrdecom alexdual assoprimes transform ptransform io
             intersection genideal  frobgrob frobdyn genfrob analyze latformat
-            optimize maxstandard";
+            optimize maxstandard dimension";
 for topic in $helpTopics;
 do
   $t help "blah" help-$topic _expectExitCode 0 $* $topic

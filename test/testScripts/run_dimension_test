@@ -1,0 +1,14 @@
+#!/bin/bash
+
+testHelper=../testScripts/testhelper
+frobby=../../bin/frobby
+test="$1"
+shift
+inputFile="$test.test"
+
+if [ "$1" = "_full" ]; then
+  shift;
+fi
+
+$testHelper dimension $test.test $test.dim $*
+if [ $? != 0 ]; then exit 1; fi
