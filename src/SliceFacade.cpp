@@ -401,6 +401,8 @@ void SliceFacade::computeAlexanderDual() {
   computeAlexanderDual(lcm);
 }
 
+/** @todo This method takes a radical by itself. Use the takeRadical()
+	method instead. */
 void SliceFacade::computeAssociatedPrimes() {
   ASSERT(_ideal.get() != 0);
 
