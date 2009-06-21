@@ -357,6 +357,22 @@ void Ideal::clearAndSetVarCount(size_t varCount) {
   _allocator.reset(varCount);
 }
 
+void Ideal::mapExponentsToZeroNoMinimize(const Term& zeroExponents) {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it)
+	for (size_t var = 0; var < _varCount; ++var)
+	  if ((*it)[var] == zeroExponents[var])
+		(*it)[var] = 0;
+}
+
+void Ideal::takeRadicalNoMinimize() {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it)
+	for (size_t var = 0; var < _varCount; ++var)
+	  if ((*it)[var] > 1)
+		(*it)[var] = 1;
+}
+
 Ideal::const_iterator Ideal::getMultiple(size_t var) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)

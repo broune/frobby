@@ -158,6 +158,18 @@ class Ideal {
   void clear();
   void clearAndSetVarCount(size_t varCount);
 
+  /** Replaces the exponents from zeroExponents with zero and does not
+	  remove any non-minimal generators this may produce. If a
+	  generator raises var to precisely the power t, and zeroExponents
+	  also raises var to precisely the power t, then that generator is
+	  changed to instead raise var to the power zero. */
+  void mapExponentsToZeroNoMinimize(const Term& zeroExponents);
+
+  /** Replaces all generators with their support and does not remove
+	  any non-minimal generators this may produce.
+  */
+  void takeRadicalNoMinimize();
+
   Ideal& operator=(const Ideal& ideal);
 
   void swap(Ideal& ideal);

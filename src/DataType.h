@@ -19,18 +19,19 @@
 
 #include <vector>
 
-// The intention of this class is to describe the different kinds of
-// mathematical structures that Frobby supports, such as a monomial
-// ideal or a polynomial. This is useful for the IO subsystem.
-//
-// There is only one instance of each kind, so pointer equality is the
-// same as equality.
+/** The intention of this class is to describe the different kinds of
+ mathematical structures that Frobby supports, such as a monomial
+ ideal or a polynomial. This is useful for the IO subsystem.
+
+ There is only one instance of each kind, so pointer equality is the
+ same as equality.
+*/
 class DataType {
  public:
-  // Returns the name of the structure.
+  /** Returns the name of the structure. */
   const char* getName() const;
 
-  // Returns true if this object was returned by getNullType().
+  /** Returns true if this object was returned by getNullType(). */
   bool isNull() const;
 
   bool operator==(const DataType& type) const;
@@ -41,15 +42,17 @@ class DataType {
   static const DataType& getPolynomialType();
   static const DataType& getMonomialIdealListType();
 
-  // Returns a vector of all types except null.
+  /** Returns a vector of all types except null. */
   static vector<const DataType*> getTypes();
 
  private:
-  // Private to avoid copies.
+  /** Private to avoid copies. */
   DataType(const DataType&);
+
+  /** Private to avoid copies. */
   void operator=(const DataType&);
 
-  // Private to ensure only one instance of each kind.
+  /** Private to ensure only one instance of each kind. */
   DataType(const char* name);
 
   const char* _name;

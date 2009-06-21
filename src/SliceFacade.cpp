@@ -217,6 +217,33 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 	getTermConsumer()->doneConsumingList();
 }
 
+void SliceFacade::computeDimension(mpz_class& dimension) {
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
+
+  if (_ideal->containsIdentity()) {
+	dimension = -1;
+	return;
+  }
+
+  takeRadical();
+  minimize();
+
+  beginAction("Preparing to compute dimension.");
+
+  vector<mpz_class> v;
+  fill_n(back_inserter(v), _ideal->getVarCount(), -1);
+
+  endAction();
+
+  mpz_class minusCodimension;
+  bool hasComponents = solveIrreducibleDecompositionProgram
+	(v, minusCodimension, false, true, true);
+  ASSERT(hasComponents);
+
+  dimension = v.size() + minusCodimension;
+}
+
 void SliceFacade::computePrimaryDecomposition() {
   ASSERT(_ideal.get() != 0);
   ASSERT(_translator.get() != 0);
@@ -560,6 +587,41 @@ void SliceFacade::minimize() {
 
   _ideal->minimize();
   _isMinimallyGenerated = true;
+
+  endAction();
+}
+
+void SliceFacade::takeRadical() {
+  ASSERT(_ideal.get() != 0);
+  ASSERT(_translator.get() != 0);
+
+  beginAction("Taking radical of ideal.");
+
+  bool skip = false;
+  if (_isMinimallyGenerated) {
+	Term lcm(_ideal->getVarCount());
+	_ideal->getLcm(lcm);
+	if (lcm.isSquareFree())
+	  skip = true;
+  }
+
+  if (!skip) {
+	_translator->setInfinityPowersToZero(*_ideal);
+	_ideal->takeRadicalNoMinimize();
+	_isMinimallyGenerated = false;
+  }
+
+  // Construct translator for zero and one.
+  {
+	BigIdeal zeroOneIdeal(_translator->getNames());
+	zeroOneIdeal.newLastTerm(); // Add term with all exponents zero.
+	zeroOneIdeal.newLastTerm(); // Add term with all exponents one.
+	for (size_t var = 0; var < _ideal->getVarCount(); ++var)
+	  zeroOneIdeal.getLastTermExponentRef(var) = 1;
+
+	Ideal dummy;
+	_translator.reset(new TermTranslator(zeroOneIdeal, dummy, false));
+  }
 
   endAction();
 }

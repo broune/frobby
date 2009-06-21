@@ -284,6 +284,8 @@ bool Slice::pruneSubtract() {
 bool Slice::applyLowerBound() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
+  if (getVarCount() == 1)
+	return adjustMultiply();
 
   bool changed = false;
   size_t stepsWithNoChange = 0;

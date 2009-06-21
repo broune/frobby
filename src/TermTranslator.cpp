@@ -258,6 +258,9 @@ void TermTranslator::addPurePowersAtInfinity(Ideal& ideal) const {
   }
 }
 
+/** @todo Figure out what is going on with the continue in this
+	method. Also, make it use the methods of ideal, instead of rolling
+	its own iteration code. */
 void TermTranslator::setInfinityPowersToZero(Ideal& ideal) const {
   size_t varCount = ideal.getVarCount();
   Ideal::iterator term = ideal.begin();
@@ -271,7 +274,7 @@ void TermTranslator::setInfinityPowersToZero(Ideal& ideal) const {
 	  }
 	}
 	++term;
-	continue;
+	continue; // uhm... ?
 	if (changed && Term::isIdentity(*term, varCount)) {
 	  bool last = (term + 1 == ideal.end());
 	  ideal.remove(term);
