@@ -209,44 +209,34 @@ bool MsmSlice::removeDoubleLcm() {
 }
 
 bool MsmSlice::getLowerBound(Term& bound, size_t var) const {
-  bool seenAny = false;
-
   const Term& lcm = getLcm();
+  bound = lcm;
 
   Ideal::const_iterator stop = getIdeal().end();
   for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
-    if ((*it)[var] == 0)
+	Exponent* term = *it;
+    if (term[var] == 0)
       continue;
         
     // Use the fact that terms with a maximal exponent somewhere not
     // at var cannot be a var-label.
-    bool relevant = true;
-    for (size_t var2 = 0; var2 < _varCount; ++var2) {
-      if (var2 != var && (*it)[var2] == lcm[var2]) {
-		relevant = false;
-		break;
-      }
-    }
+    for (size_t var2 = 0; var2 < _varCount; ++var2)
+      if (term[var2] == lcm[var2] && var2 != var)
+		goto skip;
     
-    if (!relevant)
-      continue;
-    
-    if (seenAny)
-      bound.gcd(bound, *it);
-    else {
-      bound = *it;
-      seenAny = true;
-    }
+	bound.gcd(bound, *it);
+  skip:;
   }
 
-  if (seenAny) {
-    ASSERT(bound[var] >= 1);
-    bound[var] -= 1;
-    return true;
-  } else {
-    // In this case the content is empty.
-    return false;
+  ASSERT(_varCount >= 2);
+  if (bound[0] == lcm[0] && bound[1] == lcm[1]) {
+	// No possible var-label, so the content is empty.
+	return false;
   }
+
+  ASSERT(bound[var] >= 1);
+  bound[var] -= 1;
+  return true;
 }
 
 void MsmSlice::twoVarBaseCase() {
