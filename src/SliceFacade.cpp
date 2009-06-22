@@ -237,7 +237,12 @@ void SliceFacade::computeDimension(mpz_class& dimension) {
   endAction();
 
   mpz_class minusCodimension;
-  bool hasComponents = solveIrreducibleDecompositionProgram
+#ifdef DEBUG
+  // Only do this when DEBUG is defined since otherwise GCC will warn
+  // about hasComponents not being used when DEBUG is not defined.
+  bool hasComponents = 
+#endif
+	solveIrreducibleDecompositionProgram
 	(v, minusCodimension, false, true, true);
   ASSERT(hasComponents);
 
