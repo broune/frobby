@@ -317,7 +317,7 @@ const char* Scanner::readIdentifier() {
   ASSERT(_tmpStringCapacity > 0);
 
   size_t size = 0;
-  while (isalnum(peek())) {
+  while (isalnum(peek()) || peek() == '_') {
     _tmpString[size] = static_cast<char>(getChar());
 	++size;
 	if (size == _tmpStringCapacity)
