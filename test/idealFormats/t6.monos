@@ -49,10 +49,11 @@ vars a, b;
  a*b,
  a
 ];
-vars long, longer, longestlongest;
+vars long, longer, l_ongestlongest___with_underscores;
 [
  1,
- long^100000000000000000000001
+ long^100000000000000000000001,
+ l_ongestlongest___with_underscores^42
 ];
 vars long, longer, longestlongest;
 [
