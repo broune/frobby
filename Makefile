@@ -61,7 +61,7 @@ ifndef CXX
 endif
 
 ifndef BIN_INSTALL_DIR
-  BIN_INSTALL_DIR = "/usr/bin/"
+  BIN_INSTALL_DIR = "/usr/local/bin/"
 endif
 
 cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -I $(GMP_INC_DIR)	\
@@ -227,7 +227,7 @@ endif
 
 # Installation
 install:
-	install bin/frobby $(BIN_INSTALL_DIR)
+	sudo install bin/frobby $(BIN_INSTALL_DIR)
 
 # ***** Documentation
 
