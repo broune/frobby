@@ -310,6 +310,12 @@ ifndef VER
 	echo "Please specify version of Frobby spkg using VER=x.y.z";
 	exit 1;
 endif
+	if [ "$$SAGE_LOCAL" = "" ]; then \
+	  echo "SAGE_LOCAL undefined ... exiting"; \
+	  echo "Maybe run 'sage -sh?'" \
+	  exit 1; \
+	fi
+
 	if [ ! -d sage/ ]; then echo "sage/ directory not found."; exit 1; fi
 # Ensure that previous builds have been cleaned up
 	rm -rf bin/sagetmp bin/frobby-$(VER) bin/frobby-$(VER).spkg
