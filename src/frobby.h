@@ -212,6 +212,12 @@ namespace Frobby {
    output. If ideal is the zero ideal, then there is no output
    (i.e. idealBegin does not get called on the consumer), and the
    return value is false. Otherwise the return value is true.
+
+   @todo This can be improved to have no special cases, since the zero
+   ideal does correpond to the indentity, since the product of the
+   zero ideal's generators is the empty product, which is the
+   identity. At the same time we don't need the identity otherwise,
+   since the whole ring is always redundant as an intersectand.
   */
   bool irreducibleDecompositionAsMonomials(const Ideal& ideal,
 										   IdealConsumer& consumer);
