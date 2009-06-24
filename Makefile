@@ -89,7 +89,7 @@ endif
 ifeq ($(MODE), shared)
   outdir = bin/shared/
   cflags += -O2 -fPIC
-  library = frobby.so
+  library = libfrobby.so
   MATCH=true
 endif
 ifeq ($(MODE), profile)
@@ -199,8 +199,8 @@ library: bin/$(library)
 bin/$(library): $(objs) | bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
-	$(CXX) -shared -o bin/$(library) $(patsubst $(outdir)main.o,,$(objs)) \
-	  $(ldflags)
+	$(CXX) -shared -dynamiclib -o bin/$(library) $(ldflags) \
+	  $(patsubst $(outdir)main.o,,$(objs))
 else
 	ar crs bin/$(library) $(patsubst $(outdir)main.o,,$(objs))
 endif
