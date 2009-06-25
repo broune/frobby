@@ -199,7 +199,7 @@ library: bin/$(library)
 bin/$(library): $(objs) | bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
-	$(CXX) -shared -dynamiclib -o bin/$(library) $(ldflags) \
+	$(CXX) -shared -o bin/$(library) $(ldflags) \
 	  $(patsubst $(outdir)main.o,,$(objs))
 else
 	ar crs bin/$(library) $(patsubst $(outdir)main.o,,$(objs))
