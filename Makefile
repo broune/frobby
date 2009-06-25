@@ -326,5 +326,5 @@ endif
 	cp -r COPYING Makefile src test bin/sagetmp/src
 
 	mv bin/sagetmp bin/frobby-$(VER)
-	cd bin/; $(SAGE_ROOT)sage -pkg `pwd`/frobby-$(VER)
+	cd bin/; $(SAGE_ROOT)/sage -pkg `pwd`/frobby-$(VER)
 	rm -rf bin/frobby-$(VER)
