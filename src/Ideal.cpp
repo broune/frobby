@@ -94,6 +94,14 @@ bool Ideal::isIrreducible() const {
   return true;
 }
 
+bool Ideal::isSquareFree() const {
+  const_iterator stop = _terms.end();
+  for (const_iterator it = _terms.begin(); it != stop; ++it)
+    if (!Term::isSquareFree(*it, _varCount))
+      return false;
+  return true;
+}
+
 bool Ideal::isStronglyGeneric() {
   for (size_t var = 0; var < _varCount; ++var) {
 	singleDegreeSort(var);

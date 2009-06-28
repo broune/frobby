@@ -75,6 +75,9 @@ class Ideal {
   // polynomial ideal if the ideal is minimally generated.
   bool isIrreducible() const;
 
+  // Returns true if all generators are square free.
+  bool isSquareFree() const;
+
   // Returns true if no non-zero exponent of the same variable appears
   // in two distinct generators. This only corresponds to the
   // mathematical definition of strongly generic if the ideal is
