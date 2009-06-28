@@ -43,7 +43,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp					\
   OptimizeStrategyTest.cpp TermTest.cpp TermTranslatorTest.cpp			\
   TermGraderTest.cpp CountingIOHandler.cpp test/TestSorter.cpp			\
-  DimensionAction.cpp
+  DimensionAction.cpp LibDimensionTest.cpp SizeMaxIndepSetAlg.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -89,7 +89,7 @@ endif
 ifeq ($(MODE), shared)
   outdir = bin/shared/
   cflags += -O2 -fPIC
-  library = frobby.so
+  library = libfrobby.so
   MATCH=true
 endif
 ifeq ($(MODE), profile)
@@ -199,8 +199,8 @@ library: bin/$(library)
 bin/$(library): $(objs) | bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
-	$(CXX) -shared -o bin/$(library) $(patsubst $(outdir)main.o,,$(objs)) \
-	  $(ldflags)
+	$(CXX) -shared -o bin/$(library) $(ldflags) \
+	  $(patsubst $(outdir)main.o,,$(objs))
 else
 	ar crs bin/$(library) $(patsubst $(outdir)main.o,,$(objs))
 endif
@@ -326,5 +326,5 @@ endif
 	cp -r COPYING Makefile src test bin/sagetmp/src
 
 	mv bin/sagetmp bin/frobby-$(VER)
-	cd bin/; $(SAGE_ROOT)sage -pkg `pwd`/frobby-$(VER)
+	cd bin/; $(SAGE_ROOT)/sage -pkg `pwd`/frobby-$(VER)
 	rm -rf bin/frobby-$(VER)

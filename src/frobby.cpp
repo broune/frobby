@@ -23,7 +23,9 @@
 #include "BigTermConsumer.h"
 #include "TermTranslator.h"
 #include "Term.h"
+#include "error.h"
 #include "CoefBigTermConsumer.h"
+#include "NullTermConsumer.h"
 
 class ConsumerWrapper {
 protected:
@@ -237,8 +239,8 @@ void Frobby::Ideal::addExponent(unsigned int exponent) {
   addExponent(tmp.get_mpz_t());
 }
 
-void Frobby::alexanderDual(const Ideal& ideal,
-						   const mpz_t* exponentVector,
+bool Frobby::alexanderDual(const Ideal& ideal,
+						   const mpz_t* reflectionMonomial,
 						   IdealConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
@@ -248,20 +250,46 @@ void Frobby::alexanderDual(const Ideal& ideal,
   SliceParameters params;
   params.apply(facade);
 
-  if (exponentVector == 0)
+  if (reflectionMonomial == 0)
 	facade.computeAlexanderDual();
   else {
 	vector<mpz_class> point;
     point.resize(bigIdeal.getVarCount());
     for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
-      mpz_set(point[var].get_mpz_t(), exponentVector[var]);
+      mpz_set(point[var].get_mpz_t(), reflectionMonomial[var]);
 
-	// We guarantee not to retain a reference to exponentVector when providing
-	// terms to the consumer.
-	exponentVector = 0;
+	// We guarantee not to retain a reference to reflectionMonomial
+	// when providing terms to the consumer.
+	reflectionMonomial = 0;
 
-	facade.computeAlexanderDual(point);
+	try {
+	  facade.computeAlexanderDual(point);
+	} catch (const FrobbyException& e) {
+	  return false;
+	}
   }
+
+  return true;
+}
+
+bool Frobby::alexanderDual(const Ideal& ideal,
+						   const Ideal& reflectionMonomial,
+						   IdealConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+  const BigIdeal& reflectionIdeal =
+	FrobbyImpl::FrobbyIdealHelper::getIdeal(reflectionMonomial);
+
+  if (reflectionIdeal.getGeneratorCount() != 1)
+	return false;
+  if (reflectionIdeal.getVarCount() != bigIdeal.getVarCount())
+	return false;
+
+  const vector<mpz_class>& monomial = reflectionIdeal.getTerm(0);
+  const mpz_t* monomialPtr = 0;
+  if (reflectionIdeal.getVarCount() > 0)
+	monomialPtr = (const mpz_t*)&(monomial[0]);
+
+  return alexanderDual(ideal, monomialPtr, consumer);
 }
 
 void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
@@ -407,4 +435,23 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 
   mpz_class dummy;
   return facade.solveStandardProgram(grading, dummy, false, true, true);
+}
+
+void Frobby::codimension(const Ideal& ideal, mpz_t codim) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+  dimension(ideal, codim);
+  mpz_ui_sub(codim, bigIdeal.getVarCount(), codim);
+}
+
+void Frobby::dimension(const Ideal& ideal, mpz_t dim) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  NullTermConsumer nullConsumer;
+  SliceParameters params(true, false);
+  SliceFacade facade(bigIdeal, &nullConsumer, false);
+  params.apply(facade);
+
+  mpz_class dimen;
+  facade.computeDimension(dimen);
+  mpz_set(dim, dimen.get_mpz_t());
 }

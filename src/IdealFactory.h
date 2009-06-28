@@ -58,6 +58,9 @@ class IdealFactory {
   /** Returns \f$\ideal{x*y, z}\f$. */
   static BigIdeal xy_z();
 
+  /** Returns \f$\ideal{x*y, x*z}\f$. */
+  static BigIdeal xy_xz();
+
   /** Returns \f$\ideal{x*y}\f$. */
   static BigIdeal xy();
 
