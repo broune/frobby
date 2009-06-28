@@ -25,6 +25,7 @@
 #include "Term.h"
 #include "error.h"
 #include "CoefBigTermConsumer.h"
+#include "NullTermConsumer.h"
 
 class ConsumerWrapper {
 protected:
@@ -434,4 +435,23 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 
   mpz_class dummy;
   return facade.solveStandardProgram(grading, dummy, false, true, true);
+}
+
+void Frobby::codimension(const Ideal& ideal, mpz_t codim) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+  dimension(ideal, codim);
+  mpz_ui_sub(codim, bigIdeal.getVarCount(), codim);
+}
+
+void Frobby::dimension(const Ideal& ideal, mpz_t dim) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  NullTermConsumer nullConsumer;
+  SliceParameters params(true, false);
+  SliceFacade facade(bigIdeal, &nullConsumer, false);
+  params.apply(facade);
+
+  mpz_class dimen;
+  facade.computeDimension(dimen);
+  mpz_set(dim, dimen.get_mpz_t());
 }
