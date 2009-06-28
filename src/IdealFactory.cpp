@@ -97,6 +97,14 @@ BigIdeal IdealFactory::xy_z() {
   return ideal;
 }
 
+BigIdeal IdealFactory::xy_xz() {
+  BigIdeal ideal(ring_xyzt());
+  ideal.insert(makeTerm(1, 1, 0, 0));
+  ideal.insert(makeTerm(1, 0, 1, 0));
+  ideal.sortGenerators();
+  return ideal;
+}
+
 BigIdeal IdealFactory::xy() {
   BigIdeal ideal(ring_xyzt());
   ideal.insert(makeTerm(1, 1, 0, 0));

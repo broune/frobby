@@ -43,6 +43,8 @@
 
  @todo Duplicate the comments for overloads using the copydoc Doxygen
  command.
+
+ @todo Rename term.h to Term.h.
 */
 class Term {
  public:

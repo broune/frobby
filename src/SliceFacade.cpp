@@ -42,6 +42,7 @@
 #include "StatisticsStrategy.h"
 #include "error.h"
 #include "IrreducibleIdealSplitter.h"
+#include "SizeMaxIndepSetAlg.h"
 
 SliceFacade::SliceFacade(const BigIdeal& ideal,
 						 BigTermConsumer* consumer,
@@ -236,10 +237,15 @@ void SliceFacade::computeDimension(mpz_class& dimension) {
 
   endAction();
 
+  SizeMaxIndepSetAlg alg;
+  alg.run(*_ideal);
+  dimension = alg.getMaxSize();
+  return; // TODO: allow access to both algorithm
+
   mpz_class minusCodimension;
 #ifdef DEBUG
-  // Only do this when DEBUG is defined since otherwise GCC will warn
-  // about hasComponents not being used when DEBUG is not defined.
+  // Only define hasComponents when DEBUG is defined since otherwise
+  // GCC will warn about hasComponents not being used.
   bool hasComponents = 
 #endif
 	solveIrreducibleDecompositionProgram
