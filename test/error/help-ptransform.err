@@ -16,7 +16,7 @@ The parameters accepted by ptransform are as follows.
 
  -oformat STRING   (default is input)
    The format used to write the output. This action supports the formats:
-     m2 cocoa4 singular 4ti2 null.
+     m2 cocoa4 singular 4ti2 null count.
    The format "input" instructs Frobby to use the input format.
    Type 'frobby help io' for more information on output formats.
 

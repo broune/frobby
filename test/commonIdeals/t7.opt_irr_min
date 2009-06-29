@@ -1,0 +1,5 @@
+R = QQ[a, b, c];
+I = monomialIdeal(
+ a^2*b^3
+);
+5

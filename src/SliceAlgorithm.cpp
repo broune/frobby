@@ -60,7 +60,7 @@ void runSliceAlgorithm(const Ideal& ideal, SliceStrategy& strategy) {
 		continue;
 	  }
 
-	  if (slice->baseCase()) {
+	  if (strategy.processIfBaseCase(*slice)) {
 		strategy.freeSlice(slice);
 		continue;
 	  }

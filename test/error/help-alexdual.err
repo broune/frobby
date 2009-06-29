@@ -17,14 +17,17 @@ The parameters accepted by alexdual are as follows.
 
  -split STRING   (default is median)
    The split selection strategy to use. Options are maxlabel, minlabel,
-   varlabel, minimum, median, maximum, mingen, indep and gcd. Frobenius
-   computations support the specialized strategy frob as well.
+   varlabel, minimum, median, maximum, mingen, indep and gcd. Optimization
+   computations support the specialized strategy degree as well.
 
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.
 
  -independence [BOOL]   (default is on)
    Perform independence splits when possible.
+
+ -simplify [BOOL]   (default is on)
+   Perform simplification when possible.
 
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step.
@@ -42,6 +45,6 @@ The parameters accepted by alexdual are as follows.
 
  -oformat STRING   (default is input)
    The format used to write the output. This action supports the formats:
-     m2 cocoa4 singular monos newmonos 4ti2 null.
+     m2 cocoa4 singular monos newmonos 4ti2 null count.
    The format "input" instructs Frobby to use the input format.
    Type 'frobby help io' for more information on output formats.

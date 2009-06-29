@@ -19,16 +19,19 @@
 
 #include "SliceStrategy.h"
 
-// A wrapper for a slice that prints out some of what is going out for
-// debugging purposes, while delegating everything to the strategy
-// being wrapped.
+/** A wrapper for a SliceStrategy that prints out what is going out
+ for debugging purposes, while delegating everything to the strategy
+ being wrapped.
+*/
 class DebugStrategy : public SliceStrategy {
  public:
-  // Does not close out in destructor.
+  /** Debug information is written to out, and every call is delegated
+   to strategy. */
   DebugStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~DebugStrategy();
 
   virtual void setUseIndependence(bool use);
+  virtual void setUseSimplification(bool use);
 
   virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
   virtual void doneComputing();
@@ -37,6 +40,7 @@ class DebugStrategy : public SliceStrategy {
 					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
 					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
+  virtual bool processIfBaseCase(Slice& slice);
   virtual void freeSlice(auto_ptr<Slice> slice);
 
  private:

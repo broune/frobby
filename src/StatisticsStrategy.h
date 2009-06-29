@@ -19,15 +19,20 @@
 
 #include "SliceStrategy.h"
 
-// A wrapper for a slice that collects statistics on what is going on,
-// while delegating everything to the strategy being wrapped.
+#include <map>
+
+/** A wrapper for a SliceStrategy that collects statistics on what is
+ going on, while delegating everything to the strategy being wrapped.
+*/
 class StatisticsStrategy : public SliceStrategy {
  public:
-  // Does not close out in destructor.
+  /** Statistics are written to out, and every call is delegated to
+   strategy. */
   StatisticsStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~StatisticsStrategy();
 
   virtual void setUseIndependence(bool use);
+  virtual void setUseSimplification(bool use);
 
   virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
   virtual void doneComputing();
@@ -36,16 +41,57 @@ class StatisticsStrategy : public SliceStrategy {
 					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
 					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
 
+  virtual bool processIfBaseCase(Slice& slice);
   virtual void freeSlice(auto_ptr<Slice> slice);
 
  private:
   SliceStrategy* _strategy;
   FILE* _out;
 
-  mpz_class _splitCount;
-  mpz_class _generatorCountSum;
-  mpz_class _varCountSum;
-  mpz_class _subtractGeneratorCountSum;
+  /** Tracks statistics on slices. */
+  struct StatTracker {
+	/** The title parameter indicates what is to be printed when
+	 calling printReport().
+    */
+	StatTracker(const string& title);
+
+	/** Record information about slice, but store it only until this
+	 method is next called on this object.
+	 */
+	void preliminaryRecord(const Slice& slice);
+
+	/** Commit the most recent argument to preliminaryTrack
+		permanently to the record. */
+	void commitRecord();
+
+	/** Print a report on statistics of the recorded slices to the
+	  file out. */
+	void printReport(FILE* out) const;
+
+	const mpz_class& getNodeCount() const;
+	double getAvgIdealGenCount() const;
+	double getAvgSubGenCount() const;
+	double getAvgVarCount() const;
+
+  private:
+	string _title;
+
+	size_t _prelimIdealGenCount;
+	size_t _prelimSubGenCount;
+	size_t _prelimVarCount;
+
+	mpz_class _nodeCount;
+	mpz_class _idealGenSum;
+	mpz_class _subGenSum;
+	mpz_class _varSum;
+
+	/** _nodesByGenCount[l] records how many slices have been recorded
+     whose ideal has approximately 2^l generators. */
+	map<size_t, mpz_class> _nodesByGenCount;
+  };
+
+  StatTracker _internalTracker;
+  StatTracker _leafTracker;
 };
 
 #endif

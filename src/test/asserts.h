@@ -23,20 +23,25 @@
 class AssertException : public logic_error {
  public:
   AssertException(const string& str);
+  AssertException(const AssertException& e);
 };
+
+void assertSucceeded(bool printDot);
 
 void assertFailed(const char* errorMsg,
 				  const char* testName, const char* file, size_t line);
 
 void assertTrue(bool value, const char* condition,
-				const char* testName, const char* file, size_t line);
+				const char* testName, const char* file, size_t line,
+				bool printDot);
 #define ASSERT_TRUE(VALUE) \
-  assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__)
+  assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, __printDots)
 
 void assertFalse(bool value, const char* condition,
-				const char* testName, const char* file, size_t line);
+				 const char* testName, const char* file, size_t line,
+				 bool printDot);
 #define ASSERT_FALSE(VALUE) \
-  assertFalse(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__)
+  assertFalse(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, __printDots)
 
 void assertEqualFailed(const char* a, const char* b,
 					   const char* aString, const char* bString,
@@ -45,9 +50,10 @@ void assertEqualFailed(const char* a, const char* b,
 template<class T1, class T2>
   void assertEqual(const T1& a, const T2& b,
 				   const char* aString, const char* bString,
-				   const char* testName, const char* file, size_t line) {
+				   const char* testName, const char* file, size_t line,
+				   bool printDot) {
   if (a == b) {
-	putc('.', stdout);
+	assertSucceeded(printDot);
 	return;
   }
 
@@ -63,6 +69,6 @@ template<class T1, class T2>
 }
 
 #define ASSERT_EQ(A, B) \
-  assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__)
+  assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__, __printDots)
 
 #endif

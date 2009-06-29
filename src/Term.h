@@ -17,317 +17,45 @@
 #ifndef TERM_GUARD
 #define TERM_GUARD
 
-// This file contains a number of functions designed to manipulate
-// exponent vectors represented as an array of Exponents along with a
-// length. It also contains a class that wraps these functions.
-
 #include <ostream>
 
-// Sets res equal to the product of a and b.
-inline void product(Exponent* res,
-		    const Exponent* a, const Exponent* b,
-		    size_t varCount) {
-  ASSERT(res != 0 || varCount == 0);
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    res[var] = a[var] + b[var];
-}
+/** Term represents a product of variables which does not include a
+ coefficient. This concept is also sometimes called a monomial or
+ power product.
 
-// Sets res equal to a : b.
-//
-// a : b is read as "a colon b", and it is defined as lcm(a, b) / b.
-inline void colon(Exponent* res,
-				  const Exponent* a, const Exponent* b,
-				  size_t varCount) {
-  ASSERT(res != 0 || varCount == 0);
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var) {
-    if (a[var] > b[var])
-      res[var] = a[var] - b[var];
-    else
-      res[var] = 0;
-  }
-}
+ A term is represented as an array of Exponent and an integer
+ indicating the length of the array, i.e. the number of variables. It
+ is sometimes desirable to separate the length from the array,
+ e.g. when representing an array of terms all of the same length, such
+ as in representing the generators of a monomial ideal, in which case
+ representing the length once for each generator would be
+ wasteful. Thus Term has static versions of most methods where the
+ number of variables is a separate parameter. In these cases it is
+ allowed for the exponent array pointer to be null (i.e. equal to 0)
+ if the length is zero.
 
-// dualOf encodes an irreducible ideal as a term, and the dual of that in
-// point is a principal ideal of which res will be the generator. This
-// requires that dualOf divides point, as otherwise that dual is not defined.
-inline void encodedDual(Exponent* res,
-                        const Exponent* dualOf, const Exponent* point,
-                        size_t varCount) {
-  ASSERT(res != 0 || varCount == 0);
-  ASSERT(dualOf != 0 || varCount == 0);
-  ASSERT(point != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var) {
-    ASSERT(dualOf[var] <= point[var]);
-    if (dualOf[var] != 0)
-      res[var] = point[var] - dualOf[var] + 1;
-    else
-      res[var] = 0;
-  }
-}
+ Most methods on Term are inline to avoid function call overhead. This
+ is significant because these methods tend to be called in the
+ innermost loops of monomial ideal algorithms.
 
-inline void decrement(Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-	if (a[var] > 0)
-	  a[var] -= 1;
-}
+ @todo Move the inline code out of the class declaration and add them
+ as inline below the class declaration.
 
-// Sets res equal to the greatest common divisor of a and b.
-inline void gcd(Exponent* res,
-				const Exponent* a, const Exponent* b,
-				size_t varCount) {
-  ASSERT(res != 0 || varCount == 0);
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var) {
-    if (a[var] < b[var])
-      res[var] = a[var];
-    else
-      res[var] = b[var];
-  }
-}
-
-// Sets res equal to the least commom multiple of a and b.
-inline void lcm(Exponent* res,
-				const Exponent* a, const Exponent* b,
-				size_t varCount) {
-  ASSERT(res != 0 || varCount == 0);
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var) {
-    if (a[var] > b[var])
-      res[var] = a[var];
-    else
-      res[var] = b[var];
-  }
-}
-
-// Returns true iff a divides b.
-inline bool divides(const Exponent* a, const Exponent* b, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] > b[var])
-      return false;
-  return true;
-}
-
-// Returns true iff a dominates b.
-//
-// a dominates b if a[var] >= b[var] for all var, i.e. if b divides a.
-inline bool dominates(const Exponent* a, const Exponent* b,
-		      size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] < b[var])
-      return false;
-  return true;
-}
-
-
-// Returns true iff a strictly divides b.
-//
-// a strictly divides b if a * gcd(a, x_1...x_n) divides b, i.e. if
-// the exponents of a are strictly larger than those of b except that
-// it is allowed for both of a[var] and b[var] to be 0.
-inline bool strictlyDivides(const Exponent* a, const Exponent* b,
-			    size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] >= b[var] && a[var] > 0)
-      return false;
-  return true;
-}
-
-// Sets the exponent vector of res to all zeroes, i.e. sets res equal
-// to 1.
-inline void setToIdentity(Exponent* res, size_t varCount) {
-  ASSERT(res != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    res[var] = 0;
-}
-
-// Returns true iff the exponent vector of term is all zeroes,
-// i.e. iff a is equal to 1.
-inline bool isIdentity(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] != 0)
-      return false;
-  return true;
-}
-
-// Returns true iff a[var] <= 1 for all var.
-inline bool isSquareFree(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] >= 2)
-      return false;
-  return true;
-}
-
-// Returns the number of integers var such that a[var] is non-zero.
-inline size_t getSizeOfSupport(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  size_t size = 0;
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] != 0)
-      ++size;
-  return size;
-}
-
-inline bool hasSameSupport(const Exponent* a, const Exponent* b,
-						   size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var) {
-	if (a[var] == 0) {
-	  if (b[var] != 0)
-		return false;
-	} else {
-	  ASSERT(a[var] != 0);
-	  if (b[var] == 0)
-		return false;
-	}
-  }
-  return true;
-}
-
-// Returns var such that a[var] >= a[i] for all i.
-inline size_t getFirstMaxExponent(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  size_t max = 0;
-  for (size_t var = 1; var < varCount; ++var)
-    if (a[max] < a[var])
-      max = var;
-  return max;
-}
-
-// Returns the least integer var such that a[var] is non-zero.
-// Returns varCount if no such var exists.
-inline size_t getFirstNonZeroExponent(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-    if (a[var] != 0)
-      return var;
-  return varCount;
-}
-
-// Returns a median element of the set of var's such that a[var] is
-// non-zero. Returns varCount if no such var exists.
-inline size_t getMiddleNonZeroExponent(const Exponent* a, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  size_t nonZeroOffset = getSizeOfSupport(a, varCount) / 2;
-  for (size_t var = 0; var < varCount; ++var) {
-    if (a[var] != 0) {
-      if (nonZeroOffset == 0)
-	return var;
-      --nonZeroOffset;
-    }
-  }
-
-  ASSERT(isIdentity(a, varCount));
-  return varCount;
-}
-
-// Defines lexicographic order on exponents.
-//  Returns something < 0 if a < b.
-//  Returns 0 if a = b.
-//  Returns something > 0 if a > b.
-//
-// For example (0,0) < (0,1) < (1,0).
-inline int lexCompare(const Exponent* a, const Exponent* b,
-					  size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var) {
-    if (a[var] == b[var])
-      continue;
-
-    if (a[var] < b[var])
-      return -1;
-    else
-      return 1;
-  }
-  return 0;
-}
-
-inline bool equals(const Exponent* a, const Exponent* b, size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var)
-	if (a[var] != b[var])
-	  return false;
-  return true;
-}
-
-// Defines reverse lexicographic order on exponents.
-inline int reverseLexCompare(const Exponent* a, const Exponent* b,
-		   size_t varCount) {
-  ASSERT(a != 0 || varCount == 0);
-  ASSERT(b != 0 || varCount == 0);
-  for (size_t var = 0; var < varCount; ++var) {
-    if (a[var] == b[var])
-      continue;
-
-    if (a[var] > b[var])
-      return -1;
-    else
-      return 1;
-  }
-  return 0;
-}
-
-// Writes e to file.
-inline void print(FILE* file, const Exponent* e, size_t varCount) {
-  ASSERT(e != 0 || varCount == 0);
-  fputc('(', file);
-
-  for (size_t var = 0; var < varCount; ++var) {
-    if (var != 0)
-      fputs(", ", file);
-    fprintf(file, "%lu", (unsigned long)e[var]);
-  }
-  
-  fputc(')', file);
-}
-
-inline void print(ostream& out, const Exponent* e, size_t varCount) {
-  ASSERT(e != 0 || varCount == 0);
-
-  out << '(';
-  for (size_t var = 0; var < varCount; ++var) {
-    if (var != 0)
-	  out << ", ";
-	out << e[var];
-  }
-  out << ')';
-}
-
-// Term represents a product of variables and does NOT include a
-// coefficient. Thus Monomial would be a more fitting name for Term,
-// but Term appears so much that it would be cumbersome to type
-// Monomial all the time.
-//
-// Term is mostly a wrapper for the functions above.
+ @todo Duplicate the comments for overloads using the copydoc Doxygen
+ command.
+*/
 class Term {
  public:
-  Term(): _exponents(0), _varCount(0) {}
+ Term(): _exponents(0), _varCount(0) {}
   Term(const Term& term) {initialize(term._exponents, term._varCount);}
   Term(const Exponent* exponents, size_t varCount) {
     initialize(exponents, varCount);
   }
   
-  /** This object is initialized to the identity, i.e. the exponent
-   vector is the zero vector.
+  /** This object is initialized to the identity, i.e.\ the exponent
+	  vector is the zero vector.
   */
-  Term(size_t varCount):
+ Term(size_t varCount):
   _varCount(varCount) {
 	if (varCount > 0) {
 	  _exponents = allocate(varCount);
@@ -336,7 +64,9 @@ class Term {
       _exponents = 0;
   }
   
-  /// Accepts a whitespace-separated list of integers as exponent vector.
+  /** Accepts a whitespace-separated list of integers as exponent
+	  vector.
+  */
   Term(const string& str);
 
   ~Term() {deallocate(_exponents, _varCount);}
@@ -391,6 +121,14 @@ class Term {
 	return equals(_exponents, term, _varCount);
   }
 
+  bool operator!=(const Term& term) const {
+	return !(*this == term);
+  }
+
+  bool operator!=(const Exponent* term) const {
+	return !(*this == term);
+  }
+
   Term& operator=(const Term& term) {
     if (_varCount != term._varCount) {
 	  Exponent* newBuffer = allocate(term._varCount);
@@ -408,50 +146,116 @@ class Term {
     return *this;
   }
   
+  /** Returns whether a divides b. */
+  inline static bool divides(const Exponent* a, const Exponent* b, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] > b[var])
+		return false;
+	return true;
+  }
+
   bool divides(const Term& term) const {
     ASSERT(_varCount == term._varCount);
-    return ::divides(_exponents, term._exponents, _varCount);
+    return divides(_exponents, term._exponents, _varCount);
   }
 
   bool divides(const Exponent* term) const {
-    return ::divides(_exponents, term, _varCount);
+    return divides(_exponents, term, _varCount);
+  }
+
+  /** Returns whether a dominates b, i.e.\ whether b divides a.
+   */
+  inline static bool dominates(const Exponent* a, const Exponent* b,
+							   size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] < b[var])
+		return false;
+	return true;
   }
 
   bool dominates(const Term& term) const {
     ASSERT(_varCount == term._varCount);
-    return ::dominates(_exponents, term._exponents, _varCount);
+    return dominates(_exponents, term._exponents, _varCount);
   }
 
   bool dominates(const Exponent* term) const {
-    return ::dominates(_exponents, term, _varCount);
+    return dominates(_exponents, term, _varCount);
+  }
+
+  /** Returns whether a strictly divides b. \f$a\f$ strictly divides
+	  \f$b\f$ if \f$a * gcd(a, x_1...x_n)\f$ divides \f$b\f$, i.e.\ if,
+	  for each $i$, \f$u_i<b_i\f$ or $v_i=0$ where $a=x^u$ and $b=x^v$.
+  */
+  inline static bool strictlyDivides(const Exponent* a, const Exponent* b,
+									 size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] >= b[var] && a[var] > 0)
+		return false;
+	return true;
   }
 
   bool strictlyDivides(const Term& term) const {
     ASSERT(_varCount == term._varCount);
-    return ::strictlyDivides(_exponents, term._exponents, _varCount);
+    return strictlyDivides(_exponents, term._exponents, _varCount);
   }
 
   bool strictlyDivides(const Exponent* term) const {
-    return ::strictlyDivides(_exponents, term, _varCount);
+    return strictlyDivides(_exponents, term, _varCount);
+  }
+
+  /** Sets res equal to the least commom multiple of a and b. */
+  inline static void lcm(Exponent* res,
+						 const Exponent* a, const Exponent* b,
+						 size_t varCount) {
+	ASSERT(res != 0 || varCount == 0);
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] > b[var])
+		res[var] = a[var];
+	  else
+		res[var] = b[var];
+	}
   }
 
   void lcm(const Term& a, const Term& b, int position) {
     ASSERT(_varCount == a._varCount);
     ASSERT(_varCount == b._varCount);
-    ::lcm(_exponents + position,
-		  a._exponents + position,
-		  b._exponents + position,
-		  _varCount - position);
+    lcm(_exponents + position,
+		a._exponents + position,
+		b._exponents + position,
+		_varCount - position);
   }
 
   void lcm(const Term& a, const Term& b) {
     ASSERT(_varCount == a._varCount);
     ASSERT(_varCount == b._varCount);
-    ::lcm(_exponents, a._exponents, b._exponents, _varCount);
+    lcm(_exponents, a._exponents, b._exponents, _varCount);
   }
 
   void lcm(const Exponent* a, const Exponent* b) {
-    ::lcm(_exponents, a, b, _varCount);
+    lcm(_exponents, a, b, _varCount);
+  }
+
+  /** Sets res equal to the greatest common divisor of a and b. */
+  inline static void gcd(Exponent* res,
+						 const Exponent* a, const Exponent* b,
+						 size_t varCount) {
+	ASSERT(res != 0 || varCount == 0);
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] < b[var])
+		res[var] = a[var];
+	  else
+		res[var] = b[var];
+	}
   }
 
   void gcd(const Term& a, const Term& b) {
@@ -461,54 +265,167 @@ class Term {
   }
 
   void gcd(const Exponent* a, const Exponent* b) {
-    ::gcd(_exponents, a, b, _varCount);
+    gcd(_exponents, a, b, _varCount);
   }
 
   bool operator<(const Term& term) const {
     ASSERT(_varCount == term._varCount);
-    return ::lexCompare(_exponents, term._exponents, _varCount) < 0;
+    return lexCompare(_exponents, term._exponents, _varCount) < 0;
   }
 
   bool operator<(const Exponent* term) const {
-    return ::lexCompare(_exponents, term, _varCount) < 0;
+    return lexCompare(_exponents, term, _varCount) < 0;
   }
 
+  /** Sets res equal to the product of a and b. */
+  inline static void product(Exponent* res,
+							 const Exponent* a, const Exponent* b,
+							 size_t varCount) {
+	ASSERT(res != 0 || varCount == 0);
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  res[var] = a[var] + b[var];
+  }
+
+  /** Set this object equal to the product of a and b. */
   void product(const Term& a, const Term& b) {
     ASSERT(_varCount == a._varCount);
     ASSERT(_varCount == b._varCount);
-    ::product(_exponents, a._exponents, b._exponents, _varCount);
+    product(_exponents, a._exponents, b._exponents, _varCount);
   }
 
   void product(const Exponent* a, const Exponent* b) {
-    ::product(_exponents, a, b, _varCount);
+    product(_exponents, a, b, _varCount);
+  }
+
+  /** Set res equal to \f$1=x^{(0,\ldots,0)}\f$, i.e.\ set each entry
+	  of res equal to 0.
+  */
+  inline static void setToIdentity(Exponent* res, size_t varCount) {
+	ASSERT(res != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  res[var] = 0;
   }
 
   void setToIdentity() {
-    ::setToIdentity(_exponents, _varCount);
+    setToIdentity(_exponents, _varCount);
+  }
+
+  /** Returns whether a is 1, i.e.\ whether all entries of a are 0.
+   */
+  inline static bool isIdentity(const Exponent* a, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] != 0)
+		return false;
+	return true;
   }
 
   bool isIdentity() const {
-    return ::isIdentity(_exponents, _varCount);
+    return isIdentity(_exponents, _varCount);
+  }
+
+  /** Returns whether a is square free, i.e.\ \f$v_i\leq 1\f$ for each
+	  \f$i\f$ where $a=x^v$.
+  */
+  inline static bool isSquareFree(const Exponent* a, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] >= 2)
+		return false;
+	return true;
   }
 
   bool isSquareFree() const {
-    return ::isSquareFree(_exponents, _varCount);
+    return isSquareFree(_exponents, _varCount);
+  }
+
+  /** Returns least var such that a[var] is non-zero. Returns varCount
+	  if the entries of a are all zero.
+  */
+  inline static size_t getFirstNonZeroExponent(const Exponent* a, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] != 0)
+		return var;
+	return varCount;
   }
 
   size_t getFirstNonZeroExponent() const {
-    return ::getFirstNonZeroExponent(_exponents, _varCount);
+    return getFirstNonZeroExponent(_exponents, _varCount);
+  }
+
+  /** Returns a median element of the set of var's such that a[var] is
+	  non-zero. Returns varCount is the entries of a are all zero.
+  */
+  inline static size_t getMiddleNonZeroExponent(const Exponent* a, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	size_t nonZeroOffset = getSizeOfSupport(a, varCount) / 2;
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] != 0) {
+		if (nonZeroOffset == 0)
+		  return var;
+		--nonZeroOffset;
+	  }
+	}
+
+	ASSERT(isIdentity(a, varCount));
+	return varCount;
   }
 
   size_t getMiddleNonZeroExponent() const {
-    return ::getMiddleNonZeroExponent(_exponents, _varCount);
+    return getMiddleNonZeroExponent(_exponents, _varCount);
+  }
+
+  /** Returns a var such that a[var] >= a[i] for all i. */
+  inline static size_t getFirstMaxExponent(const Exponent* a, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	size_t max = 0;
+	for (size_t var = 1; var < varCount; ++var)
+	  if (a[max] < a[var])
+		max = var;
+	return max;
   }
 
   size_t getFirstMaxExponent() const {
-    return ::getFirstMaxExponent(_exponents, _varCount);
+    return getFirstMaxExponent(_exponents, _varCount);
+  }
+
+  /** Returns the number of variables \f$x_i\f$ such that \f$x_i\f$
+	  divides \f$a\f$.
+  */
+  inline static size_t getSizeOfSupport(const Exponent* a, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	size_t size = 0;
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] != 0)
+		++size;
+	return size;
   }
 
   size_t getSizeOfSupport() const {
-    return ::getSizeOfSupport(_exponents, _varCount);
+    return getSizeOfSupport(_exponents, _varCount);
+  }
+
+  /** Returns whether \f$x_i|a\Leftrightarrow x_i|b\f$ for every
+	  variable \f$x_i\f$.
+  */
+  inline static bool hasSameSupport(const Exponent* a, const Exponent* b,
+									size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] == 0) {
+		if (b[var] != 0)
+		  return false;
+	  } else {
+		ASSERT(a[var] != 0);
+		if (b[var] == 0)
+		  return false;
+	  }
+	}
+	return true;
   }
 
   bool hasSameSupport(const Term& a) const {
@@ -517,7 +434,25 @@ class Term {
   }
 
   bool hasSameSupport(const Exponent* a) const {
-	return ::hasSameSupport(_exponents, a, _varCount);
+	return hasSameSupport(_exponents, a, _varCount);
+  }
+
+  /** Sets res equal to \f$a : b\f$.
+	  \f$a : b\f$ is read as "a colon b", and it is defined as \f$lcm(a, b)
+	  / b\f$.
+  */
+  inline static void colon(Exponent* res,
+						   const Exponent* a, const Exponent* b,
+						   size_t varCount) {
+	ASSERT(res != 0 || varCount == 0);
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] > b[var])
+		res[var] = a[var] - b[var];
+	  else
+		res[var] = 0;
+	}
   }
 
   void colon(const Term& a, const Term& b) {
@@ -527,7 +462,28 @@ class Term {
   }
 
   void colon(const Exponent* a, const Exponent* b) {
-    ::colon(_exponents, a, b, _varCount);
+    colon(_exponents, a, b, _varCount);
+  }
+
+  /** The parameter dualOf is interpreted to encode an irreducible
+	  ideal, and the dual of that reflected in point is a principal
+	  ideal. The generated of this ideal is written to res. This requires
+	  that dualOf divides point, as otherwise that dual is not defined.
+  */
+  inline static void encodedDual(Exponent* res,
+								 const Exponent* dualOf, const Exponent* point,
+								 size_t varCount) {
+	ASSERT(res != 0 || varCount == 0);
+	ASSERT(dualOf != 0 || varCount == 0);
+	ASSERT(point != 0 || varCount == 0);
+
+	for (size_t var = 0; var < varCount; ++var) {
+	  ASSERT(dualOf[var] <= point[var]);
+	  if (dualOf[var] != 0)
+		res[var] = point[var] - dualOf[var] + 1;
+	  else
+		res[var] = 0;
+	}
   }
 
   void encodedDual(const Term& dualOf, const Term& point) {
@@ -537,15 +493,23 @@ class Term {
   }
 
   void encodedDual(const Exponent* dualOf, const Exponent* point) {
-    ::encodedDual(_exponents, dualOf, point, _varCount);
+    encodedDual(_exponents, dualOf, point, _varCount);
+  }
+
+  /** Decrements each positive entry of a by one. */
+  inline static void decrement(Exponent* a, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] > 0)
+		a[var] -= 1;
   }
 
   void decrement() {
-	::decrement(_exponents, _varCount);
+	decrement(_exponents, _varCount);
   }
 
   void swap(Term& term) {
-    std::swap(_varCount, term._varCount);
+	std::swap(_varCount, term._varCount);
 
     Exponent* tmp = _exponents;
     _exponents = term._exponents;
@@ -569,14 +533,46 @@ class Term {
     _varCount = 0;
   }
 
+  /** Writes e to file in a format suitable for debug output. */
+  static void print(FILE* file, const Exponent* e, size_t varCount);
+
+  /** Writes e to out in a format suitable for debug output. */
+  static void print(ostream& out, const Exponent* e, size_t varCount);
+
   void print(FILE* file) const {
-    ::print(file, _exponents, _varCount);
+    print(file, _exponents, _varCount);
+  }
+
+  void print(ostream& out) const {
+    print(out, _exponents, _varCount);
+  }
+
+  /** Indicates how a relates to b according to the lexicographic term
+	  order where \f$x_1>\cdots>x_n\f$. Returns -1 if a < b, returns 0 if a
+	  = b and returns 1 if a > b. As an example \f$x^(0,0) < x^(0,1) <
+	  x^(1,0)\f$.
+  */
+  inline static int lexCompare(const Exponent* a, const Exponent* b,
+							   size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] == b[var])
+		continue;
+
+	  if (a[var] < b[var])
+		return -1;
+	  else
+		return 1;
+	}
+	return 0;
   }
 
   // A predicate that sorts according to lexicographic order.
   class LexComparator {
   public:
-    LexComparator(size_t varCount): _varCount(varCount) {}
+  LexComparator(size_t varCount): _varCount(varCount) {}
 
     bool operator()(const Term& a, const Term& b) {
       ASSERT(_varCount == a._varCount);
@@ -585,20 +581,43 @@ class Term {
     }
 
     bool operator()(const Exponent* a, const Exponent* b) const {
-      return ::lexCompare(a, b, _varCount) < 0;
+      return lexCompare(a, b, _varCount) < 0;
     }
 
   private:
     size_t _varCount;
   };
 
+
+  /** Indicates how a relates to b according to the reverse
+	  lexicographic term order where \f$x_1<\cdots<x_n\f$. Returns -1 if a
+	  < b, returns 0 if a = b and returns 1 if a > b. As an example
+	  \f$x^(0,0) < x^(1,0) < x^(0,1)\f$.
+  */
+  // Defines reverse lexicographic order on exponents.
+  inline static int reverseLexCompare(const Exponent* a, const Exponent* b,
+									  size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] == b[var])
+		continue;
+
+	  if (a[var] > b[var])
+		return -1;
+	  else
+		return 1;
+	}
+	return 0;
+  }
+
   // A predicate that sorts according to reverse lexicographic order.
   class ReverseLexComparator {
   public:
-    ReverseLexComparator(size_t varCount): _varCount(varCount) {}
+  ReverseLexComparator(size_t varCount): _varCount(varCount) {}
 
     bool operator()(const Exponent* a, const Exponent* b) const {
-      return ::reverseLexCompare(a, b, _varCount) < 0;
+      return reverseLexCompare(a, b, _varCount) < 0;
     }
 
   private:
@@ -610,11 +629,11 @@ class Term {
   // different terms with the same degree of that variable.
   class AscendingSingleDegreeComparator {
   public:
-    AscendingSingleDegreeComparator(size_t variable, size_t varCount):
-      _variable(variable),
+  AscendingSingleDegreeComparator(size_t variable, size_t varCount):
+	_variable(variable),
       _varCount(varCount) {
-      ASSERT(variable < varCount);
-    }
+		ASSERT(variable < varCount);
+	  }
 
     bool operator()(const Term& a, const Term& b) {
       ASSERT(_varCount == a._varCount);
@@ -634,11 +653,11 @@ class Term {
   // Reverse sorted order of AscendingSingleDegreeComparator.
   class DescendingSingleDegreeComparator {
   public:
-    DescendingSingleDegreeComparator(size_t variable, size_t varCount):
-      _variable(variable),
+  DescendingSingleDegreeComparator(size_t variable, size_t varCount):
+	_variable(variable),
       _varCount(varCount) {
-      ASSERT(variable < varCount);
-    }
+		ASSERT(variable < varCount);
+	  }
 
     bool operator()(const Term& a, const Term& b) {
       ASSERT(_varCount == a._varCount);
@@ -655,9 +674,20 @@ class Term {
     size_t _varCount;
   };
 
+  /** Returns whether the entries of a are equal to the entries of b. */
+  inline static bool equals(const Exponent* a, const Exponent* b, size_t varCount) {
+	ASSERT(a != 0 || varCount == 0);
+	ASSERT(b != 0 || varCount == 0);
+
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] != b[var])
+		return false;
+	return true;
+  }
+
   class EqualsPredicate {
   public:
-    EqualsPredicate(size_t varCount): _varCount(varCount) {}
+  EqualsPredicate(size_t varCount): _varCount(varCount) {}
 
     bool operator()(const Term& a, const Term& b) {
       ASSERT(_varCount == a._varCount);
@@ -699,6 +729,11 @@ namespace std {
   template<> inline void swap<Term>(Term& a, Term& b) {
     a.swap(b);
   }
+}
+
+inline ostream& operator<<(ostream& out, const Term& term) {
+  term.print(out);
+  return out;
 }
 
 #endif

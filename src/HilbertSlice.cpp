@@ -32,7 +32,7 @@ HilbertSlice::HilbertSlice(const Ideal& ideal, const Ideal& subtract,
   ASSERT(consumer != 0);
 }
 
-bool HilbertSlice::baseCase() {
+bool HilbertSlice::baseCase(bool simplified) {
   ASSERT(_consumer != 0);
 
   // Check that each variable appears in some minimal generator.
@@ -66,17 +66,6 @@ Slice& HilbertSlice::operator=(const Slice& slice) {
   Slice::operator=(slice);
   _consumer = ((HilbertSlice&)slice)._consumer;
   return *this;
-}
-
-void HilbertSlice::simplify() {
-  ASSERT(!normalize());
-
-  applyLowerBound();
-  pruneSubtract();
-
-  ASSERT(!normalize());
-  ASSERT(!pruneSubtract());
-  ASSERT(!applyLowerBound());
 }
 
 bool HilbertSlice::simplifyStep() {

@@ -15,7 +15,7 @@ The parameters accepted by genideal are as follows.
 
  -oformat STRING   (default is m2)
    The format used to write the output. This action supports the formats:
-     m2 cocoa4 singular monos newmonos 4ti2 null.
+     m2 cocoa4 singular monos newmonos 4ti2 null count.
    Type 'frobby help io' for more information on output formats.
 
  -expRange INTEGER   (default is 9)

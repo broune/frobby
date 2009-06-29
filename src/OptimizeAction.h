@@ -39,6 +39,7 @@ class OptimizeAction : public Action {
   BoolParameter _displayValue;
   BoolParameter _maxStandard;
   BoolParameter _chopFirstAndSubtract;
+  BoolParameter _minimizeValue;
   IOParameters _io;
 };
 

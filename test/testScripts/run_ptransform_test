@@ -11,35 +11,42 @@ shift
 
 formats="m2 cocoa4 4ti2 singular"
 
+if [ "$testName" = "null" ]; then
+  null="-iformat null"
+fi
+
 if [ "$1" = "_full" ];
 then
   shift;
 
+  # Test same-format transform.
   for format in $formats; do
-    # Test same-format transform.
 	$testhelper ptransform $testName.$format $testName.$format $*;
 	if [ $? != 0 ]; then exit 1; fi
+  done
 
-    # And again with specified formats.
+  # And again with specified formats.
+  for format in $formats null; do
 	$testhelper ptransform $testName.$format $testName.$format $* \
       -iformat $format -oformat $format
 	if [ $? != 0 ]; then exit 1; fi
   done
 
   # Test same-format transform on canon.
-  $testhelper ptransform $testName.canon $testName.canon $*;
+  $testhelper ptransform $testName.canon $testName.canon $* $null;
   if [ $? != 0 ]; then exit 1; fi
   
   # And again with -canon option.
-  $testhelper ptransform $testName.canon $testName.canon $* -canon;
+  $testhelper ptransform $testName.canon $testName.canon $* -canon $null;
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-for format in $formats; do
+for format in $formats null count; do
   # Test format conversion to $format
-  $testhelper ptransform $testName.test $testName.$format $* -oformat $format;
+  $testhelper ptransform $testName.test $testName.$format $* \
+    -oformat $format $null;
   if [ $? != 0 ]; then exit 1; fi
 done
 
 # Test canonicalization of input
-$testhelper ptransform $testName.test $testName.canon $* -canon
+$testhelper ptransform $testName.test $testName.canon $* -canon $null

@@ -50,9 +50,10 @@
  a
 )
 (monomial-ideal-with-order
- (lex-order long longer longestlongest)
+ (lex-order long longer l_ongestlongest___with_underscores)
  1
  long^100000000000000000000001
+ l_ongestlongest___with_underscores^42
 )
 (monomial-ideal-with-order
  (lex-order long longer longestlongest)

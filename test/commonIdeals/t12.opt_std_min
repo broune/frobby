@@ -1,0 +1,3 @@
+R = QQ[a, b, c, d];
+I = monomialIdeal(0_R);
+no solution.

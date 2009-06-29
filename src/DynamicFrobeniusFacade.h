@@ -22,6 +22,11 @@
 
 class Configuration;
 
+/** A facade for using the dynamic programming Frobenius problem
+	algorithm.
+
+	@ingroup Facade 
+*/
 class DynamicFrobeniusFacade : private Facade {
  public:
   DynamicFrobeniusFacade(bool printActions);

@@ -42,7 +42,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   LibIrreducibleDecomTest.cpp IdealFactory.cpp PolynomialFactory.cpp	\
   LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp					\
   OptimizeStrategyTest.cpp TermTest.cpp TermTranslatorTest.cpp			\
-  TermGraderTest.cpp
+  TermGraderTest.cpp CountingIOHandler.cpp test/TestSorter.cpp			\
+  DimensionAction.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -60,13 +61,14 @@ ifndef CXX
 endif
 
 ifndef BIN_INSTALL_DIR
-  BIN_INSTALL_DIR = "/usr/bin/"
+  BIN_INSTALL_DIR = "/usr/local/bin/"
 endif
 
 cflags = $(CFLAGS) $(CPPFLAGS) -Wall -ansi -pedantic -I $(GMP_INC_DIR)	\
          -Wno-uninitialized -Wno-unused-parameter
 program = frobby
 library = libfrobby.a
+benchArgs = $(FROBBYARGS)
 
 ifndef MODE
  MODE=release
@@ -92,22 +94,21 @@ ifeq ($(MODE), shared)
 endif
 ifeq ($(MODE), profile)
   outdir = bin/profile/
-  cflags += -g -pg -O2
+  cflags += -g -pg -O2 -D PROFILE
   ldflags += -pg
   MATCH=true
+  benchArgs = _profile $(FROBBYARGS)
 endif
 ifeq ($(MODE), analysis)
   outdir = bin/analysis/
-  cflags += -Wextra 			\
-            -fsyntax-only -O1 -Wfloat-equal -Wundef						\
-            -Wno-endif-labels -Wshadow -Wlarger-than-1000				\
-            -Wpointer-arith -Wcast-qual -Wcast-align -Wwrite-strings	\
-            -Wconversion -Wsign-compare -Waggregate-return				\
-            -Wmissing-noreturn -Wmissing-format-attribute				\
-            -Wno-multichar -Wno-deprecated-declarations -Wpacked		\
-            -Wredundant-decls -Wunreachable-code -Winline				\
-            -Wno-invalid-offsetof -Winvalid-pch -Wlong-long				\
-            -Wdisabled-optimization -D DEBUG -Werror
+  cflags += -Wextra -fsyntax-only -O1 -Wfloat-equal -Wundef				\
+  -Wno-endif-labels -Wshadow -Wlarger-than-1000 -Wpointer-arith			\
+  -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare	\
+  -Waggregate-return -Wmissing-noreturn -Wmissing-format-attribute		\
+  -Wno-multichar -Wno-deprecated-declarations -Wpacked					\
+  -Wno-redundant-decls -Wunreachable-code -Winline						\
+  -Wno-invalid-offsetof -Winvalid-pch -Wlong-long						\
+  -Wdisabled-optimization -D DEBUG -Werror
   MATCH=true
 endif
 
@@ -120,21 +121,17 @@ objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 # ***** Compilation
 
-.PHONY: all depend clean bin/$(program) test library distribution clear setup
+.PHONY: all depend clean bin/$(program) test library distribution clear
 
-all: bin/$(program) $(outdir)$(program) setup
-ifeq ($(MODE), profile)
-	rm -f gmon.out
-	./bench
-	gprof bin/frobby > prof
-endif
+all: bin/$(program) $(outdir)$(program)
 
 # ****************** Testing
 # use TESTARGS of
 #  _valgrind to run under valgrind.
 #  _debugAlloc to test recovery when running out of memory.
 #  _full to obtain extra tests by verifying relations
-#    between outputs of different actions.
+#    between outputs of different actions, and generally testing
+#    everything that can be tested.
 # _full cannot follow the other options because it is picked up at an earlier
 # point in the test system than they are. There are more options - see
 # test/testScripts/testhelper for a full list.
@@ -142,10 +139,15 @@ endif
 # Only miniTest and bareTest support TESTARGS, and some options are not
 # available unless MODE=debug.
 
-# The correct choice to test an installation of Frobby.
+# The correct choice to do a reasonably thorough test of an
+# installation of Frobby.
 test: all
+	test/runTests
+
+# Run all tests that it makes sense to run.
+fullTest: all
 	test/runTests _full
-	test/runSplitTests
+	test/runSplitTests _few
 
 # Good for testing Frobby after a small change.
 microTest: all
@@ -158,9 +160,16 @@ bareTest: all
 	test/runTests $(TESTARGS) 
 	test/runSplitTests $(TESTARGS)
 
-# Runs benchmarks to detect performance regressions.
+# Run benchmarks to detect performance regressions. When MODE=profile,
+# profile files for the benchmarked actions will be placed in bin/.
 bench: all
-	test/bench/runbench
+	cd test/bench; ./runbench $(benchArgs)
+benchHilbert: all
+	cd test/bench; ./run_hilbert_bench $(benchArgs)
+benchOptimize: all
+	cd test/bench; ./run_optimize_bench $(benchArgs)
+benchAlexdual: all
+	cd test/bench; ./run_alexdual_bench $(benchArgs)
 
 # Make symbolic link to program from bin/
 bin/$(program): $(outdir)$(program)
@@ -203,7 +212,9 @@ $(outdir)%.o: src/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) ${cflags} -c $< -o $@
 	$(CXX) $(cflags) -MM -c $< > $(@:.o=.d).tmp
-	@echo -n "$(dir $@)" > $(@:.o=.d)
+# using /usr/bin/env echo to get the non-built-in echo on OS X, since
+# the built-in one does not understand the parameter -n.
+	@/usr/bin/env echo -n "$(dir $@)" > $(@:.o=.d)
 	@cat $(@:.o=.d).tmp >> $(@:.o=.d)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | \
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
@@ -216,7 +227,7 @@ endif
 
 # Installation
 install:
-	install bin/frobby $(BIN_INSTALL_DIR)
+	sudo install bin/frobby $(BIN_INSTALL_DIR)
 
 # ***** Documentation
 
@@ -299,6 +310,12 @@ ifndef VER
 	echo "Please specify version of Frobby spkg using VER=x.y.z";
 	exit 1;
 endif
+	if [ "$$SAGE_LOCAL" = "" ]; then \
+	  echo "SAGE_LOCAL undefined ... exiting"; \
+	  echo "Maybe run 'sage -sh?'" \
+	  exit 1; \
+	fi
+
 	if [ ! -d sage/ ]; then echo "sage/ directory not found."; exit 1; fi
 # Ensure that previous builds have been cleaned up
 	rm -rf bin/sagetmp bin/frobby-$(VER) bin/frobby-$(VER).spkg

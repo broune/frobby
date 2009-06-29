@@ -22,6 +22,10 @@
 
 class BigIdeal;
 
+/** A facade for random and other kinds of data. 
+
+	@ingroup Facade
+*/
 class GenerateDataFacade : private Facade {
  public:
   GenerateDataFacade(bool printActions);

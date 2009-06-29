@@ -18,11 +18,6 @@ displaying zero, one or all of the optimal solutions. The algorithm used to
 solve the optimization program is the Slice Algorithm using the bound
 optimization. Thus this action also has options related to that.
 
-The implementation (not the algorithm) is currently limited by the requirement
-that all entries of v be non-negative. If this condition is not met, Frobby
-falls back on the Slice Algorithm without the bound optimization, and thus ends up
-computing all irreducible components of I.
-
 The parameters accepted by optimize are as follows.
 
  -displayLevel INTEGER   (default is 0)
@@ -40,8 +35,12 @@ The parameters accepted by optimize are as follows.
 
  -chopFirstAndSubtract [BOOL]   (default is off)
    Remove the first variable from generators, from the ring and from v, and
-   subtract the value of the first entry of v from the reportedoptimal value.
+   subtract the value of the first entry of v from the reported optimal value.
    This is useful for Frobenius number calculations.
+
+ -minValue [BOOL]   (default is off)
+   Minimize the value of v * e above. If this option is not set, maximize v * e
+   instead, as is the stated default above.
 
  -iformat STRING   (default is autodetect)
    The format used to read the input. This action supports the formats:
@@ -51,7 +50,7 @@ The parameters accepted by optimize are as follows.
 
  -oformat STRING   (default is input)
    The format used to write the output. This action supports the formats:
-     m2 cocoa4 singular monos newmonos 4ti2 null.
+     m2 cocoa4 singular monos newmonos 4ti2 null count.
    The format "input" instructs Frobby to use the input format.
    Type 'frobby help io' for more information on output formats.
 
@@ -60,19 +59,28 @@ The parameters accepted by optimize are as follows.
    generators. Turning this on can improve performance, but if it is not
    true, Frobby may go into an infinite loop or produce incorrect results.
 
- -split STRING   (default is frob)
+ -split STRING   (default is degree)
    The split selection strategy to use. Options are maxlabel, minlabel,
-   varlabel, minimum, median, maximum, mingen, indep and gcd. Frobenius
-   computations support the specialized strategy frob as well.
+   varlabel, minimum, median, maximum, mingen, indep and gcd. Optimization
+   computations support the specialized strategy degree as well.
 
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.
 
+ -simplify [BOOL]   (default is on)
+   Perform simplification when possible.
+
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step.
 
+ -boundSimplify [BOOL]   (default is on)
+   Use the bound optimization to solve optimization problems faster by
+   simplifying slices through seeking to generate non-improving slices.
+   This requires turning elimination of non-improving slices on.
+
  -bound [BOOL]   (default is on)
-   Use the bound optimization to solve optimization problems faster.
+   Use the bound optimization to solve optimization problems faster
+   by eliminating non-improving slices.
 
  -canon [BOOL]   (default is off)
    Sort the output, including the variables, to get a canonical

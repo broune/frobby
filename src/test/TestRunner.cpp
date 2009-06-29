@@ -18,12 +18,19 @@
 #include "TestRunner.h"
 
 #include "TestCase.h"
+#include "../DebugAllocator.h"
 
 bool TestRunner::visit(TestCase& test) {
   string qualifiedName = getPath() + test.getName();
   fputs(qualifiedName.c_str(), stdout);
   fputs(": ", stdout);
-  test.run(qualifiedName.c_str());
+
+#ifdef DEBUG
+  DebugAllocator::getSingleton().runTest(test, qualifiedName);
+#else
+  test.run(qualifiedName.c_str(), true);
+#endif
+
   fputc('\n', stdout);
   fflush(stdout);
   return true;

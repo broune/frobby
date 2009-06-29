@@ -25,58 +25,59 @@
 /** This class has static methods that return various ideals. This
  provides a convenient way to obtain ideals for tests. The data
  returned by this class is all in a canonical form suitable for
- comparison using operator==.
+ comparison using operator==().
 */
 class IdealFactory {
  public:
-  /** Returns the ring in the four variables x, y, z and t. This ring
-   is used for the ideals returned by the methods of this class unless
-   otherwise noted. */
+  /** Returns the ring in the four variables \f$x\f$, \f$y\f$, \f$z\f$
+   and \f$t\f$. This ring is used for the ideals returned by the
+   methods of this class unless otherwise noted. */
   static VarNames ring_xyzt();
 
-  /** Returns <x^2, y^2, x*z, y*z>. */
+  /** Returns \f$\ideal{x^2, y^2, x*z, y*z}\f$. */
   static BigIdeal xx_yy_xz_yz();
 
-  /** Returns <x, y>. */
+  /** Returns \f$\ideal{x, y}\f$. */
   static BigIdeal x_y();
 
-  /** Returns <x*y*z^3, x^2y^2>. */
+  /** Returns \f$\ideal{x*y*z^3, x^2y^2}\f$. */
   static BigIdeal xyzzz_xxyy();
 
-  /** Returns <x*y*z, x^2, y^2>. */
+  /** Returns \f$\ideal{x*y*z, x^2, y^2}\f$. */
   static BigIdeal xyz_xxyy();
 
-  /** Returns <x^2, y^2, z>. */
+  /** Returns \f$\ideal{x^2, y^2, z}\f$. */
   static BigIdeal xx_yy_z();
 
-  /** Returns <x*y, x^2*y^2*z>. */
+  /** Returns \f$\ideal{x*y, x^2*y^2*z}\f$. */
   static BigIdeal xy_xxyyz();
 
-  /** Returns <x^2, y^2, z^2, t, x*z, y*z>. */
+  /** Returns \f$\ideal{x^2, y^2, z^2, t, x*z, y*z}\f$. */
   static BigIdeal xx_yy_zz_t_xz_yz();
 
-  /** Returns <x*y, z>. */
+  /** Returns \f$\ideal{x*y, z}\f$. */
   static BigIdeal xy_z();
 
-  /** Returns <x*y>. */
+  /** Returns \f$\ideal{x*y}\f$. */
   static BigIdeal xy();
 
-  /** Returns <z>. */
+  /** Returns \f$\ideal{z}\f$. */
   static BigIdeal z();
 
-  /** Returns <1> in the ring VarNames(varCount). */
+  /** Returns \f$\ideal{1}\f$ in the ring VarNames(varCount). */
   static BigIdeal wholeRing(size_t varCount);
 
-  /** Returns the ideal <0> in the ring VarNames(varCount). */
+  /** Returns the ideal \f$\ideal{0}\f$ in the ring VarNames(varCount). */
   static BigIdeal zeroIdeal(size_t varCount);
 
-  /** Returns the irreducible decomposition of <x^2, y^2, x*z, y*z>. */
+  /** Returns the irreducible decomposition of \f$\ideal{x^2, y^2,
+   x*z, y*z}\f$. */
   static vector<BigIdeal> irrdecom_xx_yy_xz_yz();
 
-  /** Returns a vector representing x^(a,b,c,d). */
+  /** Returns a vector representing \f$x^(a,b,c,d)\f$. */
   static vector<mpz_class> makeTerm(int a, int b, int c, int d);
 
-  /** Returns a vector representing x^(a). */
+  /** Returns a vector representing \f$x^(a)\f$. */
   static vector<mpz_class> makeTerm(int a);
 };
 

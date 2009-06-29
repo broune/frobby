@@ -23,18 +23,34 @@ TestSuite::TestSuite(const string& name):
   Test(name) {
 }
 
-bool TestSuite::accept(TestVisitor& visitor) {
-  if (visitor.visitEnter(*this)) {
-	vector<Test*>::iterator end = _tests.end();
-	for (vector<Test*>::iterator it = _tests.begin(); it != end; ++it)
-	  if (!(*it)->accept(visitor))
-		return false;
-  }
-  
-  return visitor.visitLeave(*this);
-}
-
 void TestSuite::add(Test* test) {
   ASSERT(test != 0);
   _tests.push_back(test);
+}
+
+namespace {
+  /** Follows pointers before comparing values. Helper function for
+	  TestSuite::sortTests.
+   */
+  bool comparePointedToValue(const Test* a, const Test* b) {
+	ASSERT(a != 0);
+	ASSERT(b != 0);
+	return *a < *b;
+  }
+}
+
+void TestSuite::sortTests() {
+  sort(begin(), end(), comparePointedToValue);
+}
+
+TestSuite::TestIterator TestSuite::begin() {
+  return _tests.begin();
+}
+
+TestSuite::TestIterator TestSuite::end() {
+  return _tests.end();
+}
+
+bool TestSuite::accept(TestVisitor& visitor) {
+  return visitor.visit(*this);
 }

@@ -24,6 +24,11 @@
 class TermConsumer;
 class Projection;
 
+/** Invariant: either the slice is a trivial base case, or
+ removeDoubleLcm returns false.
+
+ @todo expand and check comments.
+*/
 class MsmSlice : public Slice {
  public:
   MsmSlice();
@@ -39,11 +44,10 @@ class MsmSlice : public Slice {
   // A base case is reached if not all variables divide the lcm of
   // getIdeal(), or if getGeneratorCount() is 2, or if getIdeal() is
   // square free.
-  virtual bool baseCase();
+  virtual bool baseCase(bool simplified);
 
   virtual Slice& operator=(const Slice& slice);
 
-  virtual void simplify();
   virtual bool simplifyStep();
 
   void setToProjOf(const MsmSlice& slice,
@@ -53,6 +57,9 @@ class MsmSlice : public Slice {
   // Efficiently swaps the values of *this and slice while avoiding
   // copies.
   void swap(MsmSlice& slice);
+
+  virtual bool innerSlice(const Term& pivot);
+  virtual void outerSlice(const Term& pivot);
 
  private:
   // Removes those generators g of getIdeal() such that g[i] equals

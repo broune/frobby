@@ -47,8 +47,8 @@ Ideal::Ideal(const Ideal& ideal):
 bool Ideal::isIncomparable(const Exponent* term) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (::dominates(term, *it, _varCount) ||
-		::divides(term, *it, _varCount))
+    if (Term::dominates(term, *it, _varCount) ||
+		Term::divides(term, *it, _varCount))
       return false;
   return true;
 }
@@ -56,7 +56,7 @@ bool Ideal::isIncomparable(const Exponent* term) const {
 bool Ideal::contains(const Exponent* term) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (::dominates(term, *it, _varCount))
+    if (Term::dominates(term, *it, _varCount))
       return true;
   return false;
 }
@@ -64,7 +64,7 @@ bool Ideal::contains(const Exponent* term) const {
 bool Ideal::containsIdentity() const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (::isIdentity(*it, _varCount))
+    if (Term::isIdentity(*it, _varCount))
       return true;
   return false;
 }
@@ -72,7 +72,7 @@ bool Ideal::containsIdentity() const {
 bool Ideal::strictlyContains(const Exponent* term) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (::strictlyDivides(*it, term, _varCount))
+    if (Term::strictlyDivides(*it, term, _varCount))
       return true;
   return false;
 }
@@ -89,7 +89,7 @@ bool Ideal::isZeroIdeal() const {
 bool Ideal::isIrreducible() const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-    if (getSizeOfSupport(*it, _varCount) != 1)
+    if (Term::getSizeOfSupport(*it, _varCount) != 1)
       return false;
   return true;
 }
@@ -110,15 +110,15 @@ bool Ideal::isStronglyGeneric() {
 }
 
 void Ideal::getLcm(Exponent* lcm) const {
-  ::setToIdentity(lcm, _varCount);
+  Term::setToIdentity(lcm, _varCount);
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-	::lcm(lcm, lcm, *it, _varCount);
+	Term::lcm(lcm, lcm, *it, _varCount);
 }
 
 void Ideal::getGcd(Exponent* gcd) const {
   if (_terms.empty()) {
-	::setToIdentity(gcd, _varCount);
+	Term::setToIdentity(gcd, _varCount);
     return;
   }
 
@@ -126,11 +126,11 @@ void Ideal::getGcd(Exponent* gcd) const {
   const_iterator stop = _terms.end();
   const_iterator it = _terms.begin();
   for (++it; it != stop; ++it)
-    ::gcd(gcd, gcd, *it, _varCount);
+    Term::gcd(gcd, gcd, *it, _varCount);
 }
 
 void Ideal::getLeastExponents(Exponent* least) const {
-  ::setToIdentity(least, _varCount);
+  Term::setToIdentity(least, _varCount);
   
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
@@ -140,7 +140,7 @@ void Ideal::getLeastExponents(Exponent* least) const {
 }
 
 void Ideal::getSupportCounts(Exponent* counts) const {
-  ::setToIdentity(counts, _varCount);
+  Term::setToIdentity(counts, _varCount);
   const_iterator stop = _terms.end();
   for (const_iterator it = begin(); it != stop; ++it)
 	for (size_t var = 0; var < _varCount; ++var)
@@ -158,7 +158,7 @@ bool Ideal::operator==(const Ideal& ideal) const {
   const_iterator it = begin();
   const_iterator it2 = ideal.begin();
   for (; it != stop; ++it, ++it2)
-	if (!equals(*it, *it2, getVarCount()))
+	if (!Term::equals(*it, *it2, getVarCount()))
 	  return false;
 
   return true;
@@ -173,7 +173,7 @@ void Ideal::print(FILE* file) const {
 void Ideal::print(ostream& out) const {
   out << "//------------ Ideal:\n";
   for (const_iterator it = _terms.begin(); it != _terms.end(); ++it) {
-    ::print(out, *it, _varCount);
+    Term::print(out, *it, _varCount);
 	out << '\n';
   }
   out << "------------\\\\\n";
@@ -233,13 +233,13 @@ void Ideal::singleDegreeSort(size_t var) {
 void Ideal::product(const Exponent* by) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it)
-    ::product(*it, *it, by, _varCount);
+    Term::product(*it, *it, by, _varCount);
 }
 
 void Ideal::colon(const Exponent* by) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it)
-    ::colon(*it, *it, by, _varCount);
+    Term::colon(*it, *it, by, _varCount);
 }
 
 void Ideal::colon(size_t var, Exponent e) {
@@ -284,7 +284,7 @@ bool Ideal::colonReminimize(size_t var, Exponent e) {
 void Ideal::remove(const_iterator it) {
   ASSERT(begin() <= it);
   ASSERT(it < end());
-  ::swap(const_cast<Exponent*&>(*it), *(_terms.end() - 1));
+  std::swap(const_cast<Exponent*&>(*it), *(_terms.end() - 1));
   _terms.pop_back();
 }
 
@@ -293,7 +293,7 @@ void Ideal::removeMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it) {
-    if (!::divides(term, *it, _varCount)) {
+    if (!Term::divides(term, *it, _varCount)) {
 	  *newEnd = *it;
 	  ++newEnd;
     }
@@ -316,7 +316,7 @@ void Ideal::removeMultiples(size_t var, Exponent e) {
 void Ideal::insertNonMultiples(const Exponent* term, const Ideal& ideal) {
   const_iterator stop = ideal.end();
   for (const_iterator it = ideal.begin(); it != stop; ++it)
-    if (!::divides(term, *it, _varCount))
+    if (!Term::divides(term, *it, _varCount))
 	  insert(*it);
 }
 
@@ -331,7 +331,7 @@ void Ideal::removeStrictMultiples(const Exponent* term) {
   iterator newEnd = _terms.begin();
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it) {
-    if (!::strictlyDivides(term, *it, _varCount)) {
+    if (!Term::strictlyDivides(term, *it, _varCount)) {
 	  *newEnd = *it;
 	  ++newEnd;
     }
@@ -355,6 +355,22 @@ void Ideal::clearAndSetVarCount(size_t varCount) {
   _varCount = varCount;
   _terms.clear();
   _allocator.reset(varCount);
+}
+
+void Ideal::mapExponentsToZeroNoMinimize(const Term& zeroExponents) {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it)
+	for (size_t var = 0; var < _varCount; ++var)
+	  if ((*it)[var] == zeroExponents[var])
+		(*it)[var] = 0;
+}
+
+void Ideal::takeRadicalNoMinimize() {
+  iterator stop = _terms.end();
+  for (iterator it = _terms.begin(); it != stop; ++it)
+	for (size_t var = 0; var < _varCount; ++var)
+	  if ((*it)[var] > 1)
+		(*it)[var] = 1;
 }
 
 Ideal::const_iterator Ideal::getMultiple(size_t var) const {

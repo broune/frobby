@@ -36,7 +36,7 @@ class SplitStrategy {
  public:
   virtual ~SplitStrategy();
 
-  /// Sets pivot to the pivot of a pivot split on slice.
+  /** Sets pivot to the pivot of a pivot split on slice. */
   virtual void getPivot(Term& pivot, Slice& slice) const = 0;
 
   /** Sets pivot to the pivot of a pivot split on slice. Some pivot
@@ -44,16 +44,16 @@ class SplitStrategy {
   */
   virtual void getPivot(Term& pivot, Slice& slice, const TermGrader& grader) const = 0;
 
-  /// Returns the variable to perform a label split on.
+  /** Returns the variable to perform a label split on. */
   virtual size_t getLabelSplitVariable(const Slice& slice) const = 0;
 
-  /// If returns true, only call getPivot.
+  /** If returns true, only call getPivot. */
   virtual bool isPivotSplit() const = 0;
 
-  /// If returns true, only call getLabelSplitVariable.
+  /** If returns true, only call getLabelSplitVariable. */
   virtual bool isLabelSplit() const = 0;
 
-  /// Returns the name of the strategy.
+  /** Returns the name of the strategy. */
   virtual const char* getName() const = 0;
 
   /** Returns a strategy with the given name. Returns null if no

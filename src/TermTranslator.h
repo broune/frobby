@@ -63,10 +63,14 @@ public:
 
   TermTranslator& operator=(const TermTranslator& translator);
 
-  /// This method translates from IDs to infinite precision integers.
+  /** This method translates from IDs to infinite precision
+   integers.
+  */
   const mpz_class& getExponent(size_t variable, Exponent exponent) const;
 
-  /// This method translates from IDs to infinite precision integers.
+  /** This method translates from IDs to infinite precision
+   integers.
+  */
   const mpz_class& getExponent(size_t variable, const Term& term) const;
 
   /** As getExponent, except the string "var^e" is returned or null if
@@ -80,7 +84,7 @@ public:
   */
   const char* getExponentString(size_t variable, Exponent exponent) const;
 
-  /// The assigned IDs are those in the range [0, getMaxId()].
+  /** The assigned IDs are those in the range [0, getMaxId()]. */
   Exponent getMaxId(size_t variable) const;
 
   /** Adds a generator of the form v^e, e > 0, for any variable v where
@@ -106,7 +110,7 @@ public:
   */
   void dualize(const vector<mpz_class>& a);
 
-  /// Replaces var^v by var^(v-1).
+  /** Replaces var^v by var^(v-1). */
   void decrement();
 
   void renameVariables(const VarNames& names);

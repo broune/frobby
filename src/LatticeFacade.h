@@ -20,6 +20,10 @@
 #include "Facade.h"
 class BigIdeal;
 
+/** A facade for operations on lattices.
+
+	@ingroup Facade
+ */
 class LatticeFacade : public Facade {
  public:
   LatticeFacade(bool printActions);

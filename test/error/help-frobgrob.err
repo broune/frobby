@@ -21,17 +21,26 @@ The parameters accepted by frobgrob are as follows.
 
  -split STRING   (default is frob)
    The split selection strategy to use. Options are maxlabel, minlabel,
-   varlabel, minimum, median, maximum, mingen, indep and gcd. Frobenius
-   computations support the specialized strategy frob as well.
+   varlabel, minimum, median, maximum, mingen, indep and gcd. Optimization
+   computations support the specialized strategy degree as well.
 
  -stats [BOOL]   (default is off)
    Print statistics on what the algorithm did.
 
+ -simplify [BOOL]   (default is on)
+   Perform simplification when possible.
+
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step.
 
+ -boundSimplify [BOOL]   (default is on)
+   Use the bound optimization to solve optimization problems faster by
+   simplifying slices through seeking to generate non-improving slices.
+   This requires turning elimination of non-improving slices on.
+
  -bound [BOOL]   (default is on)
-   Use the bound optimization to solve optimization problems faster.
+   Use the bound optimization to solve optimization problems faster
+   by eliminating non-improving slices.
 
  -canon [BOOL]   (default is off)
    Sort the output, including the variables, to get a canonical

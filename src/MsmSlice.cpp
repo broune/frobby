@@ -31,9 +31,11 @@ MsmSlice::MsmSlice(const Ideal& ideal,
   Slice(ideal, subtract, multiply),
   _consumer(consumer) {
   ASSERT(consumer != 0);
+
+  removeDoubleLcm();
 }
 
-bool MsmSlice::baseCase() {
+bool MsmSlice::baseCase(bool simplified) {
   ASSERT(_consumer != 0);
 
   if (getIdeal().getGeneratorCount() < _varCount)
@@ -42,6 +44,8 @@ bool MsmSlice::baseCase() {
   // Check that each variable appears in some minimal generator.
   if (getLcm().getSizeOfSupport() < _varCount)
     return true;
+
+  ASSERT(!removeDoubleLcm());
 
   if (_varCount == 0) {
 	if (getIdeal().isZeroIdeal())
@@ -52,6 +56,33 @@ bool MsmSlice::baseCase() {
   if (_varCount == 1) {
     _consumer->consume(_multiply);
     return true;
+  }
+
+  if (!simplified) {
+	if (getLcm().isSquareFree()) {
+	  // We know this since !removeDoubleLcm().
+	  ASSERT(getIdeal().isIrreducible());
+
+	  _consumer->consume(_multiply);
+	  return true;
+	}
+
+	if (getIdeal().getGeneratorCount() == _varCount) {
+	  if (getSubtract().isZeroIdeal()) {
+		_lcm.decrement();
+		_multiply.product(_multiply, _lcm);
+	  } else {
+		Term tmp(getLcm());
+		tmp.decrement();
+		innerSlice(tmp);
+		if (getIdeal().getGeneratorCount() < _varCount)
+		  return true;
+	  }
+	  _consumer->consume(_multiply);
+	  return true;
+	}
+
+	return false;
   }
 
   if (_varCount == 2) {
@@ -86,29 +117,15 @@ Slice& MsmSlice::operator=(const Slice& slice) {
   return *this;
 }
 
-void MsmSlice::simplify() {
-  ASSERT(!normalize());
-
-  removeDoubleLcm();
-  while (applyLowerBound() &&
-		 removeDoubleLcm())
-    ;
-
-  pruneSubtract();
-
-  ASSERT(!normalize());
-  ASSERT(!pruneSubtract());
-  ASSERT(!removeDoubleLcm());
-  ASSERT(!applyLowerBound());
-}
-
 bool MsmSlice::simplifyStep() {
-  if (removeDoubleLcm())
-	return true;
+  ASSERT(!removeDoubleLcm());
+
   if (applyLowerBound())
 	return true;
 
   pruneSubtract();
+
+  ASSERT(!removeDoubleLcm());
   return false;
 }
 
@@ -119,6 +136,28 @@ void MsmSlice::setToProjOf(const MsmSlice& slice,
 
   Slice::setToProjOf(slice, projection);
   _consumer = consumer;
+}
+
+bool MsmSlice::innerSlice(const Term& pivot) {
+  ASSERT(!removeDoubleLcm());
+
+  bool changedMuch = Slice::innerSlice(pivot);
+  if (!_lcmUpdated)
+	changedMuch = removeDoubleLcm() || changedMuch;
+
+  ASSERT(getLcm().getSizeOfSupport() < getVarCount() || !removeDoubleLcm());
+
+  return changedMuch;
+}
+
+void MsmSlice::outerSlice(const Term& pivot) {
+  ASSERT(!removeDoubleLcm());
+
+  Slice::outerSlice(pivot);
+  if (!_lcmUpdated)
+	removeDoubleLcm();
+
+  ASSERT(!removeDoubleLcm());
 }
 
 void MsmSlice::swap(MsmSlice& slice) {
@@ -170,44 +209,34 @@ bool MsmSlice::removeDoubleLcm() {
 }
 
 bool MsmSlice::getLowerBound(Term& bound, size_t var) const {
-  bool seenAny = false;
-
   const Term& lcm = getLcm();
+  bound = lcm;
 
   Ideal::const_iterator stop = getIdeal().end();
   for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
-    if ((*it)[var] == 0)
+	Exponent* term = *it;
+    if (term[var] == 0)
       continue;
         
     // Use the fact that terms with a maximal exponent somewhere not
     // at var cannot be a var-label.
-    bool relevant = true;
-    for (size_t var2 = 0; var2 < _varCount; ++var2) {
-      if (var2 != var && (*it)[var2] == lcm[var2]) {
-		relevant = false;
-		break;
-      }
-    }
+    for (size_t var2 = 0; var2 < _varCount; ++var2)
+      if (term[var2] == lcm[var2] && var2 != var)
+		goto skip;
     
-    if (!relevant)
-      continue;
-    
-    if (seenAny)
-      bound.gcd(bound, *it);
-    else {
-      bound = *it;
-      seenAny = true;
-    }
+	bound.gcd(bound, *it);
+  skip:;
   }
 
-  if (seenAny) {
-    ASSERT(bound[var] >= 1);
-    bound[var] -= 1;
-    return true;
-  } else {
-    // In this case the content is empty.
-    return false;
+  ASSERT(_varCount >= 2);
+  if (bound[0] == lcm[0] && bound[1] == lcm[1]) {
+	// No possible var-label, so the content is empty.
+	return false;
   }
+
+  ASSERT(bound[var] >= 1);
+  bound[var] -= 1;
+  return true;
 }
 
 void MsmSlice::twoVarBaseCase() {
@@ -255,7 +284,7 @@ void MsmSlice::oneMoreGeneratorBaseCase() {
   // the possibilities for that generator to be a label.
 
   Ideal::const_iterator it = getIdeal().begin();
-  while (getSizeOfSupport(*it, _varCount) == 1) {
+  while (Term::getSizeOfSupport(*it, _varCount) == 1) {
     ++it;
     ASSERT(it != getIdeal().end());
   }

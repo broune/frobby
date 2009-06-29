@@ -1,0 +1,5 @@
+R = QQ[a];
+I = monomialIdeal(
+ 1_R
+);
+0

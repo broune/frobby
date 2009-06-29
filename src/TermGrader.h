@@ -29,10 +29,10 @@ public:
   TermGrader(const vector<mpz_class>& varDegrees,
 			 const TermTranslator& translator);
 
-  /// Returns the degree of term.
+  /** Returns the degree of term. */
   mpz_class getDegree(const Term& term) const;
 
-  /// Assigns the degree of term to degree.
+  /** Assigns the degree of term to degree. */
   void getDegree(const Term& term, mpz_class& degree) const;
 
   /** Assigns the degree of the preimage of term through the
@@ -41,28 +41,65 @@ public:
   void getDegree(const Term& term,
 				 const Projection& projection,
 				 mpz_class& degree) const;
-  
+
+  /** Assigns to bound the degree of the largest term v such that
+   divisor divides v and v divides dominator.
+  */
+  void getUpperBound(const Term& divisor,
+					 const Term& dominator,
+					 mpz_class& bound) const;
+
+  /** Returns the degree of the largest term v such that
+   divisor divides v and v divides dominator.
+
+   Returning the value implies a copy so that this overload is less
+   efficient than the one placing the value in a parameter. This
+   purpose of this method is to be more convenient for tests.
+  */
+  mpz_class getUpperBound(const Term& divisor,
+						  const Term& dominator) const;
+
   /** Returns the index of the largest stored exponent of var that is
    less than value. If strict is true, then it is strictly less than,
    otherwise it is less than or equal to. If no such exponent exists,
    then the return value is 0.
 
-   If the sign is zero, then 0 is returned. The sign cannot be
-   negative, currently.
+   If the sign is zero, then 0 is returned. Uses a linear scan, and is
+   only really used to check the output of the other overload.
   */
-  Exponent getLargestLessThan(size_t var,
-							  const mpz_class& value, bool strict = true) const;
+  Exponent getLargestLessThan2(size_t var,
+							   const mpz_class& value, bool strict = true) const;
 
-  /** Returns the value in the interval [from, to] that is closes to
-   getLargestLessThan(var, value, strict).
+  /** Returns the value in the interval [from, to] that is closest to
+   getLargestLessThan(var, value, strict). Only uses a logarithmic
+   number of comparisons.
   */
-  Exponent getLargestLessThan(size_t var, Exponent from, Exponent to,
+  Exponent getLargestLessThan2(size_t var, Exponent from, Exponent to,
 							  const mpz_class& value, bool strict =
 							  true) const;
 
   void getIncrementedDegree(const Term& term,
 							const Projection& projection,
 							mpz_class& degree) const;
+
+  /** Finds minimal index in [from, to] to such that degree(t) <=
+   maxDegree. Returns true if such a t exists, and false otherwise.
+  */
+  bool getMinIndexLessThan(size_t var,
+						   Exponent from,
+						   Exponent to,
+						   Exponent& index,
+						   const mpz_class& maxDegree) const;
+
+  /** Finds maximal index in [from, to] to such that degree(t) <=
+   maxDegree. Returns true if such a t exists, and false otherwise.
+  */
+  bool getMaxIndexLessThan(size_t var,
+						   Exponent from,
+						   Exponent to,
+						   Exponent& index,
+						   const mpz_class& maxDegree) const;
+
 
   const mpz_class& getGrade(size_t var, Exponent exponent) const;
 
