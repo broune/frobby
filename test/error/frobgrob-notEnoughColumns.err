@@ -1,1 +1,3 @@
+NOTE: The action frobgrob is DEPRECATED, and will be removed in a future release of Frobby. Use the action optimize with options -chopFirstAndSubtract and -maxStandard instead to get the same effect.
+NOTE: The split selection strategy "frob" is deprecated and will be removed in a future version of Frobby. Use the name "degree" to achieve the same thing.
 ERROR: The matrix defining the Frobenius-related Grobner basis must have at least one column, and this one has none.

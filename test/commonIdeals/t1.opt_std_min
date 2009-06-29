@@ -1,0 +1,5 @@
+R = QQ[x, y, z];
+I = monomialIdeal(
+ y*z
+);
+2

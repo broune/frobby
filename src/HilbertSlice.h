@@ -35,11 +35,10 @@ class HilbertSlice : public Slice {
 
   // *** Mutators
 
-  virtual bool baseCase();
+  virtual bool baseCase(bool simplified);
 
   virtual Slice& operator=(const Slice& slice);
 
-  virtual void simplify();
   virtual bool simplifyStep();
 
   void setToProjOf(const Slice& slice,

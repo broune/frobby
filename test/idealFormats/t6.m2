@@ -38,11 +38,13 @@ I = monomialIdeal(
  a*b,
  a
 );
-R = QQ[long, longer, longestlongest];
+R = QQ[long, longer, l_ongestlongest___with_underscores];
 I = monomialIdeal(
  1_R,
- long^100000000000000000000001
+ long^100000000000000000000001,
+ l_ongestlongest___with_underscores^42
 );
+R = QQ[long, longer, longestlongest];
 I = monomialIdeal(
  long^100000000000000000000000,
  1_R

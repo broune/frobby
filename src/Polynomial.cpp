@@ -98,7 +98,7 @@ void Polynomial::sortTermsReverseLex(bool collect) {
 
 bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {
   ASSERT(term.getVarCount() == coefTerm.term.getVarCount());
-  return ::reverseLexCompare(term, coefTerm.term, term.getVarCount()) < 0;
+  return Term::reverseLexCompare(term, coefTerm.term, term.getVarCount()) < 0;
 }
 
 void Polynomial::clear() {

@@ -35,7 +35,7 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
   Ideal::const_iterator stop = slice.getIdeal().end();
   for (Ideal::const_iterator it = slice.getIdeal().begin();
        it != stop; ++it) {
-    size_t first = ::getFirstNonZeroExponent(*it, slice.getVarCount());
+    size_t first = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
 	if (first == slice.getVarCount())
 	  return false;
 	_partition.addToSet(first);
@@ -49,7 +49,7 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
   stop = slice.getSubtract().end();
   for (Ideal::const_iterator it = slice.getSubtract().begin();
        it != stop; ++it) {
-    size_t first = ::getFirstNonZeroExponent(*it, slice.getVarCount());
+    size_t first = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
     for (size_t var = first + 1; var < slice.getVarCount(); ++var)
       if ((*it)[var] > 0)
 		_partition.join(first, var);

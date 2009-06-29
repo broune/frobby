@@ -242,25 +242,26 @@ void Frobby::alexanderDual(const Ideal& ideal,
 						   IdealConsumer& consumer) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  vector<mpz_class> point;
-  if (exponentVector != 0) {
-    point.resize(bigIdeal.getVarCount());
-    for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
-      mpz_set(point[var].get_mpz_t(), exponentVector[var]);
-  } else
-    bigIdeal.getLcm(point);
-
-  // We guarantee not to retain a reference to exponentVector when providing
-  // terms to the consumer.
-  exponentVector = 0;
-
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
   SliceFacade facade(bigIdeal, &wrappedConsumer, false);
   SliceParameters params;
   params.apply(facade);
 
-  facade.computeAlexanderDual(point);
+  if (exponentVector == 0)
+	facade.computeAlexanderDual();
+  else {
+	vector<mpz_class> point;
+    point.resize(bigIdeal.getVarCount());
+    for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+      mpz_set(point[var].get_mpz_t(), exponentVector[var]);
+
+	// We guarantee not to retain a reference to exponentVector when providing
+	// terms to the consumer.
+	exponentVector = 0;
+
+	facade.computeAlexanderDual(point);
+  }
 }
 
 void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
@@ -288,7 +289,9 @@ void Frobby::univariateHilbertPoincareSeries(const Ideal& ideal,
   facade.computeUnivariateHilbertSeries();
 }
 
-// TODO: This seems redundant with IdealSplitter. Investigate.
+/**
+ @todo: This seems redundant with IdealSplitter. Investigate.
+*/
 class IrreducibleIdealDecoder : public Frobby::IdealConsumer {
 public:
   IrreducibleIdealDecoder(IdealConsumer* consumer):
@@ -296,30 +299,23 @@ public:
 	_consumer(consumer),
 	_term(0) {
 	ASSERT(_consumer != 0);
-
-	mpz_init_set_ui(_zero, 0);
   }
 
   ~IrreducibleIdealDecoder() {
-	mpz_clear(_zero);
   }
 
   virtual void idealBegin(size_t varCount) {
-	ASSERT(_term == 0);
-
 	_varCount = varCount;
-	_term = new mpz_ptr[varCount];
+	_term.resize(varCount);
 	for (size_t var = 0; var < _varCount; ++var)
-	  _term[var] = _zero;
+	  _term[var] = _zero.get_mpz_t();
   }
 
   virtual void idealEnd() {
-    ASSERT(_term != 0);
-	delete[] _term;
+	_term.clear();
   }
 
   virtual void consume(mpz_ptr* exponentVector) {
-	ASSERT(_term != 0);
 	_consumer->idealBegin(_varCount);
 
 	bool isIdentity = true;
@@ -327,12 +323,12 @@ public:
 	  if (mpz_cmp_ui(exponentVector[var], 0) != 0) {
 		isIdentity = false;
 		_term[var] = exponentVector[var];
-		_consumer->consume(_term);
-		_term[var] = _zero;
+		_consumer->consume(&*(_term.begin()));
+		_term[var] = _zero.get_mpz_t();
 	  }
 	}
 	if (isIdentity)
-	  _consumer->consume(_term);
+	  _consumer->consume(&*(_term.begin()));
 
 	_consumer->idealEnd();
   }
@@ -340,8 +336,8 @@ public:
 private:
   size_t _varCount;
   IdealConsumer* _consumer;
-  mpz_ptr* _term;
-  mpz_t _zero;
+  vector<mpz_ptr> _term;
+  mpz_class _zero;
 };
 
 void Frobby::irreducibleDecompositionAsIdeals(const Ideal& ideal,
@@ -399,20 +395,16 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  bool canUseBound = true;
   vector<mpz_class> grading;
-  for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+  for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
 	grading.push_back(mpz_class(l[var]));
-	if (grading.back() < 0)
-	  canUseBound = false;
-  }
 
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
   SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params(canUseBound, false);
+  SliceParameters params(true, false);
   params.apply(facade);
 
   mpz_class dummy;
-  return facade.solveStandardProgram(grading, dummy, false, canUseBound);
+  return facade.solveStandardProgram(grading, dummy, false, true, true);
 }

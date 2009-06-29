@@ -108,6 +108,8 @@ protected:
 
   mutable Term _oneCounts;
   void setOneCounts(const Slice& slice) const {
+	ASSERT(!const_cast<Slice&>(slice).adjustMultiply());
+	ASSERT(!const_cast<Slice&>(slice).baseCase(false));
 	// For each variable, count number of terms with exponent equal to 1,
 	// not counting pure powers.
 	_oneCounts.reset(slice.getVarCount());
@@ -115,7 +117,7 @@ protected:
 	Ideal::const_iterator end = slice.getIdeal().end();
 	for (Ideal::const_iterator it = slice.getIdeal().begin();
 		 it != end; ++it) {
-	  if (getSizeOfSupport(*it, slice.getVarCount()) == 1)
+	  if (Term::getSizeOfSupport(*it, slice.getVarCount()) == 1)
 		continue; // Not counting pure powers.
 	  for (size_t var = 0; var < slice.getVarCount(); ++var)
 		if ((*it)[var] == 1)
@@ -158,7 +160,6 @@ public:
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
 	setOneCounts(slice);
-
 	for (size_t var = 0; ; ++var) {
 		ASSERT(var < slice.getVarCount());
 		if (_oneCounts[var] > 0)
@@ -365,13 +366,13 @@ public:
 	Ideal::const_iterator end = slice.getIdeal().end();
 	for (Ideal::const_iterator it = slice.getIdeal().begin();
 		 it != end; ++it)
-	  if (!::isSquareFree(*it, slice.getVarCount()))
+	  if (!Term::isSquareFree(*it, slice.getVarCount()))
 		++nonSquareFreeCount;
 	
 	size_t selected = rand() % nonSquareFreeCount;
 	for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
 	  ASSERT(it != end);
-	  if (::isSquareFree(*it, slice.getVarCount()))
+	  if (Term::isSquareFree(*it, slice.getVarCount()))
 		continue;
 	  
 	  if (selected == 0) {
@@ -405,7 +406,7 @@ public:
 	// TODO: pick a middle variable in case of ties.
 
 	_maxDiff = -1;
-	size_t maxOffset = (size_t)-1;
+	size_t maxOffset = 0u;
 	for (size_t var = 0; var < slice.getVarCount(); ++var) {
 	  if (lcm[var] <= 1)
 		continue;
@@ -415,20 +416,21 @@ public:
 
 	  // We could be looking at an added pure power whose exponent is
 	  // defined to have degree 0. We don't want to look at that.
-	  if (mid == grader.getMaxExponent(var) &&
-		  grader.getGrade(var, mid) == 0 &&
-		  mid > base)
+	  if (mid == grader.getMaxExponent(var) && mid > base)
 		--mid;
 
 	  _diff = grader.getGrade(var, mid) - grader.getGrade(var, base);
-	  ASSERT(_diff >= 0);
+		
+	  if (grader.getGradeSign(var) < 0)
+		_diff = -_diff;
+	  
+	  ASSERT(_diff >= 0 || base == mid);
 
 	  if (_diff > _maxDiff) {
 		maxOffset = var;
 		_maxDiff = _diff;
 	  }
 	}
-	ASSERT(maxOffset != (size_t)-1);
 
 	pivot.setToIdentity();
 	pivot[maxOffset] = lcm[maxOffset] / 2;
@@ -448,8 +450,9 @@ private:
   mutable mpz_class _diff;
 };
 
-/// This class is deprecated and is only here to create the alias
-/// "frob" for the degree split.
+/** This class is deprecated and is only here to create the alias
+ "frob" for the degree split.
+*/
 class DeprecatedFrobeniusSplit : public DegreeSplit {
 public:
   DeprecatedFrobeniusSplit() {

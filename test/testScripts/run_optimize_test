@@ -7,7 +7,7 @@ shift
 
 if [ -e "$test.optVector" ];
 then
-  inputFile="$test.test $test.frobInstance"
+  inputFile="$test.test $test.optVector"
 else
   inputFile="$test.test"
 fi
@@ -24,30 +24,102 @@ if [ "$1" = "_full" ]; then
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
 
-  # And again with -maxstandard.
+  # And again with -maxStandard.
   $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
     -canon -displayLevel 2 -displayValue off -maxStandard
   $testHelper transform $tmpFile $tmpFile -canon
   if [ $? != 0 ]; then exit 1; fi
   rm -f $tmpFile
 
-  # Solve the irreducible decomposition program without the bound optimization.
+  # and again for minimizing.
+  $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
+    -canon -displayLevel 2 -displayValue off -minValue
+  $testHelper transform $tmpFile $tmpFile -canon
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # And again for minimizing with -maxStandard.
+  $frobby optimize < "$inputFile" > $tmpFile 2> /dev/null \
+    -canon -displayLevel 2 -displayValue off -maxStandard -minValue
+  $testHelper transform $tmpFile $tmpFile -canon
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # ****************************************************************
+  # Check that the right value is found even when only looking for a
+  # single optimal vector. This is relevant since it allows more
+  # aggresive use of the bound.
+
+  # maximize, irreducible
+  tail -n 1 < $test.opt_irr > $tmpFile # pick out value at end
+  $testHelper optimize "$inputFile" $tmpFile -displayLevel 0 -displayValue \
+	  $* -maxStandard off -minValue off
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # maximize, msm
+  tail -n 1 < $test.opt_std > $tmpFile # pick out value at end
+  $testHelper optimize "$inputFile" $tmpFile -displayLevel 0 -displayValue \
+	  $* -maxStandard on -minValue off
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # minimize, irreducible
+  tail -n 1 < $test.opt_irr_min > $tmpFile # pick out value at end
+  $testHelper optimize "$inputFile" $tmpFile -displayLevel 0 -displayValue \
+	  $* -maxStandard off -minValue
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # minimize, msm
+  tail -n 1 < $test.opt_std_min > $tmpFile # pick out value at end
+  $testHelper optimize "$inputFile" $tmpFile -displayLevel 0 -displayValue \
+	  $* -maxStandard on -minValue
+  if [ $? != 0 ]; then exit 1; fi
+  rm -f $tmpFile
+
+  # ****************************************************************
+  # Solve the problems without using the bound, thus increasing
+  # confidence that a bug in the bound code is not causing
+  # miscalculation of the value or solutions.
+
+  # maximize, irreducible
   $testHelper optimize "$inputFile" $test.opt_irr \
 	  $* -canon -displayLevel 2 -bound off
   if [ $? != 0 ]; then exit 1; fi
 
-  # Solve the maximal standard monomial program without the bound optimization.
+  # maximize, msm
   $testHelper optimize "$inputFile" $test.opt_std \
 	  $* -canon -displayLevel 2 -maxStandard -bound off
   if [ $? != 0 ]; then exit 1; fi
+
+  # minimize, irreducible
+  $testHelper optimize "$inputFile" $test.opt_irr_min \
+	  $* -canon -displayLevel 2 -bound off -minValue
+  if [ $? != 0 ]; then exit 1; fi
+
+  # minimize, msm
+  $testHelper optimize "$inputFile" $test.opt_std_min \
+	  $* -canon -displayLevel 2 -maxStandard -bound off -minValue
+  if [ $? != 0 ]; then exit 1; fi
 fi
 
-# Solve the irreducible decomposition program.
+# Solve the maximize irreducible decomposition program.
 $testHelper optimize "$inputFile" $test.opt_irr \
   $* -canon -displayLevel 2
 if [ $? != 0 ]; then exit 1; fi
 
-# Solve the maximal standard monomial program.
+# Solve the maximize maximal standard monomial program.
 $testHelper optimize "$inputFile" $test.opt_std \
   $* -canon -displayLevel 2 -maxStandard
+if [ $? != 0 ]; then exit 1; fi
+
+# Solve the minimize irreducible decomposition program.
+$testHelper optimize "$inputFile" $test.opt_irr_min \
+  $* -canon -displayLevel 2 -minValue
+if [ $? != 0 ]; then exit 1; fi
+
+# Solve the minimize maximal standard monomial program.
+$testHelper optimize "$inputFile" $test.opt_std_min \
+  $* -canon -displayLevel 2 -maxStandard -minValue
 if [ $? != 0 ]; then exit 1; fi

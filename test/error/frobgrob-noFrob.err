@@ -1,2 +1,4 @@
+NOTE: The action frobgrob is DEPRECATED, and will be removed in a future release of Frobby. Use the action optimize with options -chopFirstAndSubtract and -maxStandard instead to get the same effect.
+NOTE: The split selection strategy "frob" is deprecated and will be removed in a future version of Frobby. Use the name "degree" to achieve the same thing.
 SYNTAX ERROR (line 2):
   Read empty Frobenius instance, which is not allowed.

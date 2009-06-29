@@ -12,37 +12,47 @@ shift
 inputFile="$testName.test"
 formats="m2 4ti2 monos newmonos singular cocoa4"
 
+if [ "$testName" = "null" ]; then
+  null="-iformat null"
+fi
+
 if [ "$1" = "_full" ];
 then
   shift;
 
+  # Test same-format transform.
   for format in $formats; do
-    # Test same-format transform.
     $testhelper transform $testName.$format $testName.$format $*;
     if [ $? != 0 ]; then exit 1; fi
+  done
 
-    # And again with specified formats.
+  # And again with specified formats.
+  for format in $formats null; do
     $testhelper transform $testName.$format $testName.$format \
       $* -iformat $format -oformat $format;
     if [ $? != 0 ]; then exit 1; fi
   done
 
   # Test same-format transform on canon
-  $testhelper transform $testName.canon $testName.canon $*;
+  $testhelper transform $testName.canon $testName.canon $* $null;
   if [ $? != 0 ]; then exit 1; fi
 
   # And again with -canon option
-  $testhelper transform $testName.canon $testName.canon $* -canon;
+  $testhelper transform $testName.canon $testName.canon $* -canon $null;
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-for format in $formats; do
+for format in $formats null count; do
   # Test format conversion to $format
   outputFile="$testName.$format";
-  $testhelper transform $inputFile $outputFile $* -oformat $format;
+  $testhelper transform $inputFile $outputFile $* -oformat $format $null;
   if [ $? != 0 ]; then exit 1; fi
 done
 
+# Test null input format on this input, which should default to null
+# output format and so produce no output.
+$testhelper transform $inputFile null.null $* -iformat null
+
 # Test canonicalization of input
 outputFile="$testName.canon";
-$testhelper transform $inputFile $outputFile $* -canon
+$testhelper transform $inputFile $outputFile $* -canon $null

@@ -55,3 +55,8 @@ support are as follows.
   - supports input and output of a list of monomial ideals.
   - supports input and output of a polynomial.
 
+* The format count: Writes the number of output terms.
+  - supports output of a monomial ideal.
+  - supports output of a list of monomial ideals.
+  - supports output of a polynomial.
+

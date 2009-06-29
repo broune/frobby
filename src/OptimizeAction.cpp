@@ -24,6 +24,7 @@
 #include "BigIdeal.h"
 #include "BigTermConsumer.h"
 #include "NullTermConsumer.h"
+#include "error.h"
 
 #include <algorithm>
 
@@ -48,12 +49,7 @@ OptimizeAction::OptimizeAction():
  "This action has options for displaying the optimal value or not and for\n"
  "displaying zero, one or all of the optimal solutions. The algorithm used "
  "to\nsolve the optimization program is the Slice Algorithm using the bound\n"
- "optimization. Thus this action also has options related to that.\n"
- "\n"
- "The implementation (not the algorithm) is currently limited by the "
- "requirement\nthat all entries of v be non-negative. If this condition is "
- "not met, Frobby\nfalls back on the Slice Algorithm without the bound "
- "optimization, and thus ends up\ncomputing all irreducible components of I.",
+ "optimization. Thus this action also has options related to that.",
  false),
 
   _sliceParams(true, false),
@@ -80,8 +76,14 @@ OptimizeAction::OptimizeAction():
   _chopFirstAndSubtract
   ("chopFirstAndSubtract",
    "Remove the first variable from generators, from the ring and from v, "
-   "and\nsubtract the value of the first entry of v from the reported"
+   "and\nsubtract the value of the first entry of v from the reported "
    "optimal value.\nThis is useful for Frobenius number calculations.",
+   false),
+
+  _minimizeValue
+  ("minValue",
+   "Minimize the value of v * e above. If this option is not set, maximize "
+   "v * e\ninstead, as is the stated default above.",
    false),
 
   _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
@@ -93,6 +95,7 @@ void OptimizeAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_displayValue);
   parameters.push_back(&_maxStandard);
   parameters.push_back(&_chopFirstAndSubtract);
+  parameters.push_back(&_minimizeValue);
   _io.obtainParameters(parameters);
   _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
@@ -119,10 +122,19 @@ void OptimizeAction::perform() {
 
   mpz_class subtract = 0;
   if (_chopFirstAndSubtract) {
-	subtract = v[0];
+	if (v.empty()) {
+	  _chopFirstAndSubtract = false;
+	} else {
+	  subtract = v[0];
 
-	v.erase(v.begin());
-	ideal.eraseVar(0);
+	  v.erase(v.begin());
+	  ideal.eraseVar(0);
+	}
+  }
+
+  if (_minimizeValue) {
+	for (size_t var = 0; var < v.size(); ++var)
+	  v[var] = -v[var];
   }
 
   auto_ptr<IOHandler> handler;
@@ -139,19 +151,27 @@ void OptimizeAction::perform() {
   mpz_class optimalValue = 0;
 
   bool displayAll = (_displayLevel >= 2);
-  bool useBound = _sliceParams.getUseBound();
+  bool useBoundElimination = _sliceParams.getUseBoundElimination();
+  bool useBoundSimplification = _sliceParams.getUseBoundSimplification();
   bool anySolution;
   if (_maxStandard)
 	anySolution = facade.solveStandardProgram
-	  (v, optimalValue, displayAll, useBound);
+	  (v, optimalValue, displayAll,
+	   useBoundElimination, useBoundSimplification);
   else
 	anySolution = facade.solveIrreducibleDecompositionProgram
-	  (v, optimalValue, displayAll, useBound);
+	  (v, optimalValue, displayAll,
+	   useBoundElimination, useBoundSimplification);
 
   if (_displayValue) {
 	if (!anySolution)
 	  fputs("no solution.\n", stdout);
 	else {
+	  if (_minimizeValue) {
+		// We flipped the sign of the vector to optimize before, so we
+		// need to flip the sign of the value again.
+		optimalValue = -optimalValue;
+	  }
 	  if (_chopFirstAndSubtract)
 		optimalValue -= subtract;
 	  gmp_fprintf(stdout, "%Zd\n", optimalValue.get_mpz_t());

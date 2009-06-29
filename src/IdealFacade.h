@@ -24,6 +24,11 @@
 class BigIdeal;
 class IOHandler;
 
+/** A facade for performing operations on BigIdeal. These
+	operations should not fit somewhere else, such as on SliceFacade.
+
+	@ingroup Facade
+*/
 class IdealFacade : private Facade {
  public:
   IdealFacade(bool printActions);

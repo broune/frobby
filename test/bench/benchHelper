@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+# This runs a benchmark while measuring the time taken.
+#  $1  The Frobby action to run (e.g. alexdual)
+#  $2  The name of one or more space-separated input files
+#  $3+ Parameters to Frobby
+#
+# The time printed is the user CPU time that Frobby took to complete
+# the computation.
+#
+# Parameter 2 can contain more than one file if this script has been called
+# as e.g. "../thisscript action "file1 file2"
+#
+# If $3 is _profile, then the warning Frobby issues on running
+# a profile build is not displayed.
+#
+# If $3 is _runs, then $4 must be an integer, and the benchmark will
+# be run that many times
+#
+# If $3 is _noDetails, then do not display what action is being taken
+# on which file, as it otherwise done.
+
+frobby=../../bin/frobby
+TIMEFORMAT="%1Us "
+
+action="$1"
+inputFile="$2"
+
+shift
+shift
+
+runsToMake=1;
+suppresProfile=0;
+displayDetails=1;
+
+changed=1;
+while [ $changed = 1 ];
+do
+  changed=0;
+
+  if [ "$1" = "_profile" ];
+  then
+    changed=1;
+    suppressProfile=1;
+    shift;
+  fi
+
+  if [ "$1" = "_runs" ];
+  then
+    changed=1;
+    runsToMake="$2";
+    shift;
+	shift;
+  fi
+
+  if [ "$1" = "_noDetails" ];
+  then
+    changed=1;
+    displayDetails=0;
+    shift;
+  fi
+done
+
+params="$*"
+
+function runFrobby {
+  cat $inputFile|$frobby $action -oformat null $params 2>&1
+}
+
+function suppressFrobby {
+  if [ "$suppressProfile" = "1" ]; then
+    runFrobby|sed /PROFILE/d
+  else
+    runFrobby
+  fi
+}
+
+function timeFrobby {
+  # Creating a subshell and using tr is the only way I know of to get
+  # rid of the trailing newline that time appends to the end. We have
+  # to get rid of this to put more than one benchmark time on the same
+  # line.
+  (time suppressFrobby) 2>&1|tr -d '\012'
+}
+
+if [ "$displayDetails" = "1" ]; then
+  echo -n "$action `basename $inputFile .test`: "
+fi
+
+for ((run=0; run<$runsToMake; ++run))
+do
+  timeFrobby
+done
+echo

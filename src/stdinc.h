@@ -52,24 +52,6 @@
 #include <memory>
 using namespace std;
 
-//#define LOG
-//#define PROFILE
-
-#ifdef PROFILE
-static void _noInline() {cerr << "this should not be printed - inlining prevention has gone awry" << endl;}
-int _noInlineVariable = time(0); // so the compiler will not know what the value is
-// place enough code into the function so that it will not be inlined.
-#define PROFILE_NO_INLINE {if (_noInlineVariable == -1){\
-_noInline();_noInline();_noInline();_noInline();_noInline();\
-_noInline();_noInline();_noInline();_noInline();_noInline();\
-_noInline();_noInline();_noInline();_noInline();_noInline();\
-_noInline();_noInline();_noInline();_noInline();_noInline();\
-_noInline();_noInline();_noInline();_noInline();_noInline();\
-_noInline();_noInline();_noInline();_noInline();_noInline();}}
-#else
-#define PROFILE_NO_INLINE
-#endif
-
 #ifdef DEBUG
 #include <iostream> // Useful for debugging.
 #define PRINT

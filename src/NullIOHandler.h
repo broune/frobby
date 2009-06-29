@@ -1,3 +1,4 @@
+
 /* Frobby: Software for monomial ideal computations.
    Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
 
@@ -24,8 +25,9 @@ class Scanner;
 class BigIdeal;
 class BigPolynomial;
 
-// Reads the empty ideal without actually consulting the input, and
-// never writes anything to the output.
+/** This IO format reads the empty ideal without actually consulting
+the input, and does nothing when asked to writed output.
+*/
 class NullIOHandler : public IOHandler {
 public:
   NullIOHandler();

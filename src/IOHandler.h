@@ -31,20 +31,23 @@ class BigTermConsumer;
 class DataType;
 class CoefBigTermConsumer;
 
-// An IOHandler implements input and output in some format in such a way
-// that client code does not need to know which format is being used.
-// The IOHandler itself has no mutable of its own. If it needs to track
-// state, that state is either passed through each method call, of the
-// IOHandler returns an object that takes care of further IO and which
-// itself has state.
+/** An IOHandler implements input and output for some format in such
+ a way that client code does not need to know which format is being
+ used. An IOHandler has no mutable state of its own. If it needs to
+ track state, that state is either passed through each method call, or
+ the IOHandler returns an object that takes care of further IO and
+ which itself has state.
+
+ @ingroup IO
+*/
 class IOHandler {
  public:
   virtual ~IOHandler();
 
-  // Read an ideal and feed it to the consumer.
+  /** Read an ideal and feed it to the consumer. */
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer) = 0;
 
-  // Read a number of ideals and feed them to the consumer.
+  /** Read a number of ideals and feed them to the consumer. */
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer) = 0;
 
   virtual void readTerm(Scanner& in, const VarNames& names,
@@ -63,17 +66,19 @@ class IOHandler {
   virtual auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
   virtual auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
 
-  // Returns null if name is unknown.
+  /** Returns an IOHandler for the format with the passed in name, or
+   returns null (i.e. 0) if the name is not known.
+  */
   static auto_ptr<IOHandler> createIOHandler(const string& name);
 
-  // This name is confusing. Change it.
+  /** @todo This name is confusing. Change it. */
   static void addFormatNames(vector<string>& names);
 
   bool supportsInput(const DataType& type) const;
   bool supportsOutput(const DataType& type) const;
 
  protected:
-  // For preserving ring information when writing an empty list of ideals.
+  /** For preserving ring information when writing an empty list of ideals. */
   virtual void writeRing(const VarNames& names, FILE* out) = 0;
 
   // Output of polynomials.

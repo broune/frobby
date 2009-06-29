@@ -28,6 +28,9 @@
 
 #include <vector>
 
+// This whole thing was exceedingly hard to get right, which is why
+// there are so many tests here.
+
 TEST_SUITE(SliceStrategy)
 TEST_SUITE2(SliceStrategy, OptimizeStrategy)
 
@@ -47,42 +50,164 @@ TEST(OptimizeStrategy, Simplify) {
   TermTranslator translator(IdealFactory::xx_yy_zz_t_xz_yz(), ideal, false);
   TermGrader grader(makeVector(0, 100, 10000, mpz_class("300000000000000007")), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
-  OptimizeStrategy strategy(grader, splitStrategy.get(), false, true);
-
+  OptimizeStrategy strategy
+	(grader, splitStrategy.get(), false,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
   runSliceAlgorithm(ideal, strategy);
 
   ASSERT_EQ(strategy.getMaximalSolutions(), Ideal(Term("1 1 2 1")));
   ASSERT_EQ(strategy.getMaximalValue(), mpz_class("300000000000020107"));
 }
 
-TEST(OptimizeStrategy, improveLowerBound) {
-  TermTranslator translator(4, 100);
+TEST(OptimizeStrategy, ChangedInWayRelevantToBound) {
+  TermTranslator translator(4, 10);
+  TermGrader grader(makeVector(1, -1, 0, 0), translator);
+  auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
+  OptimizeStrategy opt
+	(grader, splitStrategy.get(), true,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+
+  // Case 1 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term("0 0 0 0"), Term("0 2 0 0"),
+			   Term("0 1 0 0"), Term("0 2 0 0")));
+
+  // Case 2 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term("0 0 0 0"), Term("0 10 0 0"),
+			   Term("0 0 0 0"), Term("0 9 0 0")));
+
+  // Case 3 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term("0 0 0 0"), Term("9 0 0 0"),
+			   Term("0 0 0 0"), Term("8 0 0 0")));
+
+  // Case 4 from the documentation.
+  ASSERT_TRUE(opt.changedInWayRelevantToBound
+			  (Term(" 9 0 0 0"), Term("10 0 0 0"),
+			   Term("10 0 0 0"), Term("10 0 0 0")));
+
+  // Nothing changed.
+  ASSERT_FALSE(opt.changedInWayRelevantToBound
+			   (Term("0 0 0 0"), Term("0 0 0 0"),
+				Term("0 0 0 0"), Term("0 0 0 0")));
+
+  // No case applies.
+  ASSERT_FALSE(opt.changedInWayRelevantToBound
+			   (Term("1 2 3 3"), Term("10 9 10 9"),
+				Term("1 2 4 4"), Term(" 9 5  9 4")));
+}
+
+#define INNER_SIMP_TEST(strat, div, dom, degree, expectPivot) \
+  { \
+    Term gotPivot(Term(expectPivot).getVarCount()); \
+    bool expectSimplify = !Term(expectPivot).isIdentity(); \
+    ASSERT_EQ(strat.getInnerSimplify \
+			  (Term(div), Term(dom), degree, gotPivot), \
+			  expectSimplify); \
+	if (expectSimplify) { \
+	  ASSERT_EQ(gotPivot, Term(expectPivot)); \
+    } \
+  }
+
+#define OUTER_SIMP_TEST(strat, div, dom, degree, expectPivot) \
+  { \
+    Term gotPivot(Term(expectPivot).getVarCount()); \
+    bool expectSimplify = !Term(expectPivot).isIdentity(); \
+    ASSERT_EQ(strat.getOuterSimplify \
+			  (Term(div), Term(dom), degree, gotPivot), \
+			  expectSimplify); \
+	if (expectSimplify) { \
+	  ASSERT_EQ(gotPivot, Term(expectPivot)); \
+    } \
+  }
+
+TEST(OptimizeStrategy, SimplifyPositiveGrading) {
+  TermTranslator translator(4, 10);
   TermGrader grader(makeVector(100, 10, 1, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
 
-  OptimizeStrategy reportAll(grader, splitStrategy.get(), true, true);
-  OptimizeStrategy reportOne(grader, splitStrategy.get(), false, true);
+  OptimizeStrategy all // Report all optimal solutions.
+	(grader, splitStrategy.get(), true,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+  OptimizeStrategy one // Report one optimal solution.
+	(grader, splitStrategy.get(), false,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
 
-  reportAll.beginConsuming();
-  reportAll.consume(Term("1 2 3 4"));
-  ASSERT_EQ(reportAll.getMaximalValue(), mpz_class("123"));
+  all.beginConsuming();
+  all.consume(Term("1 2 3 4"));
+  ASSERT_EQ(all.getMaximalValue(), mpz_class("123"));
 
-  reportOne.beginConsuming();
-  reportOne.consume(Term("1 2 3 4"));
-  ASSERT_EQ(reportOne.getMaximalValue(), mpz_class("123"));
+  one.beginConsuming();
+  one.consume(Term("1 2 3 4"));
+  ASSERT_EQ(one.getMaximalValue(), mpz_class("123"));
 
-  // Can improve var 2 by 1 or 2 depending on how many solutions are to be reported
-  ASSERT_EQ(reportAll.improveLowerBound(2, 125, Term("1 2 5 4"), Term("1 2 1 4")), 1u);
-  ASSERT_EQ(reportOne.improveLowerBound(2, 125, Term("1 2 5 4"), Term("1 2 1 4")), 2u);
+  // No improvement.
+  INNER_SIMP_TEST(all, "1 2 3 4", "1 2 4 4", 124,  "0 0 0 0");
+  INNER_SIMP_TEST(one, "1 2 4 4", "1 2 5 4", 125,  "0 0 0 0");
 
-  // Can improve var 0 by 1 only when reporting only one solution.
-  ASSERT_EQ(reportAll.improveLowerBound(0, 523, Term("5 2 3 4"), Term("0 2 3 4")), 0u);
-  ASSERT_EQ(reportOne.improveLowerBound(0, 523, Term("5 2 3 4"), Term("0 2 3 4")), 1u);
+  // Improvement depends on reporting.
+  INNER_SIMP_TEST(all, "1 2 1 1", "1 2 5 1", 125,  "0 0 2 0");
+  INNER_SIMP_TEST(one, "1 2 1 1", "1 2 5 1", 125,  "0 0 3 0");
 
-  // Cannot improve by anything in either case.
-  ASSERT_EQ(reportAll.improveLowerBound(0, 223, Term("2 2 3 4"), Term("1 2 3 4")), 0u);
-  ASSERT_EQ(reportOne.improveLowerBound(0, 223, Term("2 2 3 4"), Term("1 2 3 4")), 0u);
+  // Improvement in more than one variable, varying with reporting.
+  INNER_SIMP_TEST(all, "1 0 0 4", "1 2 4 8", 124,  "0 2 3 0");
+  INNER_SIMP_TEST(one, "1 0 0 4", "1 2 4 9", 124,  "0 2 4 0");
 
-  reportAll.doneConsuming();
-  reportOne.doneConsuming();
+  // Improvement due to 10 mapping to zero.
+  OUTER_SIMP_TEST(all, "1 2 3 4", "1 10 3 4", 193,  "0 8 0 0");
+  OUTER_SIMP_TEST(one, "1 2 3 4", "1 10 3 4", 193,  "0 8 0 0");
+
+  // No improvement as 10 to zero does not get below bound.
+  OUTER_SIMP_TEST(all, "2 2 3 4", "2 10 3 4", 293,  "0 0 0 0");
+  OUTER_SIMP_TEST(one, "2 2 3 4", "2 10 3 4", 293,  "0 0 0 0");
+
+  // Regressions, i.e. tests that capture past actual bugs.
+  INNER_SIMP_TEST(one, "1 2 0 1", "1 2 10 1", 129, "0 0 4 0");
+}
+
+TEST(OptimizeStrategy, SimplifyNegativeGrading) {
+  TermTranslator translator(4, 10);
+  TermGrader grader(makeVector(-100, -10, -1, 0), translator);
+  auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
+
+  OptimizeStrategy all // Report all optimal solutions.
+	(grader, splitStrategy.get(), true,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+  OptimizeStrategy one // Report one optimal solution.
+	(grader, splitStrategy.get(), false,
+	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+
+  all.beginConsuming();
+  all.consume(Term("1 2 3 4"));
+  ASSERT_EQ(all.getMaximalValue(), mpz_class("-123"));
+
+  one.beginConsuming();
+  one.consume(Term("1 2 3 4"));
+  ASSERT_EQ(one.getMaximalValue(), mpz_class("-123"));
+
+  // No improvement.
+  OUTER_SIMP_TEST(all, "1 2 3 4", "1 2 3 4", -123,  "0 0 0 0");
+  OUTER_SIMP_TEST(one, "1 2 2 4", "1 2 2 4", -122,  "0 0 0 0");
+
+  // Improvement depends on reporting one or all.
+  OUTER_SIMP_TEST(all, "1 2 2 4", "1 2 3 5", -122,  "0 0 0 0");
+  OUTER_SIMP_TEST(one, "1 2 2 4", "1 2 3 5", -122,  "0 0 1 0");
+
+  // Improvement in more than one variable, only see the first.
+  OUTER_SIMP_TEST(all, "1 2 1 4", "1 5 5 7", -121,  "0 1 0 0");
+  OUTER_SIMP_TEST(one, "1 2 1 4", "1 5 5 7", -121,  "0 1 0 0");
+
+
+  // Improvement due to 10 mapping to zero.
+  INNER_SIMP_TEST(all, "1 5 3 4", "1 10 3 4", -103,  "0 5 0 0");
+  INNER_SIMP_TEST(one, "1 5 2 4", "1 10 2 4", -103,  "0 5 0 0");
+
+  // No improvement as 10 to zero is not necessary to get below bound.
+  INNER_SIMP_TEST(all, "10 5 3 4", "10 10 3 4", -3,  "0 0 0 0");
+  INNER_SIMP_TEST(one, "10 5 2 4", "10 10 2 4", -3,  "0 0 0 0");
+
+  // No improvement due to zero both at 0 and 10.
+  INNER_SIMP_TEST(all, "1 0 3 4", "1 10 3 4", -103,  "0 0 0 0");
+  INNER_SIMP_TEST(one, "1 0 2 4", "1 10 2 4", -103,  "0 0 0 0");
 }

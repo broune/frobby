@@ -25,6 +25,9 @@ class TermTranslator;
 
 #include <vector>
 
+/** This follows the null object pattern. None of the methods do
+ anything.
+*/
 class NullCoefTermConsumer : public CoefBigTermConsumer {
  public:
   virtual void consumeRing(const VarNames& names);

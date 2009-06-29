@@ -37,6 +37,14 @@ void DebugStrategy::setUseIndependence(bool use) {
   _strategy->setUseIndependence(use);
 }
 
+void DebugStrategy::setUseSimplification(bool use) {
+  if (use)
+	fputs("DEBUG: Turning on simplification.", _out);
+  else
+	fputs("DEBUG: Turning off simplification.", _out);
+  _strategy->setUseSimplification(use);
+}
+
 auto_ptr<Slice> DebugStrategy::beginComputing(const Ideal& ideal) {
   fputs("DEBUG: Constructing initial slice.\n", _out);
   auto_ptr<Slice> initialSlice = _strategy->beginComputing(ideal);
@@ -72,6 +80,17 @@ void DebugStrategy::split(auto_ptr<Slice> slice,
 	fputs("None.\n", stderr);
   else
 	rightSlice->print(stderr);
+}
+
+bool DebugStrategy::processIfBaseCase(Slice& slice) {
+  fputs("DEBUG: Examining whether slice is base case.\n", _out);  
+  slice.print(stderr);
+  bool isBaseCase = _strategy->processIfBaseCase(slice);
+  if (isBaseCase)
+	fputs("DEBUG: Determined that slice is base case.\n", _out);
+  else
+	fputs("DEBUG: Determined that slice is not base case.\n", _out);
+  return isBaseCase;
 }
 
 void DebugStrategy::freeSlice(auto_ptr<Slice> slice) {

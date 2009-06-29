@@ -53,11 +53,12 @@ int noVars = 0;
 ideal I =
  a*b,
  a;
-ring R = 0, (long, longer, longestlongest), lp;
+ring R = 0, (long, longer, l_ongestlongest___with_underscores), lp;
 int noVars = 0;
 ideal I =
  1,
- long^100000000000000000000001;
+ long^100000000000000000000001,
+ l_ongestlongest___with_underscores^42;
 ring R = 0, (long, longer, longestlongest), lp;
 int noVars = 0;
 ideal I =
