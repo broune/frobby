@@ -225,9 +225,13 @@ endif
 
 -include $(objs:.o=.d)
 
-# Installation
+# Installation.
 install:
-	sudo install bin/frobby $(BIN_INSTALL_DIR)
+	if [ "`uname|grep CYGWIN`" = "" ]; then \
+		sudo install bin/frobby $(BIN_INSTALL_DIR); \
+	else \
+		install bin/frobby $(BIN_INSTALL_DIR); \
+	fi  # Cygwin has no sudo
 
 # ***** Documentation
 
