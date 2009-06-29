@@ -30,6 +30,14 @@
    variable. This makes no difference for most inputs, but leads to
    dramatic speed-ups for some particular highly non-generic inputs.
 
+ - All Frobby files now use unix-style line endings, rather than the
+   mix that was there before. This was a significant problem for
+   programs that include frobby along with a custom patch to Frobby,
+   since the patch utility does not deal well with mixed line ending
+   styles. If you do this, and your patch file may have some dos-style
+   line endings in it, you can use the utility dos2unix to update to
+   this version of Frobby.
+
 *** Version 0.8.1, 2009-04-30
 
 This is a minor update.
