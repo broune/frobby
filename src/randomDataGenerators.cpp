@@ -25,7 +25,7 @@
 
 #include <limits>
 
-void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount) {
+void generateLinkedListIdeal(BigIdeal& ideal, size_t variableCount) {
   VarNames names(variableCount);
   ideal.clearAndSetNames(variableCount);
   ideal.reserve(variableCount);
@@ -37,8 +37,8 @@ void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount) {
 }
 
 void generateChessIdeal(BigIdeal& bigIdeal,
-						unsigned int rowCount,
-						unsigned int columnCount,
+						size_t rowCount,
+						size_t columnCount,
 						int deltaRow[],
 						int deltaColumn[],
 						size_t deltaCount) {
@@ -48,8 +48,8 @@ void generateChessIdeal(BigIdeal& bigIdeal,
 
   // Generate names
   VarNames names;
-  for (unsigned int row = 0; row < rowCount; ++row) {
-	for (unsigned int column = 0; column < columnCount; ++column) {
+  for (size_t row = 0; row < rowCount; ++row) {
+	for (size_t column = 0; column < columnCount; ++column) {
 	  FrobbyStringStream name;
 	  name << 'r' << (row + 1) << 'c' << (column + 1);
 	  names.addVar(name);
@@ -59,30 +59,30 @@ void generateChessIdeal(BigIdeal& bigIdeal,
   Ideal ideal(bigIdeal.getVarCount());
 
   // Generate ideal
-  for (unsigned int row = 0; row < rowCount; ++row) {
-	for (unsigned int column = 0; column < columnCount; ++column) {
+  for (size_t row = 0; row < rowCount; ++row) {
+	for (size_t column = 0; column < columnCount; ++column) {
 	  for (size_t delta = 0; delta < deltaCount; ++delta) {
 		// Check that the target position is within the board.
 		
 		if (deltaRow[delta] == numeric_limits<int>::min() ||
 			(deltaRow[delta] < 0 &&
-			 row < (unsigned int)-deltaRow[delta]) ||
+			 row < (size_t)-deltaRow[delta]) ||
 			(deltaRow[delta] > 0 &&
-			 rowCount - row <= (unsigned int)deltaRow[delta]))
+			 rowCount - row <= (size_t)deltaRow[delta]))
 		  continue;
 
 		if (deltaColumn[delta] == numeric_limits<int>::min() ||
 			(deltaColumn[delta] < 0 &&
-			 column < (unsigned int)-deltaColumn[delta]) ||
+			 column < (size_t)-deltaColumn[delta]) ||
 			(deltaColumn[delta] > 0 &&
-			 columnCount - column <= (unsigned int)deltaColumn[delta]))
+			 columnCount - column <= (size_t)deltaColumn[delta]))
 		  continue;
 
 		Term chessMove(ideal.getVarCount());
 		chessMove[row * columnCount + column] = 1;
 
-		unsigned int targetRow = row + deltaRow[delta];
-		unsigned int targetColumn = column + deltaColumn[delta];
+		size_t targetRow = row + deltaRow[delta];
+		size_t targetColumn = column + deltaColumn[delta];
 		ASSERT(targetRow < rowCount);
 		ASSERT(targetColumn < columnCount);
 
@@ -96,7 +96,7 @@ void generateChessIdeal(BigIdeal& bigIdeal,
   bigIdeal.insert(ideal);
 }
 
-void generateKingChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns) {
+void generateKingChessIdeal(BigIdeal& ideal, size_t rowsAndColumns) {
   int deltaRow[]    = {-1, 0, 1, 1}; // the other moves follow by symmetry
   int deltaColumn[] = { 1, 1, 1, 0};
   ASSERT(sizeof(deltaRow) == sizeof(deltaColumn));
@@ -107,7 +107,7 @@ void generateKingChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns) {
 					 deltaRow, deltaColumn, deltaCount);
 }
 
-void generateKnightChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns) {
+void generateKnightChessIdeal(BigIdeal& ideal, size_t rowsAndColumns) {
   int deltaRow[]    = {-1,  1, 2,  2}; // the other moves follow by symmetry
   int deltaColumn[] = { 2,  2, 1, -1};
   ASSERT(sizeof(deltaRow) == sizeof(deltaColumn));
@@ -118,21 +118,58 @@ void generateKnightChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns) {
 					 deltaRow, deltaColumn, deltaCount);
 }
 
-bool generateRandomIdeal(BigIdeal& bigIdeal,
-						 unsigned int exponentRange,
-						 unsigned int variableCount,
-						 unsigned int generatorCount) {
+bool generateRandomEdgeIdeal
+(BigIdeal& bigIdeal, size_t variableCount, size_t generatorCount) {
   Ideal ideal(variableCount);
   Term term(variableCount);
 
-  unsigned int generatorsToGo = generatorCount;
-  unsigned int triesLeft = (unsigned int)4 * 1000 * 1000;
+  size_t generatorsToGo = generatorCount;
+  size_t triesLeft = (size_t)4 * 1000 * 1000;
   while (generatorsToGo > 0 && triesLeft > 0) {
     --triesLeft;
 
-    for (unsigned int var = 0; var < variableCount; ++var) {
+	size_t a = rand() % variableCount;
+	size_t b = rand() % variableCount;
+	if (a == b)
+	  continue;
+
+	term[a] = 1;
+	term[b] = 1;
+
+    if (ideal.isIncomparable(term)) {
+      ideal.insert(term);
+      --generatorsToGo;
+    }
+
+	term[a] = 0;
+	term[b] = 0;
+
+    --triesLeft;
+  }
+
+  VarNames names(variableCount);
+  bigIdeal.clearAndSetNames(names);
+  bigIdeal.insert(ideal);
+
+  return generatorsToGo == 0;
+}
+
+
+bool generateRandomIdeal(BigIdeal& bigIdeal,
+						 size_t exponentRange,
+						 size_t variableCount,
+						 size_t generatorCount) {
+  Ideal ideal(variableCount);
+  Term term(variableCount);
+
+  size_t generatorsToGo = generatorCount;
+  size_t triesLeft = (size_t)4 * 1000 * 1000;
+  while (generatorsToGo > 0 && triesLeft > 0) {
+    --triesLeft;
+
+    for (size_t var = 0; var < variableCount; ++var) {
       term[var] = rand();
-      if (exponentRange != numeric_limits<unsigned int>::max())
+      if (exponentRange != numeric_limits<size_t>::max())
 		term[var] %= exponentRange + 1;
     }
 
@@ -140,8 +177,6 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
       ideal.insert(term);
       --generatorsToGo;
     }
-
-    --triesLeft;
   }
 
   VarNames names(variableCount);
