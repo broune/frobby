@@ -26,6 +26,7 @@ class TermTranslator;
 #include <vector>
 
 class NullCoefTermConsumer : public CoefBigTermConsumer {
+ public:
   virtual void consumeRing(const VarNames& names);
 
   virtual void beginConsuming();
