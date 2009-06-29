@@ -18,7 +18,10 @@
 # be run that many times
 #
 # If $3 is _noDetails, then do not display what action is being taken
-# on which file, as it otherwise done.
+# on which file, as is otherwise done.
+#
+# If $3 is _noOFormat, then -oformat null is not applied to
+# Frobby. This is useful in case the action does not support oformat.
 
 frobby=../../bin/frobby
 TIMEFORMAT="%1Us "
@@ -32,6 +35,7 @@ shift
 runsToMake=1;
 suppresProfile=0;
 displayDetails=1;
+oformat="-oformat null"
 
 changed=1;
 while [ $changed = 1 ];
@@ -59,12 +63,19 @@ do
     displayDetails=0;
     shift;
   fi
+
+  if [ "$1" = "_noOFormat" ];
+  then
+    changed=1;
+    oformat="";
+    shift;
+  fi
 done
 
 params="$*"
 
 function runFrobby {
-  cat $inputFile|$frobby $action -oformat null $params 2>&1
+  cat $inputFile|$frobby $action $oformat $params 1>/dev/null 2>&1
 }
 
 function suppressFrobby {
