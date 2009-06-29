@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+profileFile=../../bin/profile.codim
+frobby=../../bin/frobby
+if [ "$1" = "_profile" ];
+then
+  rm -f gmon.out
+fi
+
+./benchHelper dimension sqfreeV20G1000.test _noOFormat $*
+
+./benchHelper dimension sqfreeV25G1000.test _noOFormat $*
+
+./benchHelper dimension n11d11.test _noOFormat $*
+
+if [ "$1" = "_profile" ];
+then
+  gprof $frobby > $profileFile
+  rm -f gmon.out
+fi
