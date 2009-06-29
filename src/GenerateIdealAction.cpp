@@ -74,6 +74,8 @@ void GenerateIdealAction::perform() {
 							_generatorCount);
   else if (type == "list")
 	generator.generateListIdeal(ideal, _variableCount);
+  else if (type == "edge")
+	generator.generateEdgeIdeal(ideal, _variableCount, _generatorCount);
   else if (type == "king")
 	generator.generateKingChessIdeal(ideal, _variableCount);
   else if (type == "knight")

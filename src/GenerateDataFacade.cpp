@@ -52,6 +52,20 @@ void GenerateDataFacade::generateKnightChessIdeal
   endAction();
 }
 
+void GenerateDataFacade::generateEdgeIdeal
+(BigIdeal& ideal, size_t variableCount, size_t generatorCount) {
+  beginAction("Generating random edge ideal.");
+
+  bool fullSize =
+    ::generateRandomEdgeIdeal(ideal, variableCount, generatorCount);
+
+  if (!fullSize)
+	displayNote("Generated ideal has fewer minimal "
+				"generators than requested.\n");
+
+  endAction();  
+}
+
 void GenerateDataFacade::generateIdeal(BigIdeal& ideal,
 									   size_t exponentRange,
 									   size_t variableCount,
@@ -59,7 +73,7 @@ void GenerateDataFacade::generateIdeal(BigIdeal& ideal,
   beginAction("Generating random monomial ideal.");
 
   bool fullSize =
-	::generateRandomIdeal(ideal, exponentRange, variableCount, generatorCount);
+    ::generateRandomIdeal(ideal, exponentRange, variableCount, generatorCount);
 
   if (!fullSize)
 	displayNote("Generated ideal has fewer minimal "
