@@ -39,7 +39,7 @@ class SizeMaxIndepSetAlg {
 
   size_t upperBound(const State& state) const;
   bool isIndependentIncludingMaybe(size_t pos);
-  size_t getFirstPossibleDependence(size_t& pos, size_t& supportSize);
+  bool couldBeDependence(size_t pos, size_t nextPos, size_t& maybeCount);
 
   void recurse(size_t pos, size_t atMost);
 

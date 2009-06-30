@@ -92,6 +92,20 @@ bool SizeMaxIndepSetAlg::isIndependentIncludingMaybe(size_t pos) {
   return true;
 }
 
+inline bool SizeMaxIndepSetAlg::couldBeDependence(size_t pos, size_t nextPos, size_t& maybeCount) {
+  maybeCount = 0;
+  for (size_t p = pos + 1; p != nextPos; ++p) {
+	VarState varState = _state[_edges[p]];
+	if (varState == IsNotInSet) {
+	  // In this case the term at pos can do nothing to make the set
+	  // dependent, so move on.
+	  return false;
+	} else if (varState == IsMaybeInSet)
+	  ++maybeCount;
+  }
+  return true;  
+}
+
 void SizeMaxIndepSetAlg::recurse(size_t pos, size_t excluded) {
   ++co;
 
@@ -111,57 +125,49 @@ void SizeMaxIndepSetAlg::recurse(size_t pos, size_t excluded) {
 	return;
   }
 
-  while (pos != _endPos) {
+  while (true) {
+	if (pos == _endPos) {
+	  ASSERT(excluded == upperBound(_state));
+	  ASSERT(excluded < _minExcluded);
+	  _minExcluded = excluded;
+	  break;
+	}
+
 	size_t nextPos = pos + _edges[pos] + 1;
 
-	size_t maybeCount = 0;
+	size_t maybeCount;
+	if (!couldBeDependence(pos, nextPos, maybeCount)) {
+	  pos = nextPos;
+	  continue;
+	}
+
+	if (maybeCount == 0)
+	  break;
+
+	vector<size_t>& undo = _undo[excluded];
 	for (size_t p = pos + 1; p != nextPos; ++p) {
-	  VarState varState = _state[_edges[p]];
-	  if (varState == IsNotInSet) {
-		// In this case the term at pos can do nothing to make the set
-		// dependent, so move on.
-		goto moveOn;
-	  } else if (varState == IsMaybeInSet)
-		++maybeCount;
-	}
+	  size_t var = _edges[p];
+	  VarState& varState = _state[var];
 
-	if (maybeCount == 0) {
-	  // In this case term makes this set surely dependent.
-	  return;
-	}
+	  if (varState != IsMaybeInSet)
+		continue;
 
-	{
-	  for (size_t p = pos + 1; p != nextPos; ++p) {
-		size_t var = _edges[p];
-		VarState& varState = _state[var];
+	  varState = IsNotInSet;
+	  recurse(nextPos, excluded + 1);
 
-		if (varState != IsMaybeInSet)
-		  continue;
-
-		varState = IsNotInSet;
-		recurse(nextPos, excluded + 1);
-
-		if (maybeCount == 1) {
-		  varState = IsMaybeInSet;
-		  while (!_undo[excluded].empty()) {
-			_state[_undo[excluded].back()] = IsMaybeInSet;
-			_undo[excluded].pop_back();
-		  }
-		  return;
+	  if (maybeCount == 1) {
+		varState = IsMaybeInSet;
+		while (!undo.empty()) {
+		  _state[undo.back()] = IsMaybeInSet;
+		  undo.pop_back();
 		}
-
-		ASSERT(maybeCount >= 2);
-		varState = IsInSet;
-		--maybeCount;
-		_undo[excluded].push_back(var);
+		break;
 	  }
+
+	  varState = IsInSet;
+	  --maybeCount;
+	  undo.push_back(var);
 	}
-  moveOn:;
-
-	pos = nextPos;
+	break;
   }
-
-  ASSERT(excluded == upperBound(_state));
-  ASSERT(excluded < _minExcluded);
-  _minExcluded = excluded;
 }
