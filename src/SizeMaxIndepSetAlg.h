@@ -21,7 +21,8 @@
 
 class SizeMaxIndepSetAlg {
  public:
-  void run(const Ideal& ideal);
+  /** May rearrange the generators of ideal. */
+  void run(Ideal& ideal);
 
   const mpz_class& getMaxSize();
 
@@ -34,13 +35,17 @@ class SizeMaxIndepSetAlg {
   typedef vector<VarState> State;
   typedef Ideal::const_iterator Pos;
 
+  vector<vector<size_t> > _undo;
+
   size_t upperBound(const State& state) const;
 
-  void recurse(const State& currentState, Pos pos);
+  void recurse(State& currentState, size_t pos, size_t bound);
 
   size_t _varCount;
   mpz_class _maxSize;
-  Pos _endPos;
+  size_t _endPos;
+
+  vector<size_t> _edges;
 };
 
 #endif
