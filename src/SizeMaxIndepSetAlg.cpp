@@ -28,7 +28,7 @@ void SizeMaxIndepSetAlg::run(Ideal& ideal) {
   ideal.sortReverseLex();
 
   _varCount = ideal.getVarCount();
-  _maxSize = -1;
+  _minExcluded = _varCount;
   _undo.resize(_varCount + 1);
 
   for (size_t term = 0; term < ideal.getGeneratorCount(); ++term) {
@@ -45,12 +45,14 @@ void SizeMaxIndepSetAlg::run(Ideal& ideal) {
   _state.clear();
   _state.resize(_varCount);
 
-  recurse((size_t)0, _varCount);
+  recurse(0, 0);
   cerr << "Million situations considered: " << co / 1000000 << endl;
 }
 
 const mpz_class& SizeMaxIndepSetAlg::getMaxSize() {
-  return _maxSize;
+  static mpz_class tmp; // TODO: BAAAAAAD
+  tmp = _varCount - _minExcluded;
+  return tmp;
 }
 
 size_t SizeMaxIndepSetAlg::upperBound(const State& state) const {
@@ -62,10 +64,10 @@ size_t SizeMaxIndepSetAlg::upperBound(const State& state) const {
 	}
   }
 
-  return bound;
+  return _varCount - bound;
 }
 
-  /**
+/**
 @todo get rid of recursion.
 
 @todo change ordering of variables to something better. Which?
@@ -73,34 +75,53 @@ size_t SizeMaxIndepSetAlg::upperBound(const State& state) const {
 @todo look at using coloring to improve bound
 
 @todo do bitsets for vars < 64
+*/
 
-@todo try out looking through remaining sets to detect dependence early.
+bool SizeMaxIndepSetAlg::isIndependentIncludingMaybe(size_t pos) {
+  while (pos != _endPos) {
+	size_t nextPos = pos + _edges[pos] + 1;
+	while (true) {
+	  ++pos;
+	  if (pos == nextPos)
+		return false;
+	  if (_state[_edges[pos]] == IsNotInSet)
+		break;
+	}
+	pos = nextPos;
+  }
+  return true;
+}
 
-@todo index terms by last variable in current ordering. makes checking easy. Hmm... or first? maybe just sort them by this, does that have same effect?
-   */
-void SizeMaxIndepSetAlg::recurse(size_t pos, size_t bound) {
+void SizeMaxIndepSetAlg::recurse(size_t pos, size_t excluded) {
   ++co;
 
-  ASSERT(bound == upperBound(_state));
-  ASSERT(_undo[bound].empty());
+  ASSERT(excluded == upperBound(_state));
+  ASSERT(_undo[excluded].empty());
   ASSERT(pos <= _endPos);
-  ASSERT(bound <= _varCount);
+  ASSERT(excluded <= _varCount);
 
-  if (bound <= _maxSize)
+  // TODO: Can this ever happen?
+  if (excluded >= _minExcluded)
 	return;
 
+  if (excluded + 1 == _minExcluded) {
+	// TODO: Look into moving this to avoid recursive call.
+	if (isIndependentIncludingMaybe(pos))
+	  _minExcluded = excluded;
+	return;
+  }
+
   while (pos != _endPos) {
-	size_t supportSize = _edges[pos];
-	++pos;
+	size_t nextPos = pos + _edges[pos] + 1;
+
 	size_t maybeCount = 0;
-	for (size_t var2 = 0; var2 < supportSize; ++var2) {
-	  size_t var = _edges[pos + var2];
-	  if (_state[var] == IsNotInSet) {
+	for (size_t p = pos + 1; p != nextPos; ++p) {
+	  VarState varState = _state[_edges[p]];
+	  if (varState == IsNotInSet) {
 		// In this case the term at pos can do nothing to make the set
 		// dependent, so move on.
-		maybeCount = 0;
 		goto moveOn;
-	  } else if (_state[var] == IsMaybeInSet)
+	  } else if (varState == IsMaybeInSet)
 		++maybeCount;
 	}
 
@@ -110,35 +131,37 @@ void SizeMaxIndepSetAlg::recurse(size_t pos, size_t bound) {
 	}
 
 	{
-	  for (size_t var2 = 0; var2 < supportSize; ++var2) {
-		size_t var = _edges[pos + var2];
-		if (_state[var] == IsMaybeInSet) {
-		  _state[var] = IsNotInSet;
-		  recurse(pos + supportSize, bound - 1);
+	  for (size_t p = pos + 1; p != nextPos; ++p) {
+		size_t var = _edges[p];
+		VarState& varState = _state[var];
 
-		  if (maybeCount == 1) {
-			_state[var] = IsMaybeInSet;
-			while (!_undo[bound].empty()) {
-			  _state[_undo[bound].back()] = IsMaybeInSet;
-			  _undo[bound].pop_back();
-			}
-			return;
-		  } else {
-			ASSERT(maybeCount >= 2);
+		if (varState != IsMaybeInSet)
+		  continue;
 
-			_state[var] = IsInSet;
-			--maybeCount;
-			_undo[bound].push_back(var);
+		varState = IsNotInSet;
+		recurse(nextPos, excluded + 1);
+
+		if (maybeCount == 1) {
+		  varState = IsMaybeInSet;
+		  while (!_undo[excluded].empty()) {
+			_state[_undo[excluded].back()] = IsMaybeInSet;
+			_undo[excluded].pop_back();
 		  }
+		  return;
 		}
+
+		ASSERT(maybeCount >= 2);
+		varState = IsInSet;
+		--maybeCount;
+		_undo[excluded].push_back(var);
 	  }
 	}
   moveOn:;
 
-	pos += supportSize;
+	pos = nextPos;
   }
 
-  ASSERT(bound == upperBound(_state));
-  if (bound > _maxSize)
-	_maxSize = bound;
+  ASSERT(excluded == upperBound(_state));
+  ASSERT(excluded < _minExcluded);
+  _minExcluded = excluded;
 }

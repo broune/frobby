@@ -38,11 +38,13 @@ class SizeMaxIndepSetAlg {
   vector<vector<size_t> > _undo;
 
   size_t upperBound(const State& state) const;
+  bool isIndependentIncludingMaybe(size_t pos);
+  size_t getFirstPossibleDependence(size_t& pos, size_t& supportSize);
 
-  void recurse(size_t pos, size_t bound);
+  void recurse(size_t pos, size_t atMost);
 
   size_t _varCount;
-  mpz_class _maxSize;
+  size_t _minExcluded;
   size_t _endPos;
   State _state;
 
