@@ -118,7 +118,7 @@ class Ideal {
 
   // Sorts the generators in the specified order
   void sortReverseLex(); // reverse lexicographic order
-  void sortLex(); // lexicographic order
+  void sortLex(); // lexicographic order from left
 
   // Sort the generators in ascending order according to the exponent of var.
   void singleDegreeSort(size_t var);

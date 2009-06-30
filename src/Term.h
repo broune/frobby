@@ -590,7 +590,6 @@ class Term {
     size_t _varCount;
   };
 
-
   /** Indicates how a relates to b according to the reverse
 	  lexicographic term order where \f$x_1<\cdots<x_n\f$. Returns -1 if a
 	  < b, returns 0 if a = b and returns 1 if a > b. As an example
