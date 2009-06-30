@@ -28,9 +28,9 @@ class SizeMaxIndepSetAlg {
 
  private:
   enum VarState {
-	IsInSet,
-	IsNotInSet,
-	IsMaybeInSet = 0
+	IsMaybeInSet = 0,
+	IsNotInSet = 1,
+	IsInSet = 2
   };
   typedef vector<VarState> State;
   typedef Ideal::const_iterator Pos;
@@ -39,11 +39,12 @@ class SizeMaxIndepSetAlg {
 
   size_t upperBound(const State& state) const;
 
-  void recurse(State& currentState, size_t pos, size_t bound);
+  void recurse(size_t pos, size_t bound);
 
   size_t _varCount;
   mpz_class _maxSize;
   size_t _endPos;
+  State _state;
 
   vector<size_t> _edges;
 };

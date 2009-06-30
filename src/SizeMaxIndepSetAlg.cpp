@@ -20,15 +20,16 @@
 #include "Ideal.h"
 #include "Term.h"
 
+#include <iostream>
+int co;
 void SizeMaxIndepSetAlg::run(Ideal& ideal) {
   ASSERT(ideal.isSquareFree());
 
-  ideal.sortLex();
+  ideal.sortReverseLex();
 
   _varCount = ideal.getVarCount();
   _maxSize = -1;
   _undo.resize(_varCount + 1);
-
 
   for (size_t term = 0; term < ideal.getGeneratorCount(); ++term) {
 	_edges.push_back(Term::getSizeOfSupport(ideal[term], _varCount));
@@ -41,9 +42,11 @@ void SizeMaxIndepSetAlg::run(Ideal& ideal) {
   }
 
   _endPos = _edges.size();
+  _state.clear();
+  _state.resize(_varCount);
 
-  State allMaybe(_varCount);
-  recurse(allMaybe, (size_t)0, _varCount);
+  recurse((size_t)0, _varCount);
+  cerr << "Million situations considered: " << co / 1000000 << endl;
 }
 
 const mpz_class& SizeMaxIndepSetAlg::getMaxSize() {
@@ -63,7 +66,7 @@ size_t SizeMaxIndepSetAlg::upperBound(const State& state) const {
 }
 
   /**
-@todo preallocate states and get rid of recursion.
+@todo get rid of recursion.
 
 @todo change ordering of variables to something better. Which?
 
@@ -71,14 +74,14 @@ size_t SizeMaxIndepSetAlg::upperBound(const State& state) const {
 
 @todo do bitsets for vars < 64
 
-@todo do sparse encoding for many vars
-
 @todo try out looking through remaining sets to detect dependence early.
 
 @todo index terms by last variable in current ordering. makes checking easy. Hmm... or first? maybe just sort them by this, does that have same effect?
    */
-void SizeMaxIndepSetAlg::recurse(State& state, size_t pos, size_t bound) {
-  ASSERT(bound == upperBound(state));
+void SizeMaxIndepSetAlg::recurse(size_t pos, size_t bound) {
+  ++co;
+
+  ASSERT(bound == upperBound(_state));
   ASSERT(_undo[bound].empty());
   ASSERT(pos <= _endPos);
   ASSERT(bound <= _varCount);
@@ -92,12 +95,12 @@ void SizeMaxIndepSetAlg::recurse(State& state, size_t pos, size_t bound) {
 	size_t maybeCount = 0;
 	for (size_t var2 = 0; var2 < supportSize; ++var2) {
 	  size_t var = _edges[pos + var2];
-	  if (state[var] == IsNotInSet) {
+	  if (_state[var] == IsNotInSet) {
 		// In this case the term at pos can do nothing to make the set
 		// dependent, so move on.
 		maybeCount = 0;
 		goto moveOn;
-	  } else if (state[var] == IsMaybeInSet)
+	  } else if (_state[var] == IsMaybeInSet)
 		++maybeCount;
 	}
 
@@ -109,21 +112,21 @@ void SizeMaxIndepSetAlg::recurse(State& state, size_t pos, size_t bound) {
 	{
 	  for (size_t var2 = 0; var2 < supportSize; ++var2) {
 		size_t var = _edges[pos + var2];
-		if (state[var] == IsMaybeInSet) {
-		  state[var] = IsNotInSet;
-		  recurse(state, pos + supportSize, bound - 1);
+		if (_state[var] == IsMaybeInSet) {
+		  _state[var] = IsNotInSet;
+		  recurse(pos + supportSize, bound - 1);
 
 		  if (maybeCount == 1) {
-			state[var] = IsMaybeInSet;
+			_state[var] = IsMaybeInSet;
 			while (!_undo[bound].empty()) {
-			  state[_undo[bound].back()] = IsMaybeInSet;
+			  _state[_undo[bound].back()] = IsMaybeInSet;
 			  _undo[bound].pop_back();
 			}
 			return;
 		  } else {
 			ASSERT(maybeCount >= 2);
 
-			state[var] = IsInSet;
+			_state[var] = IsInSet;
 			--maybeCount;
 			_undo[bound].push_back(var);
 		  }
@@ -135,7 +138,7 @@ void SizeMaxIndepSetAlg::recurse(State& state, size_t pos, size_t bound) {
 	pos += supportSize;
   }
 
-  ASSERT(bound == upperBound(state));
+  ASSERT(bound == upperBound(_state));
   if (bound > _maxSize)
 	_maxSize = bound;
 }
