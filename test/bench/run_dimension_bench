@@ -7,11 +7,11 @@ then
   rm -f gmon.out
 fi
 
-./benchHelper dimension sqfreeV20G1000.test _noOFormat $*
+./benchHelper dimension edgeV90G600.test _noOFormat $*
 
-./benchHelper dimension sqfreeV25G1000.test _noOFormat $*
+./benchHelper dimension sqfreeV80G1000.test _noOFormat $*
 
-./benchHelper dimension n11d11.test _noOFormat $*
+./benchHelper dimension king9.test _noOFormat $*
 
 if [ "$1" = "_profile" ];
 then

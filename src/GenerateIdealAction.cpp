@@ -39,7 +39,7 @@ GenerateIdealAction::GenerateIdealAction():
 
   _type
 ("type",
- "The supported types of ideals are random, list, king and knight.",
+ "The supported types of ideals are random, edge, list, king and knight.",
  "random"),
   _variableCount("varCount", "The number of variables.", 3),
   _generatorCount("genCount", "The number of minimal generators.", 5),

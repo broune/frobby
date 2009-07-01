@@ -218,13 +218,12 @@ void SliceFacade::computeIrreducibleDecomposition(bool encode) {
 	getTermConsumer()->doneConsumingList();
 }
 
-void SliceFacade::computeDimension(mpz_class& dimension) {
+mpz_class SliceFacade::computeDimension() {
   ASSERT(_ideal.get() != 0);
   ASSERT(_translator.get() != 0);
 
   if (_ideal->containsIdentity()) {
-	dimension = -1;
-	return;
+	return -1;
   }
 
   takeRadical();
@@ -237,11 +236,6 @@ void SliceFacade::computeDimension(mpz_class& dimension) {
 
   endAction();
 
-  SizeMaxIndepSetAlg alg;
-  alg.run(*_ideal);
-  dimension = alg.getMaxSize();
-  return; // TODO: allow access to both algorithm
-
   mpz_class minusCodimension;
 #ifdef DEBUG
   // Only define hasComponents when DEBUG is defined since otherwise
@@ -252,7 +246,7 @@ void SliceFacade::computeDimension(mpz_class& dimension) {
 	(v, minusCodimension, false, true, true);
   ASSERT(hasComponents);
 
-  dimension = v.size() + minusCodimension;
+  return v.size() + minusCodimension;
 }
 
 void SliceFacade::computePrimaryDecomposition() {

@@ -27,6 +27,7 @@
 #include "CanonicalCoefTermConsumer.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
+#include "SizeMaxIndepSetAlg.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -58,6 +59,34 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
   bigIdeal.insert(ideal, translator);
 
   endAction();
+}
+
+mpz_class IdealFacade::computeDimension
+(const BigIdeal& bigIdeal, bool squareFreeAndMinimal) {
+  size_t varCount = bigIdeal.getVarCount();
+  size_t genCount = bigIdeal.getGeneratorCount();
+
+  Ideal radical(varCount);
+  Term tmp(varCount);
+  for (size_t term = 0; term < genCount; ++term) {
+	for (size_t var = 0; var < varCount; ++var) {
+	  ASSERT(!squareFreeAndMinimal || bigIdeal[term][var] <= 1);
+
+	  if (bigIdeal[term][var] == 0)
+		tmp[var] = 0;
+	  else
+		tmp[var] = 1;
+	}
+	radical.insert(tmp);
+  }
+  ASSERT(!squareFreeAndMinimal || radical.isMinimallyGenerated());
+
+  if (!squareFreeAndMinimal)
+	radical.minimize();
+
+  SizeMaxIndepSetAlg alg;
+  alg.run(radical);
+  return alg.getMaxIndepSetSize();
 }
 
 void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,

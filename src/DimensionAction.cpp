@@ -19,12 +19,15 @@
 
 #include "DataType.h"
 #include "IOFacade.h"
-#include "SliceFacade.h"
+#include "IdealFacade.h"
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "BigTermConsumer.h"
 #include "NullTermConsumer.h"
 #include "error.h"
+#include "SliceFacade.h"
+#include "NullTermConsumer.h"
+#include "SliceParameters.h"
 
 #include <algorithm>
 
@@ -45,21 +48,29 @@ DimensionAction::DimensionAction():
    "number of variables in the polynomial ring minus the dimension.",
    false),
 
-  _sliceParams(true, false),
+  _squareFreeAndMinimal
+  ("squareFreeAndMinimal",
+   "State that the input ideal is square free and minimally generated. This can speed up the\n"
+   "the computation, but will result in unpredictable behavior if it is not true.",
+   false),
+
+  _useSlice
+  ("useSlice",
+   "Use the Slice Algorithm to compute the Dimension instead of the usual algorithm.",
+   false),
+
   _io(DataType::getMonomialIdealType(), DataType::getNullType()) {
-  _sliceParams.setSplit("degree");
 }
 
 void DimensionAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_codimension);
+  parameters.push_back(&_squareFreeAndMinimal);
+  parameters.push_back(&_useSlice);
   _io.obtainParameters(parameters);
-  _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
 }
 
 void DimensionAction::perform() {
-  _sliceParams.validateSplit(true, true);
-
   BigIdeal ideal;
   {
 	Scanner in(_io.getInputFormat(), stdin);
@@ -70,16 +81,21 @@ void DimensionAction::perform() {
 	ioFacade.readIdeal(in, ideal);
 	in.expectEOF();
   }
-  size_t varCount = ideal.getVarCount();
-
-  NullTermConsumer dummy;
-  SliceFacade facade(ideal, &dummy, _printActions);
-  _sliceParams.apply(facade);
-
   mpz_class dimension;
-  facade.computeDimension(dimension);
-  
+
+  if (_useSlice) {
+	NullTermConsumer nullConsumer;
+	SliceFacade facade(ideal, &nullConsumer, _printActions);
+	SliceParameters params(true, false);
+	params.apply(facade);
+	dimension = facade.computeDimension();
+  } else {
+	IdealFacade facade(_printActions);
+	dimension = facade.computeDimension(ideal, _squareFreeAndMinimal);
+  }
+
   if (_codimension) {
+	mpz_class varCount = ideal.getVarCount();
 	mpz_class codimension = varCount - dimension;
 	gmp_fprintf(stdout, "%Zd\n", codimension.get_mpz_t());
   } else

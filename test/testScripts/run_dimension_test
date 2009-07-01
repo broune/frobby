@@ -8,6 +8,19 @@ inputFile="$test.test"
 
 if [ "$1" = "_full" ]; then
   shift;
+
+  $testHelper dimension $test.test $test.dim $* -useSlice
+  if [ $? != 0 ]; then exit 1; fi
+
+  $frobby transform < $test.test -radical -minimize > /tmp/frobbyTestTmp 2> /dev/null
+
+  $testHelper dimension /tmp/frobbyTestTmp $test.dim $* -squareFreeAndMinimal
+  if [ $? != 0 ]; then rm /tmp/frobbyTestTmp; exit 1; fi
+
+  $testHelper dimension /tmp/frobbyTestTmp $test.dim $* -useSlice -squareFreeAndMinimal
+  if [ $? != 0 ]; then rm /tmp/frobbyTestTmp; exit 1; fi
+
+  rm /tmp/frobbyTestTmp;
 fi
 
 $testHelper dimension $test.test $test.dim $*

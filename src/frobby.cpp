@@ -25,7 +25,7 @@
 #include "Term.h"
 #include "error.h"
 #include "CoefBigTermConsumer.h"
-#include "NullTermConsumer.h"
+#include "IdealFacade.h"
 
 class ConsumerWrapper {
 protected:
@@ -446,12 +446,7 @@ void Frobby::codimension(const Ideal& ideal, mpz_t codim) {
 void Frobby::dimension(const Ideal& ideal, mpz_t dim) {
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
-  NullTermConsumer nullConsumer;
-  SliceParameters params(true, false);
-  SliceFacade facade(bigIdeal, &nullConsumer, false);
-  params.apply(facade);
-
-  mpz_class dimen;
-  facade.computeDimension(dimen);
+  IdealFacade facade(false);
+  mpz_class dimen = facade.computeDimension(bigIdeal, false);
   mpz_set(dim, dimen.get_mpz_t());
 }
