@@ -19,7 +19,6 @@
 
 #include "Action.h"
 #include "BoolParameter.h"
-#include "SliceParameters.h"
 #include "IOParameters.h"
 
 /** Implements the command line interface action dimension. */
@@ -35,7 +34,8 @@ class DimensionAction : public Action {
 
  private:
   BoolParameter _codimension;
-  SliceParameters _sliceParams;
+  BoolParameter _squareFreeAndMinimal;
+  BoolParameter _useSlice;
   IOParameters _io;
 };
 

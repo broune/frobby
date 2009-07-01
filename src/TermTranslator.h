@@ -84,7 +84,9 @@ public:
   */
   const char* getExponentString(size_t variable, Exponent exponent) const;
 
-  /** The assigned IDs are those in the range [0, getMaxId()]. */
+  /** The assigned IDs are those in the range [0, getMaxId(var)]. As a
+	  special case, getMaxId(var) maps to the same exponent as 0
+	  does. */
   Exponent getMaxId(size_t variable) const;
 
   /** Adds a generator of the form v^e, e > 0, for any variable v where
