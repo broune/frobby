@@ -1,0 +1,11 @@
+R = QQ[R,R1,R2,R3, x];
+I = monomialIdeal(
+  0_R
+);
+I = monomialIdeal(
+  1_R, R*R1*R2*R3*x
+);
+R = QQ[R1];
+I = monomialIdeal(
+  R1
+);

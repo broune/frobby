@@ -1,0 +1,12 @@
+(monomial-ideal-with-order
+ (lex-order R R1 R2 R3 x)
+)
+(monomial-ideal-with-order
+ (lex-order R R1 R2 R3 x)
+ 1
+ R*R1*R2*R3*x
+)
+(monomial-ideal-with-order
+ (lex-order R1)
+ R1
+)

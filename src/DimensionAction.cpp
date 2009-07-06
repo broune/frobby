@@ -50,13 +50,15 @@ DimensionAction::DimensionAction():
 
   _squareFreeAndMinimal
   ("squareFreeAndMinimal",
-   "State that the input ideal is square free and minimally generated. This can speed up the\n"
-   "the computation, but will result in unpredictable behavior if it is not true.",
+   "State that the input ideal is square free and minimally generated. This\n"
+   "can speed up the the computation, but will result in unpredictable\n"
+   "behavior if it is not true.",
    false),
 
   _useSlice
   ("useSlice",
-   "Use the Slice Algorithm to compute the Dimension instead of the usual algorithm.",
+   "Use the Slice Algorithm to compute the dimension instead of the usual\n"
+   "algorithm.",
    false),
 
   _io(DataType::getMonomialIdealType(), DataType::getNullType()) {

@@ -1,2 +1,2 @@
 SYNTAX ERROR (format m2, line 1):
-  Expected R, but got "q".
+  Expected name of ring to start with an upper case R.

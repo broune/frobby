@@ -44,6 +44,18 @@ const char* Macaulay2IOHandler::staticGetName() {
   return "m2";
 }
 
+string Macaulay2IOHandler::getRingName(const VarNames& names) {
+  if (!names.contains("R"))
+	return "R";
+
+  string name;
+  for (mpz_class i = 1; true; ++i) {
+	name = "R" + i.get_str();
+	if (!names.contains(name))
+	  return name;
+  }
+}
+
 void Macaulay2IOHandler::writeTerm(const vector<mpz_class>& term,
 								   const VarNames& names,
 								   FILE* out) {
@@ -69,7 +81,9 @@ void Macaulay2IOHandler::writeTermOfIdeal(const Term& term,
   for (size_t var = 0; var < varCount; ++var)
 	if (translator->getExponent(var, term) != 0)
 	  return;
-  fputs("_R", out);
+
+  fputc('_', out);
+  fputs(getRingName(translator->getNames()).c_str(), out);
 }
 
 void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
@@ -83,7 +97,9 @@ void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
   for (size_t var = 0; var < varCount; ++var)
 	if (term[var] != 0)
 	  return;
-  fputs("_R", out);
+
+  fputc('_', out);
+  fputs(getRingName(names).c_str(), out);
 }
 
 void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
@@ -91,14 +107,25 @@ void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
 										  FILE* out) {
   if (wroteAnyGenerators)
 	fputc('\n', out);
-  else
-	fputs("0_R", out); // Macaulay 2's monomialIdeal reports an error otherwise.
+  else {
+	// Macaulay 2's monomialIdeal reports an error if 0 is not
+	// explicitly embedded in the a polynomial ideal.
+	fputs("0_", out);
+	fputs(getRingName(names).c_str(), out);
+  }
   fputs(");\n", out);  
 }
 
 void Macaulay2IOHandler::readRing(Scanner& in, VarNames& names) {
   names.clear();
-  in.expect('R');
+  const char* ringName = in.readIdentifier();
+  ASSERT(ringName != 0 && string(ringName) != "");
+  if (ringName[0] != 'R') {
+	reportSyntaxError
+	  (in, "Expected name of ring to start with an upper case R.");
+	ASSERT(false); // shouldn't reach here.
+  }
+
   in.expect('=');
 
   in.eatWhite();
@@ -145,12 +172,12 @@ void Macaulay2IOHandler::readBareIdeal(Scanner& in,
 
   if (in.match('0')) {
 	if (in.match('_'))
-	  in.expect('R');
+	  in.readIdentifier();
   } else {
 	do {
 	  readTerm(in, names, term);
 	  if (in.match('_'))
-		in.expect('R');
+		in.readIdentifier();
 	  consumer.consume(term);
 	} while (in.match(','));
   }
@@ -227,21 +254,19 @@ void Macaulay2IOHandler::writePolynomialFooter(const VarNames& names,
 }
 
 void Macaulay2IOHandler::writeRing(const VarNames& names, FILE* out) {
-  fputs("R = QQ[", out);
+  fputs(getRingName(names).c_str(), out);
+  fputs(" = QQ[", out);
 
   const char* pre = "";
   for (unsigned int i = 0; i < names.getVarCount(); ++i) {
 	fputs(pre, out);
 	if (names.getName(i) == "R") {
-	  displayNote
-		("Using R as a variable name is supported by Frobby, but even though "
-		 "this data is being written in Macaulay 2 format, Macaulay 2 will "
-		 "likely not be able to read it since it will confuse the variable R "
-		 "with the polynomial ring R.");
+	  string msg = 
+		"The name of the ring in Macaulay 2 format is usually named R,\n"
+		"but in this case there is already a variable named R. Thus,\n"
+		"the ring has been renamed to " + getRingName(names) + '.';
+	  displayNote(msg);
 	}
-	// TODO: make the same note for I. Consider using a name like "frobbyRing"
-	// and "frobbyIdeal" instead of I and R.
-
 	fputs(names.getName(i).c_str(), out);
 	pre = ", ";
   }

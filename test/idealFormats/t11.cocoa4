@@ -1,0 +1,15 @@
+Use R ::= Q[x[1..5]];
+Names := ["R", "R1", "R2", "R3", "x"];
+I := Ideal(
+);
+Use R ::= Q[x[1..5]];
+Names := ["R", "R1", "R2", "R3", "x"];
+I := Ideal(
+ 1,
+ x[1]x[2]x[3]x[4]x[5]
+);
+Use R ::= Q[x[1..1]];
+Names := ["R1"];
+I := Ideal(
+ x[1]
+);

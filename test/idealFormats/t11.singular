@@ -1,0 +1,13 @@
+ring R = 0, (R, R1, R2, R3, x), lp;
+int noVars = 0;
+ideal I =
+ 0;
+ring R = 0, (R, R1, R2, R3, x), lp;
+int noVars = 0;
+ideal I =
+ 1,
+ R*R1*R2*R3*x;
+ring R = 0, (R1), lp;
+int noVars = 0;
+ideal I =
+ R1;
