@@ -27,7 +27,6 @@ runNormalTests () {
 for t in $normalTests; do
   echo -n "$t "
 
-  echo -n "(s)";
   runNormalTests $t specialIdeals
   if [ "$testLevel" = "few" ]; then
     if [ "$t" != "frob" ]; then
@@ -36,14 +35,11 @@ for t in $normalTests; do
     fi
   fi
 
-  echo -n "(c)";
   runNormalTests $t commonIdeals
 
-  echo -n "(f)";
   runNormalTests $t frob
 
   if [ -e "$t" ]; then
-    echo -n "(#)"
     runNormalTests $t $t
   fi
 
