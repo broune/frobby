@@ -36,6 +36,8 @@ public:
   static const char* staticGetName();
 
  private:
+  static string getRingName(const VarNames& names);
+
   virtual void readRing(Scanner& in, VarNames& names);
   virtual bool peekRing(Scanner& in);
   virtual void writeRing(const VarNames& names, FILE* out);

@@ -1,0 +1,12 @@
+vars R, R1, R2, R3, x;
+[
+];
+vars R, R1, R2, R3, x;
+[
+ 1,
+ R*R1*R2*R3*x
+];
+vars R1;
+[
+ R1
+];
