@@ -24,19 +24,19 @@ class BigIdeal;
 /** Generate an ideal of the form \$fx_1*x_2\f$, \f$x_2*x_3\f$ and so
 	on.
 */
-void generateLinkedListIdeal(BigIdeal& ideal, unsigned int variableCount);
+void generateLinkedListIdeal(BigIdeal& ideal, size_t variableCount);
 
 /** Generate an ideal where \f$x_(a,b)*x_(c,d)\f$ is a generator when
 	\f$(a,b)\f$ and \f$(c,d)\f$ indicate coordinates on a square
 	chessboard where the move is a valid king's move.
 */
-void generateKingChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
+void generateKingChessIdeal(BigIdeal& ideal, size_t rowsAndColumns);
 
 /** Generate an ideal where \f$x_(a,b)*x_(c,d)\f$ is a generator when
 	\f$(a,b)\f$ and \f$(c,d)\f$ indicate coordinates on a square
 	chessboard where the move is a valid knight's move.
 */
-void generateKnightChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
+void generateKnightChessIdeal(BigIdeal& ideal, size_t rowsAndColumns);
 
 /** Generate a random ideal where every edge is a product of two
 	different variables. Returns true if the requested number of
@@ -50,9 +50,9 @@ bool generateRandomEdgeIdeal
 	was achieved.
 */
 bool generateRandomIdeal(BigIdeal& bigIdeal,
-						 unsigned int exponentRange,
-						 unsigned int variableCount,
-						 unsigned int generatorCount);
+						 size_t exponentRange,
+						 size_t variableCount,
+						 size_t generatorCount);
 
 /** Generate a random vector of numbers whose gcd is 1.
  */
