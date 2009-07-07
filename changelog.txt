@@ -1,4 +1,44 @@
-*** Upcoming version
+*** Version 0.8.2, 2009-07-07
+
+New features and improvements in this version include
+
+ - Fast dimension and codimension of monomial ideals
+ - Various speed improvements (see below)
+ - Generation of random edge ideals
+ - Optimization over maximal standard monomials with negative
+   objective function.
+
+The new (co)dimension code uses an algorithm gleaned from the source
+code of Macaulay 2, though the code in Frobby is substantially faster
+due to a few improvements. It is not known to me who to credit with
+this algorithm. Now that Frobby supports negative objective functions,
+the more general optimize action can also be used to compute the
+dimension, but this is not nearly as fast.
+
+There are also many smaller improvements. They are too many to list
+here, but the more visible ones are shown below.
+
+ ** Performance improvements
+
+ - Actions frobgrob and optimize are substantially faster due to code
+   improvements and due to the bound optimization now being
+   accessible. It had been turned off by mistake in the previous
+   release, even when explicitly requested via the command line option
+   -bound. The bound optimization itself has been improved to work
+   with objective funtions with negative entries.
+
+ - Improved the pure power split selection strategies to choose a
+   middle variable in case of ties instead of the left-most
+   variable. This makes no difference for most inputs, but leads to
+   dramatic speed-ups for some particular highly non-generic inputs.
+
+ - All slice-based algorithms are slightly faster due to low-level
+   code improvements.
+
+ - The action optimize now uses the degree split strategy by default
+   instead of median, which is faster.
+
+ ** Deprecated functionality
 
  - The action frobgrob is deprecated and will be removed in a future
    version of Frobby. Use the action optimize with options
@@ -8,16 +48,29 @@
    be removed in a future version of Frobby. Use the name degree to
    achieve the same effect.
 
- - The bound optimization has at some point been made inaccessible by
-   mistake, so that even if the option -bound was turned on for
-   actions frobgrob and optimize, as it is by default, it made no
-   difference. This is corrected, which should yield substantial
-   performance improvements for the actions frobgrob and optimize.
+ ** Miscellaneous improvements
 
- - Frobby now refuses to use independence splits when solving
-   Frobenius problems and other optimization problems. They were never
-   implemented for that case, which has now been exposed by enabling
-   the bound optimization.
+ - The polynomial ring is named R in the Macaulay 2 format, which is a
+   problem if there is also a variable named R in the ring, since then
+   Macaulay 2 will report an error on reading the file. Frobby now
+   renames the ring to R1 in that case, or R2 if there is also a
+   variable named R1 and so on.
+
+ - All formats now support underscores as part of variable names.
+
+ - There is now an output format "count" that just prints the total
+   number of generators.
+
+ ** Technical Improvements
+
+ - A benchmark suite has been added to detect preformance regressions,
+   such as the above situation with the bound optimization getting
+   turned off. There is also support for profiling to detect the lines
+   of code that are taking the most time.
+
+ - The amount of information in the developer documentation, which is
+   generated based on source code comments, has increased
+   substantially.
 
  - The design for how internal C++ tests are done is much improved and
    the number of tests bas been expanded substantially.
@@ -25,23 +78,24 @@
  - Code file dependency tracking is much improved. It is now fully automatic,
    so the Makefile target depend is removed.
 
- - Improved the pure power split selection strategies to choose a
-   middle variable in case of ties instead of the left-most
-   variable. This makes no difference for most inputs, but leads to
-   dramatic speed-ups for some particular highly non-generic inputs.
-
  - All Frobby files now use unix-style line endings, rather than the
-   mix that was there before. This was a significant problem for
-   programs that include frobby along with a custom patch to Frobby,
-   since the patch utility does not deal well with mixed line ending
-   styles. If you do this, and your patch file may have some dos-style
-   line endings in it, you can use the utility dos2unix to update to
-   this version of Frobby.
+   mix that was there before.
 
- - The amount of information in the developer documentation, which is
-   generated based on source code comments, has increased
-   substantially.
+ - Frobby now explicitly refuses to use independence splits when
+   solving Frobenius problems and other optimization problems. They
+   were never implemented for that case.
 
+ - The install makefile target now uses sudo, so that it does not have
+   to be run as root to install Frobby. This is not the case on
+   Cygwin, which does not seem to have sudo. 
+
+ - Option -chopFirstAndSubtract now fails gracefully when there are no
+   variables, such as when using -iformat null. In general actions now
+   deal well with -iformat null, and this is now part of the
+   testsuite.
+
+ - Numerous small improvements to performance, design and comments all
+   over the codebase.
 
 *** Version 0.8.1, 2009-04-30
 
