@@ -98,8 +98,8 @@ AnalyzeAction::AnalyzeAction():
   ("summaryLevel",
    "If non-zero, then print a summary of the ideal to the error output\n"
    "stream. A higher summary level results in more expensive analysis in\n"
-   "order to provide more information. Currently only level 1 is available\n"
-   "which prints the number of variables and the number of generators.",   
+   "order to provide more information. Currently levels 0, 1 and 2 are\n"
+   "available.",
    1),
 
   _printLcm
@@ -149,17 +149,31 @@ void AnalyzeAction::perform() {
 
   // We only read the entire ideal into memory at once if we have to.
   IOFacade ioFacade(_printActions);
-  IdealFacade idealFacade(_printActions);
-  if (!_printMinimal) {
+  if (!requiresWholeIdeal()) {
 	ioFacade.readIdeal(in, consumer);
 	in.expectEOF();
+
+	analyzeStreaming(consumer);
   } else {
 	BigIdeal ideal;
 	ioFacade.readIdeal(in, ideal);
 	in.expectEOF();
 
 	consumer.consume(ideal);
-	
+
+	analyzeStreaming(consumer);
+	analyzeIdeal(ideal);
+  }
+}
+
+bool AnalyzeAction::requiresWholeIdeal() const {
+  return _printMinimal || _summaryLevel > 1;
+}
+
+void AnalyzeAction::analyzeIdeal(BigIdeal& ideal) const {
+  IdealFacade idealFacade(_printActions);
+
+  if (_printMinimal) {
 	size_t generatorCount = ideal.getGeneratorCount();
 	idealFacade.sortAllAndMinimize(ideal);
 	if (generatorCount == ideal.getGeneratorCount())
@@ -167,6 +181,14 @@ void AnalyzeAction::perform() {
 	else
 	  fputs("0\n", stdout);
   }
+
+  if (_summaryLevel >= 2) {
+	idealFacade.printAnalysis(stdout, ideal);
+  }
+}
+
+void AnalyzeAction::analyzeStreaming(AnalyzeConsumer& consumer) const {
+  IOFacade ioFacade(_printActions);
 
   if (_printLcm) {
 	auto_ptr<IOHandler> output = _io.createOutputHandler();
@@ -187,7 +209,7 @@ void AnalyzeAction::perform() {
 	  gmp_fprintf(stdout, "%Zd\n", consumer.getMaximumExponent().get_mpz_t());
   }
 
-  if (_summaryLevel.getIntegerValue() > 0) {
+  if (_summaryLevel.getIntegerValue() == 0) {
 	fprintf(stdout, "%lu generators\n",
 			(unsigned long)consumer.getGeneratorCount());
 	fprintf(stdout, "%lu variables\n",

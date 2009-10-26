@@ -43,7 +43,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp					\
   OptimizeStrategyTest.cpp TermTest.cpp TermTranslatorTest.cpp			\
   TermGraderTest.cpp CountingIOHandler.cpp test/TestSorter.cpp			\
-  DimensionAction.cpp LibDimensionTest.cpp SizeMaxIndepSetAlg.cpp
+  DimensionAction.cpp LibDimensionTest.cpp SizeMaxIndepSetAlg.cpp		\
+  IdealTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

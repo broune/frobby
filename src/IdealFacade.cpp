@@ -180,15 +180,26 @@ void IdealFacade::sortVariables(BigIdeal& ideal) {
   endAction();
 }
 
-// TODO: decide what to do with this.
 void IdealFacade::printAnalysis(FILE* out, BigIdeal& bigIdeal) {
   beginAction("Computing and printing analysis.");
 
   Ideal ideal(bigIdeal.getVarCount());
   TermTranslator translator(bigIdeal, ideal, false);
 
-  fprintf(out, "is strongly generic: %s",
+  fprintf(stdout, "generators: %lu\n",
+		  (unsigned long)ideal.getGeneratorCount());
+  fprintf(stdout, "variables:  %lu\n",
+		  (unsigned long)ideal.getVarCount());
+
+  size_t sizeBeforeMinimize = ideal.getGeneratorCount();
+  ideal.minimize();
+  fprintf(stdout, "minimally generated: %s\n",
+		  ideal.getGeneratorCount() == sizeBeforeMinimize ? "yes" : "no");
+
+  fprintf(out, "strongly generic: %s\n",
 		  ideal.isStronglyGeneric() ? "yes" : "no");
+  fprintf(out, "weakly generic: %s\n",
+		  ideal.isWeaklyGeneric() ? "yes" : "no");
 
   endAction();
 }

@@ -26,7 +26,7 @@ TestAction::TestAction():
   Action
 (staticGetName(),
  "Perform tests of C++ Frobby library interface.",
- "Perform tests of C++ Frobby library interface.",
+ "Perform tests of C++ Frobby library interface and other internal tests.",
  false) {
 }
 

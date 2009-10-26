@@ -117,6 +117,27 @@ bool Ideal::isStronglyGeneric() {
   return true;
 }
 
+bool Ideal::isWeaklyGeneric() const {
+  Term lcm(getVarCount());
+
+  const_iterator stop = _terms.end();
+  for (const_iterator itA = _terms.begin(); itA != stop; ++itA) {
+	for (const_iterator itB = itA + 1; itB != stop; ++itB) {
+	  if (!Term::sharesNonZeroExponent(*itA, *itB, _varCount))
+		continue;
+
+	  lcm.lcm(*itA, *itB);
+	  for (const_iterator itC = _terms.begin(); itC != stop; ++itC)
+		if (Term::strictlyDivides(*itC, lcm, _varCount))
+		  goto foundStrictDivisor;
+	  return false;
+
+	foundStrictDivisor:;
+	}
+  }
+  return true;
+}
+
 void Ideal::getLcm(Exponent* lcm) const {
   Term::setToIdentity(lcm, _varCount);
   const_iterator stop = _terms.end();

@@ -85,6 +85,13 @@ class Ideal {
   // the generators.
   bool isStronglyGeneric();
 
+  // Returns true if for every pair of distinct generators a and b
+  // with a[i]=b[i]>0 there is some third generator that strictly
+  // divides lcm(a,b). This only corresponds to the mathematical
+  // definition of weak genericity if the ideal is minimally
+  // generated.
+  bool isWeaklyGeneric() const;
+
   void getLcm(Exponent* lcm) const;
   void getGcd(Exponent* gcd) const;
 
