@@ -32,3 +32,8 @@ TEST(Term, ParseStringConstructor) {
 
   ASSERT_EQ(Term("3 9 7"), term);
 }
+
+TEST(Term, ShareNonZeroExponent) {
+  ASSERT_TRUE(Term("0 1 2").sharesNonZeroExponent(Term("2 1 0")));
+  ASSERT_FALSE(Term("0 1 2").sharesNonZeroExponent(Term("0 2 1")));
+}

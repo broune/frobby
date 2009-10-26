@@ -22,6 +22,8 @@
 #include "IOParameters.h"
 #include "IntegerParameter.h"
 
+class AnalyzeConsumer;
+
 class AnalyzeAction : public Action {
  public:
   AnalyzeAction();
@@ -33,6 +35,11 @@ class AnalyzeAction : public Action {
   static const char* staticGetName();
 
  private:
+  bool requiresWholeIdeal() const;
+
+  void analyzeStreaming(AnalyzeConsumer& consumer) const;
+  void analyzeIdeal(BigIdeal& ideal) const;
+
   IOParameters _io;
   IntegerParameter _summaryLevel;
   BoolParameter _printLcm;

@@ -410,6 +410,23 @@ class Term {
     return getSizeOfSupport(_exponents, _varCount);
   }
 
+  /** Returns whether there is some \f$i$ such that \f$a_i=b_i>0$. */
+  static bool sharesNonZeroExponent(const Exponent* a, const Exponent* b,
+									size_t varCount) {
+	for (size_t var = 0; var < varCount; ++var)
+	  if (a[var] != 0 && a[var] == b[var])
+		return true;
+	return false;
+  }
+
+  bool sharesNonZeroExponent(const Exponent* a) const {
+	return sharesNonZeroExponent(_exponents, a, _varCount);
+  }
+
+  bool sharesNonZeroExponent(const Term& a) const {
+	return sharesNonZeroExponent(a._exponents);
+  }
+
   /** Returns whether \f$x_i|a\Leftrightarrow x_i|b\f$ for every
 	  variable \f$x_i\f$.
   */
