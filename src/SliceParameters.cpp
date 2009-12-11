@@ -108,6 +108,10 @@ bool SliceParameters::getUseBoundSimplification() const {
   return _useBoundSimplification;
 }
 
+bool SliceParameters::getCanonical() const {
+  return _canonical;
+}
+
 void SliceParameters::validateSplit(bool allowLabel,
 									bool allowDegree) {
   auto_ptr<SplitStrategy>

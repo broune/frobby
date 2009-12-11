@@ -44,7 +44,7 @@ void reportSyntaxError(const Scanner& scanner, const string& errorMsg);
 // These methods return normally.
 void displayNote(const string& msg);
 void displayDebugNote(const string& msg);
-
+void reportErrorNoThrow(const char* errorMsg);
 void reportErrorNoThrow(const string& errorMsg);
 void reportInternalErrorNoThrow(const string& errorMsg);
 void reportErrorNoThrow(const FrobbyException& e);

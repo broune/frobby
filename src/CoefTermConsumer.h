@@ -19,10 +19,13 @@
 
 class Term;
 class VarNames;
+class Polynomial;
 
 class CoefTermConsumer {
  public:
   virtual ~CoefTermConsumer();
+
+  virtual void consume(const Polynomial& poly);
 
   virtual void consumeRing(const VarNames& names) = 0;
 

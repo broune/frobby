@@ -22,6 +22,8 @@
 #include "Ideal.h"
 #include "test/TestCase.h"
 
+#include <limits>
+
 #ifdef DEBUG
 #undef new
 

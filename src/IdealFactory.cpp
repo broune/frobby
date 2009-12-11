@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "IdealFactory.h"
 
+#include <algorithm>
+
 VarNames IdealFactory::ring_xyzt() {
   VarNames names;
   names.addVar("x");

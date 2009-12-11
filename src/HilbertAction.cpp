@@ -22,6 +22,8 @@
 #include "SliceFacade.h"
 #include "Scanner.h"
 #include "DataType.h"
+#include "IdealFacade.h"
+#include "CoefBigTermConsumer.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -41,12 +43,19 @@ HilbertAction::HilbertAction():
   _univariate
   ("univariate",
    "Output a univariate polynomial by substituting t for each variable.",
+   false),
+  
+  _useSlice
+  ("useSlice",
+   "Use the Slice Algorithm to compute the dimension instead of the usual\n"
+   "algorithm.",
    false) {
 }
 
 void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
   _io.obtainParameters(parameters);
   parameters.push_back(&_univariate);
+  parameters.push_back(&_useSlice);
   _sliceParams.obtainParameters(parameters);
   Action::obtainParameters(parameters);
 }
@@ -67,12 +76,20 @@ void HilbertAction::perform() {
   }
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();
-  SliceFacade facade(ideal, output.get(), stdout, _printActions);
-  _sliceParams.apply(facade);
-  if (_univariate)
-	facade.computeUnivariateHilbertSeries();
-  else
-	facade.computeMultigradedHilbertSeries();
+  if (_useSlice) {
+    SliceFacade facade(ideal, output.get(), stdout, _printActions);
+    _sliceParams.apply(facade);
+    if (_univariate)
+	  facade.computeUnivariateHilbertSeries();
+    else
+	  facade.computeMultigradedHilbertSeries();
+  } else {
+	IdealFacade facade(_printActions);
+    auto_ptr<CoefBigTermConsumer> consumer =
+      output->createPolynomialWriter(stdout);
+    facade.computeHilbertSeries
+      (ideal, _univariate, _sliceParams.getCanonical(), consumer);
+  }
 }
 
 const char* HilbertAction::staticGetName() {

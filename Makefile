@@ -45,7 +45,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   LatticeAnalyzeAction.cpp SatBinomIdeal.cpp SatBinomConsumer.cpp		\
   SatBinomRecorder.cpp TermGraderTest.cpp CountingIOHandler.cpp			\
   test/TestSorter.cpp DimensionAction.cpp LibDimensionTest.cpp			\
-  SizeMaxIndepSetAlg.cpp IdealTest.cpp TaskEngine.cpp Task.cpp
+  SizeMaxIndepSetAlg.cpp IdealTest.cpp TaskEngine.cpp Task.cpp			\
+  BigattiHilbertAlgorithm.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

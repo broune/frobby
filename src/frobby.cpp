@@ -264,7 +264,7 @@ bool Frobby::alexanderDual(const Ideal& ideal,
 
 	try {
 	  facade.computeAlexanderDual(point);
-	} catch (const FrobbyException& e) {
+	} catch (const FrobbyException&) {
 	  return false;
 	}
   }

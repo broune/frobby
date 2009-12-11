@@ -23,6 +23,10 @@ AssertException::AssertException(const string& str):
   logic_error(str) {
 }
 
+AssertException::AssertException(const AssertException& e):
+logic_error(e) {
+}
+
 void assertSucceeded(bool printDot) {
   if (printDot) {
 	fputc('.', stdout);

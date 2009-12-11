@@ -72,6 +72,9 @@ class SliceParameters : public ParameterGroup {
   */
   bool getUseBoundSimplification() const;
 
+  /** Get the value of the canonical option. */
+  bool getCanonical() const;
+
  private:
   bool _exposeBoundParam;
   bool _exposeIndependenceParam;
