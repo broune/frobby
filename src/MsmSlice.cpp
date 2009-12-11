@@ -18,17 +18,19 @@
 #include "MsmSlice.h"
 
 #include "TermConsumer.h"
+#include "MsmStrategy.h"
 
-MsmSlice::MsmSlice():
-  Slice(),
+MsmSlice::MsmSlice(MsmStrategy& strategy):
+  Slice(strategy),
   _consumer(0) {
 }
 
-MsmSlice::MsmSlice(const Ideal& ideal,
+MsmSlice::MsmSlice(MsmStrategy& strategy,
+				   const Ideal& ideal,
 				   const Ideal& subtract,
 				   const Term& multiply,
 				   TermConsumer* consumer):
-  Slice(ideal, subtract, multiply),
+  Slice(strategy, ideal, subtract, multiply),
   _consumer(consumer) {
   ASSERT(consumer != 0);
 

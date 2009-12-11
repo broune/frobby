@@ -47,15 +47,7 @@ bool TaskEngine::runNextTask() {
 
   Task* task = _tasks.back();
   _tasks.pop_back();
-
-  try {
-	task->run(*this);
-  } catch (...) {
-	// Aargh... what I wouldn't give for Java's finally statement.
-	dispose(task);
-	throw;
-  }
-  dispose(task);
+  task->run(*this);
 
   return true;
 }

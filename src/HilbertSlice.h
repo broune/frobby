@@ -22,11 +22,13 @@
 #include "Ideal.h"
 
 class CoefTermConsumer;
+class HilbertStrategy;
 
 class HilbertSlice : public Slice {
  public:
-  HilbertSlice();
-  HilbertSlice(const Ideal& ideal,
+  HilbertSlice(HilbertStrategy& strategy);
+  HilbertSlice(HilbertStrategy& strategy,
+			   const Ideal& ideal,
 			   const Ideal& subtract,
 			   const Term& multiply,
 			   CoefTermConsumer* consumer);

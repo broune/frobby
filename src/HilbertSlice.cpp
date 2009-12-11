@@ -19,15 +19,17 @@
 
 #include "CoefTermConsumer.h"
 #include "HilbertBasecase.h"
+#include "HilbertStrategy.h"
 
-HilbertSlice::HilbertSlice():
-  Slice(),
+HilbertSlice::HilbertSlice(HilbertStrategy& strategy):
+  Slice(strategy),
   _consumer(0) {
 }
 
-HilbertSlice::HilbertSlice(const Ideal& ideal, const Ideal& subtract,
+HilbertSlice::HilbertSlice(HilbertStrategy& strategy,
+						   const Ideal& ideal, const Ideal& subtract,
 						   const Term& multiply, CoefTermConsumer* consumer):
-  Slice(ideal, subtract, multiply),
+  Slice(strategy, ideal, subtract, multiply),
   _consumer(consumer) {
   ASSERT(consumer != 0);
 }
