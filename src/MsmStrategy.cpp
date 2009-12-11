@@ -167,11 +167,12 @@ void MsmStrategy::labelSplit(auto_ptr<Slice> sliceParam) {
 	slice->innerSlice(term);
   }
 
-  if (hasLabelSlice.get() != 0)
+  if (hasLabelSlice.get() != 0) {
 	simplify(*hasLabelSlice);
-  simplify(*slice);
+	_tasks.addTask(hasLabelSlice.release());
+  }
 
-  _tasks.addTask(hasLabelSlice.release());
+  simplify(*slice);
   _tasks.addTask(slice.release());
 }
 
