@@ -209,7 +209,7 @@ void AnalyzeAction::analyzeStreaming(AnalyzeConsumer& consumer) const {
 	  gmp_fprintf(stdout, "%Zd\n", consumer.getMaximumExponent().get_mpz_t());
   }
 
-  if (_summaryLevel.getIntegerValue() == 0) {
+  if (_summaryLevel.getIntegerValue() == 1) {
 	fprintf(stdout, "%lu generators\n",
 			(unsigned long)consumer.getGeneratorCount());
 	fprintf(stdout, "%lu variables\n",
