@@ -55,7 +55,7 @@ auto_ptr<Slice> HilbertStrategy::beginComputing(const Ideal& ideal) {
   }
 
   auto_ptr<Slice> slice
-	(new HilbertSlice(sliceIdeal, Ideal(varCount),
+	(new HilbertSlice(*this, sliceIdeal, Ideal(varCount),
 					  Term(varCount), _consumer));
 
   simplify(*slice);
@@ -95,7 +95,7 @@ auto_ptr<HilbertSlice> HilbertStrategy::newHilbertSlice() {
 }
 
 auto_ptr<Slice> HilbertStrategy::allocateSlice() {
-  return auto_ptr<Slice>(new HilbertSlice());
+  return auto_ptr<Slice>(new HilbertSlice(*this));
 }
 
 bool HilbertStrategy::debugIsValidSlice(Slice* slice) {

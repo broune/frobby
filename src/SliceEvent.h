@@ -17,9 +17,15 @@
 #ifndef SLICE_EVENT_GUARD
 #define SLICE_EVENT_GUARD
 
-class SliceEvent {
+#include "Task.h"
+
+class TaskEngine;
+
+class SliceEvent : public Task {
  public:
   virtual ~SliceEvent();
+
+  virtual void run(TaskEngine& tasks) {raiseEvent();}
 
   // Does whatever is supposed to happen when this event occurs.
   virtual void raiseEvent() = 0;

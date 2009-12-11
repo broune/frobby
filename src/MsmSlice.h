@@ -23,6 +23,7 @@
 
 class TermConsumer;
 class Projection;
+class MsmStrategy;
 
 /** Invariant: either the slice is a trivial base case, or
  removeDoubleLcm returns false.
@@ -31,8 +32,9 @@ class Projection;
 */
 class MsmSlice : public Slice {
  public:
-  MsmSlice();
-  MsmSlice(const Ideal& ideal,
+  MsmSlice(MsmStrategy& strategy);
+  MsmSlice(MsmStrategy& strategy,
+		   const Ideal& ideal,
 		   const Ideal& subtract,
 		   const Term& multiply,
 		   TermConsumer* consumer);
@@ -54,8 +56,7 @@ class MsmSlice : public Slice {
 				   const Projection& projection,
 				   TermConsumer* consumer);
 
-  // Efficiently swaps the values of *this and slice while avoiding
-  // copies.
+  // Efficiently swaps the values of *this and slice.
   void swap(MsmSlice& slice);
 
   virtual bool innerSlice(const Term& pivot);

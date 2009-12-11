@@ -25,46 +25,48 @@
 #include "Task.h"
 #include "TaskEngine.h"
 
-class SliceEventTask : public Task {
-public:
-  SliceEventTask(SliceEvent* event): _event(event) {
-	ASSERT(event != 0);
-  }
-
-  virtual ~SliceEventTask() {
-	ASSERT(_event == 0); // Destructed through dispose.
-  }
-
-  static void addTask(TaskEngine& tasks, SliceEvent* event) {
-	ASSERT(event != 0);
-
-	SliceEventTask* task;
-	try {
-	  task = new SliceEventTask(event);
-	} catch (...) {
-	  event->dispose();
-	  throw;
+namespace {
+  class SliceEventTask : public Task {
+  public:
+	SliceEventTask(SliceEvent* event): _event(event) {
+	  ASSERT(event != 0);
 	}
 
-	tasks.addTask(task);
-  }
+	virtual ~SliceEventTask() {
+	  ASSERT(_event == 0); // Destructed through dispose.
+	}
 
-  virtual void run(TaskEngine& task) {
-	_event->raiseEvent();
-  }
+	static void addTask(TaskEngine& tasks, SliceEvent* event) {
+	  ASSERT(event != 0);
 
-  virtual void dispose() {
-	ASSERT(_event != 0); // Only call dispose once.
+	  SliceEventTask* task;
+	  try {
+		task = new SliceEventTask(event);
+	  } catch (...) {
+		event->dispose();
+		throw;
+	  }
 
-	_event->dispose();
+	  tasks.addTask(task);
+	}
 
-	IF_DEBUG(_event = 0); // Signals dispose was called for debugging.
-	delete this;
-  }
+	virtual void run(TaskEngine& task) {
+	  _event->raiseEvent();
+	}
 
-private:
-  SliceEvent* _event;
-};
+	virtual void dispose() {
+	  ASSERT(_event != 0); // Only call dispose once.
+
+	  _event->dispose();
+
+	  IF_DEBUG(_event = 0); // Signals dispose was called for debugging.
+	  delete this;
+	}
+
+  private:
+	SliceEvent* _event;
+  };
+}
 
 class SliceTask : public Task {
 public:
@@ -130,7 +132,8 @@ void runSliceAlgorithmTask(const Ideal& ideal, SliceStrategy& strategy) {
   TaskEngine tasks;
 
   auto_ptr<Slice> initialSlice = strategy.beginComputing(ideal);
-  SliceTask::addTask(tasks, strategy, initialSlice);
+  tasks.addTask(initialSlice.release());
+  //SliceTask::addTask(tasks, strategy, initialSlice);
 
   tasks.runTasks();
 

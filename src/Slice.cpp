@@ -18,23 +18,29 @@
 #include "Slice.h"
 
 #include "Projection.h"
+#include "SliceEvent.h"
+#include "TaskEngine.h"
+#include "SliceStrategy.h"
 
 // The lcm is technically correct, but _lcmUpdated defaulting to false
 // is still a sensible choice.
-Slice::Slice():
+Slice::Slice(SliceStrategy& strategy):
   _varCount(0),
   _lcmUpdated(false),
-  _lowerBoundHint(0) {
+  _lowerBoundHint(0),
+  _strategy(strategy) {
 }
 
-Slice::Slice(const Ideal& ideal, const Ideal& subtract, const Term& multiply):
+Slice::Slice(SliceStrategy& strategy,
+			 const Ideal& ideal, const Ideal& subtract, const Term& multiply):
   _ideal(ideal),
   _subtract(subtract),
   _multiply(multiply),
   _varCount(multiply.getVarCount()),
   _lcm(multiply.getVarCount()),
   _lcmUpdated(false),
-  _lowerBoundHint(0) {
+  _lowerBoundHint(0),
+  _strategy(strategy) {
   ASSERT(multiply.getVarCount() == ideal.getVarCount());
   ASSERT(multiply.getVarCount() == subtract.getVarCount());
 }
@@ -311,4 +317,40 @@ bool Slice::applyLowerBound() {
   }
 
   return changed;
+}
+
+void Slice::run(TaskEngine& tasks) {
+  if (_strategy.processIfBaseCase(*this)) {
+	dispose();
+	return;
+  }
+
+  SliceEvent* leftEvent = 0;
+  SliceEvent* rightEvent = 0;
+  auto_ptr<Slice> leftSlice;
+  auto_ptr<Slice> rightSlice;
+  auto_ptr<Slice> autoThis(this);
+  _strategy.split(autoThis,
+				  leftEvent, leftSlice,
+				  rightEvent, rightSlice);
+
+  try {
+	if (leftEvent != 0)
+	  tasks.addTask(leftEvent);
+	if (leftSlice.get() != 0)
+	  tasks.addTask(leftSlice.release());
+  } catch (...) {
+	if (rightEvent != 0)
+	  rightEvent->dispose();
+	throw;
+  }
+
+  if (rightEvent != 0)
+	tasks.addTask(rightEvent);
+  if (rightSlice.get() != 0)
+	tasks.addTask(rightSlice.release());
+}
+
+void Slice::dispose() {
+  _strategy.freeSlice(auto_ptr<Slice>(this));
 }

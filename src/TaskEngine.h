@@ -43,19 +43,17 @@ class TaskEngine {
 
   /** Add a task at the head of the list of pending tasks.
 
-   TaskEngine guarantees to call dispose() on the task one time at
-   some point. It is allowed to add the same task several times,
-   though then dispose() will be called as many times as the task has
-   been added.
+   TaskEngine guarantees to call either run() or dispose() on the task
+   at some point. It is allowed to add the same task several times,
+   though then run() or dispose() will be called as many times as the
+   task has been added.
   */
   void addTask(Task* task);
 
   /** Run the most recently added task that has not been run yet.
 
-   Does nothing and returns false if there are no pending tasks,
-   otherwise returns true. The method dispose() is called on the task
-   at the latest after it has finished running. Dispose will also be
-   called in case of an exception.
+   Returns true if a task has been run. Returns false if there are no
+   pending tasks.
   */
   bool runNextTask();
 

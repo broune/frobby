@@ -19,8 +19,10 @@
 
 #include "Ideal.h"
 #include "Term.h"
+#include "Task.h"
 
 class Projection;
+class SliceStrategy;
 
 /** This class represents a slice, which is the central data structure
  of the %Slice Algorithm.
@@ -72,17 +74,21 @@ class Projection;
  for each slice derivative to store a Consumer and to provide the
  output to that consumer.
 */
-class Slice {
+class Slice : public Task {
+  virtual void run(TaskEngine& tasks);
+  virtual void dispose();
+
  public:
   /** Construct the slice \f$(\ideal 0, \ideal 0, 1)\f$ in a ring of
    zero variables.
   */
-  Slice();
+  Slice(SliceStrategy& strategy);
 
   /** Construct the slice \f$(\codeVar{ideal}, \codeVar{subtract},
    \codeVar{multiply})\f$.
   */
-  Slice(const Ideal& ideal, const Ideal& subtract, const Term& multiply);
+  Slice(SliceStrategy& strategy,
+		const Ideal& ideal, const Ideal& subtract, const Term& multiply);
 
   virtual ~Slice();
 
@@ -293,6 +299,8 @@ class Slice {
    simplified sooner in order to speed up simplification.
   */
   size_t _lowerBoundHint;
+
+  SliceStrategy& _strategy;
 };
 
 #endif

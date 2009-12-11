@@ -41,7 +41,7 @@ auto_ptr<Slice> MsmStrategy::beginComputing(const Ideal& ideal) {
 	sliceMultiply[var] = 1;
 
   auto_ptr<Slice> slice
-	(new MsmSlice(ideal, *_initialSubtract, sliceMultiply, _consumer));
+	(new MsmSlice(*this, ideal, *_initialSubtract, sliceMultiply, _consumer));
   simplify(*slice);
 
   _initialSubtract.reset();
@@ -59,7 +59,7 @@ auto_ptr<MsmSlice> MsmStrategy::newMsmSlice() {
 }
 
 auto_ptr<Slice> MsmStrategy::allocateSlice() {
-  return auto_ptr<Slice>(new MsmSlice());
+  return auto_ptr<Slice>(new MsmSlice(*this));
 }
 
 bool MsmStrategy::debugIsValidSlice(Slice* slice) {
@@ -245,12 +245,12 @@ void MsmStrategy::independenceSplit
   events->reset(slice->getConsumer(), _indep);
 
   // Construct left slice.
-  auto_ptr<MsmSlice> msmLeftSlice(new MsmSlice());
+  auto_ptr<MsmSlice> msmLeftSlice(new MsmSlice(*this));
   msmLeftSlice->setToProjOf(*slice, events->getLeftProjection(), events.get());
   leftSlice = msmLeftSlice;
 
   // Construct right slice.
-  auto_ptr<MsmSlice> msmRightSlice(new MsmSlice());
+  auto_ptr<MsmSlice> msmRightSlice(new MsmSlice(*this));
   msmRightSlice->setToProjOf(*slice, events->getRightProjection(),
 							 events->getRightConsumer());
   rightSlice = msmRightSlice;
