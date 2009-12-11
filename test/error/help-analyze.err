@@ -9,8 +9,8 @@ The parameters accepted by analyze are as follows.
  -summaryLevel INTEGER   (default is 1)
    If non-zero, then print a summary of the ideal to the error output
    stream. A higher summary level results in more expensive analysis in
-   order to provide more information. Currently only level 1 is available
-   which prints the number of variables and the number of generators.
+   order to provide more information. Currently levels 0, 1 and 2 are
+   available.
 
  -lcm [BOOL]   (default is off)
    Print the least common multiple of the generators.

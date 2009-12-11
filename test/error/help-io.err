@@ -49,6 +49,7 @@ support are as follows.
   - supports input and output of a monomial ideal.
   - supports input and output of a list of monomial ideals.
   - supports input and output of a polynomial.
+  - supports input of a saturated binomial ideal.
 
 * The format null: Ignores input and produces no output.
   - supports input and output of a monomial ideal.

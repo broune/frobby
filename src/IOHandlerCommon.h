@@ -29,6 +29,7 @@ class IOHandlerCommon : public IOHandler {
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
   virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
  protected:
   virtual void readRing(Scanner& in, VarNames& names) = 0;

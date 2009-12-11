@@ -36,10 +36,19 @@ class DataType {
 
   bool operator==(const DataType& type) const;
 
-  // Returns the one and only instance of each kind.
+  /** Returns the one and only instance for null. */
   static const DataType& getNullType();
+
+  /** Returns the one and only instance for monomial ideals. */
   static const DataType& getMonomialIdealType();
+
+  /** Returns the one and only instance for polynomials. */
   static const DataType& getPolynomialType();
+
+  /** Returns the one and only instance for saturated binomial ideals. */
+  static const DataType& getSatBinomIdealType();
+
+  /** Returns the one and only instance for monomial ideal lists. */
   static const DataType& getMonomialIdealListType();
 
   /** Returns a vector of all types except null. */

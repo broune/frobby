@@ -140,7 +140,19 @@ void IdealFacade::sortAllAndMinimize(BigIdeal& bigIdeal) {
   endAction();
 }
 
+void IdealFacade::projectVar(BigIdeal& bigIdeal, size_t var) {
+  beginAction("Projecting a variable away.");
+
+  ASSERT(var < bigIdeal.getVarCount());
+
+  bigIdeal.projectVar(var);
+
+  endAction();
+}
+
 void IdealFacade::addPurePowers(BigIdeal& bigIdeal) {
+  beginAction("Adding pure powers.");
+
   vector<mpz_class> lcm;
   bigIdeal.getLcm(lcm);
 
@@ -154,6 +166,8 @@ void IdealFacade::addPurePowers(BigIdeal& bigIdeal) {
 
 	purePower[var] = 0;
   }
+
+  endAction();
 }
 
 void IdealFacade::sortGeneratorsUnique(BigIdeal& ideal) {

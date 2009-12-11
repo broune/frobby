@@ -18,6 +18,7 @@
 #define GENERATOR_FROBENIUS_ACTION_GUARD
 
 #include "Action.h"
+#include "IntegerParameter.h"
 
 class GenerateFrobeniusAction : public Action {
  public:
@@ -28,6 +29,10 @@ class GenerateFrobeniusAction : public Action {
   virtual void perform();
 
   static const char* staticGetName();
+
+ private:
+  IntegerParameter _entryCount;
+  IntegerParameter _maxEntryDigits;
 };
 
 #endif

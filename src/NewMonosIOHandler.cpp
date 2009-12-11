@@ -133,3 +133,9 @@ void NewMonosIOHandler::readPolynomial
   ASSERT(false);
   reportInternalError("Called NewMonosIOHandler::readPolynomial.");
 }
+
+void NewMonosIOHandler::readSatBinomIdeal
+(Scanner& in, SatBinomConsumer& consumer) {
+  ASSERT(false);
+  reportInternalError("Called NewMonosIOHandler::readSatBinomIdeal.");
+}

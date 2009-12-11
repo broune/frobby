@@ -56,6 +56,8 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
 
 /** Generate a random vector of numbers whose gcd is 1.
  */
-void generateRandomFrobeniusInstance(vector<mpz_class>& degrees);
+void generateRandomFrobeniusInstance(vector<mpz_class>& degrees,
+									 size_t entryCount,
+									 const mpz_class& maxEntry);
 
 #endif

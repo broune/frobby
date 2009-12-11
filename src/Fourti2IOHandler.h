@@ -36,6 +36,8 @@ public:
 						vector<mpz_class>& term);
   virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
+  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out);
@@ -46,6 +48,8 @@ public:
   static const char* staticGetName();
 
  protected:
+  void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer,
+						 size_t generatorCount, size_t varCount);
   void readIdeal(Scanner& in, BigTermConsumer& consumer,
 				 size_t generatorCount, size_t varCount);
   void readRing(Scanner& in, VarNames& names);

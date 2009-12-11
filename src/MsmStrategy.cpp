@@ -28,16 +28,23 @@
 #include "SliceEvent.h"
 
 auto_ptr<Slice> MsmStrategy::beginComputing(const Ideal& ideal) {
+  ASSERT(_initialSubtract.get() == 0 ||
+		 _initialSubtract->getVarCount() == ideal.getVarCount());
+
   _consumer->beginConsuming();
   size_t varCount = ideal.getVarCount();
+  if (_initialSubtract.get() == 0)
+	_initialSubtract = auto_ptr<Ideal>(new Ideal(varCount));
 
   Term sliceMultiply(varCount);
   for (size_t var = 0; var < varCount; ++var)
 	sliceMultiply[var] = 1;
 
   auto_ptr<Slice> slice
-	(new MsmSlice(ideal, Ideal(varCount), sliceMultiply, _consumer));
+	(new MsmSlice(ideal, *_initialSubtract, sliceMultiply, _consumer));
   simplify(*slice);
+
+  _initialSubtract.reset();
   return slice;
 }
 
@@ -134,7 +141,17 @@ void MsmStrategy::labelSplit(auto_ptr<MsmSlice> slice,
 MsmStrategy::MsmStrategy(TermConsumer* consumer,
 						 const SplitStrategy* splitStrategy):
   SliceStrategyCommon(splitStrategy),
-  _consumer(consumer) {
+  _consumer(consumer),
+  _initialSubtract(0) {
+  ASSERT(consumer != 0);
+}
+
+MsmStrategy::MsmStrategy(TermConsumer* consumer,
+						 const SplitStrategy* splitStrategy,
+						 const Ideal& initialSubtract):
+  SliceStrategyCommon(splitStrategy),
+  _consumer(consumer),
+  _initialSubtract(new Ideal(initialSubtract)) {
   ASSERT(consumer != 0);
 }
 

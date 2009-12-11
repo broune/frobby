@@ -14,6 +14,13 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
+/** \file stdinc.h
+ This header file includes common definitions and is included as the
+ first line of code in every implementation file (.cpp). Thus it is
+ never necessary to include it in headers, and anything defined here
+ is defined everywhere throughout the code base.
+*/
+
 #ifdef _MSC_VER // For Microsoft Compiler in Visual Studio C++.
 #pragma warning (push, 1) // Reduce warning level for GMP headers.
 #endif

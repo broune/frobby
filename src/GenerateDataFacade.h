@@ -38,11 +38,13 @@ class GenerateDataFacade : private Facade {
 	(BigIdeal& ideal, size_t variableCount, size_t generatorCount);
 
   void generateIdeal(BigIdeal& ideal,
-		     size_t exponentRange,
-		     size_t variableCount,
-		     size_t generatorCount);
-  
-  void generateFrobeniusInstance(vector<mpz_class>& instance);
+					 size_t exponentRange,
+					 size_t variableCount,
+					 size_t generatorCount);
+
+  void generateFrobeniusInstance(vector<mpz_class>& instance,
+								 size_t entryCount,
+								 const mpz_class& maxEntry);
 };
 
 #endif

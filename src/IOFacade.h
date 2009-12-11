@@ -26,9 +26,12 @@ class IOHandler;
 class BigPolynomial;
 class VarNames;
 class BigTermConsumer;
+class SatBinomIdeal;
+class SatBinomConsumer;
 
 /** A facade for input and output of mathematical objects.
 	
+    @TODO: Consider letting Scanner play the role of IOFacade.
 	@ingroup Facade
 	@ingroup IO
 */
@@ -38,6 +41,13 @@ class IOFacade : private Facade {
 
   bool isValidMonomialIdealFormat(const string& format);
 
+  /** Read a saturated binomial ideal from in and feed it to consumer. */
+  void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+
+  /** Read a saturated binomial ideal from in and place it in the
+   parameter ideal. */
+  void readSatBinomIdeal(Scanner& in, SatBinomIdeal& ideal);
+
   /** Read an ideal from in and feed it to consumer. */
   void readIdeal(Scanner& in, BigTermConsumer& consumer);
 
@@ -45,8 +55,8 @@ class IOFacade : private Facade {
   void readIdeal(Scanner& in, BigIdeal& ideal);
 
   /** Insert the ideals that are read into the parameter ideals. The
-	  parameter ideals is required to be empty. Names contains the last
-	  ring read, even if there are no ideals.
+   parameter ideals is required to be empty. Names contains the last
+   ring read, even if there are no ideals.
   */
   void readIdeals(Scanner& in, vector<BigIdeal*>& ideals, VarNames& names);
 

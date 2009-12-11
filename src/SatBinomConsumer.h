@@ -14,28 +14,29 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef MAXIMAL_STANDARD_ACTION
-#define MAXIMAL_STANDARD_ACTION
+#ifndef SAT_BINOM_CONSUMER_GUARD
+#define SAT_BINOM_CONSUMER_GUARD
 
-#include "Action.h"
-#include "IOParameters.h"
-#include "SliceParameters.h"
-#include "BoolParameter.h"
+#include <vector>
 
-class MaximalStandardAction : public Action {
+class VarNames;
+class SatBinomIdeal;
+
+class SatBinomConsumer {
  public:
-  MaximalStandardAction();
+  virtual ~SatBinomConsumer();
 
-  virtual void obtainParameters(vector<Parameter*>& parameters);
+  virtual void consumeRing(const VarNames& names) = 0;
+  virtual void beginConsuming() = 0;
+  virtual void consume(const vector<mpz_class>& term) = 0;
+  virtual void doneConsuming() = 0;
 
-  virtual void perform();
+  virtual void consume(const SatBinomIdeal& ideal);
 
-  static const char* staticGetName();
-
- private:
-  SliceParameters _sliceParams;
-  IOParameters _io;
-  BoolParameter _increment;
+  // Calling this convenience method is equivalent to
+  //   consumeRing(names);
+  //   beginConsuming();
+  void beginConsuming(const VarNames& names);
 };
 
 #endif

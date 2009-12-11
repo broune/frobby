@@ -58,6 +58,10 @@ class IdealFacade : private Facade {
   // Removes redundant generators from ideal.
   void sortAllAndMinimize(BigIdeal& bigIdeal);
 
+  // Removes the variable var from the ideal and ring by substituting
+  // it by 1.
+  void projectVar(BigIdeal& bigIdeal, size_t var);
+
   // Adds x_i^(l_i+1) to the ideal for each i where that will be a
   // minimal generator, where x^l is the lcm of the generators of
   // bigIdeal.

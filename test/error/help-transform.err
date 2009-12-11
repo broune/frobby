@@ -41,8 +41,12 @@ The parameters accepted by transform are as follows.
 
  -addPurePowers [BOOL]   (default is off)
    Adds a pure power for each variable that does not already have a pure power
-   in the ideal. Each exponent is chosen to be one larger than themaximal
+   in the ideal. Each exponent is chosen to be one larger than the maximal
    exponent of that variable that appears in the ideal.
+
+ -projectVar INTEGER   (default is 0)
+   Project away the i'th variable counting from 1. No action is taken for a
+   value of 0 or more than the number of variables in the ring.
 
  -time [BOOL]   (default is off)
    Display and time each subcomputation.

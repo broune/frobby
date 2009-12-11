@@ -23,8 +23,9 @@ class VarNames;
 class Scanner;
 class BigIdeal;
 class BigPolynomial;
+class SatBinonConsumer;
 
-/** This IO format does not support input, and merely displaythe
+/** This IO format does not support input, and merely displays the
  number of things written to output, without actually displaying the
  output.
 */
@@ -35,6 +36,7 @@ public:
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
   virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void writeTerm(const vector<mpz_class>& term,

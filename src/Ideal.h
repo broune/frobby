@@ -23,6 +23,7 @@ class Term;
 #include <algorithm>
 #include <ostream>
 
+/// Represents a monomial ideal with int exponents.
 class Ideal {
   typedef vector<Exponent*> Cont;
 
