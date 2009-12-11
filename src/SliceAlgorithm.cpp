@@ -16,15 +16,130 @@
 */
 #include "stdinc.h"
 #include "SliceAlgorithm.h"
-
 #include "Slice.h"
 #include "MsmStrategy.h"
 #include "HilbertStrategy.h"
 #include "SliceEvent.h"
 #include "DebugStrategy.h"
 #include "ElementDeleter.h"
+#include "Task.h"
+#include "TaskEngine.h"
+
+class SliceEventTask : public Task {
+public:
+  SliceEventTask(SliceEvent* event): _event(event) {
+	ASSERT(event != 0);
+  }
+
+  virtual ~SliceEventTask() {
+	ASSERT(_event == 0); // Destructed through dispose.
+  }
+
+  static void addTask(TaskEngine& tasks, SliceEvent* event) {
+	ASSERT(event != 0);
+
+	SliceEventTask* task;
+	try {
+	  task = new SliceEventTask(event);
+	} catch (...) {
+	  event->dispose();
+	  throw;
+	}
+
+	tasks.addTask(task);
+  }
+
+  virtual void run(TaskEngine& task) {
+	_event->raiseEvent();
+  }
+
+  virtual void dispose() {
+	ASSERT(_event != 0); // Only call dispose once.
+
+	_event->dispose();
+
+	IF_DEBUG(_event = 0); // Signals dispose was called for debugging.
+	delete this;
+  }
+
+private:
+  SliceEvent* _event;
+};
+
+class SliceTask : public Task {
+public:
+  SliceTask(SliceStrategy& strategy, auto_ptr<Slice> slice):
+	_strategy(strategy),
+	_slice(slice) {
+	ASSERT(_slice.get() != 0);
+  }
+
+  virtual ~SliceTask() {
+  }
+
+  static void addTask(TaskEngine& task,
+					  SliceStrategy& strategy, auto_ptr<Slice> slice) {
+	ASSERT(slice.get() != 0);
+
+	task.addTask(new SliceTask(strategy, slice));
+  }
+
+  virtual void run(TaskEngine& tasks) {
+	if (_strategy.processIfBaseCase(*_slice)) {
+	  _strategy.freeSlice(_slice);
+	  return;
+	}
+
+	SliceEvent* leftEvent = 0;
+	SliceEvent* rightEvent = 0;
+	auto_ptr<Slice> leftSlice;
+	auto_ptr<Slice> rightSlice;
+	_strategy.split(_slice,
+					leftEvent, leftSlice,
+					rightEvent, rightSlice);
+
+	try {
+	  if (leftEvent != 0)
+		SliceEventTask::addTask(tasks, leftEvent);
+	  if (leftSlice.get() != 0)
+		SliceTask::addTask(tasks, _strategy, leftSlice);
+	} catch (...) {
+	  if (rightEvent != 0)
+		rightEvent->dispose();
+	  throw;
+	}
+
+	if (rightEvent != 0)
+	  SliceEventTask::addTask(tasks, rightEvent);
+	if (rightSlice.get() != 0)
+	  SliceTask::addTask(tasks, _strategy, rightSlice);
+  }
+
+  virtual void dispose() {
+	if (_slice.get() != 0)
+	  _strategy.freeSlice(_slice);
+	delete this;
+  }
+
+private:
+  SliceStrategy& _strategy;
+  auto_ptr<Slice> _slice;
+};
+
+void runSliceAlgorithmTask(const Ideal& ideal, SliceStrategy& strategy) {
+  TaskEngine tasks;
+
+  auto_ptr<Slice> initialSlice = strategy.beginComputing(ideal);
+  SliceTask::addTask(tasks, strategy, initialSlice);
+
+  tasks.runTasks();
+
+  strategy.doneComputing();
+}
 
 void runSliceAlgorithm(const Ideal& ideal, SliceStrategy& strategy) {
+  return runSliceAlgorithmTask(ideal, strategy);
+
   // This is a worklist algorithm with two different kinds of work
   // items - events and slices. This is represented by the two vectors
   // events and slices. If the next item in slices is 0, then the next
