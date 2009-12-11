@@ -149,7 +149,7 @@ test: all
 # Run all tests that it makes sense to run.
 fullTest: all
 	test/runTests _full
-	test/runSplitTests _few
+	test/runSplitTests _full
 
 # Good for testing Frobby after a small change.
 microTest: all
