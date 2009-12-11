@@ -26,7 +26,7 @@ class BigIdeal;
 class BigPolynomial;
 
 /** This IO format reads the empty ideal without actually consulting
-the input, and does nothing when asked to writed output.
+ the input, and does nothing when asked to writed output.
 */
 class NullIOHandler : public IOHandler {
 public:
@@ -35,6 +35,7 @@ public:
   virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
   virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
   virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
   virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
   virtual void writeTerm(const vector<mpz_class>& term,

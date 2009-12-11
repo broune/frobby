@@ -14,28 +14,22 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef MAXIMAL_STANDARD_ACTION
-#define MAXIMAL_STANDARD_ACTION
+#include "stdinc.h"
+#include "SatBinomConsumer.h"
 
-#include "Action.h"
-#include "IOParameters.h"
-#include "SliceParameters.h"
-#include "BoolParameter.h"
+#include "SatBinomIdeal.h"
 
-class MaximalStandardAction : public Action {
- public:
-  MaximalStandardAction();
+SatBinomConsumer::~SatBinomConsumer() {
+}
 
-  virtual void obtainParameters(vector<Parameter*>& parameters);
+void SatBinomConsumer::beginConsuming(const VarNames& names) {
+  consumeRing(names);
+  beginConsuming();
+}
 
-  virtual void perform();
-
-  static const char* staticGetName();
-
- private:
-  SliceParameters _sliceParams;
-  IOParameters _io;
-  BoolParameter _increment;
-};
-
-#endif
+void SatBinomConsumer::consume(const SatBinomIdeal& ideal) {
+  beginConsuming(ideal.getNames());
+  for (size_t binom = 0; binom < ideal.getGeneratorCount(); ++binom)
+	consume(ideal.getGenerator(binom));
+  doneConsuming();
+}

@@ -52,6 +52,8 @@ public:
   vector<mpz_class>& operator[](size_t index);
   const vector<mpz_class>& operator[](size_t index) const;
 
+  void projectVar(size_t var);
+
   // This also depends on the order of the variables.
   bool operator<(const BigIdeal& ideal) const;
 
@@ -98,8 +100,6 @@ public:
   static bool bigTermCompare(const vector<mpz_class>& a,
 							 const vector<mpz_class>& b);
 private:
-
-  vector<string> _variables;
   vector<vector<mpz_class> > _terms;
   VarNames _names;
 };

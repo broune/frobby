@@ -30,6 +30,7 @@ class BigPolynomial;
 class BigTermConsumer;
 class DataType;
 class CoefBigTermConsumer;
+class SatBinomConsumer;
 
 /** An IOHandler implements input and output for some format in such
  a way that client code does not need to know which format is being
@@ -54,6 +55,8 @@ class IOHandler {
 						vector<mpz_class>& term);
   virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer) = 0;
 
+  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) = 0;
+
   virtual void writeTerm(const vector<mpz_class>& term,
 						 const VarNames& names,
 						 FILE* out) = 0;
@@ -67,7 +70,7 @@ class IOHandler {
   virtual auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
 
   /** Returns an IOHandler for the format with the passed in name, or
-   returns null (i.e. 0) if the name is not known.
+   returns null if the name is not known.
   */
   static auto_ptr<IOHandler> createIOHandler(const string& name);
 

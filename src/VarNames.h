@@ -113,6 +113,8 @@ public:
   /** Swaps the variables with indexes a and b. */
   void swapVariables(size_t a, size_t b);
 
+  void projectVar(size_t index);
+
   void toString(string& str) const;
   void print(FILE* file) const; // For debug
 

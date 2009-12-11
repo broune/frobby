@@ -24,7 +24,7 @@
 #include "BigPolynomial.h"
 
 namespace {
-  /** This class is a helper class for CountingIOHandler. It
+  /** This class is a helper class for CountingIOHandler. It counts
    the number of terms that it consumes.
   */
   class CountingConsumer :
@@ -42,12 +42,12 @@ namespace {
 	*/
 	virtual ~CountingConsumer() {
 	  // Destructors must not throw exceptions. As far as I know,
-	  // bad_alloc is the only thing that should conceivably be thrown
-	  // from gmp_fprintf.
+	  // bad_alloc is the only thing that could be thrown from
+	  // gmp_fprintf.
 	  try {
 		gmp_fprintf(_out, "%Zd\n", _termCount.get_mpz_t());
 	  } catch (std::bad_alloc) {
-		// Not good to ignore this, but what can we do...
+		// Not good to ignore this, but what can we do... 
 	  } catch (...) {
 		ASSERT(false);
 		throw;
@@ -194,4 +194,8 @@ bool CountingIOHandler::hasMoreInput(Scanner& scanner) const {
 
 void CountingIOHandler::readPolynomial
 (Scanner& in, CoefBigTermConsumer& consumer) {
+}
+
+void CountingIOHandler::readSatBinomIdeal
+(Scanner& in, SatBinomConsumer& consumer) {
 }

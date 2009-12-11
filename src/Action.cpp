@@ -39,6 +39,7 @@
 #include "PrimaryDecomAction.h"
 #include "OptimizeAction.h"
 #include "MaximalStandardAction.h"
+#include "LatticeAnalyzeAction.h"
 #include "DimensionAction.h"
 
 Action::Action(const char* name,
@@ -80,6 +81,7 @@ namespace {
 	nameFactoryRegister<GenerateFrobeniusAction>(factory);
 	nameFactoryRegister<AnalyzeAction>(factory);
 	nameFactoryRegister<LatticeFormatAction>(factory);
+	nameFactoryRegister<LatticeAnalyzeAction>(factory);
 
 	nameFactoryRegister<HelpAction>(factory);
 	nameFactoryRegister<TestAction>(factory);

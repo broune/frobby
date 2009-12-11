@@ -173,6 +173,14 @@ const vector<mpz_class>& BigIdeal::operator[](size_t index) const {
   return _terms[index];
 }
 
+void BigIdeal::projectVar(size_t var) {
+  ASSERT(var < getVarCount());
+
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	_terms[gen].erase(_terms[gen].begin() + var);
+  _names.projectVar(var);
+}
+
 bool BigIdeal::operator<(const BigIdeal& ideal) const {
   if (getNames() < ideal.getNames())
 	return true;

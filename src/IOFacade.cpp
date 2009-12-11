@@ -28,6 +28,8 @@
 #include "BigTermRecorder.h"
 #include "CoefBigTermConsumer.h"
 #include "CoefBigTermRecorder.h"
+#include "SatBinomIdeal.h"
+#include "SatBinomRecorder.h"
 
 #include <iterator>
 
@@ -43,6 +45,30 @@ bool IOFacade::isValidMonomialIdealFormat(const string& format) {
   endAction();
 
   return valid;
+}
+
+void IOFacade::readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) {
+  beginAction("Reading saturated binomial ideal.");
+
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
+
+  handler->readSatBinomIdeal(in, consumer);
+
+  endAction();
+}  
+
+void IOFacade::readSatBinomIdeal(Scanner& in, SatBinomIdeal& ideal) {
+  beginAction("Reading saturated binomial ideal.");
+
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
+
+  ideal.clear();
+  SatBinomRecorder recorder(ideal);
+  handler->readSatBinomIdeal(in, recorder);
+
+  endAction();
 }
 
 void IOFacade::readIdeal(Scanner& in, BigTermConsumer& consumer) {
@@ -65,7 +91,7 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   BigTermRecorder recorder;
   handler->readIdeal(in, recorder);
 
-  // TODO: return value instead of this copy.
+  /// @TODO: return value instead of this copy.
   ASSERT(!recorder.empty());
   ideal = *(recorder.releaseIdeal());
   ASSERT(recorder.empty());

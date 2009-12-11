@@ -28,6 +28,8 @@
 #include "FrobbyStringStream.h"
 #include "IdealConsolidator.h"
 #include "PolynomialConsolidator.h"
+#include "SatBinomIdeal.h"
+#include "SatBinomConsumer.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
   IOHandler(staticGetName(),
@@ -35,6 +37,7 @@ Fourti2IOHandler::Fourti2IOHandler():
   registerInput(DataType::getMonomialIdealType());
   registerInput(DataType::getMonomialIdealListType());
   registerInput(DataType::getPolynomialType());
+  registerInput(DataType::getSatBinomIdealType());
   registerOutput(DataType::getMonomialIdealType());
   registerOutput(DataType::getMonomialIdealListType());
   registerOutput(DataType::getPolynomialType());
@@ -259,6 +262,44 @@ void Fourti2IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer,
   consumer.consume(ideal);
 }
 
+void Fourti2IOHandler::readSatBinomIdeal
+(Scanner& in, SatBinomConsumer& consumer,
+ size_t generatorCount, size_t varCount) {
+  // We have to read the entire ideal before we can tell whether there is
+  // a ring associated to it, so we have to store the ideal here until
+  // that time.
+
+  SatBinomIdeal ideal((VarNames(varCount)));
+  ideal.reserve(generatorCount);
+  for (size_t t = 0; t < generatorCount; ++t) {
+	// Read a term
+	ideal.newLastTerm();
+	vector<mpz_class>& binom = ideal.getLastBinomRef();
+	for (size_t var = 0; var < varCount; ++var)
+	  in.readInteger(binom[var]);
+  }
+
+  if (in.peekIdentifier()) {
+	VarNames names;
+	readRing(in, names, varCount);
+	ideal.renameVars(names);
+  }
+
+  consumer.consume(ideal);
+}
+
+
+void Fourti2IOHandler::readSatBinomIdeal
+(Scanner& in, SatBinomConsumer& consumer) {
+  size_t generatorCount;
+  in.readSizeT(generatorCount);
+
+  size_t varCount;
+  in.readSizeT(varCount);
+
+  readSatBinomIdeal(in, consumer, generatorCount, varCount);
+}
+
 void Fourti2IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
   size_t generatorCount;
   in.readSizeT(generatorCount);
@@ -332,7 +373,9 @@ void Fourti2IOHandler::readPolynomial
 	  ("A polynomial has at least one column in the matrix,"
 	   "but this matrix has no columns.");
 
-  --varCount; // One of columns is the coefficient.
+  // The first column is the coefficient and so does not represent a
+  // variable.
+  --varCount;
 
   BigPolynomial polynomial((VarNames(varCount)));
 
@@ -348,8 +391,11 @@ void Fourti2IOHandler::readPolynomial
 	}
   }
 
-  if (!in.match('('))
-	in.expect("(coefficient)"); // This improves the error message.
+  if (!in.match('(')) {
+	// This expect will fail which improves the error message compared
+	// to just expect('(').
+	in.expect("(coefficient)");
+  }
   in.expect("coefficient");
   in.expect(')');
 

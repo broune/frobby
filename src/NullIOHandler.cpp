@@ -118,3 +118,7 @@ bool NullIOHandler::hasMoreInput(Scanner& scanner) const {
 void NullIOHandler::readPolynomial
 (Scanner& in, CoefBigTermConsumer& consumer) {
 }
+
+void NullIOHandler::readSatBinomIdeal
+(Scanner& in, SatBinomConsumer& consumer) {
+}

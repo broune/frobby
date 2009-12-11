@@ -83,10 +83,12 @@ void GenerateDataFacade::generateIdeal(BigIdeal& ideal,
 }
 
 void GenerateDataFacade::
-generateFrobeniusInstance(vector<mpz_class>& instance) {
+generateFrobeniusInstance(vector<mpz_class>& instance,
+						  size_t entryCount,
+						  const mpz_class& maxEntry) {
   beginAction("Generating random Frobenius instance.");
 
-  ::generateRandomFrobeniusInstance(instance);
+  ::generateRandomFrobeniusInstance(instance, entryCount, maxEntry);
 
   endAction();
 }

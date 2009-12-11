@@ -56,8 +56,11 @@ public:
 								bool wroteAnyGenerators,
 								FILE* out);
 
-  // Not supported.
+  /// Not supported.
   virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+
+  /// Not supported.
+  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 };
 
 #endif

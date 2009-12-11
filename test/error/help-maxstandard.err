@@ -46,5 +46,9 @@ The parameters accepted by maxstandard are as follows.
    representation. This requires storing the entire output in memory, which
    can increase run time modestly and increase memory consumption greatly.
 
+ -increment [BOOL]   (default is off)
+   Increase each entry of the output by 1 to compute maximal staircase
+   monomials in place of maximal standard monomials.
+
  -time [BOOL]   (default is off)
    Display and time each subcomputation.

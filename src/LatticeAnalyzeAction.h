@@ -1,5 +1,5 @@
 /* Frobby: Software for monomial ideal computations.
-   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+   Copyright (C) 2009 Bjarke Hammersholt Roune (www.broune.com)
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,17 +14,17 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef MAXIMAL_STANDARD_ACTION
-#define MAXIMAL_STANDARD_ACTION
+#ifndef LATTICE_ANALYZE_ACTION_GUARD
+#define LATTICE_ANALYZE_ACTION_GUARD
 
 #include "Action.h"
-#include "IOParameters.h"
-#include "SliceParameters.h"
 #include "BoolParameter.h"
+#include "IOParameters.h"
+#include "IntegerParameter.h"
 
-class MaximalStandardAction : public Action {
+class LatticeAnalyzeAction : public Action {
  public:
-  MaximalStandardAction();
+  LatticeAnalyzeAction();
 
   virtual void obtainParameters(vector<Parameter*>& parameters);
 
@@ -32,10 +32,12 @@ class MaximalStandardAction : public Action {
 
   static const char* staticGetName();
 
+  /// This action isn't done yet, so it should not be displayed by
+  /// the help action.
+  virtual bool displayAction() const;
+
  private:
-  SliceParameters _sliceParams;
   IOParameters _io;
-  BoolParameter _increment;
 };
 
 #endif

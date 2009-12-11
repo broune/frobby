@@ -37,6 +37,8 @@ class TermConsumer;
 class MsmStrategy : public SliceStrategyCommon {
  public:
   MsmStrategy(TermConsumer* consumer, const SplitStrategy* splitStrategy);
+  MsmStrategy(TermConsumer* consumer, const SplitStrategy* splitStrategy,
+			  const Ideal& initialSubtract);
 
   virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
   virtual void doneComputing();
@@ -65,6 +67,8 @@ class MsmStrategy : public SliceStrategyCommon {
 
   IndependenceSplitter _indep;
   TermConsumer* _consumer;
+
+  auto_ptr<Ideal> _initialSubtract;
 };
 
 #endif

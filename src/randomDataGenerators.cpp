@@ -186,28 +186,34 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
   return generatorsToGo == 0;
 }
 
-void generateRandomFrobeniusInstance(vector<mpz_class>& degrees) {
-  int numberCount = 10;//;4 + (rand() % 6);
-  int mod = 100000;
+void generateRandomFrobeniusInstance(vector<mpz_class>& instance,
+									 size_t entryCount,
+									 const mpz_class& maxEntry) {
+  ASSERT(entryCount >= 1);
+  ASSERT(maxEntry >= 1);
 
-  degrees.resize(numberCount);
+  gmp_randclass random(gmp_randinit_default);
 
-  mpz_class totalGcd = 0;
-  for (int i = 0; i < numberCount - 1; ++i) {
-    mpz_class number = mpz_class(2+(rand() % mod));
-    if (totalGcd == 0)
-      totalGcd = number;
-    else {
-      mpz_gcd(totalGcd.get_mpz_t(),
-			  totalGcd.get_mpz_t(),
-			  number.get_mpz_t());
-    }
-    degrees[i] = number;
-  }
+  // TODO: preserve state across calls.
+  random.seed((unsigned long)time(0) +
+#ifdef __GNUC__ // Only GCC defines this macro.
+			  (unsigned long)getpid() +
+#endif
+			  (unsigned long)clock());
 
-  // This ensures that the gcd of all the numbers is 1.
-  degrees[numberCount - 1] =
-    (totalGcd == 1 ? mpz_class((rand() % mod) + 2) : totalGcd + 1);
+  instance.resize(entryCount);
 
-  sort(degrees.begin(), degrees.end());
+  // Populate instance with random numbers in range [1,maxEntry].
+  for (size_t i = 0; i < entryCount; ++i)
+	instance[i] = random.get_z_range(maxEntry) + 1;
+
+  // Calculate greatest common divisor of instance.
+  mpz_class gcd = instance[0];
+  for (size_t i = 1; i < entryCount; ++i)
+	mpz_gcd(gcd.get_mpz_t(), gcd.get_mpz_t(), instance[i].get_mpz_t());
+
+  // Ensure that instance are relatively prime.
+  instance.front() /= gcd;
+
+  sort(instance.begin(), instance.end());
 }

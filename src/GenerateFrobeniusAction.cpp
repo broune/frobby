@@ -20,25 +20,48 @@
 #include "BigIdeal.h"
 #include "GenerateDataFacade.h"
 #include "IOFacade.h"
+#include "error.h"
 
 GenerateFrobeniusAction::GenerateFrobeniusAction():
   Action
 (staticGetName(),
  "Generate a random Frobenius problem instance.",
  "Generate a random Frobenius problem instance.",
- false) {
+ false),
+
+  _entryCount
+  ("entryCount",
+   "The number of entries in the random instance.",
+   4),
+
+  _maxEntryDigits
+  ("maxEntryDigits",
+   "The largest allowed number of decimal digits for entries in the\n"
+   "random instance.",
+   2) {
 }
 
 void GenerateFrobeniusAction::
 obtainParameters(vector<Parameter*>& parameters) {
   Action::obtainParameters(parameters);
+  parameters.push_back(&_entryCount);
+  parameters.push_back(&_maxEntryDigits);
 }
 
 void GenerateFrobeniusAction::perform() {
   vector<mpz_class> instance;
 
+  if (_entryCount < 1)
+	reportError("There must be at least one entry.");
+  if (_maxEntryDigits < 1)
+	reportError("The largest allowed number of digits must be at least 1.");
+
+  mpz_class maxEntry;
+  mpz_ui_pow_ui(maxEntry.get_mpz_t(), 10, _maxEntryDigits.getIntegerValue());
+
   GenerateDataFacade generator(_printActions);
-  generator.generateFrobeniusInstance(instance);
+  generator.generateFrobeniusInstance
+	(instance, _entryCount.getIntegerValue(), maxEntry);
 
   IOFacade ioFacade(_printActions);
   ioFacade.writeFrobeniusInstance(stdout, instance);

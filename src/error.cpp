@@ -64,6 +64,10 @@ void reportErrorNoThrow(const char* errorMsg) {
   fprintf(stderr, "ERROR: %s\n", errorMsg);
 }
 
+void reportInternalErrorNoThrow(const string& errorMsg) {
+  fprintf(stderr, "INTERNAL ERROR: %s\n", errorMsg.c_str());
+}
+
 void reportErrorNoThrow(const FrobbyException& e) {
   fputs(e.what(), stderr);
 }

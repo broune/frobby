@@ -31,7 +31,7 @@ class Ideal;
  be done, while still making it possible to store the output in memory
  in a convenient form just by using a different consumer.
 
- TODO: consider merging this with BigTermConsumer;
+ @todo: consider merging this with BigTermConsumer;
 */
 class TermConsumer {
  public:

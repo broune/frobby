@@ -20,6 +20,7 @@
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "BigTermRecorder.h"
+#include "error.h"
 
 IOHandlerCommon::IOHandlerCommon(const char* formatName,
 								 const char* formatDescription):
@@ -53,4 +54,11 @@ void IOHandlerCommon::readPolynomial
   VarNames names;
   readRing(in, names);
   readBarePolynomial(in, names, consumer);
+}
+
+void IOHandlerCommon::readSatBinomIdeal(Scanner& in,
+										SatBinomConsumer& consumer) {
+  ASSERT(false);
+  reportInternalError
+	("Unimplemented method IOHandlerCommon::readSatBinomIdeal called.");
 }

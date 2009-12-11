@@ -76,9 +76,15 @@ TransformAction::TransformAction():
 _addPurePowers
 ("addPurePowers",
  "Adds a pure power for each variable that does not already have a pure "
- "power\nin the ideal. Each exponent is chosen to be one larger than the"
+ "power\nin the ideal. Each exponent is chosen to be one larger than the "
  "maximal\nexponent of that variable that appears in the ideal.",
- false) {
+ false),
+
+_projectVar
+("projectVar",
+ "Project away the i'th variable counting from 1. No action is taken "
+ "for a\nvalue of 0 or more than the number of variables in the ring.",
+ 0) {
 }
 
 void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -91,6 +97,7 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_radical);
   parameters.push_back(&_product);
   parameters.push_back(&_addPurePowers);
+  parameters.push_back(&_projectVar);
   Action::obtainParameters(parameters);
 }
 
@@ -108,11 +115,22 @@ void TransformAction::perform() {
   facade.readIdeals(in, ideals, names);
   in.expectEOF();
 
+  IdealFacade idealFacade(_printActions);
+
+  if (0 < _projectVar && _projectVar <= names.getVarCount()) {
+	size_t var = _projectVar - 1;
+	names.projectVar(var);
+
+	for (size_t i = 0; i < ideals.size(); ++i) {
+	  BigIdeal& ideal = *(ideals[i]);
+	  idealFacade.projectVar(ideal, var);
+	}
+  }
+
   if (_product) {
 	auto_ptr<BigIdeal> ideal;
 	ideal.reset(new BigIdeal(names));
 
-	IdealFacade idealFacade(_printActions);
 	idealFacade.takeProducts(ideals, *ideal);
 
 	idealsDeleter.deleteElements();
@@ -121,8 +139,6 @@ void TransformAction::perform() {
 
   for (size_t i = 0; i < ideals.size(); ++i) {
 	BigIdeal& ideal = *(ideals[i]);
-
-	IdealFacade idealFacade(_printActions);
 
 	if (_radical)
 	  idealFacade.takeRadical(ideal);

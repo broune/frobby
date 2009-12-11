@@ -162,6 +162,16 @@ void VarNames::swapVariables(size_t a, size_t b) {
   ASSERT(_nameToIndex[*_indexToName[b]] == b);
 }
 
+void VarNames::projectVar(size_t index) {
+  ASSERT(index < getVarCount());
+
+  VarNames names;
+  for (size_t var = 0; var < getVarCount(); ++var)
+	if (var != index)
+	  names.addVar(getName(var));
+  *this = names;
+}
+
 void VarNames::toString(string& str) const {
   str.clear();
   for (size_t i = 0; i < getVarCount(); ++i) {

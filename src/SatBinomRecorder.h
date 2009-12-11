@@ -14,28 +14,27 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef MAXIMAL_STANDARD_ACTION
-#define MAXIMAL_STANDARD_ACTION
+#ifndef SAT_BINOM_RECORDER_GUARD
+#define SAT_BINOM_RECORDER_GUARD
 
-#include "Action.h"
-#include "IOParameters.h"
-#include "SliceParameters.h"
-#include "BoolParameter.h"
+#include "SatBinomConsumer.h"
+#include "VarNames.h"
 
-class MaximalStandardAction : public Action {
- public:
-  MaximalStandardAction();
+class SatBinomIdeal;
 
-  virtual void obtainParameters(vector<Parameter*>& parameters);
+/// SatBinomRecorder records all consumed saturated binomials into a
+/// passed-in ideal.
+class SatBinomRecorder : public SatBinomConsumer {
+public:
+  SatBinomRecorder(SatBinomIdeal& ideal);
 
-  virtual void perform();
+  virtual void consumeRing(const VarNames& names);
+  virtual void beginConsuming();
+  virtual void consume(const vector<mpz_class>& term);
+  virtual void doneConsuming();
 
-  static const char* staticGetName();
-
- private:
-  SliceParameters _sliceParams;
-  IOParameters _io;
-  BoolParameter _increment;
+private:
+  SatBinomIdeal& _ideal;
 };
 
 #endif
