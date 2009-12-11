@@ -31,17 +31,14 @@ class StatisticsStrategy : public SliceStrategy {
   StatisticsStrategy(SliceStrategy* strategy, FILE* out);
   virtual ~StatisticsStrategy();
 
+  virtual void run(const Ideal& ideal);
+
+  virtual bool processSlice(TaskEngine& tasks, auto_ptr<Slice> slice);
+
   virtual void setUseIndependence(bool use);
   virtual void setUseSimplification(bool use);
+  virtual bool getUseSimplification() const;
 
-  virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
-  virtual void doneComputing();
-
-  virtual void split(auto_ptr<Slice> slice,
-					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
-					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
-
-  virtual bool processIfBaseCase(Slice& slice);
   virtual void freeSlice(auto_ptr<Slice> slice);
 
  private:

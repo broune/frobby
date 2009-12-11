@@ -24,7 +24,6 @@
 #include "TermGrader.h"
 #include "SplitStrategy.h"
 #include "Slice.h"
-#include "SliceAlgorithm.h"
 
 #include <vector>
 
@@ -53,7 +52,7 @@ TEST(OptimizeStrategy, Simplify) {
   OptimizeStrategy strategy
 	(grader, splitStrategy.get(), false,
 	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
-  runSliceAlgorithm(ideal, strategy);
+  strategy.run(ideal);
 
   ASSERT_EQ(strategy.getMaximalSolutions(), Ideal(Term("1 1 2 1")));
   ASSERT_EQ(strategy.getMaximalValue(), mpz_class("300000000000020107"));

@@ -24,7 +24,6 @@
 #include "DataType.h"
 #include "BigIdeal.h"
 #include "MsmStrategy.h"
-#include "SliceAlgorithm.h"
 #include "TermTranslator.h"
 #include "TranslatingTermConsumer.h"
 #include "DebugStrategy.h"

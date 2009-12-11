@@ -21,6 +21,7 @@ class Slice;
 class Term;
 class SliceEvent;
 class Ideal;
+class TaskEngine;
 
 /** This class describes the interface of a strategy object for the
  Slice Algorithm. It determines what goes on when the algorithm runs,
@@ -33,59 +34,20 @@ class SliceStrategy {
  public:
   virtual ~SliceStrategy();
 
-  /** This method should only be called before calling
-   beginComputing().
-  */
+  /** Run the Slice algorithm. */
+  virtual void run(const Ideal& ideal) = 0;
+
+  /** Process the parameter slice. Returns true if this is a base
+   case and false otherwise. */
+  virtual bool processSlice(TaskEngine& tasks, auto_ptr<Slice> slice) = 0;
+
+  /** This method should only be called before calling run(). */
   virtual void setUseIndependence(bool use) = 0;
 
-  /** This method should only be called before calling
-   beginComputing().
-  */
+  /** This method should only be called before calling run(). */
   virtual void setUseSimplification(bool use) = 0;
 
-  /** This returns a slice based on ideal, which can be used to start
-   the computation off. This method should only be called once per
-   strategy, and it should be called before split().
-  */
-  virtual auto_ptr<Slice> beginComputing(const Ideal& ideal) = 0;
-
-  /** This should be called once after computation is done, and then no
-   more methods other than the destructor should be called.
-  */
-  virtual void doneComputing() = 0;
-
-  /** Performs a split of slice and puts the output into the remaining
-   four parameters. The strategy takes over ownership of slice, while
-   passing on ownership of leftSlice and rightSlice. Ownership of
-   leftEvent and rightEvent is not passed on, though it is required
-   that if non-null, then their dispose() method must be called
-   eventually.
-  
-   The parameter slice must have been obtained through a method of
-   this strategy - it must not have been allocated using new or by a
-   different strategy.
-  
-   The algorithm must process rightSlice first, then raise rightEvent,
-   then process leftSlice and finally raise leftEvent.  Processing
-   includes processing any child slices generated from further
-   splits. Any of leftEvent, leftSlice, rightEvent and rightSlice can
-   be 0 after split returns, in which case that output is to be
-   ignored.
-  
-   leftEvent, leftSlice, rightEvent and rightSlice are only used to
-   produce output from split. To make this point clear, they are
-   required to be 0 when split gets called. Slice is not allowed to be
-   0.
-  */
-  virtual void split(auto_ptr<Slice> slice,
-					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
-					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice) = 0;
-
-  /** Processes slice if it is a base case and returns true. Otherwise
-   the return value is false. If slice is a base case, then it does
-   not need to be processed further and can be freed.
-  */
-  virtual bool processIfBaseCase(Slice& slice) = 0;
+  virtual bool getUseSimplification() const = 0;
 
   /** It is allowed to delete returned slices directly, but it is
    better to use freeSlice. freeSlice can only be called on slices

@@ -21,7 +21,6 @@
 #include "Ideal.h"
 #include "TermTranslator.h"
 #include "IOHandler.h"
-#include "SliceAlgorithm.h"
 #include "IOFacade.h"
 #include "Macaulay2IOHandler.h"
 #include "CanonicalCoefTermConsumer.h"

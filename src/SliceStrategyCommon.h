@@ -19,6 +19,7 @@
 
 #include "SliceStrategy.h"
 #include "SplitStrategy.h"
+#include "TaskEngine.h"
 
 #include <vector>
 #include <string>
@@ -35,7 +36,6 @@ class SliceStrategyCommon : public SliceStrategy {
   SliceStrategyCommon(const SplitStrategy* splitStrategy);
   virtual ~SliceStrategyCommon();
 
-  virtual bool processIfBaseCase(Slice& slice);
   virtual void freeSlice(auto_ptr<Slice> slice);
 
   virtual void setUseIndependence(bool use);
@@ -61,13 +61,10 @@ class SliceStrategyCommon : public SliceStrategy {
   */
   auto_ptr<Slice> newSlice();
 
-  /** Takes over ownership of slice and populates leftSlice and
-   rightSlice with simplified sub-slices. Uses the pivot gotten
-   through getPivot.
+  /** Takes over ownership of slice. Uses the pivot gotten through
+   getPivot.
   */
-  virtual void pivotSplit(auto_ptr<Slice> slice,
-						  auto_ptr<Slice>& leftSlice,
-						  auto_ptr<Slice>& rightSlice);
+  virtual void pivotSplit(auto_ptr<Slice> slice);
 
   /** Used by pivotSplit to obtain a pivot. */
   virtual void getPivot(Term& pivot, Slice& slice) = 0;
@@ -81,6 +78,10 @@ class SliceStrategyCommon : public SliceStrategy {
   bool getUseSimplification() const;
 
   const SplitStrategy* _split;
+
+  /** This keeps track of pending tasks to process. These are slices
+   and other events. */
+  TaskEngine _tasks;
 
  private:
   bool _useIndependence;
