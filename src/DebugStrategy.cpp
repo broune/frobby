@@ -29,6 +29,26 @@ DebugStrategy::DebugStrategy(SliceStrategy* strategy, FILE* out):
 DebugStrategy::~DebugStrategy() {
 }
 
+void DebugStrategy::run(const Ideal& ideal) {
+  fputs("DEBUG: Starting Slice Algorithm. Input ideal is:\n", _out);
+  ideal.print(_out);
+
+  _strategy->run(ideal);
+
+  fputs("DEBUG: Slice computation done.\n", _out);
+}
+
+bool DebugStrategy::processSlice(TaskEngine& tasks, auto_ptr<Slice> slice) {
+  fputs("DEBUG: Processing slice.\n", _out);  
+  slice->print(stderr);
+  bool wasBaseCase = _strategy->processSlice(tasks, slice);
+  if (wasBaseCase)
+	fputs("DEBUG: Determined that slice is base case.\n", _out);
+  else
+	fputs("DEBUG: Determined that slice is not base case.\n", _out);
+  return wasBaseCase;
+}
+
 void DebugStrategy::setUseIndependence(bool use) {
   if (use)
 	fputs("DEBUG: Turning on independence splits.", _out);
@@ -45,52 +65,8 @@ void DebugStrategy::setUseSimplification(bool use) {
   _strategy->setUseSimplification(use);
 }
 
-auto_ptr<Slice> DebugStrategy::beginComputing(const Ideal& ideal) {
-  fputs("DEBUG: Constructing initial slice.\n", _out);
-  auto_ptr<Slice> initialSlice = _strategy->beginComputing(ideal);
-  fputs("DEBUG: Initial slice is as follows.\n", _out);
-  initialSlice->print(_out);
-  return initialSlice;
-}
-
-void DebugStrategy::doneComputing() {
-  fputs("DEBUG: Slice computation done.\n", _out);
-  _strategy->doneComputing();
-}
-
-void DebugStrategy::split(auto_ptr<Slice> slice,
-						  SliceEvent*& leftEvent,
-						  auto_ptr<Slice>& leftSlice,
-						  SliceEvent*& rightEvent,
-						  auto_ptr<Slice>& rightSlice) {
-  fputs("DEBUG: Starting split of slice.\n", _out);
-  slice->print(stderr);
-  _strategy->split(slice, leftEvent, leftSlice, rightEvent, rightSlice);
-
-  fputs("DEBUG: Done with split of slice.\n", _out);
-
-  fputs("Left slice: ", stderr);
-  if (leftSlice.get() == 0)
-	fputs("None.\n", stderr);
-  else
-	leftSlice->print(stderr);
-
-  fputs("Right slice: ", stderr);
-  if (rightSlice.get() == 0)
-	fputs("None.\n", stderr);
-  else
-	rightSlice->print(stderr);
-}
-
-bool DebugStrategy::processIfBaseCase(Slice& slice) {
-  fputs("DEBUG: Examining whether slice is base case.\n", _out);  
-  slice.print(stderr);
-  bool isBaseCase = _strategy->processIfBaseCase(slice);
-  if (isBaseCase)
-	fputs("DEBUG: Determined that slice is base case.\n", _out);
-  else
-	fputs("DEBUG: Determined that slice is not base case.\n", _out);
-  return isBaseCase;
+bool DebugStrategy::getUseSimplification() const {
+  return _strategy->getUseSimplification();
 }
 
 void DebugStrategy::freeSlice(auto_ptr<Slice> slice) {

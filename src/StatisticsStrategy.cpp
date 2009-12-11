@@ -32,6 +32,29 @@ StatisticsStrategy::StatisticsStrategy(SliceStrategy* strategy, FILE* out):
 StatisticsStrategy::~StatisticsStrategy() {
 }
 
+void StatisticsStrategy::run(const Ideal& ideal) {
+  _strategy->run(ideal);
+
+  fputs("**** Slice Algorithm Statistics ****\n", _out);
+  _internalTracker.printReport(_out);
+  _leafTracker.printReport(_out);
+}
+
+bool StatisticsStrategy::processSlice
+(TaskEngine& tasks, auto_ptr<Slice> slice) {
+  _internalTracker.preliminaryRecord(*slice);
+  _leafTracker.preliminaryRecord(*slice);
+
+  bool wasBaseCase = _strategy->processSlice(tasks, slice);
+
+  if (wasBaseCase)
+	_leafTracker.commitRecord();
+  else
+	_internalTracker.commitRecord();
+
+  return wasBaseCase;
+}
+
 void StatisticsStrategy::setUseIndependence(bool use) {
   _strategy->setUseIndependence(use);
 }
@@ -40,40 +63,8 @@ void StatisticsStrategy::setUseSimplification(bool use) {
   _strategy->setUseSimplification(use);
 }
 
-auto_ptr<Slice> StatisticsStrategy::beginComputing(const Ideal& ideal) {
-  return _strategy->beginComputing(ideal);
-}
-
-void StatisticsStrategy::doneComputing() {
-  _strategy->doneComputing();
-
-  fputs("**** Slice Algorithm Statistics ****\n", _out);
-  _internalTracker.printReport(_out);
-  _leafTracker.printReport(_out);
-}
-
-void StatisticsStrategy::split(auto_ptr<Slice> slice,
-							   SliceEvent*& leftEvent,
-							   auto_ptr<Slice>& leftSlice,
-							   SliceEvent*& rightEvent,
-							   auto_ptr<Slice>& rightSlice) {
-  ASSERT(slice.get() != 0);
-
-  _strategy->split(slice, leftEvent, leftSlice, rightEvent, rightSlice);
-}
-
-bool StatisticsStrategy::processIfBaseCase(Slice& slice) {
-  _internalTracker.preliminaryRecord(slice);
-  _leafTracker.preliminaryRecord(slice);
-
-  bool wasBaseCase = _strategy->processIfBaseCase(slice);
-
-  if (wasBaseCase)
-	_leafTracker.commitRecord();
-  else
-	_internalTracker.commitRecord();
-
-  return wasBaseCase;
+bool StatisticsStrategy::getUseSimplification() const {
+  return _strategy->getUseSimplification();
 }
 
 void StatisticsStrategy::freeSlice(auto_ptr<Slice> slice) {

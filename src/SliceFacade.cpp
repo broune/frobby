@@ -27,7 +27,6 @@
 #include "TranslatingTermConsumer.h"
 #include "TranslatingCoefTermConsumer.h"
 #include "DebugStrategy.h"
-#include "SliceAlgorithm.h"
 #include "DecomRecorder.h"
 #include "TermGrader.h"
 #include "OptimizeStrategy.h"
@@ -669,7 +668,7 @@ void SliceFacade::runSliceAlgorithmWithOptions(SliceStrategy& strategy) {
   ASSERT(strategyWithOptions != 0);
   ASSERT(_ideal.get() != 0);
 
-  ::runSliceAlgorithm(*_ideal, *strategyWithOptions);
+  strategyWithOptions->run(*_ideal);
 }
 
 void SliceFacade::doIrreducibleIdealOutput() {

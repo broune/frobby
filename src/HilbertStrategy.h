@@ -35,12 +35,9 @@ class HilbertStrategy : public SliceStrategyCommon {
   HilbertStrategy(CoefTermConsumer* consumer,
 				  const SplitStrategy* splitStrategy);
 
-  virtual auto_ptr<Slice> beginComputing(const Ideal& ideal);
-  virtual void doneComputing();
+  virtual void run(const Ideal& ideal);
 
-  virtual void split(auto_ptr<Slice> slice,
-					 SliceEvent*& leftEvent, auto_ptr<Slice>& leftSlice,
-					 SliceEvent*& rightEvent, auto_ptr<Slice>& rightSlice);
+  virtual bool processSlice(TaskEngine& tasks, auto_ptr<Slice> slice);
 
   void freeConsumer(auto_ptr<HilbertIndependenceConsumer> consumer);
 
@@ -54,10 +51,7 @@ class HilbertStrategy : public SliceStrategyCommon {
   virtual void getPivot(Term& term, Slice& slice);
 
   IndependenceSplitter _indepSplitter;
-  void independenceSplit(auto_ptr<HilbertSlice> slice,
-						 SliceEvent*& leftEvent,
-						 auto_ptr<Slice>& leftSlice,
-						 auto_ptr<Slice>& rightSlice);
+  void independenceSplit(auto_ptr<Slice> slice);
 
   vector<HilbertIndependenceConsumer*> _consumerCache;
   ElementDeleter<vector<HilbertIndependenceConsumer*> > _consumerCacheDeleter;

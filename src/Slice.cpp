@@ -320,35 +320,7 @@ bool Slice::applyLowerBound() {
 }
 
 void Slice::run(TaskEngine& tasks) {
-  if (_strategy.processIfBaseCase(*this)) {
-	dispose();
-	return;
-  }
-
-  SliceEvent* leftEvent = 0;
-  SliceEvent* rightEvent = 0;
-  auto_ptr<Slice> leftSlice;
-  auto_ptr<Slice> rightSlice;
-  auto_ptr<Slice> autoThis(this);
-  _strategy.split(autoThis,
-				  leftEvent, leftSlice,
-				  rightEvent, rightSlice);
-
-  try {
-	if (leftEvent != 0)
-	  tasks.addTask(leftEvent);
-	if (leftSlice.get() != 0)
-	  tasks.addTask(leftSlice.release());
-  } catch (...) {
-	if (rightEvent != 0)
-	  rightEvent->dispose();
-	throw;
-  }
-
-  if (rightEvent != 0)
-	tasks.addTask(rightEvent);
-  if (rightSlice.get() != 0)
-	tasks.addTask(rightSlice.release());
+  _strategy.processSlice(tasks, auto_ptr<Slice>(this));
 }
 
 void Slice::dispose() {

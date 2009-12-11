@@ -17,5 +17,9 @@
 #include "stdinc.h"
 #include "SliceStrategy.h"
 
+#include "TaskEngine.h"
+#include "Slice.h"
+#include "SliceEvent.h"
+
 SliceStrategy::~SliceStrategy() {
 }

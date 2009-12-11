@@ -12,7 +12,7 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   Parameter.cpp ParameterGroup.cpp IntegerParameter.cpp					\
   SliceParameters.cpp BoolParameter.cpp Scanner.cpp Partition.cpp		\
   StringParameter.cpp Term.cpp TermTranslator.cpp Timer.cpp				\
-  VarNames.cpp LatticeFormatAction.cpp SliceAlgorithm.cpp Ideal.cpp		\
+  VarNames.cpp LatticeFormatAction.cpp Ideal.cpp						\
   IntersectionAction.cpp IntersectFacade.cpp							\
   AssociatedPrimesAction.cpp MsmSlice.cpp IndependenceSplitter.cpp		\
   Projection.cpp MsmStrategy.cpp lattice.cpp LatticeFacade.cpp			\
