@@ -16,7 +16,7 @@ pivotSplits="minimum median maximum gcd indep"
 pivotActions="hilbert"
 
 labelSplits="maxlabel varlabel minlabel $pivotSplits"
-labelActions="irrdecom assoprimes alexdual"
+labelActions="optimize irrdecom assoprimes alexdual"
 
 frobSplits="frob $labelSplits"
 frobActions="frob"
