@@ -90,7 +90,7 @@ void StatisticsStrategy::StatTracker::commitRecord() {
 
   size_t genCountLog2 = 0;
   if (_prelimIdealGenCount > 0)
-	genCountLog2 = (size_t)(log(_prelimIdealGenCount) / log(2));
+	genCountLog2 = (size_t)(log((double)_prelimIdealGenCount) / log((double)2));
   _nodesByGenCount[genCountLog2] += 1;
 }
 

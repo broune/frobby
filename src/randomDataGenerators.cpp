@@ -24,6 +24,7 @@
 #include "FrobbyStringStream.h"
 
 #include <limits>
+#include <ctime>
 
 void generateLinkedListIdeal(BigIdeal& ideal, size_t variableCount) {
   VarNames names(variableCount);

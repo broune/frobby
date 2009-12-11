@@ -93,6 +93,11 @@ class Ideal {
   // generated.
   bool isWeaklyGeneric() const;
 
+  /** Returns true if all pairs of generators have disjoint support.
+   I.e. if each var divides at most one generator.
+  */
+  bool disjointSupport() const;
+
   void getLcm(Exponent* lcm) const;
   void getGcd(Exponent* gcd) const;
 
@@ -185,14 +190,16 @@ class Ideal {
 
   void swap(Ideal& ideal);
 
-  // Removes those generators m such that pred(m) evaluates to
-  // true. Returns true if any generators were removed.
+  /** Removes those generators m such that pred(m) evaluates to
+   true. Returns true if any generators were removed.
+  */
   template<class Predicate>
     bool removeIf(Predicate pred);
 
-  // Ideal caches memory allocated with new internally and reuses it
-  // to avoid calling new all the time. Call this method to release
-  // the cache.
+  /** Ideal caches memory allocated with new internally and reuses it
+   to avoid calling new all the time. Call this method to release
+   the cache.
+  */
   static void clearStaticCache();
 
  protected:

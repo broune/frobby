@@ -138,6 +138,21 @@ bool Ideal::isWeaklyGeneric() const {
   return true;
 }
 
+bool Ideal::disjointSupport() const {
+  for (size_t var = 0; var < getVarCount(); ++var) {
+    bool seen = false;
+    for (const_iterator it = _terms.begin(); it != _terms.end(); ++it) {
+      if ((*it)[var] > 0) {
+        if (seen)
+          return false;
+        else
+          seen = true;
+      }
+    }
+  }
+  return true;
+}
+
 void Ideal::getLcm(Exponent* lcm) const {
   Term::setToIdentity(lcm, _varCount);
   const_iterator stop = _terms.end();

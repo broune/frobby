@@ -43,6 +43,9 @@ class Polynomial {
   void clear();
   void clearAndSetVarCount(size_t varCount);
 
+  void print(FILE* out);
+  void print(ostream& out);
+
  private:
   struct CoefTerm {
 	bool operator<(const CoefTerm& coefTerm) const;

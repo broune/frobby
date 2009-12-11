@@ -18,6 +18,7 @@
 #include "TestSuite.h"
 
 #include "TestVisitor.h"
+#include <algorithm>
 
 TestSuite::TestSuite(const string& name):
   Test(name) {

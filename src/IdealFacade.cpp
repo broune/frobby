@@ -27,6 +27,10 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 #include "SizeMaxIndepSetAlg.h"
+#include "TotalDegreeCoefTermConsumer.h"
+#include "TranslatingCoefTermConsumer.h"
+#include "BigattiHilbertAlgorithm.h"
+#include "VarSorter.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -62,6 +66,8 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
 
 mpz_class IdealFacade::computeDimension
 (const BigIdeal& bigIdeal, bool squareFreeAndMinimal) {
+  beginAction("Computing dimension of ideal.");
+
   size_t varCount = bigIdeal.getVarCount();
   size_t genCount = bigIdeal.getGeneratorCount();
 
@@ -85,7 +91,41 @@ mpz_class IdealFacade::computeDimension
 
   SizeMaxIndepSetAlg alg;
   alg.run(radical);
-  return alg.getMaxIndepSetSize();
+  mpz_class result = alg.getMaxIndepSetSize();
+
+  endAction();
+  return result;
+}
+
+void IdealFacade::computeHilbertSeries
+(const BigIdeal& bigIdeal, bool univariate, bool canonical, auto_ptr<CoefBigTermConsumer> bigConsumer) {
+  beginAction("Computing Hilbert series using Bigatti Et.Al. algorithm.");
+
+  Ideal ideal(bigIdeal.getVarCount());
+  TermTranslator translator(bigIdeal, ideal, false);
+
+  ideal.minimize();
+
+  VarSorter sorter(translator.getNames());
+  sorter.permute(&translator);
+
+  Ideal::iterator stop = ideal.end();
+  for (Ideal::iterator it = ideal.begin(); it != stop; ++it)
+    sorter.permute(*it);
+
+  if (univariate) {
+    TotalDegreeCoefTermConsumer consumer(bigConsumer, translator);
+    consumer.consumeRing(translator.getNames());
+    BigattiHilbertAlgorithm alg(&consumer);
+    alg.run(ideal);    
+  } else {
+    TranslatingCoefTermConsumer consumer(*bigConsumer, translator);
+    consumer.consumeRing(translator.getNames());
+    BigattiHilbertAlgorithm alg(&consumer);
+    alg.run(ideal);
+  }
+
+  endAction();
 }
 
 void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,

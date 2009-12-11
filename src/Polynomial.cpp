@@ -18,6 +18,7 @@
 #include "Polynomial.h"
 
 #include <algorithm>
+#include <sstream>
 
 Polynomial::Polynomial():
   _varCount(0) {
@@ -80,7 +81,7 @@ void Polynomial::sortTermsReverseLex(bool collect) {
   size_t last = 0;
   for (size_t i = 1; i < _terms.size(); ++i) {
 	if (_terms[last].term == _terms[i].term)
-	  _terms[last].coef += _terms[last].coef;
+	  _terms[last].coef += _terms[i].coef;
 	else {
 	  if (_terms[last].coef == 0)
 		_terms[last] = _terms[i];
@@ -103,4 +104,17 @@ bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {
 
 void Polynomial::clear() {
   _terms.clear();
+}
+
+void Polynomial::print(FILE* out) {
+  ostringstream str;
+  print(str);
+  fputs(str.str().c_str(), out);
+}
+
+void Polynomial::print(ostream& out) {
+  out << "//------- Polynomial:\n";
+  for (size_t i = 0; i < _terms.size(); ++i)
+    out << getCoef(i) << "*" << getTerm(i) << '\n';
+  out << "----------\\\\\n";
 }
