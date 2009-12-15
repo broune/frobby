@@ -35,8 +35,9 @@ void BigattiHilbertAlgorithm::run(const Ideal& ideal) {
   _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
   _tasks.runTasks();
 
-  _output.sortTermsReverseLex(true);
-  _consumer->consume(_output);
+  //_output.sortTermsReverseLex(true);
+  //_consumer->consume(_output);
+  _output.feedTo(*_consumer);
 }
 
 void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
