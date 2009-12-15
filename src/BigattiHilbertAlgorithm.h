@@ -15,15 +15,17 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef BIGATTI_HILBERT_ALGORITHM
-#define BIGATTI_HILBERT_ALGORITHM
+#ifndef BIGATTI_HILBERT_ALGORITHM_GUARD
+#define BIGATTI_HILBERT_ALGORITHM_GUARD
 
+#include "TaskEngine.h"
 #include "Polynomial.h"
 #include "Ideal.h"
+#include "ObjectCache.h"
+#include "BigattiState.h"
 
 class CoefTermConsumer;
 class Term;
-
 
 class BigattiHilbertAlgorithm {
 public:
@@ -32,14 +34,23 @@ public:
 	void run(const Ideal& ideal);
 
 private:
-	void hilbert(const Ideal& ideal, const Term& term);
-	bool isBaseCase(const Ideal& ideal);
+	void processState(auto_ptr<BigattiState> state);
+	bool baseCase(const BigattiState& state);
+	void getPivot(BigattiState& state, Term& pivot);
+
     void basecase(Ideal::const_iterator, Ideal::const_iterator, bool plus, const Term& term);
-	void getPivot(const Ideal& ideal, Term& pivot);
+	void freeState(auto_ptr<BigattiState> state);
 
 	size_t _varCount;
 	CoefTermConsumer* _consumer;
     Polynomial _output;
+	TaskEngine _tasks;
+	ObjectCache<BigattiState> _stateCache;
+
+	Term _tmp_processState_pivot;
+	Term _tmp_getPivot_counts;
+
+	friend class BigattiState;
 };
 
 #endif
