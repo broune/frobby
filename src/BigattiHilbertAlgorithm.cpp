@@ -20,6 +20,7 @@
 
 #include "Ideal.h"
 #include "CoefTermConsumer.h"
+#include "BigattiState.h"
 
 BigattiHilbertAlgorithm::BigattiHilbertAlgorithm(CoefTermConsumer* consumer):
 	_consumer(consumer) {
@@ -29,40 +30,47 @@ void BigattiHilbertAlgorithm::run(const Ideal& ideal) {
   ASSERT(ideal.isMinimallyGenerated());
   _varCount = ideal.getVarCount();
   _output.clearAndSetVarCount(_varCount);
-  Term term(_varCount);
-  hilbert(ideal, term);
+  _tmp_getPivot_counts.reset(_varCount);
+
+  _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
+  _tasks.runTasks();
 
   _output.sortTermsReverseLex(true);
   _consumer->consume(_output);
 }
 
-void BigattiHilbertAlgorithm::hilbert(const Ideal& ideal, const Term& term) {
-  if (isBaseCase(ideal)) {
-    basecase(ideal.begin(), ideal.end(), true, term);
-    return;
+void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
+  if (baseCase(*state)) {
+	freeState(state);
+	return;
   }
 
-  Term pivot(_varCount);
-  getPivot(ideal, pivot);
+  Term& pivot = _tmp_processState_pivot;
+  getPivot(*state, pivot);
 
-  Ideal colon = ideal;
-  colon.colonReminimize(pivot);
-  Term product(_varCount);
-  product.product(pivot, term);
-  hilbert(colon, product);
+  auto_ptr<BigattiState> colonState(_stateCache.newObjectCopy(*state));
+  colonState->colonStep(pivot);
+  _tasks.addTask(colonState.release());
 
-  Ideal add = ideal;
-  add.insertReminimize(pivot);
-  hilbert(add, term);
+  state->addStep(pivot);
+  _tasks.addTask(state.release());
 }
 
-bool BigattiHilbertAlgorithm::isBaseCase(const Ideal& ideal) {
-	return ideal.disjointSupport();
+bool BigattiHilbertAlgorithm::baseCase(const BigattiState& state) {
+  if (!state.getIdeal().disjointSupport())
+	return false;
+
+  basecase(state.getIdeal().begin(),
+		   state.getIdeal().end(),
+		   true,
+		   state.getMultiply());
+  return true;
 }
 
 void BigattiHilbertAlgorithm::basecase(Ideal::const_iterator begin, Ideal::const_iterator end, bool plus, const Term& term) {
-  if (begin == end)
+  if (begin == end) {
     _output.add(plus ? 1 : -1, term);
+  }
   else {
     basecase(begin + 1, end, plus, term);
     Term product(_varCount);
@@ -71,11 +79,18 @@ void BigattiHilbertAlgorithm::basecase(Ideal::const_iterator begin, Ideal::const
   }
 }
 
-void BigattiHilbertAlgorithm::getPivot(const Ideal& ideal, Term& pivot) {
-  Term counts(_varCount);
-  ideal.getSupportCounts(counts);
+void BigattiHilbertAlgorithm::getPivot(BigattiState& state, Term& pivot) {
+  Term& counts = _tmp_getPivot_counts;
+  ASSERT(counts.getVarCount() == _varCount);
+
+  state.getIdeal().getSupportCounts(counts);
   size_t var = counts.getFirstMaxExponent();
 
-  pivot.setToIdentity();
+  pivot.reset(_varCount);
   pivot[var] = 1;
+}
+
+void BigattiHilbertAlgorithm::freeState(auto_ptr<BigattiState> state) {
+  state->getIdeal().clear(); // To preserve memory
+  _stateCache.freeObject(state);
 }
