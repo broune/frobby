@@ -19,10 +19,17 @@
 #define HASH_POLYNOMIAL_GUARD
 
 #include "Term.h"
-
-#include <map>
+#include "HashMap.h"
 
 class CoefTermConsumer;
+
+template<>
+class FrobbyHash<Term> {
+ public:
+  size_t operator()(const Term& t) const {
+	return t.getHashCode();
+  }
+};
 
 class HashPolynomial {
  public:
@@ -36,7 +43,9 @@ class HashPolynomial {
 
  private:
   size_t _varCount;
-  map<Term, mpz_class> _terms;
+
+  typedef HashMap<Term, mpz_class> TermMap;
+  TermMap _terms;
 };
 
 #endif
