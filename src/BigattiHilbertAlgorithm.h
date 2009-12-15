@@ -19,7 +19,7 @@
 #define BIGATTI_HILBERT_ALGORITHM_GUARD
 
 #include "TaskEngine.h"
-#include "Polynomial.h"
+#include "HashPolynomial.h"
 #include "Ideal.h"
 #include "ObjectCache.h"
 #include "BigattiState.h"
@@ -43,7 +43,7 @@ private:
 
 	size_t _varCount;
 	CoefTermConsumer* _consumer;
-    Polynomial _output;
+    HashPolynomial _output;
 	TaskEngine _tasks;
 	ObjectCache<BigattiState> _stateCache;
 
