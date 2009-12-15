@@ -17,36 +17,12 @@
 #ifndef VAR_NAMES_GUARD
 #define VAR_NAMES_GUARD
 
+#include "HashMap.h"
+
 #include <vector>
 #include <string>
 
 class Scanner;
-
-// Use the GCC-specific hash_map class if compiling with GCC, and
-// otherwise use a std::map, which is present in all compilers.
-/** @todo It seems that Frobby comes with its own copy of
-	hash_map. Always use that one here, or find out why it isn't used.
- */
-#ifdef __GNUC__ // Only GCC defines this macro
-#include "hash_map/hash_map"
-class StringEquals {
- public:
-  bool operator()(const char* a, const char* b) const {
-	return strcmp(a, b) == 0;
-  }
-};
-typedef __gnu_cxx::hash_map<string, size_t,
-							__gnu_cxx::hash<string> > VarNameMap;
-#else
-#include <map>
-class StringLessThan {
- public:
-  bool operator()(const char* a, const char* b) const {
-	return strcmp(a, b) < 0;
-  }
-};
-typedef map<string, size_t> VarNameMap;
-#endif
 
 /** Defines the variables of a polynomial ring and facilities IO
 	involving them.
@@ -124,6 +100,7 @@ public:
 private:
   static bool compareNames(const string* a, const string* b);
 
+  typedef HashMap<string, size_t> VarNameMap;
   VarNameMap _nameToIndex;
   vector<const string*> _indexToName;
 };

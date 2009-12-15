@@ -20,6 +20,9 @@
 
 #include "CoefTermConsumer.h"
 
+#include <vector>
+#include <algorithm>
+
 HashPolynomial::HashPolynomial(size_t varCount):
   _varCount(varCount) {
 }
@@ -35,22 +38,49 @@ void HashPolynomial::add(const mpz_class& coef, const Term& term) {
   if (coef == 0)
 	return;
 
-  map<Term, mpz_class>::iterator pos = _terms.lower_bound(term);
-  if (pos != _terms.end() && pos->first == term) {
-	pos->second += coef;
-	if (pos->second == 0)
-	  _terms.erase(pos);
-  } else
-	_terms.insert(pos, make_pair(term, coef));
+  // Doing it this way incurs the penalty of looking up term twice if
+  // ref ends up zero. I don't know how to avoid two look-ups in all
+  // cases, especially when the interface of _terms is not fixed,
+  // e.g. lowerbound don't exist for GCC's hash_map, so we can't use
+  // that.
+  mpz_class& ref = _terms[term];
+  ref += coef;
+  if (ref == 0)
+	_terms.erase(term);
+}
+
+namespace {
+  // Helper class for feedTo.
+  class RefCompare {
+  public:
+    typedef HashMap<Term, mpz_class> TermMap;
+	bool operator()(TermMap::const_iterator a, TermMap::const_iterator b) {
+	  return a->first.reverseLexCompare(b->first) < 0;
+	}
+  };
 }
 
 void HashPolynomial::feedTo(CoefTermConsumer& consumer) const {
+  // Fill refs with references to the terms in order to sort them. We
+  // can't sort _terms, so we have to sort references instead.
+  vector<TermMap::const_iterator> refs;
+  refs.reserve(_terms.size());
+
+  TermMap::const_iterator termsEnd = _terms.end();
+  TermMap::const_iterator it = _terms.begin();
+  for (; it != termsEnd; ++it)
+	refs.push_back(it);
+
+  // Sort the references.
+  sort(refs.begin(), refs.end(), RefCompare());
+
+  // Output the terms in the sorted order specified by refs.
   consumer.beginConsuming();
 
-  typedef map<Term, mpz_class>::const_reverse_iterator iter;
-  iter end = _terms.rend();
-  for (iter it = _terms.rbegin(); it != end; ++it)
-	consumer.consume(it->second, it->first);
+  vector<TermMap::const_iterator>::const_iterator refsEnd = refs.end();
+  vector<TermMap::const_iterator>::const_iterator refIt = refs.begin();
+  for (; refIt != refsEnd; ++refIt)
+	consumer.consume((*refIt)->second, (*refIt)->first);
 
   consumer.doneConsuming();
 }

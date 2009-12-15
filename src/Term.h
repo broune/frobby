@@ -419,6 +419,17 @@ class Term {
 	return false;
   }
 
+  inline static size_t getHashCode(const Exponent* a, size_t varCount) {
+	size_t hashCode = varCount;
+	for (size_t var = 0; var < varCount; ++var)
+	  hashCode = 31 * hashCode + a[var];
+	return hashCode;
+  }
+
+  size_t getHashCode() const {
+	return getHashCode(_exponents, _varCount);
+  }
+
   bool sharesNonZeroExponent(const Exponent* a) const {
 	return sharesNonZeroExponent(_exponents, a, _varCount);
   }
@@ -627,6 +638,11 @@ class Term {
 		return 1;
 	}
 	return 0;
+  }
+
+  inline int reverseLexCompare(const Term& a) const {
+	ASSERT(_varCount == a._varCount);
+	return reverseLexCompare(_exponents, a._exponents, _varCount);
   }
 
   // A predicate that sorts according to reverse lexicographic order.
