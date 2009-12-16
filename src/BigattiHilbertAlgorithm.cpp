@@ -58,14 +58,15 @@ void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
 	return;
   }
 
-  Term& pivot = _tmp_processState_pivot;
-  getPivot(*state, pivot);
+  size_t pivotVar;
+  Exponent pivotExponent;
+  getPivot(*state, pivotVar, pivotExponent);
 
   auto_ptr<BigattiState> colonState(_stateCache.newObjectCopy(*state));
-  colonState->colonStep(pivot);
+  colonState->colonStep(pivotVar, pivotExponent);
   _tasks.addTask(colonState.release());
 
-  state->addStep(pivot);
+  state->addStep(pivotVar, pivotExponent);
   _tasks.addTask(state.release());
 }
 
@@ -190,15 +191,13 @@ void BigattiHilbertAlgorithm::basecase(Ideal::const_iterator begin, Ideal::const
   }
 }
 
-void BigattiHilbertAlgorithm::getPivot(BigattiState& state, Term& pivot) {
+void BigattiHilbertAlgorithm::getPivot(BigattiState& state, size_t& var, Exponent& e) {
   Term& counts = _tmp_getPivot_counts;
   ASSERT(counts.getVarCount() == _varCount);
 
   state.getIdeal().getSupportCounts(counts);
-  size_t var = counts.getFirstMaxExponent();
-
-  pivot.reset(_varCount);
-  pivot[var] = 1;
+  var = counts.getFirstMaxExponent();
+  e = state.getMedianPositiveExponentOf(var);
 }
 
 void BigattiHilbertAlgorithm::simplify(BigattiState& state) {

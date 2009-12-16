@@ -31,12 +31,17 @@ class BigattiState : public Task {
 
   const Ideal& getIdeal() const;
   const Term& getMultiply() const;
+  size_t getVarCount() const;
 
   Ideal& getIdeal();
   Term& getMultiply();
 
-  void colonStep(const Term& pivot);
-  void addStep(const Term& pivot);
+  // Reorders the generators of ideal.
+  Exponent getMedianPositiveExponentOf(size_t var);
+
+  void colonStep(const Term& term);
+  void colonStep(size_t var, Exponent e);
+  void addStep(size_t var, Exponent e);
 
   virtual void run(TaskEngine& tasks);
   virtual void dispose();

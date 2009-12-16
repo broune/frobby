@@ -240,6 +240,17 @@ void Ideal::insert(const Ideal& ideal) {
     insert(*it);
 }
 
+void Ideal::insert(size_t var, Exponent e) {
+  Exponent* term = _allocator.allocate();
+  fill_n(term, _varCount, 0);
+  term[var] = e;
+
+  // push_back could throw bad_alloc, but the allocator is already
+  // keeping track of the allocated memory, so there is not a memory
+  // leak.
+  _terms.push_back(term);
+}
+
 void Ideal::insertReminimize(const Exponent* term) {
   ASSERT(isMinimallyGenerated());
   if (contains(term))
@@ -247,6 +258,13 @@ void Ideal::insertReminimize(const Exponent* term) {
 
   removeMultiples(term);
   insert(term);
+  ASSERT(isMinimallyGenerated());
+}
+
+void Ideal::insertReminimize(size_t var, Exponent e) {
+  ASSERT(isMinimallyGenerated());
+  removeMultiples(var, e);
+  insert(var, e);
   ASSERT(isMinimallyGenerated());
 }
 
