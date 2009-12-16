@@ -45,15 +45,43 @@ Term& BigattiState::getMultiply() {
   return _multiply;
 }
 
-void BigattiState::colonStep(const Term& pivot) {
-  ASSERT(pivot.getVarCount() == _ideal.getVarCount());
+size_t BigattiState::getVarCount() const {
+  ASSERT(_multiply.getVarCount() == _ideal.getVarCount());
+  return _ideal.getVarCount();
+}
 
+Exponent BigattiState::getMedianPositiveExponentOf(size_t var) {
+  ASSERT(var < getVarCount());
+  
+  _ideal.singleDegreeSort(var);
+  Ideal::const_iterator end = _ideal.end();
+  Ideal::const_iterator begin = _ideal.begin();
+  while ((*begin)[var] == 0) {
+	++begin;
+	ASSERT(begin != end);
+  }
+
+  // This picks the lower median in case of a tie.
+  Exponent median = (*(begin + (distance(begin, end) - 1) / 2))[var];
+  ASSERT(median > 0);
+  return median;
+}
+
+void BigattiState::colonStep(const Term& pivot) {
+  ASSERT(pivot.getVarCount() == getVarCount());
   _ideal.colonReminimize(pivot);
   _multiply.product(_multiply, pivot);
 }
 
-void BigattiState::addStep(const Term& pivot) {
-  _ideal.insertReminimize(pivot);
+void BigattiState::colonStep(size_t var, Exponent e) {
+  ASSERT(var < getVarCount());
+
+  _ideal.colonReminimize(var, e);
+  _multiply[var] += e;
+}
+
+void BigattiState::addStep(size_t var, Exponent e) {
+  _ideal.insertReminimize(var, e);
 }
 
 void BigattiState::run(TaskEngine& tasks) {

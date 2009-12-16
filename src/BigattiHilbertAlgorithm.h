@@ -36,7 +36,7 @@ public:
 private:
 	void processState(auto_ptr<BigattiState> state);
 	bool baseCase(const BigattiState& state);
-	void getPivot(BigattiState& state, Term& pivot);
+	void getPivot(BigattiState& state, size_t& var, Exponent& e);
 	void simplify(BigattiState& state);
 
 	void allCombinationsBaseCase(const BigattiState& state);
