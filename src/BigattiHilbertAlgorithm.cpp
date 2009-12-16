@@ -35,6 +35,13 @@ void BigattiHilbertAlgorithm::run(const Ideal& ideal) {
   _tmp_baseCase_lcm.reset(_varCount);
   _tmp_baseCase_maxCount.reset(_varCount);
 
+  _tmp_allCombinationsBaseCase_lcms.clear();
+  _tmp_allCombinationsBaseCase_lcms.reserve(_varCount);
+  for (size_t i = 0; i < _varCount; ++i)
+	_tmp_allCombinationsBaseCase_lcms.push_back(Term(_varCount));
+  _tmp_allCombinationsBaseCase_included.resize(_varCount);
+  _tmp_allCombinationsBaseCase_term.reset(_varCount);
+
   _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
   _tasks.runTasks();
 
@@ -82,7 +89,6 @@ bool BigattiHilbertAlgorithm::baseCase(const BigattiState& state) {
   if (state.getIdeal().getGeneratorCount() > _varCount)
 	return false;
 
-  
   state.getIdeal().getLcm(lcm);
   if (state.getIdeal().getGeneratorCount() > lcm.getSizeOfSupport())
 	return false;
@@ -108,14 +114,54 @@ bool BigattiHilbertAlgorithm::baseCase(const BigattiState& state) {
   if (!state.getIdeal().disjointSupport())
 	return false;
 
+  allCombinationsBaseCase(state);
+  /*
   Term lcm2(_varCount);
   lcm2.setToIdentity();
   basecase(state.getIdeal().begin(),
 		   state.getIdeal().end(),
 		   true,
 		   lcm2,
-		   state.getMultiply());
+		   state.getMultiply());*/
   return true;
+}
+
+void BigattiHilbertAlgorithm::allCombinationsBaseCase(const BigattiState& state) {
+  vector<Term>& lcms = _tmp_allCombinationsBaseCase_lcms;
+  vector<int>& included = _tmp_allCombinationsBaseCase_included;
+  Term& term = _tmp_allCombinationsBaseCase_term;
+
+  ASSERT(state.getIdeal().getGeneratorCount() <= _varCount);
+  ASSERT(included == vector<int>(_varCount));
+  ASSERT(lcms.size() == _varCount);
+  ASSERT(lcms.empty() || lcms[0].getVarCount() == _varCount);
+  ASSERT(term.getVarCount() == _varCount);
+
+  size_t genCount = state.getIdeal().getGeneratorCount();
+  while (true) {
+	term.setToIdentity();
+	bool plus = true;
+	for (size_t i = 0; i < genCount; ++i) {
+	  if (included[i]) {
+		term.lcm(term, *(state.getIdeal().begin() + i));
+		plus = !plus;
+	  }
+	}
+	term.product(term, state.getMultiply());
+	_output.add(plus ? 1 : -1, term);
+
+	for (size_t i = 0; ; ++i) {
+	  if (i == genCount)
+		return;
+
+	  if (included[i])
+		included[i] = false;
+	  else {
+		included[i] = true;
+		break;
+	  }
+	}
+  }
 }
 
 void BigattiHilbertAlgorithm::basecase(Ideal::const_iterator begin, Ideal::const_iterator end, bool plus, const Term& term, const Term& multiply) {
