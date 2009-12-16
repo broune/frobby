@@ -15,43 +15,49 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef BIGATTI_HILBERT_ALGORITHM_GUARD
-#define BIGATTI_HILBERT_ALGORITHM_GUARD
+#ifndef BIGATTI_BASE_CASE_GUARD
+#define BIGATTI_BASE_CASE_GUARD
 
-#include "TaskEngine.h"
+class BigattiState;
+
+#include "Term.h"
 #include "Ideal.h"
-#include "ObjectCache.h"
-#include "BigattiState.h"
-#include "BigattiBaseCase.h"
+#include "HashPolynomial.h"
+#include <vector>
 
-class CoefTermConsumer;
-class Term;
+class BigattiBaseCase {
+ public:
+  BigattiBaseCase(size_t varCount);
 
-class BigattiHilbertAlgorithm {
-public:
-	BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer* consumer);
+  bool baseCase(const BigattiState& state);
+  
+  void outputPlus(const Term& term);
+  void outputMinus(const Term& term);
 
-	void run();
+  void feedOutputTo(CoefTermConsumer& consumer);
 
-private:
-	void processState(auto_ptr<BigattiState> state);
-	void getPivot(BigattiState& state, size_t& var, Exponent& e);
-	void simplify(BigattiState& state);
+ private:
+  bool simpleBaseCase();
 
-	void freeState(auto_ptr<BigattiState> state);
+  void allCombinations();
+  bool nextCombination();
+  void take(size_t gen);
+  void drop(size_t gen);
 
-	size_t _varCount;
-	CoefTermConsumer* _consumer;
-	TaskEngine _tasks;
-	ObjectCache<BigattiState> _stateCache;
+  size_t _varCount;
 
-	Term _tmp_processState_pivot;
-	Term _tmp_getPivot_counts;
-	Term _tmp_simplify_gcd;
+  vector<size_t> _maxCount;
+  Term _lcm;
 
-    BigattiBaseCase _baseCase;
+  const BigattiState* _state;
+  vector<int> _taken;
+  Ideal _lcms;
+  size_t _takenCount;
 
-    friend class BigattiState;
+  HashPolynomial _output;
+
+  mpz_class _one;
+  mpz_class _minusOne;
 };
 
 #endif

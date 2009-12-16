@@ -116,13 +116,13 @@ void IdealFacade::computeHilbertSeries
   if (univariate) {
     TotalDegreeCoefTermConsumer consumer(bigConsumer, translator);
     consumer.consumeRing(translator.getNames());
-    BigattiHilbertAlgorithm alg(&consumer);
-    alg.run(ideal);    
+    BigattiHilbertAlgorithm alg(ideal, &consumer);
+    alg.run();
   } else {
     TranslatingCoefTermConsumer consumer(*bigConsumer, translator);
     consumer.consumeRing(translator.getNames());
-    BigattiHilbertAlgorithm alg(&consumer);
-    alg.run(ideal);
+    BigattiHilbertAlgorithm alg(ideal, &consumer);
+    alg.run();
   }
 
   endAction();
