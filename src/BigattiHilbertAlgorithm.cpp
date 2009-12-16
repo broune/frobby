@@ -32,6 +32,8 @@ void BigattiHilbertAlgorithm::run(const Ideal& ideal) {
   _output.clearAndSetVarCount(_varCount);
   _tmp_getPivot_counts.reset(_varCount);
   _tmp_simplify_gcd.reset(_varCount);
+  _tmp_baseCase_lcm.reset(_varCount);
+  _tmp_baseCase_maxCount.reset(_varCount);
 
   _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
   _tasks.runTasks();
@@ -61,25 +63,72 @@ void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
 }
 
 bool BigattiHilbertAlgorithm::baseCase(const BigattiState& state) {
+  Term& lcm = _tmp_baseCase_lcm;
+  Term& maxCount = _tmp_baseCase_maxCount;
+
+  ASSERT(state.getIdeal().getVarCount() == _varCount);
+  ASSERT(lcm.getVarCount() == _varCount);
+  ASSERT(maxCount.getVarCount() == _varCount);
+
+  if (state.getIdeal().isZeroIdeal()) {
+    _output.add(1, state.getMultiply());
+    return true;
+  }
+  if (state.getIdeal().getGeneratorCount() == 1 &&
+    state.getIdeal().containsIdentity()) {
+    return true;
+  }
+  
+  if (state.getIdeal().getGeneratorCount() > _varCount)
+	return false;
+
+  
+  state.getIdeal().getLcm(lcm);
+  if (state.getIdeal().getGeneratorCount() > lcm.getSizeOfSupport())
+	return false;
+
+  maxCount.setToIdentity();
+  Ideal::const_iterator end = state.getIdeal().end();
+  Ideal::const_iterator it = state.getIdeal().begin();
+  for (; it != end; ++it) {
+	bool hasMax = false;
+	for (size_t var = 0; var < _varCount; ++var) {
+	  ASSERT((*it)[var] <= lcm[var]);
+	  if ((*it)[var] == lcm[var] && lcm[var] > 0) {
+		hasMax = true;
+		maxCount[var] += 1;
+		if (maxCount[var] > 1)
+		  return false;
+	  }
+	}
+	if (!hasMax)
+	  return false;
+  }
+
   if (!state.getIdeal().disjointSupport())
 	return false;
 
+  Term lcm2(_varCount);
+  lcm2.setToIdentity();
   basecase(state.getIdeal().begin(),
 		   state.getIdeal().end(),
 		   true,
+		   lcm2,
 		   state.getMultiply());
   return true;
 }
 
-void BigattiHilbertAlgorithm::basecase(Ideal::const_iterator begin, Ideal::const_iterator end, bool plus, const Term& term) {
+void BigattiHilbertAlgorithm::basecase(Ideal::const_iterator begin, Ideal::const_iterator end, bool plus, const Term& term, const Term& multiply) {
   if (begin == end) {
-    _output.add(plus ? 1 : -1, term);
+	Term product(_varCount);
+	product.product(term, multiply);
+    _output.add(plus ? 1 : -1, product);
   }
   else {
-    basecase(begin + 1, end, plus, term);
-    Term product(_varCount);
-    product.product(term, *begin);
-    basecase(begin + 1, end, !plus, product);
+    basecase(begin + 1, end, plus, term, multiply);
+    Term lcm(_varCount);
+    lcm.lcm(term, *begin);
+    basecase(begin + 1, end, !plus, lcm, multiply);
   }
 }
 
@@ -100,10 +149,10 @@ void BigattiHilbertAlgorithm::simplify(BigattiState& state) {
 
   state.getIdeal().getGcd(gcd);
   if (!gcd.isIdentity()) {
+    // Do colon and output multiply-gcd*multiply.
+    _output.add(1, state.getMultiply());
 	state.colonStep(gcd);
-	_output.add(-1, gcd);
-	gcd.setToIdentity();
-	_output.add(1, gcd);
+	_output.add(-1, state.getMultiply());
   }
 
   IF_DEBUG(state.getIdeal().getGcd(gcd));

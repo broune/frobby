@@ -394,6 +394,11 @@ class Term {
     return getFirstMaxExponent(_exponents, _varCount);
   }
 
+  size_t getMaxExponent() const {
+	ASSERT(_varCount > 0);
+	return _exponents[getFirstMaxExponent()];
+  }
+
   /** Returns the number of variables \f$x_i\f$ such that \f$x_i\f$
 	  divides \f$a\f$.
   */

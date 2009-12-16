@@ -39,7 +39,8 @@ private:
 	void getPivot(BigattiState& state, Term& pivot);
 	void simplify(BigattiState& state);
 
-    void basecase(Ideal::const_iterator, Ideal::const_iterator, bool plus, const Term& term);
+	void basecase(Ideal::const_iterator begin, Ideal::const_iterator end,
+				  bool plus, const Term& term, const Term& multiply);
 	void freeState(auto_ptr<BigattiState> state);
 
 	size_t _varCount;
@@ -51,6 +52,9 @@ private:
 	Term _tmp_processState_pivot;
 	Term _tmp_getPivot_counts;
 	Term _tmp_simplify_gcd;
+	Term _tmp_baseCase_lcm;
+	Term _tmp_baseCase_maxCount;
+
 
 	friend class BigattiState;
 };
