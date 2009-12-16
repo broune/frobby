@@ -19,16 +19,18 @@
 
 #include "Ideal.h"
 
-/** Encapsulates algorithm for computing size-maximal independent sets
-	of a hypergraph.
+/** Encapsulates an algorithm for computing size-maximal independent
+    sets of a hypergraph.
 
 	Currently the only functionality is to compute the size of such a
 	set. This amounts to finding the dimension of a monomial ideal,
 	which can be done by taking the radical and then using this
-	algortihm.
+	algorithm.
 
 	The algorithm is a branch-and-bound algorithm lifted from Macaulay
 	2, though the implementation here is much faster as of July 2009.
+    I don't know why it is so much faster, since it is nearly
+    equivalent to what Macalay 2 does.
 
 	The state of the algortihm is a partially-decided set of nodes of
 	the hypergraph, where each node can be definitely in the set,
@@ -62,7 +64,7 @@ class SizeMaxIndepSetAlg {
 	  when called more than once on the same object. May rearrange the
 	  generators of ideal. ideal must be square free and minimally
 	  generated. Thus ideal is the edge ideal of some hypergraph, and
-	  it is this hypergraph that the algortihm runs on.
+	  it is this hypergraph that the algorithm runs on.
   */
   void run(Ideal& ideal);
 
