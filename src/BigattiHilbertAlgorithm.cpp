@@ -132,34 +132,46 @@ void BigattiHilbertAlgorithm::allCombinationsBaseCase(const BigattiState& state)
   Term& term = _tmp_allCombinationsBaseCase_term;
 
   ASSERT(state.getIdeal().getGeneratorCount() <= _varCount);
-  ASSERT(included == vector<int>(_varCount));
+  ASSERT(included.size() == _varCount);
   ASSERT(lcms.size() == _varCount);
   ASSERT(lcms.empty() || lcms[0].getVarCount() == _varCount);
   ASSERT(term.getVarCount() == _varCount);
 
   size_t genCount = state.getIdeal().getGeneratorCount();
+
+  for (size_t i = 0; i < genCount; ++i) {
+	ASSERT(lcms[i].getVarCount() == _varCount);
+	lcms[i].setToIdentity();
+	included[i] = 0;
+  }
+
+  bool plus = true;
   while (true) {
-	term.setToIdentity();
-	bool plus = true;
-	for (size_t i = 0; i < genCount; ++i) {
-	  if (included[i]) {
-		term.lcm(term, *(state.getIdeal().begin() + i));
-		plus = !plus;
-	  }
-	}
-	term.product(term, state.getMultiply());
+    term.product(lcms[0], state.getMultiply());
 	_output.add(plus ? 1 : -1, term);
 
-	for (size_t i = 0; ; ++i) {
-	  if (i == genCount)
+	size_t gen = 0;
+    while (true) {
+	  if (gen == genCount)
 		return;
+      if (!included[gen])
+        break;
+	  ++gen;
+	}
+	plus = (gen % 2 == 0 ? !plus : plus);
 
-	  if (included[i])
-		included[i] = false;
-	  else {
-		included[i] = true;
-		break;
-	  }
+	ASSERT(!included[gen]);
+	included[gen] = true;
+	if (gen == genCount - 1)
+	  lcms[gen] = state.getIdeal()[gen];
+	else
+	  lcms[gen].lcm(state.getIdeal()[gen], lcms[gen + 1]);
+
+	while (gen > 0) {
+	  --gen;
+	  ASSERT(included[gen]);
+	  included[gen] = false;
+	  lcms[gen] = lcms[gen + 1];
 	}
   }
 }
