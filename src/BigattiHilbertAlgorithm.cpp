@@ -111,9 +111,6 @@ bool BigattiHilbertAlgorithm::baseCase(const BigattiState& state) {
 	  return false;
   }
 
-  if (!state.getIdeal().disjointSupport())
-	return false;
-
   allCombinationsBaseCase(state);
   /*
   Term lcm2(_varCount);
@@ -122,7 +119,7 @@ bool BigattiHilbertAlgorithm::baseCase(const BigattiState& state) {
 		   state.getIdeal().end(),
 		   true,
 		   lcm2,
-		   state.getMultiply());*/
+		   state.getMultiply());//*/
   return true;
 }
 
@@ -178,13 +175,16 @@ void BigattiHilbertAlgorithm::allCombinationsBaseCase(const BigattiState& state)
 
 void BigattiHilbertAlgorithm::basecase(Ideal::const_iterator begin, Ideal::const_iterator end, bool plus, const Term& term, const Term& multiply) {
   if (begin == end) {
-	Term product(_varCount);
+	Term& product = _tmp_allCombinationsBaseCase_term;
+    ASSERT(product.getVarCount() == _varCount);
 	product.product(term, multiply);
     _output.add(plus ? 1 : -1, product);
   }
   else {
+    Term& lcm = _tmp_allCombinationsBaseCase_lcms[end - begin - 1];
+    ASSERT(lcm.getVarCount() == _varCount);
+
     basecase(begin + 1, end, plus, term, multiply);
-    Term lcm(_varCount);
     lcm.lcm(term, *begin);
     basecase(begin + 1, end, !plus, lcm, multiply);
   }
