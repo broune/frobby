@@ -39,6 +39,7 @@ private:
 	void getPivot(BigattiState& state, Term& pivot);
 	void simplify(BigattiState& state);
 
+	void allCombinationsBaseCase(const BigattiState& state);
 	void basecase(Ideal::const_iterator begin, Ideal::const_iterator end,
 				  bool plus, const Term& term, const Term& multiply);
 	void freeState(auto_ptr<BigattiState> state);
@@ -49,12 +50,14 @@ private:
 	TaskEngine _tasks;
 	ObjectCache<BigattiState> _stateCache;
 
+	vector<Term> _tmp_allCombinationsBaseCase_lcms;
+	vector<int> _tmp_allCombinationsBaseCase_included;
+	Term _tmp_allCombinationsBaseCase_term;
 	Term _tmp_processState_pivot;
 	Term _tmp_getPivot_counts;
 	Term _tmp_simplify_gcd;
 	Term _tmp_baseCase_lcm;
 	Term _tmp_baseCase_maxCount;
-
 
 	friend class BigattiState;
 };
