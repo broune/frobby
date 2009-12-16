@@ -75,9 +75,6 @@ class SliceStrategy;
  output to that consumer.
 */
 class Slice : public Task {
-  virtual void run(TaskEngine& tasks);
-  virtual void dispose();
-
  public:
   /** Construct the slice \f$(\ideal 0, \ideal 0, 1)\f$ in a ring of
    zero variables.
@@ -216,6 +213,9 @@ class Slice : public Task {
   virtual bool simplifyStep() = 0;
 
   //@}
+
+  virtual void run(TaskEngine& tasks);
+  virtual void dispose();
 
  protected:
   /** Set this object to be the projection of slice according to

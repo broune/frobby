@@ -31,6 +31,7 @@ void BigattiHilbertAlgorithm::run(const Ideal& ideal) {
   _varCount = ideal.getVarCount();
   _output.clearAndSetVarCount(_varCount);
   _tmp_getPivot_counts.reset(_varCount);
+  _tmp_simplify_gcd.reset(_varCount);
 
   _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
   _tasks.runTasks();
@@ -41,6 +42,8 @@ void BigattiHilbertAlgorithm::run(const Ideal& ideal) {
 }
 
 void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
+  simplify(*state);
+
   if (baseCase(*state)) {
 	freeState(state);
 	return;
@@ -89,6 +92,22 @@ void BigattiHilbertAlgorithm::getPivot(BigattiState& state, Term& pivot) {
 
   pivot.reset(_varCount);
   pivot[var] = 1;
+}
+
+void BigattiHilbertAlgorithm::simplify(BigattiState& state) {
+  Term& gcd = _tmp_simplify_gcd;
+  ASSERT(gcd.getVarCount() == _varCount);
+
+  state.getIdeal().getGcd(gcd);
+  if (!gcd.isIdentity()) {
+	state.colonStep(gcd);
+	_output.add(-1, gcd);
+	gcd.setToIdentity();
+	_output.add(1, gcd);
+  }
+
+  IF_DEBUG(state.getIdeal().getGcd(gcd));
+  ASSERT(gcd.isIdentity());
 }
 
 void BigattiHilbertAlgorithm::freeState(auto_ptr<BigattiState> state) {

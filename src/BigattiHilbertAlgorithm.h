@@ -37,6 +37,7 @@ private:
 	void processState(auto_ptr<BigattiState> state);
 	bool baseCase(const BigattiState& state);
 	void getPivot(BigattiState& state, Term& pivot);
+	void simplify(BigattiState& state);
 
     void basecase(Ideal::const_iterator, Ideal::const_iterator, bool plus, const Term& term);
 	void freeState(auto_ptr<BigattiState> state);
@@ -49,6 +50,7 @@ private:
 
 	Term _tmp_processState_pivot;
 	Term _tmp_getPivot_counts;
+	Term _tmp_simplify_gcd;
 
 	friend class BigattiState;
 };
