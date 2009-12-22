@@ -46,11 +46,55 @@ bool BigattiBaseCase::genericBaseCase(const BigattiState& state) {
   if (!state.getIdeal().isWeaklyGeneric())
 	return false;
 
-  Term term(_varCount);
-  generic(term, _state->getIdeal().begin(), true);
+  enumerateScarfComplex(state);
 
   ++_totalBaseCasesEver;
   return true;
+}
+
+void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state) {
+  ASSERT(_state->getVarCount() == _varCount);
+
+  const Ideal& ideal = _state->getIdeal();
+
+  size_t needed = ideal.getGeneratorCount() + 1; 
+  if (_states.size() < needed)
+	_states.resize(needed);
+  for (size_t i = 0; i < _states.size(); ++i)
+	_states[i].term.reset(_varCount);
+
+  ASSERT(!ideal.isZeroIdeal());
+  _states[0].plus = true;
+  _states[0].pos = ideal.begin();
+  ASSERT(_states[0].term.isIdentity());
+
+  Ideal::const_iterator stop = ideal.end();
+ 
+  size_t current = 0;
+  while (true) {
+	ASSERT(current < _states.size());
+	State& state = _states[current];
+	if (state.pos == stop) {
+	  _lcm.product(state.term, _state->getMultiply());
+	  if (state.plus)
+		outputPlus(_lcm);
+	  else
+		outputMinus(_lcm);
+	  if (current == 0)
+		break;
+	  --current;
+	} else {
+	  ASSERT(current + 1 < _states.size());
+	  State& next = _states[current + 1];
+
+	  next.term.lcm(state.term, *state.pos);
+	  next.plus = !state.plus;
+	  next.pos = ++state.pos;
+
+	  if (!ideal.strictlyContains(next.term))
+		++current;
+	}
+  }
 }
 
 void BigattiBaseCase::generic(const Term& term, Ideal::const_iterator pos, bool plus) {
