@@ -31,6 +31,15 @@ void UniHashPolynomial::add(bool plus, const mpz_class& exponent) {
 	_terms.erase(exponent);
 }
 
+void UniHashPolynomial::add(int coef, size_t e) {
+  if (coef == 0)
+	return;
+  mpz_class& ref = _terms[e];
+  ref += coef;
+  if (ref == 0)
+	_terms.erase(e);
+}
+
 namespace {
   /** Helper class for feedTo. */
   class RefCompare {

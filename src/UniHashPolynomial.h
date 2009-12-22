@@ -44,6 +44,8 @@ class UniHashPolynomial {
    is true or false, respectively. */
   void add(bool plus, const mpz_class& exponent);
 
+  void add(int coef, size_t e);
+
   void feedTo(CoefBigTermConsumer& consumer, bool inCanonicalOrder = false) const;
 
   size_t getTermCount() const;

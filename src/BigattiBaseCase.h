@@ -82,6 +82,8 @@ class BigattiBaseCase {
    if state is a particularly simple and easily detected case. */
   bool simpleBaseCase(const BigattiState& state);
 
+  bool univariateAllFaces(const BigattiState& state);
+
   /** The ideal in state must be weakly generic. Then the
    Hilbert-Poincare series is computed by enumerating the facet of the
    Scarf complex.
