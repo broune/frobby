@@ -19,6 +19,7 @@
 #include "BigattiState.h"
 
 #include "BigattiHilbertAlgorithm.h"
+#include <sstream>
 
 BigattiState::BigattiState(BigattiHilbertAlgorithm* algorithm,
 						   const Ideal& ideal, const Term& multiply):
@@ -67,21 +68,19 @@ Exponent BigattiState::getMedianPositiveExponentOf(size_t var) {
   return median;
 }
 
+size_t BigattiState::getTypicalExponent(size_t& var, size_t& exp) {
+  return _ideal.getTypicalExponent(var, exp);
+}
+
 void BigattiState::colonStep(const Term& pivot) {
   ASSERT(pivot.getVarCount() == getVarCount());
   _ideal.colonReminimize(pivot);
   _multiply.product(_multiply, pivot);
 }
 
-void BigattiState::colonStep(size_t var, Exponent e) {
-  ASSERT(var < getVarCount());
-
-  _ideal.colonReminimize(var, e);
-  _multiply[var] += e;
-}
-
-void BigattiState::addStep(size_t var, Exponent e) {
-  _ideal.insertReminimize(var, e);
+void BigattiState::addStep(const Term& pivot) {
+  ASSERT(pivot.getVarCount() == getVarCount());
+  _ideal.insertReminimize(pivot);
 }
 
 void BigattiState::run(TaskEngine& tasks) {
@@ -90,4 +89,15 @@ void BigattiState::run(TaskEngine& tasks) {
 
 void BigattiState::dispose() {
   _algorithm->freeState(auto_ptr<BigattiState>(this));
+}
+
+void BigattiState::print(FILE* out) {
+  ostringstream str;
+  print(str);
+  fputs(str.str().c_str(), out);
+}
+
+void BigattiState::print(ostream& out) {
+  out << "BigattiState(multiply: " << _multiply << "\n"
+	  << _ideal << ")\n";
 }

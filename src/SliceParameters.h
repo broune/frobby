@@ -25,11 +25,13 @@ class SliceFacade;
 
 /** This class represents the parameters associated to the Slice
  Algorithm. This allows actions to share these options without code
- duplication.
+ duplication. Note that SliceParameters is able to set up a
+ SliceFacade according to the parameters it encapsulates.
 
- Most of these parameters are encapsulated and cannot be accessed,
- except that SliceParameters is able to set up a SliceFacade according
- to the parameters it encapsulates. */
+ SliceParameters also supports options for the Bigatti
+ Et.al. algorithm for Hilbert series, since the options for that are
+ nearly the same as for the Slice algorithm.
+*/
 class SliceParameters : public ParameterGroup {
  public:
   /** Construct the parameters with default values.
@@ -38,9 +40,11 @@ class SliceParameters : public ParameterGroup {
      bound optimization.
    @param exposeIndependenceParam Make available the parameter to turn
      independence splits on or off.
+   @param supportBigattiAlgorithm Adjust messages
   */
   SliceParameters(bool exposeBoundParams = false,
-				  bool exposeIndependenceParam = true);
+				  bool exposeIndependenceParam = true,
+				  bool supportBigattiAlgorithm = false);
 
   /** Set facade up according to the values of the options of this
    object. */
@@ -58,9 +62,13 @@ class SliceParameters : public ParameterGroup {
   */
   void setSplit(const string& split);
 
-  /** Checks that the split selection strategy specified is
+  /** Checks that the slice split selection strategy specified is
    valid. Reports an error otherwise. */
   void validateSplit(bool allowLabel, bool allowDegree);
+
+  /** Checks that the Bigatti Et.al. pivot selection strategy specified is
+   valid. Reports an error otherwise. */
+  void validateSplitHilbert();
 
   /** Get the value of the bound elimination option. This value has to
    be exposed as it is not part of the state of a SliceFacade.
@@ -74,6 +82,15 @@ class SliceParameters : public ParameterGroup {
 
   /** Get the value of the canonical option. */
   bool getCanonical() const;
+
+  /** Get the value of the split option. */
+  const string& getSplit() const;
+
+  /** Returns the value of the debug option. */
+  bool getPrintDebug() const;
+
+  /** Returns the value of the stats option. */
+  bool getPrintStatistics() const;
 
  private:
   bool _exposeBoundParam;

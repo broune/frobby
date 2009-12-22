@@ -28,12 +28,14 @@ class Parameter {
   const char* getDescription() const;
   virtual const char* getParameterName() const;
 
+  void appendToDescription(const char* str);
+
   virtual void getValue(string& str) const = 0;
 
   virtual bool process(const char** params, unsigned int paramCount);
   virtual void processParameters(const char** params, unsigned int paramCount) = 0;
 
-protected:
+ protected:
   void checkCorrectParameterCount(unsigned int from,
 				  unsigned int to,
 				  const char** params,

@@ -40,6 +40,10 @@ const char* Parameter::getParameterName() const {
   return "";
 }
 
+void Parameter::appendToDescription(const char* str) {
+  _description += str;
+}
+
 bool Parameter::process(const char** params, unsigned int paramCount) {
   if ('-' + string(_name) != params[0])
     return false;

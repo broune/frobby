@@ -13,13 +13,16 @@ fi
 TIMEFORMAT=$' (%2lR real)'
 
 pivotSplits="minimum median maximum gcd indep"
-pivotActions="hilbert"
+pivotActions="hilbert_slice"
 
 labelSplits="maxlabel varlabel minlabel $pivotSplits"
 labelActions="optimize irrdecom assoprimes alexdual"
 
 frobSplits="frob $labelSplits"
 frobActions="frob"
+
+bigattiSplits="median typical"
+bigattiActions="hilbert_bigatti"
 
 params="$*"
 testhelper=../testScripts/testhelper
@@ -48,6 +51,11 @@ runTests () {
     echo;
   done
 }
+
+for action in $bigattiActions;
+do
+  runTests "$action" $bigattiSplits
+done
 
 for action in $labelActions;
 do

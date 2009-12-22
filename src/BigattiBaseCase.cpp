@@ -29,9 +29,44 @@ BigattiBaseCase::BigattiBaseCase(size_t varCount):
  _lcms(varCount),
  _output(varCount),
  _one(1),
- _minusOne(-1) {
+ _minusOne(-1),
+ _totalBaseCasesEver(0),
+ _totalTermsOutputEver(0),
+ _printDebug(false) {
   for (size_t i = 0; i < varCount; ++i)
     _lcms.insert(_lcm);
+}
+
+bool BigattiBaseCase::genericBaseCase(const BigattiState& state) {
+  ASSERT(state.getIdeal().getVarCount() == _varCount);
+  if (baseCase(state))
+	return true;
+  ASSERT(_state == &state); // done by baseCase.
+
+  if (!state.getIdeal().isWeaklyGeneric())
+	return false;
+
+  Term term(_varCount);
+  generic(term, _state->getIdeal().begin(), true);
+
+  ++_totalBaseCasesEver;
+  return true;
+}
+
+void BigattiBaseCase::generic(const Term& term, Ideal::const_iterator pos, bool plus) {
+  if (pos == _state->getIdeal().end()) {
+    _lcm.product(term, _state->getMultiply());
+	if (plus)
+      outputPlus(_lcm);
+    else
+      outputMinus(_lcm);
+  } else {
+	generic(term, pos + 1, plus);
+	Term lcm(_varCount);
+	lcm.lcm(term, *pos);
+	if (!_state->getIdeal().strictlyContains(lcm))
+	  generic(lcm, pos + 1, !plus);
+  }
 }
 
 bool BigattiBaseCase::baseCase(const BigattiState& state) {
@@ -67,7 +102,13 @@ bool BigattiBaseCase::baseCase(const BigattiState& state) {
   }
 
   allCombinations();
+
+  ++_totalBaseCasesEver;
   return true;
+}
+
+void BigattiBaseCase::printDebug(bool value) {
+  _printDebug = value;
 }
 
 bool BigattiBaseCase::simpleBaseCase() {
@@ -94,6 +135,8 @@ bool BigattiBaseCase::simpleBaseCase() {
   _lcm.lcm(ideal[0], ideal[1]);
   _lcm.product(_lcm, multiply);
   outputPlus(_lcm);
+
+  ++_totalBaseCasesEver;
   return true;
 }
 
@@ -174,13 +217,39 @@ void BigattiBaseCase::drop(size_t gen) {
 }
 
 void BigattiBaseCase::outputPlus(const Term& term) {
+  if (_printDebug) {
+	fputs("Debug: Outputting term +", stderr);
+	term.print(stderr);
+	fputs(".\n", stderr);
+  }
+
+  ++_totalTermsOutputEver;
   _output.add(_one, term);
 }
 
 void BigattiBaseCase::outputMinus(const Term& term) {
+  if (_printDebug) {
+	fputs("Debug: Outputting term -", stderr);
+	term.print(stderr);
+	fputs(".\n", stderr);
+  }
+
+  ++_totalTermsOutputEver;
   _output.add(_minusOne, term);
 }
 
 void BigattiBaseCase::feedOutputTo(CoefTermConsumer& consumer) {
   _output.feedTo(consumer);
+}
+
+size_t BigattiBaseCase::getTotalBaseCasesEver() const {
+  return _totalBaseCasesEver;
+}
+
+size_t BigattiBaseCase::getTotalTermsOutputEver() const {
+  return _totalTermsOutputEver;
+}
+
+size_t BigattiBaseCase::getTotalTermsInOutput() const {
+  return _output.getTermCount();
 }

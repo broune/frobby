@@ -192,6 +192,41 @@ void Ideal::getSupportCounts(Exponent* counts) const {
 		counts[var] += 1;
 }
 
+size_t Ideal::
+getTypicalExponent(size_t& typicalVar, Exponent& typicalExponent) {
+  size_t maxCount = 0;
+  typicalVar = 0;
+  typicalExponent = 0;
+
+  for (size_t var = 0; var < _varCount; ++var) {
+	singleDegreeSort(var);
+
+	Exponent lastExponent = 0;
+	size_t count = 0;
+	const_iterator stop = _terms.end();
+	for (const_iterator it = _terms.begin(); it != stop; ++it) {
+	  Exponent exponent = (*it)[var];
+	  if (exponent == 0)
+		continue;
+
+	  if (lastExponent == exponent)
+		++count;
+	  else
+		count = 1;
+
+	  if (count > maxCount) {
+		maxCount = count;
+		typicalVar = var;
+		typicalExponent = exponent;
+	  }
+
+	  lastExponent = exponent;
+	}
+  }
+
+  return maxCount;
+}
+
 bool Ideal::operator==(const Ideal& ideal) const {
   if (getVarCount() != ideal.getVarCount())
 	return false;

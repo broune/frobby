@@ -84,3 +84,7 @@ void HashPolynomial::feedTo(CoefTermConsumer& consumer) const {
 
   consumer.doneConsuming();
 }
+
+size_t HashPolynomial::getTermCount() const {
+  return _terms.size();
+}

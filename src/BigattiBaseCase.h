@@ -29,12 +29,21 @@ class BigattiBaseCase {
  public:
   BigattiBaseCase(size_t varCount);
 
+  bool genericBaseCase(const BigattiState& state);
+  void generic(const Term& term, Ideal::const_iterator pos, bool plus);
+
   bool baseCase(const BigattiState& state);
   
   void outputPlus(const Term& term);
   void outputMinus(const Term& term);
 
   void feedOutputTo(CoefTermConsumer& consumer);
+
+  void printDebug(bool value);
+
+  size_t getTotalBaseCasesEver() const;
+  size_t getTotalTermsOutputEver() const;
+  size_t getTotalTermsInOutput() const;
 
  private:
   bool simpleBaseCase();
@@ -58,6 +67,15 @@ class BigattiBaseCase {
 
   mpz_class _one;
   mpz_class _minusOne;
+
+  /** For statistics. Not a disaster if it overflows. */
+  size_t _totalBaseCasesEver;
+
+  /** For statistics. Not a disaster if it overflows. */
+  size_t _totalTermsOutputEver;
+
+  /** Print debug messages about what is happening. */
+  bool _printDebug;
 };
 
 #endif

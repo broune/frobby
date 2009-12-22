@@ -36,15 +36,17 @@ class BigattiState : public Task {
   Ideal& getIdeal();
   Term& getMultiply();
 
-  // Reorders the generators of ideal.
   Exponent getMedianPositiveExponentOf(size_t var);
+  size_t getTypicalExponent(size_t& var, size_t& exp);
 
   void colonStep(const Term& term);
-  void colonStep(size_t var, Exponent e);
-  void addStep(size_t var, Exponent e);
+  void addStep(const Term& term);
 
   virtual void run(TaskEngine& tasks);
   virtual void dispose();
+
+  void print(FILE* out);
+  void print(ostream& out);
 
  private:
   BigattiHilbertAlgorithm* _algorithm;
