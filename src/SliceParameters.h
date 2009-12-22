@@ -22,15 +22,14 @@
 #include "StringParameter.h"
 
 class SliceFacade;
+class BigattiFacade;
 
 /** This class represents the parameters associated to the Slice
- Algorithm. This allows actions to share these options without code
+ Algorithm and the similar Bigatti et.al. Hilbert-Poincare series
+ algorithm. This allows actions to share these options without code
  duplication. Note that SliceParameters is able to set up a
- SliceFacade according to the parameters it encapsulates.
-
- SliceParameters also supports options for the Bigatti
- Et.al. algorithm for Hilbert series, since the options for that are
- nearly the same as for the Slice algorithm.
+ SliceFacade and BigattiFacade according to the parameters it
+ encapsulates.
 */
 class SliceParameters : public ParameterGroup {
  public:
@@ -49,6 +48,10 @@ class SliceParameters : public ParameterGroup {
   /** Set facade up according to the values of the options of this
    object. */
   void apply(SliceFacade& facade) const;
+
+  /** Set facade up according to the values of the options of this
+   object. */
+  void apply(BigattiFacade& facade) const;
 
   /** Set the value of the independence split option. This is useful
    for setting the default value before parsing the user-supplied

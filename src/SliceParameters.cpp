@@ -20,6 +20,7 @@
 #include "SliceFacade.h"
 #include "error.h"
 #include "BigattiPivotStrategy.h"
+#include "BigattiFacade.h"
 
 SliceParameters::SliceParameters(bool exposeBoundParam,
 								 bool exposeIndependenceParam,
@@ -173,15 +174,27 @@ void SliceParameters::validateSplitHilbert() {
 void SliceParameters::apply(SliceFacade& facade) const {
   auto_ptr<SplitStrategy> split =
 	SplitStrategy::createStrategy(_split.getValue().c_str());
+  facade.setSplitStrategy(split);
 
   facade.setPrintDebug(_printDebug);
   facade.setPrintStatistics(_printStatistics);
   facade.setUseIndependence(_useIndependence);
   facade.setUseSimplification(_useSimplification);
   facade.setIsMinimallyGenerated(_minimal);
-  facade.setSplitStrategy(split);
   if (_canonical)
 	facade.setCanonicalOutput();
+}
+
+void SliceParameters::apply(BigattiFacade& facade) const {
+  auto_ptr<BigattiPivotStrategy> pivot =
+	BigattiPivotStrategy::createStrategy(_split.getValue().c_str());
+  facade.setPivotStrategy(pivot);
+
+  facade.setPrintDebug(_printDebug);
+  facade.setPrintStatistics(_printStatistics);
+  facade.setUseSimplification(_useSimplification);
+  facade.setIsMinimallyGenerated(_minimal);
+  facade.setDoCanonicalOutput(_canonical);
 }
 
 bool SliceParameters::getPrintDebug() const {
