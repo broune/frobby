@@ -164,7 +164,86 @@ bool BigattiBaseCase::simpleBaseCase(const BigattiState& state) {
   return true;
 }
 
+bool BigattiBaseCase::univariateAllFaces(const BigattiState& state) {
+  ASSERT(_computeUnivariate);
+  const Ideal& ideal = state.getIdeal();
+  const Term& multiply = state.getMultiply();
+
+  if (!ideal.disjointSupport())
+	return false;
+
+  if (ideal.getGeneratorCount() > 30)
+	return false; // Coefficients may not fit in 32 bits
+
+  Term max(ideal.getVarCount());
+  ideal.getLcm(max);
+  max.product(max, multiply);
+
+  _tmp = 0;
+  for (size_t var = 0; var < max.getVarCount(); ++var)
+	_tmp += _translator.getExponent(var, max);
+  if (_tmp > 1024*1024)
+	return false; // Too high memory requirement.
+  ASSERT(_tmp.fits_uint_p());
+  size_t maxDegree = _tmp.get_ui();
+
+  size_t approxWorkForScarfComplex = (1 << ideal.getGeneratorCount());
+  if (approxWorkForScarfComplex < maxDegree)
+	return false; // Scarf complex is on par or faster.
+
+  // At this point we have made sure that this instance makes sense to
+  // solve using this method. We have also determined that we can do
+  // everything in machine ints.
+
+  vector<int> poly;
+  poly.reserve(maxDegree);
+  poly.push_back(1);
+
+  // TODO: sort with smallest first to decrease work in early
+  // iterations.
+  for (size_t i = 0; i < ideal.getGeneratorCount(); ++i) {
+	ASSERT(poly.back() != 0);
+	const Exponent* gen = ideal[i];
+
+	// calculate degree
+	int degree = 0;
+	for (size_t var = 0; var < max.getVarCount(); ++var)
+	  degree += _translator.getExponent(var, multiply[var] + gen[var]).get_ui()
+		- _translator.getExponent(var, multiply[var]).get_ui();
+
+	// replace poly P by (1-t^degree)*P = P-P*t^degree.
+	size_t oldSize = poly.size();
+	poly.resize(oldSize + degree);
+	for (size_t e = oldSize; e > 0;) {
+	  --e;
+	  poly[e+degree] -= poly[e];
+	}
+  }
+
+  int degree = 0;
+  for (size_t var = 0; var < max.getVarCount(); ++var)
+	degree += _translator.getExponent(var, multiply).get_ui();
+
+  for (size_t e = 0; e < poly.size(); ++e) {
+	if (_printDebug) {
+	  fprintf(stderr, "Debug: Outputting term %i*t^%u.\n",
+			  poly[e], e + degree);
+	}
+
+	++_totalTermsOutputEver;
+	_outputUnivariate.add(poly[e], e+degree);
+  }
+
+  return true;
+}
+
 void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state, bool allFaces) {
+  if (allFaces &&
+	  _computeUnivariate &&
+	  univariateAllFaces(state)) {
+	return;
+  }
+
   const Ideal& ideal = state.getIdeal();
 
   // Set up _states with enough entries of the right size.
