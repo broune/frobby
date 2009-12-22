@@ -100,6 +100,8 @@ void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
 	pivot.print(stderr);
 	fputs(".\n", stderr);
   }
+  ASSERT(!pivot.isIdentity());
+  ASSERT(!state->getIdeal().contains(pivot));
 
   auto_ptr<BigattiState> colonState(_stateCache.newObjectCopy(*state));
   colonState->colonStep(pivot);
