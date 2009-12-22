@@ -30,17 +30,15 @@ class Term;
 
 class BigattiHilbertAlgorithm {
 public:
-	BigattiHilbertAlgorithm
-	  (const Ideal& ideal, CoefTermConsumer* consumer,
-	   auto_ptr<BigattiPivotStrategy> pivot);
+  BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer& consumer);
 
+  void setPrintStatistics(bool value);
+  void setPrintDebug(bool value);
+  void setUseGenericBaseCase(bool value);
+  void setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot);
+  void setUseSimplification(bool value);
 
-	void printStatistics(bool value);
-	void printDebug(bool value);
-
-	void useGenericBaseCase(bool value = true);
-
-	void run();
+  void run();
 
 private:
 	void processState(auto_ptr<BigattiState> state);
@@ -60,6 +58,7 @@ private:
     BigattiBaseCase _baseCase;
 
 	bool _useGenericBaseCase;
+	bool _useSimplification;
 	auto_ptr<BigattiPivotStrategy>  _pivot;
 
 	bool _printDebug;

@@ -23,8 +23,7 @@
 #include "Scanner.h"
 #include "DataType.h"
 #include "IdealFacade.h"
-#include "CoefBigTermConsumer.h"
-#include "BigattiPivotStrategy.h"
+#include "BigattiFacade.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -90,16 +89,12 @@ void HilbertAction::perform() {
     else
 	  facade.computeMultigradedHilbertSeries();
   } else {
-	IdealFacade facade(_printActions);
-    auto_ptr<CoefBigTermConsumer> consumer =
-      output->createPolynomialWriter(stdout);
-	auto_ptr<BigattiPivotStrategy> pivot =
-	  BigattiPivotStrategy::createStrategy(_sliceParams.getSplit());
-	ASSERT(pivot.get() != 0);
-
-    facade.computeHilbertSeries
-      (ideal, _univariate, _sliceParams.getCanonical(), consumer, pivot,
-	   _sliceParams.getPrintStatistics(), _sliceParams.getPrintDebug());
+	BigattiFacade facade(ideal, output.get(), stdout, _printActions);
+    _sliceParams.apply(facade);
+    if (_univariate)
+	  facade.computeUnivariateHilbertSeries();
+    else
+	  facade.computeMultigradedHilbertSeries();
   }
 }
 

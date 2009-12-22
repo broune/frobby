@@ -39,7 +39,7 @@ class BigattiBaseCase {
 
   void feedOutputTo(CoefTermConsumer& consumer);
 
-  void printDebug(bool value);
+  void setPrintDebug(bool value);
 
   size_t getTotalBaseCasesEver() const;
   size_t getTotalTermsOutputEver() const;

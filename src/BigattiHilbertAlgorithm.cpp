@@ -22,38 +22,49 @@
 #include "CoefTermConsumer.h"
 #include "BigattiState.h"
 
-BigattiHilbertAlgorithm::BigattiHilbertAlgorithm
-(const Ideal& ideal, CoefTermConsumer* consumer,
- auto_ptr<BigattiPivotStrategy> pivot):
- _consumer(consumer),
+BigattiHilbertAlgorithm::
+BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer& consumer):
+ _consumer(&consumer),
  _baseCase(ideal.getVarCount()),
  _useGenericBaseCase(true),
- _pivot(pivot),
+ _useSimplification(true),
+ _pivot(0),
  _printDebug(false),
  _printStatistics(false) {
+
    ASSERT(ideal.isMinimallyGenerated());
   _varCount = ideal.getVarCount();
   _tmp_simplify_gcd.reset(_varCount);
 
-  if (_pivot.get() == 0)
-	_pivot = BigattiPivotStrategy::createStrategy("median");
   _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
 }
 
-void BigattiHilbertAlgorithm::useGenericBaseCase(bool value) {
-  _useGenericBaseCase = value;
-}
-
-void BigattiHilbertAlgorithm::printStatistics(bool value) {
+void BigattiHilbertAlgorithm::setPrintStatistics(bool value) {
   _printStatistics = value;
 }
 
-void BigattiHilbertAlgorithm::printDebug(bool value) {
+void BigattiHilbertAlgorithm::setPrintDebug(bool value) {
   _printDebug = value;
-  _baseCase.printDebug(value);
+  _baseCase.setPrintDebug(value);
+}
+
+void BigattiHilbertAlgorithm::setUseGenericBaseCase(bool value) {
+  _useGenericBaseCase = value;
+}
+
+void BigattiHilbertAlgorithm::setUseSimplification(bool value) {
+  _useSimplification = value;
+}
+
+void BigattiHilbertAlgorithm::
+setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot) {
+  _pivot = pivot;
 }
 
 void BigattiHilbertAlgorithm::run() {
+  if (_pivot.get() == 0)
+	_pivot = BigattiPivotStrategy::createStrategy("median");
+
   _tasks.runTasks();
   _baseCase.feedOutputTo(*_consumer);
 
@@ -67,7 +78,9 @@ void BigattiHilbertAlgorithm::run() {
 }
 
 void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
-  simplify(*state);
+  if (_useSimplification)
+	simplify(*state);
+
   if (_printDebug) {
 	fputs("Debug: Processing state.\n", stderr);
 	state->print(stderr);

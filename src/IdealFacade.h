@@ -24,7 +24,6 @@
 
 class BigIdeal;
 class IOHandler;
-class CoefBigTermConsumer;
 
 /** A facade for performing operations on BigIdeal. These
 	operations should not fit somewhere else, such as on SliceFacade.
@@ -51,21 +50,6 @@ class IdealFacade : private Facade {
 	  but will result in undefined behavior if it is not true.
   */
   mpz_class computeDimension(const BigIdeal& ideal, bool squareFreeAndMinimal = false);
-
-  /** Compute the Hilbert series of ideal. It will be the univariate
-   series if univariate is true, otherwise it will be multigraded. the
-   output polynomial is provided to consumer.
-
-   @todo Do something about the number of parameters.
-  */
-  void computeHilbertSeries
-	(const BigIdeal& ideal,
-	 bool univariate,
-	 bool canonical,
-	 auto_ptr<CoefBigTermConsumer> consumer,
-	 auto_ptr<BigattiPivotStrategy> pivot,
-	 bool printStatistics,
-	 bool printDebug);
 
   // Take the product of the minimal generators of each ideal, and add
   // the resulting monomials as generators of ideal. Requires that

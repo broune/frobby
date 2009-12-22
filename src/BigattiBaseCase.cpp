@@ -107,7 +107,7 @@ bool BigattiBaseCase::baseCase(const BigattiState& state) {
   return true;
 }
 
-void BigattiBaseCase::printDebug(bool value) {
+void BigattiBaseCase::setPrintDebug(bool value) {
   _printDebug = value;
 }
 
