@@ -49,6 +49,7 @@ class BigattiBaseCase {
   bool simpleBaseCase();
 
   void allCombinations();
+  void enumerateScarfComplex(const BigattiState& state);
 
   size_t _varCount;
 
