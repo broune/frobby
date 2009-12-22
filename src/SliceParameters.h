@@ -107,6 +107,7 @@ class SliceParameters : public ParameterGroup {
   BoolParameter _useSimplification;
   BoolParameter _minimal;
   BoolParameter _canonical;
+  BoolParameter _useBigattiGeneric;
 
   StringParameter _split;
 };

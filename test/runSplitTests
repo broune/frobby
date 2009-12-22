@@ -21,7 +21,9 @@ labelActions="optimize irrdecom assoprimes alexdual"
 frobSplits="frob $labelSplits"
 frobActions="frob"
 
-bigattiSplits="median typical"
+bigattiSplits="median mostNGPure mostNGGcd mostNGTight typicalPure \
+  typicalGcd typicalTight typicalNGPure typicalNGGcd typicalNGTight \
+  someNGPure someNGGcd someNGTight"
 bigattiActions="hilbert_bigatti"
 
 params="$*"
