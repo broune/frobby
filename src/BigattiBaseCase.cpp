@@ -19,12 +19,15 @@
 #include "BigattiBaseCase.h"
 
 #include "BigattiState.h"
+#include "TermTranslator.h"
 #include <algorithm>
 
-BigattiBaseCase::BigattiBaseCase(size_t varCount):
- _maxCount(varCount),
- _lcm(varCount),
- _output(varCount),
+BigattiBaseCase::BigattiBaseCase(const TermTranslator& translator):
+  _maxCount(translator.getVarCount()),
+ _lcm(translator.getVarCount()),
+ _outputMultivariate(translator.getVarCount()),
+ _computeUnivariate(false),
+ _translator(translator),
  _totalBaseCasesEver(0),
  _totalTermsOutputEver(0),
  _printDebug(false) {
@@ -89,15 +92,32 @@ void BigattiBaseCase::output(bool plus, const Term& term) {
   }
 
   ++_totalTermsOutputEver;
-  _output.add(plus, term);
+  if (_computeUnivariate) {
+	if (term.getVarCount() == 0)
+	  _tmp = 0;
+	else
+	  _tmp = _translator.getExponent(0, term);
+	for (size_t var = 1; var < term.getVarCount(); ++var)
+	  _tmp += _translator.getExponent(var, term);
+	_outputUnivariate.add(plus, _tmp);
+  } else 
+	_outputMultivariate.add(plus, term);
 }
 
-void BigattiBaseCase::feedOutputTo(CoefTermConsumer& consumer, bool inCanonicalOrder) {
-  _output.feedTo(consumer, inCanonicalOrder);
+void BigattiBaseCase::feedOutputTo
+(CoefBigTermConsumer& consumer, bool inCanonicalOrder) {
+  if (_computeUnivariate)
+	_outputUnivariate.feedTo(consumer, inCanonicalOrder);
+  else
+	_outputMultivariate.feedTo(_translator, consumer, inCanonicalOrder);
 }
 
 void BigattiBaseCase::setPrintDebug(bool value) {
   _printDebug = value;
+}
+
+void BigattiBaseCase::setComputeUnivariate(bool value) {
+  _computeUnivariate = value;
 }
 
 size_t BigattiBaseCase::getTotalBaseCasesEver() const {
@@ -109,7 +129,10 @@ size_t BigattiBaseCase::getTotalTermsOutputEver() const {
 }
 
 size_t BigattiBaseCase::getTotalTermsInOutput() const {
-  return _output.getTermCount();
+  if (_computeUnivariate)
+	return _outputUnivariate.getTermCount();
+  else
+	return _outputMultivariate.getTermCount();
 }
 
 bool BigattiBaseCase::simpleBaseCase(const BigattiState& state) {

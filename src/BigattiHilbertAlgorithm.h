@@ -25,12 +25,18 @@
 #include "BigattiBaseCase.h"
 #include "BigattiPivotStrategy.h"
 
-class CoefTermConsumer;
+class CoefBigTermConsumer;
 class Term;
 
 class BigattiHilbertAlgorithm {
 public:
-  BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer& consumer);
+  /** Construct an object for running the Bigatti et.al. algorithm on
+   ideal. No association is made to ideal, but translator and consumer
+   must remain valid for the lifetime of this object.
+  */
+  BigattiHilbertAlgorithm(const Ideal& ideal,
+						  const TermTranslator& translator,
+						  CoefBigTermConsumer& consumer);
 
   void setPrintStatistics(bool value);
   void setPrintDebug(bool value);
@@ -38,6 +44,7 @@ public:
   void setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot);
   void setUseSimplification(bool value);
   void setDoCanonicalOutput(bool value);
+  void setComputeUnivariate(bool value);
 
   void run();
 
@@ -49,7 +56,8 @@ private:
 	void freeState(auto_ptr<BigattiState> state);
 
 	size_t _varCount;
-	CoefTermConsumer* _consumer;
+	const TermTranslator& _translator;
+	CoefBigTermConsumer* _consumer;
 	TaskEngine _tasks;
 	ObjectCache<BigattiState> _stateCache;
 
@@ -65,6 +73,7 @@ private:
 	bool _printDebug;
 	bool _printStatistics;
 	bool _doCanonicalOutput;
+	bool _computeUnivariate;
 
     friend class BigattiState;
 };

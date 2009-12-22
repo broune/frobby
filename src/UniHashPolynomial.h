@@ -15,52 +15,41 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HASH_POLYNOMIAL_GUARD
-#define HASH_POLYNOMIAL_GUARD
+#ifndef UNI_HASH_POLYNOMIAL_GUARD
+#define UNI_HASH_POLYNOMIAL_GUARD
 
-#include "Term.h"
 #include "HashMap.h"
 
 class CoefBigTermConsumer;
-class TermTranslator;
 
-/** This template specialization makes the hash code of a term
+/** This template specialization makes the hash code of an mpz_clas
  available to the implementation of HashMap.
 */
 template<>
-class FrobbyHash<Term> {
+class FrobbyHash<mpz_class> {
  public:
-  size_t operator()(const Term& t) const {
-	return t.getHashCode();
+  size_t operator()(const mpz_class& i) const {
+	// The constant is a prime. This method needs to be improved.
+	return mpz_fdiv_ui(i.get_mpz_t(), 2106945901u);
   }
 };
 
-/** A sparse multivariate polynomial represented by a hash table
- mapping terms to coefficients. This allows to avoid duplicate terms
- without a large overhead.
+/** A sparse univariate polynomial represented by a hash table mapping
+ terms to coefficients. This allows to avoid duplicate terms without a
+ large overhead.
 */
-class HashPolynomial {
+class UniHashPolynomial {
  public:
-  HashPolynomial(size_t varCount = 0);
-
-  void clearAndSetVarCount(size_t varCount);
-
-  /** Add coef*term to the polynomial. */
-  void add(const mpz_class& coef, const Term& term);
-
   /** Add +term or -term to the polynomial depending on whether plus
    is true or false, respectively. */
-  void add(bool plus, const Term& term);
+  void add(bool plus, const mpz_class& exponent);
 
-  void feedTo(const TermTranslator& translator,
-			  CoefBigTermConsumer& consumer, bool inCanonicalOrder = false) const;
+  void feedTo(CoefBigTermConsumer& consumer, bool inCanonicalOrder = false) const;
 
   size_t getTermCount() const;
 
  private:
-  size_t _varCount;
-
-  typedef HashMap<Term, mpz_class> TermMap;
+  typedef HashMap<mpz_class, mpz_class> TermMap;
   TermMap _terms;
 };
 

@@ -80,17 +80,11 @@ void BigattiFacade::minimize() {
 }
 
 void BigattiFacade::computeMultigradedHilbertSeries() {
-  auto_ptr<CoefBigTermConsumer> bigConsumer =
-	_ioHandler->createPolynomialWriter(_out);
-  TranslatingCoefTermConsumer consumer(*bigConsumer, *_translator);
-  runAlgorithm("Computing multigraded Hilbert-Poincare series.", consumer);
+  runAlgorithm("Computing multigraded Hilbert-Poincare series.", false);
 }
 
 void BigattiFacade::computeUnivariateHilbertSeries() {
-  auto_ptr<CoefBigTermConsumer> bigConsumer =
-	_ioHandler->createPolynomialWriter(_out);
-  TotalDegreeCoefTermConsumer consumer(*bigConsumer, *_translator);
-  runAlgorithm("Computing univariate Hilbert-Poincare series", consumer);
+  runAlgorithm("Computing univariate Hilbert-Poincare series", true);
 }
 
 void BigattiFacade::sortVars() {
@@ -106,22 +100,26 @@ void BigattiFacade::sortVars() {
   endAction();
 }
 
-void BigattiFacade::
-runAlgorithm(const char* action, CoefTermConsumer& consumer) {
+void BigattiFacade::runAlgorithm
+(const char* action, bool univariate) {
   minimize();
   if (_doCanonicalOutput)
 	sortVars();
 
-  consumer.consumeRing(_translator->getNames());
+  auto_ptr<CoefBigTermConsumer> consumer =
+	_ioHandler->createPolynomialWriter(_out);
+
+  consumer->consumeRing(_translator->getNames());
 
   beginAction(action);
-  BigattiHilbertAlgorithm alg(_ideal, consumer);
+  BigattiHilbertAlgorithm alg(_ideal, *_translator, *consumer);
   alg.setPrintStatistics(_printStatistics);
   alg.setPrintDebug(_printDebug);
   alg.setUseGenericBaseCase(_useGenericBaseCase);
   alg.setPivotStrategy(_pivot);
   alg.setUseSimplification(_useSimplification);
   alg.setDoCanonicalOutput(_doCanonicalOutput);
+  alg.setComputeUnivariate(univariate);
 
   alg.run();
 
