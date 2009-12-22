@@ -75,6 +75,11 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
    "can increase run time modestly and increase memory consumption greatly.",
    false),
 
+  _useBigattiGeneric
+  ("genericBase",
+   "Detect generic ideals as a base case of the Bigatti algorithm.",
+   true),
+
   _split
   ("split",
    "The split selection strategy to use. Slice options are maxlabel, minlabel,\n"
@@ -95,6 +100,8 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
   addParameter(&_canonical);
 
   if (supportBigattiAlgorithm) {
+	addParameter(&_useBigattiGeneric);
+
 	_printDebug.appendToDescription
 	  (" Slice algorithm only.");
 	_printStatistics.appendToDescription
@@ -108,7 +115,9 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
 	   "\nSlice Algorithm since the Bigatti et.al. algorithm always has to\n"
 	   "store the entire output in memory regardless of this option.");
 	_split.appendToDescription
-	  ("\nBigatti et.al. options are median and typical.");
+	  ("\nBigatti et.al. options are median, mostNGPure, mostNGGcd,\n"
+	   "mostNGTight, typicalPure, typicalGcd, typicalTight, typicalNGPure,\n"
+	   "typicalNGGcd, typicalNGTight, someNGPure, someNGGcd and someNGTight.");
   }
 }
 
@@ -195,6 +204,7 @@ void SliceParameters::apply(BigattiFacade& facade) const {
   facade.setUseSimplification(_useSimplification);
   facade.setIsMinimallyGenerated(_minimal);
   facade.setDoCanonicalOutput(_canonical);
+  facade.setUseGenericBaseCase(_useBigattiGeneric);
 }
 
 bool SliceParameters::getPrintDebug() const {

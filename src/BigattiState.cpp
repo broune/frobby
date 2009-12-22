@@ -72,6 +72,10 @@ size_t BigattiState::getTypicalExponent(size_t& var, size_t& exp) {
   return _ideal.getTypicalExponent(var, exp);
 }
 
+void BigattiState::singleDegreeSort(size_t var) {
+  _ideal.singleDegreeSort(var);
+}
+
 void BigattiState::colonStep(const Term& pivot) {
   ASSERT(pivot.getVarCount() == getVarCount());
   _ideal.colonReminimize(pivot);
