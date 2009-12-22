@@ -188,9 +188,10 @@ bool SatBinomIdeal::isPointFreeBody(const vector<mpz_class>& a,
   return !isDominating(rhs);
 }
 
-bool SatBinomIdeal::hasDoubleTriangle() const {
+void SatBinomIdeal::getDoubleTriangleCount(mpz_class& count) const {
   vector<mpz_class> sum(getVarCount());
 
+  count = 0;
   for (size_t gen1 = 0; gen1 < getGeneratorCount(); ++gen1) {
 	for (size_t gen2 = gen1 + 1; gen2 < getGeneratorCount(); ++gen2) {
 	  const vector<mpz_class>& g1 = getGenerator(gen1);
@@ -201,11 +202,9 @@ bool SatBinomIdeal::hasDoubleTriangle() const {
 		sum[var] = g1[var] + g2[var];
 
 	  if (isPointFreeBody(g1, sum) && isPointFreeBody(g2, sum))
-		return true;
+		++count;
 	}
   }
-
-  return false;
 }
 
 bool SatBinomIdeal::isGeneric() const {
@@ -222,7 +221,7 @@ bool SatBinomIdeal::isDominating(const vector<mpz_class>& v) const {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
 	bool dom = true;
 	for (size_t var = 0; var < getVarCount(); ++var) {
-	  if (v[var] <= getGenerator(gen)[var]) {
+	  if (v[var] < getGenerator(gen)[var]) {
 		dom = false;
 		break;
 	  }
