@@ -25,62 +25,94 @@ class BigattiState;
 #include "HashPolynomial.h"
 #include <vector>
 
+/** This class handles the base cases for the Hilbert-Poincare series
+ by Bigatti et.al.
+*/
 class BigattiBaseCase {
  public:
+  /** Initialize this object to handle the computation of
+	  Hilbert-Poincare series numerator polynomials in a polynomial
+	  ring with varCount variables. */
   BigattiBaseCase(size_t varCount);
 
+  /** Returns ture if state is a base case slice while also
+   considering genericity. This generalizes the functionality of
+   baseCase(). */
   bool genericBaseCase(const BigattiState& state);
-  void generic(const Term& term, Ideal::const_iterator pos, bool plus);
 
+  /** Returns true if state is a base case slice without considering
+   genericity. */
   bool baseCase(const BigattiState& state);
   
-  void outputPlus(const Term& term);
-  void outputMinus(const Term& term);
+  /** Add +term or -term to the output polynomial when plus is true or
+   false respectively. */
+  void output(bool plus, const Term& term);
 
-  void feedOutputTo(CoefTermConsumer& consumer);
+  /** Feed the output Hilbert-Poincare numerator polynomial computed
+   so far to the consumer. This is done in canonical order if
+   inCanonicalOrder is true. */
+  void feedOutputTo(CoefTermConsumer& consumer, bool inCanonicalOrder);
 
+  /** Starts to print debug output on what happens if value is
+   true. */
   void setPrintDebug(bool value);
 
+  /** Returns the total number of base cases this object has seen. */
   size_t getTotalBaseCasesEver() const;
+
+  /** Returns the total number of terms this object has output. This
+   can be substantially more than the number of terms in the output
+   polynomial, since the sum of two terms can be just one term or even
+   zero. */
   size_t getTotalTermsOutputEver() const;
+
+  /** Returns the number of terms in the output polynomial right
+   now. */
   size_t getTotalTermsInOutput() const;
 
  private:
-  bool simpleBaseCase();
+  /** Computes the Hilbert-Poincare series of state and returns true
+   if state is a particularly simple and easily detected case. */
+  bool simpleBaseCase(const BigattiState& state);
 
-  void allCombinations();
-  void enumerateScarfComplex(const BigattiState& state);
+  /** The ideal in state must be weakly generic. Then the
+   Hilbert-Poincare series is computed by enumerating the facet of the
+   Scarf complex.
 
-  size_t _varCount;
+   @param allFaces If true then every subset of monomial ideals is a
+    facet of the Scarf complex. This allows for faster computation if
+    true but yields incorrect results if not.
+  */
+  void enumerateScarfComplex(const BigattiState& state, bool allFaces);
 
   vector<size_t> _maxCount;
   Term _lcm;
 
-  const BigattiState* _state;
-  vector<int> _taken;
-  Ideal _lcms;
-  size_t _takenCount;
-
+  /** The part of the Hilbert-Poincare numerator polynomial computed
+   so far. */
   HashPolynomial _output;
 
-  mpz_class _one;
-  mpz_class _minusOne;
-
+  /** Used in enumerateScarfComplex and necessary to have here to
+   define _states. */
   struct State {
 	Term term;
 	Ideal::const_iterator pos;
 	bool plus;
   };
+
+  /** Used in enumerateScarfCompex. Is not a local variable to avoid
+   the cost of re-allocation at every call. */
   vector<State> _states;
 
-
-  /** For statistics. Not a disaster if it overflows. */
+  /** For statistics. Not a disaster if it overflows for long-running
+   computations. */
   size_t _totalBaseCasesEver;
 
-  /** For statistics. Not a disaster if it overflows. */
+  /** For statistics. Not a disaster if it overflows for long-running
+   computations. */
   size_t _totalTermsOutputEver;
 
-  /** Print debug messages about what is happening. */
+  /** Print debug messages about what is happening if true. */
   bool _printDebug;
 };
 

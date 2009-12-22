@@ -37,6 +37,7 @@ public:
   void setUseGenericBaseCase(bool value);
   void setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot);
   void setUseSimplification(bool value);
+  void setDoCanonicalOutput(bool value);
 
   void run();
 
@@ -63,6 +64,7 @@ private:
 
 	bool _printDebug;
 	bool _printStatistics;
+	bool _doCanonicalOutput;
 
     friend class BigattiState;
 };

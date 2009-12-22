@@ -22,105 +22,34 @@
 #include <algorithm>
 
 BigattiBaseCase::BigattiBaseCase(size_t varCount):
- _varCount(varCount),
  _maxCount(varCount),
  _lcm(varCount),
- _taken(varCount),
- _lcms(varCount),
  _output(varCount),
- _one(1),
- _minusOne(-1),
  _totalBaseCasesEver(0),
  _totalTermsOutputEver(0),
  _printDebug(false) {
-  for (size_t i = 0; i < varCount; ++i)
-    _lcms.insert(_lcm);
 }
 
 bool BigattiBaseCase::genericBaseCase(const BigattiState& state) {
-  ASSERT(state.getIdeal().getVarCount() == _varCount);
   if (baseCase(state))
 	return true;
-  ASSERT(_state == &state); // done by baseCase.
 
   if (!state.getIdeal().isWeaklyGeneric())
 	return false;
 
-  enumerateScarfComplex(state);
+  enumerateScarfComplex(state, false);
 
   ++_totalBaseCasesEver;
   return true;
 }
 
-void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state) {
-  ASSERT(_state->getVarCount() == _varCount);
-
-  const Ideal& ideal = _state->getIdeal();
-
-  size_t needed = ideal.getGeneratorCount() + 1; 
-  if (_states.size() < needed)
-	_states.resize(needed);
-  for (size_t i = 0; i < _states.size(); ++i)
-	_states[i].term.reset(_varCount);
-
-  ASSERT(!ideal.isZeroIdeal());
-  _states[0].plus = true;
-  _states[0].pos = ideal.begin();
-  ASSERT(_states[0].term.isIdentity());
-
-  Ideal::const_iterator stop = ideal.end();
- 
-  size_t current = 0;
-  while (true) {
-	ASSERT(current < _states.size());
-	State& state = _states[current];
-	if (state.pos == stop) {
-	  _lcm.product(state.term, _state->getMultiply());
-	  if (state.plus)
-		outputPlus(_lcm);
-	  else
-		outputMinus(_lcm);
-	  if (current == 0)
-		break;
-	  --current;
-	} else {
-	  ASSERT(current + 1 < _states.size());
-	  State& next = _states[current + 1];
-
-	  next.term.lcm(state.term, *state.pos);
-	  next.plus = !state.plus;
-	  next.pos = ++state.pos;
-
-	  if (!ideal.strictlyContains(next.term))
-		++current;
-	}
-  }
-}
-
-void BigattiBaseCase::generic(const Term& term, Ideal::const_iterator pos, bool plus) {
-  if (pos == _state->getIdeal().end()) {
-    _lcm.product(term, _state->getMultiply());
-	if (plus)
-      outputPlus(_lcm);
-    else
-      outputMinus(_lcm);
-  } else {
-	generic(term, pos + 1, plus);
-	Term lcm(_varCount);
-	lcm.lcm(term, *pos);
-	if (!_state->getIdeal().strictlyContains(lcm))
-	  generic(lcm, pos + 1, !plus);
-  }
-}
-
 bool BigattiBaseCase::baseCase(const BigattiState& state) {
-  ASSERT(state.getIdeal().getVarCount() == _varCount);
-  _state = &state;
+  ASSERT(_maxCount.size() == state.getVarCount());
 
-  if (simpleBaseCase())
+  if (simpleBaseCase(state))
     return true;
 
-  if (state.getIdeal().getGeneratorCount() > _varCount)
+  if (state.getIdeal().getGeneratorCount() > state.getVarCount())
 	return false;
 
   state.getIdeal().getLcm(_lcm);
@@ -132,7 +61,7 @@ bool BigattiBaseCase::baseCase(const BigattiState& state) {
   Ideal::const_iterator it = state.getIdeal().begin();
   for (; it != end; ++it) {
 	bool hasMax = false;
-	for (size_t var = 0; var < _varCount; ++var) {
+	for (size_t var = 0; var < state.getVarCount(); ++var) {
 	  ASSERT((*it)[var] <= _lcm[var]);
 	  if ((*it)[var] == _lcm[var] && _lcm[var] > 0) {
 		hasMax = true;
@@ -145,115 +74,30 @@ bool BigattiBaseCase::baseCase(const BigattiState& state) {
 	  return false;
   }
 
-  allCombinations();
+  enumerateScarfComplex(state, true);
 
   ++_totalBaseCasesEver;
   return true;
+}
+
+void BigattiBaseCase::output(bool plus, const Term& term) {
+  if (_printDebug) {
+	fputs("Debug: Outputting term ", stderr);
+	fputc(plus ? '+' : '-', stderr);
+	term.print(stderr);
+	fputs(".\n", stderr);
+  }
+
+  ++_totalTermsOutputEver;
+  _output.add(plus, term);
+}
+
+void BigattiBaseCase::feedOutputTo(CoefTermConsumer& consumer, bool inCanonicalOrder) {
+  _output.feedTo(consumer, inCanonicalOrder);
 }
 
 void BigattiBaseCase::setPrintDebug(bool value) {
   _printDebug = value;
-}
-
-bool BigattiBaseCase::simpleBaseCase() {
-  const Ideal& ideal = _state->getIdeal();
-  size_t genCount = ideal.getGeneratorCount();
-  const Term& multiply = _state->getMultiply();
-
-  if (genCount > 2)
-    return false;
-
-  outputPlus(multiply);
-  if (genCount == 0)
-    return true;
-
-  _lcm.product(multiply, ideal[0]);
-  outputMinus(_lcm);
-  if (genCount == 1)
-    return true;
-
-  ASSERT(genCount == 2);
-  _lcm.product(multiply, ideal[1]);
-  outputMinus(_lcm);
-
-  _lcm.lcm(ideal[0], ideal[1]);
-  _lcm.product(_lcm, multiply);
-  outputPlus(_lcm);
-
-  ++_totalBaseCasesEver;
-  return true;
-}
-
-void BigattiBaseCase::allCombinations() {
-  ASSERT(_state->getVarCount() == _varCount);
-  ASSERT(_state->getIdeal().getGeneratorCount() <= _varCount);
-  ASSERT(_taken.size() == _varCount);
-  ASSERT(_lcms.getGeneratorCount() == _varCount);
-
-  const Ideal& ideal = _state->getIdeal();
-
-  size_t needed = ideal.getGeneratorCount() + 1; 
-  if (_states.size() < needed)
-	_states.resize(needed);
-  for (size_t i = 0; i < _states.size(); ++i)
-	_states[i].term.reset(_varCount);
-
-  ASSERT(!ideal.isZeroIdeal());
-  _states[0].plus = true;
-  _states[0].pos = ideal.begin();
-  ASSERT(_states[0].term.isIdentity());
-  
-  Ideal::const_iterator stop = ideal.end();
- 
-  size_t current = 0;
-  while (true) {
-	ASSERT(current < _states.size());
-	State& state = _states[current];
-	if (state.pos == stop) {
-	  _lcm.product(state.term, _state->getMultiply());
-	  if (state.plus)
-		outputPlus(_lcm);
-	  else
-		outputMinus(_lcm);
-	  if (current == 0)
-		break;
-	  --current;
-	} else {
-	  ASSERT(current + 1 < _states.size());
-	  State& next = _states[current + 1];
-
-	  next.term.lcm(state.term, *state.pos);
-	  next.plus = !state.plus;
-	  next.pos = ++state.pos;
-	  ++current;
-	}
-  }
-}
-
-void BigattiBaseCase::outputPlus(const Term& term) {
-  if (_printDebug) {
-	fputs("Debug: Outputting term +", stderr);
-	term.print(stderr);
-	fputs(".\n", stderr);
-  }
-
-  ++_totalTermsOutputEver;
-  _output.add(_one, term);
-}
-
-void BigattiBaseCase::outputMinus(const Term& term) {
-  if (_printDebug) {
-	fputs("Debug: Outputting term -", stderr);
-	term.print(stderr);
-	fputs(".\n", stderr);
-  }
-
-  ++_totalTermsOutputEver;
-  _output.add(_minusOne, term);
-}
-
-void BigattiBaseCase::feedOutputTo(CoefTermConsumer& consumer) {
-  _output.feedTo(consumer);
 }
 
 size_t BigattiBaseCase::getTotalBaseCasesEver() const {
@@ -266,4 +110,93 @@ size_t BigattiBaseCase::getTotalTermsOutputEver() const {
 
 size_t BigattiBaseCase::getTotalTermsInOutput() const {
   return _output.getTermCount();
+}
+
+bool BigattiBaseCase::simpleBaseCase(const BigattiState& state) {
+  const Ideal& ideal = state.getIdeal();
+  size_t genCount = ideal.getGeneratorCount();
+  const Term& multiply = state.getMultiply();
+
+  if (genCount > 2)
+    return false;
+
+  output(true, multiply);
+  if (genCount == 0)
+    return true;
+
+  _lcm.product(multiply, ideal[0]);
+  output(false, _lcm);
+  if (genCount == 1)
+    return true;
+
+  ASSERT(genCount == 2);
+  _lcm.product(multiply, ideal[1]);
+  output(false, _lcm);
+
+  _lcm.lcm(ideal[0], ideal[1]);
+  _lcm.product(_lcm, multiply);
+  output(true, _lcm);
+
+  ++_totalBaseCasesEver;
+  return true;
+}
+
+void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state, bool allFaces) {
+  const Ideal& ideal = state.getIdeal();
+
+  // Set up _states with enough entries of the right size.
+  size_t needed = ideal.getGeneratorCount() + 1; 
+  if (_states.size() < needed)
+	_states.resize(needed);
+  for (size_t i = 0; i < _states.size(); ++i)
+	_states[i].term.reset(state.getVarCount());
+
+  // Set up the initial state
+  ASSERT(!ideal.isZeroIdeal());
+  _states[0].plus = true;
+  _states[0].pos = ideal.begin();
+  ASSERT(_states[0].term.isIdentity());
+
+  // Cache this to avoid repeated calls to end().
+  Ideal::const_iterator stop = ideal.end();
+ 
+  // Iterate until all states are done. The active entries of _states
+  // are those from index 0 up to and including _current.
+  size_t current = 0;
+  while (true) {
+	ASSERT(current < _states.size());
+	State& currentState = _states[current];
+
+	if (currentState.pos == stop) {
+	  // This is a base case since we have considered all minimal
+	  // generators.
+	  _lcm.product(currentState.term, state.getMultiply());
+	  output(currentState.plus, _lcm);
+
+	  // We are done with this entry, so go back to the previous
+	  // active entry.
+	  if (current == 0)
+		break; // Nothing remains to be done.
+	  --current;
+	} else {
+	  // Split into two cases according to whether we put the minimal
+	  // generator at pos into the face or not.
+	  ASSERT(current + 1 < _states.size());
+	  State& next = _states[current + 1];
+
+	  next.term.lcm(currentState.term, *currentState.pos);
+	  ++currentState.pos;
+
+	  if (allFaces || !ideal.strictlyContains(next.term)) {
+		// If allFaces is true we do not need to check the condition
+		// since we know it should never be true. We write this as an
+		// assert.
+		ASSERT(!ideal.strictlyContains(next.term));
+	
+		next.plus = !currentState.plus;
+		next.pos = currentState.pos;
+		++current;
+	  }
+	}
+ }
 }
