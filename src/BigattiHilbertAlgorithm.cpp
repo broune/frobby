@@ -30,7 +30,8 @@ BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer& consumer):
  _useSimplification(true),
  _pivot(0),
  _printDebug(false),
- _printStatistics(false) {
+ _printStatistics(false),
+ _doCanonicalOutput(false) {
 
    ASSERT(ideal.isMinimallyGenerated());
   _varCount = ideal.getVarCount();
@@ -56,6 +57,10 @@ void BigattiHilbertAlgorithm::setUseSimplification(bool value) {
   _useSimplification = value;
 }
 
+void BigattiHilbertAlgorithm::setDoCanonicalOutput(bool value) {
+  _doCanonicalOutput = value;
+}
+
 void BigattiHilbertAlgorithm::
 setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot) {
   _pivot = pivot;
@@ -66,7 +71,7 @@ void BigattiHilbertAlgorithm::run() {
 	_pivot = BigattiPivotStrategy::createStrategy("median");
 
   _tasks.runTasks();
-  _baseCase.feedOutputTo(*_consumer);
+  _baseCase.feedOutputTo(*_consumer, _doCanonicalOutput);
 
   if (_printStatistics) {
 	fputs("*** Statistics for run of Bigatti algorithm ***\n", stderr);
@@ -118,11 +123,9 @@ void BigattiHilbertAlgorithm::simplify(BigattiState& state) {
   state.getIdeal().getGcd(gcd);
   if (!gcd.isIdentity()) {
     // Do colon and output multiply-gcd*multiply.
-    //_output.add(1, state.getMultiply());
-    _baseCase.outputPlus(state.getMultiply());
+    _baseCase.output(true, state.getMultiply());
 	state.colonStep(gcd);
-	//_output.add(-1, state.getMultiply());
-    _baseCase.outputMinus(state.getMultiply());
+    _baseCase.output(false, state.getMultiply());
   }
 
   IF_DEBUG(state.getIdeal().getGcd(gcd));

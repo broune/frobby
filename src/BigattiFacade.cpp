@@ -121,6 +121,7 @@ runAlgorithm(const char* action, CoefTermConsumer& consumer) {
   alg.setUseGenericBaseCase(_useGenericBaseCase);
   alg.setPivotStrategy(_pivot);
   alg.setUseSimplification(_useSimplification);
+  alg.setDoCanonicalOutput(_doCanonicalOutput);
 
   alg.run();
 
