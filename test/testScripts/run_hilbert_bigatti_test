@@ -18,7 +18,7 @@ then
   if [ $? != 0 ]; then exit 1; fi
 
   # Check without genericBase and simplify.
-  $testhelper hilbert $test.*test $test.multi $* -genericBase off -simplify off
+  $testhelper hilbert $test.*test $test.multi $* -genericBase off -simplify off -canon
   if [ $? != 0 ]; then exit 1; fi
 fi
 
