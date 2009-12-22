@@ -74,7 +74,9 @@ namespace {
 	virtual void driveMe() = 0;
 
 	void considerTypical() {
-	  _ideal->getTypicalExponent(_var, _exp);
+	  size_t count = _ideal->getTypicalExponent(_var, _exp);
+	  if (count <= 1)
+		_exp = 0; // fall back to median.
 	}
 
 	void considerMostNonGeneric() {

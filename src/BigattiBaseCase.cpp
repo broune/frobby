@@ -147,73 +147,43 @@ void BigattiBaseCase::allCombinations() {
   ASSERT(_lcms.getGeneratorCount() == _varCount);
 
   const Ideal& ideal = _state->getIdeal();
-  size_t genCount = ideal.getGeneratorCount();
 
-  for (size_t i = 0; i < genCount; ++i) {
-    Term::setToIdentity(_lcms[i], _varCount);
-	_taken[i] = false;
-  }
-  _takenCount = 0;
+  size_t needed = ideal.getGeneratorCount() + 1; 
+  if (_states.size() < needed)
+	_states.resize(needed);
+  for (size_t i = 0; i < _states.size(); ++i)
+	_states[i].term.reset(_varCount);
 
-  do {
-    _lcm.product(_lcms[0], _state->getMultiply());
-    if ((_takenCount & 1) == 0)
-      outputPlus(_lcm);
-    else
-      outputMinus(_lcm);
-  } while (nextCombination());
-}
-
-bool BigattiBaseCase::nextCombination() {
-  const Ideal& ideal = _state->getIdeal();
-  size_t genCount = ideal.getGeneratorCount();
-
-  // Consider this as adding 1 in binary. We get a carry
-  // for every taken element (1), so find the first not
-  // taken (0).
-  size_t gen = 0;
+  ASSERT(!ideal.isZeroIdeal());
+  _states[0].plus = true;
+  _states[0].pos = ideal.begin();
+  ASSERT(_states[0].term.isIdentity());
+  
+  Ideal::const_iterator stop = ideal.end();
+ 
+  size_t current = 0;
   while (true) {
-    if (gen == genCount)
-      return false; // We have gone through all combinations.
-    if (!_taken[gen])
-      break;
-    ++gen;
+	ASSERT(current < _states.size());
+	State& state = _states[current];
+	if (state.pos == stop) {
+	  _lcm.product(state.term, _state->getMultiply());
+	  if (state.plus)
+		outputPlus(_lcm);
+	  else
+		outputMinus(_lcm);
+	  if (current == 0)
+		break;
+	  --current;
+	} else {
+	  ASSERT(current + 1 < _states.size());
+	  State& next = _states[current + 1];
+
+	  next.term.lcm(state.term, *state.pos);
+	  next.plus = !state.plus;
+	  next.pos = ++state.pos;
+	  ++current;
+	}
   }
-
-  take(gen);
-  while (gen > 0) {
-    --gen;
-    drop(gen);
-  }
-  return true;
-}
-
-void BigattiBaseCase::take(size_t gen) {
-  ASSERT(!_taken[gen]);
-  _taken[gen] = true;
-  ++_takenCount;
-
-  // Update _lcms[gen]. We are taking gen, so the lcm is the
-  // lcm of the previous level and ideal[gen].
-  const Ideal& ideal = _state->getIdeal();
-  if (gen == ideal.getGeneratorCount() - 1)
-      copy(ideal[gen], ideal[gen] + _varCount, _lcms[gen]); // No previous level
-  else
-      Term::lcm(_lcms[gen], ideal[gen], _lcms[gen + 1], _varCount);
-}
-
-void BigattiBaseCase::drop(size_t gen) {
-  ASSERT(_taken[gen]);
-  _taken[gen] = false;
-  --_takenCount;
-
-  // Update _lcms[gen]. We are not taking gen, so the lcm is the
-  // same as it was at the previous level.
-  const Ideal& ideal = _state->getIdeal();
-  if (gen == ideal.getGeneratorCount() - 1)
-    Term::setToIdentity(_lcms[gen], _varCount); // No previous level
-  else
-    copy(_lcms[gen + 1], _lcms[gen + 1] + _varCount, _lcms[gen]);
 }
 
 void BigattiBaseCase::outputPlus(const Term& term) {

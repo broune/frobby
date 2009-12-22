@@ -49,9 +49,6 @@ class BigattiBaseCase {
   bool simpleBaseCase();
 
   void allCombinations();
-  bool nextCombination();
-  void take(size_t gen);
-  void drop(size_t gen);
 
   size_t _varCount;
 
@@ -67,6 +64,14 @@ class BigattiBaseCase {
 
   mpz_class _one;
   mpz_class _minusOne;
+
+  struct State {
+	Term term;
+	Ideal::const_iterator pos;
+	bool plus;
+  };
+  vector<State> _states;
+
 
   /** For statistics. Not a disaster if it overflows. */
   size_t _totalBaseCasesEver;
