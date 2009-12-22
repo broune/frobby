@@ -24,6 +24,7 @@
 #include "DataType.h"
 #include "IdealFacade.h"
 #include "CoefBigTermConsumer.h"
+#include "BigattiPivotStrategy.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -40,6 +41,8 @@ HilbertAction::HilbertAction():
 
   _io(DataType::getMonomialIdealType(), DataType::getPolynomialType()),
 
+  _sliceParams(false, true, true),
+
   _univariate
   ("univariate",
    "Output a univariate polynomial by substituting t for each variable.",
@@ -47,8 +50,8 @@ HilbertAction::HilbertAction():
   
   _useSlice
   ("useSlice",
-   "Use the Slice Algorithm to compute the dimension instead of the usual\n"
-   "algorithm.",
+   "Use the Slice Algorithm to compute the dimension instead of the Bigatti\n"
+   "et.al. algorithm.",
    false) {
 }
 
@@ -63,7 +66,10 @@ void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
 void HilbertAction::perform() {
   BigIdeal ideal;
 
-  _sliceParams.validateSplit(false, false);
+  if (_useSlice)
+	_sliceParams.validateSplit(false, false);
+  else
+	_sliceParams.validateSplitHilbert();
 
   {
 	Scanner in(_io.getInputFormat(), stdin);
@@ -87,8 +93,13 @@ void HilbertAction::perform() {
 	IdealFacade facade(_printActions);
     auto_ptr<CoefBigTermConsumer> consumer =
       output->createPolynomialWriter(stdout);
+	auto_ptr<BigattiPivotStrategy> pivot =
+	  BigattiPivotStrategy::createStrategy(_sliceParams.getSplit());
+	ASSERT(pivot.get() != 0);
+
     facade.computeHilbertSeries
-      (ideal, _univariate, _sliceParams.getCanonical(), consumer);
+      (ideal, _univariate, _sliceParams.getCanonical(), consumer, pivot,
+	   _sliceParams.getPrintStatistics(), _sliceParams.getPrintDebug());
   }
 }
 

@@ -21,6 +21,10 @@
 #include "Task.h"
 #include "error.h"
 
+TaskEngine::TaskEngine():
+  _totalTasksEver(0) {
+}
+
 TaskEngine::~TaskEngine() {
   while (!_tasks.empty()) {
 	dispose(_tasks.back());
@@ -39,6 +43,8 @@ void TaskEngine::addTask(Task* task) {
 	dispose(task);
 	throw;
   }
+
+  ++_totalTasksEver;
 }
 
 bool TaskEngine::runNextTask() {
@@ -55,6 +61,10 @@ bool TaskEngine::runNextTask() {
 void TaskEngine::runTasks() {
   while (runNextTask())
 	;
+}
+
+size_t TaskEngine::getTotalTasksEver() {
+  return _totalTasksEver;
 }
 
 void TaskEngine::dispose(Task* task) {

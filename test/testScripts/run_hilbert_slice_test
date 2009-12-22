@@ -23,9 +23,3 @@ if [ $? != 0 ]; then exit 1; fi
 
 $testhelper hilbert $test.*test $test.uni $* -univariate -useSlice -canon -oformat m2
 if [ $? != 0 ]; then exit 1; fi
-
-$testhelper hilbert $test.*test $test.multi $* -univariate off -canon -useSlice off -oformat m2
-if [ $? != 0 ]; then exit 1; fi
-
-$testhelper hilbert $test.*test $test.uni $* -univariate -useSlice off -canon -oformat m2
-if [ $? != 0 ]; then exit 1; fi

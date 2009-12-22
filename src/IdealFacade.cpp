@@ -98,7 +98,13 @@ mpz_class IdealFacade::computeDimension
 }
 
 void IdealFacade::computeHilbertSeries
-(const BigIdeal& bigIdeal, bool univariate, bool canonical, auto_ptr<CoefBigTermConsumer> bigConsumer) {
+(const BigIdeal& bigIdeal,
+ bool univariate,
+ bool canonical,
+ auto_ptr<CoefBigTermConsumer> bigConsumer,
+ auto_ptr<BigattiPivotStrategy> pivot,
+ bool printStatistics,
+ bool printDebug) {
   beginAction("Computing Hilbert series using Bigatti Et.Al. algorithm.");
 
   Ideal ideal(bigIdeal.getVarCount());
@@ -116,12 +122,16 @@ void IdealFacade::computeHilbertSeries
   if (univariate) {
     TotalDegreeCoefTermConsumer consumer(bigConsumer, translator);
     consumer.consumeRing(translator.getNames());
-    BigattiHilbertAlgorithm alg(ideal, &consumer);
+    BigattiHilbertAlgorithm alg(ideal, &consumer, pivot);
+	alg.printStatistics(printStatistics);
+	alg.printDebug(printDebug);
     alg.run();
   } else {
     TranslatingCoefTermConsumer consumer(*bigConsumer, translator);
     consumer.consumeRing(translator.getNames());
-    BigattiHilbertAlgorithm alg(ideal, &consumer);
+    BigattiHilbertAlgorithm alg(ideal, &consumer, pivot);
+	alg.printStatistics(printStatistics);
+	alg.printDebug(printDebug);
     alg.run();
   }
 

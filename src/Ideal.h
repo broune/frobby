@@ -105,8 +105,23 @@ class Ideal {
   // appears among the generators.
   void getLeastExponents(Exponent* least) const;
 
-  // counts[var] will be the number of generators divisible by var.
+  /** counts[var] will be the number of generators divisible by var.
+   @todo Make counts a vector<size_t>.
+   */
   void getSupportCounts(Exponent* counts) const;
+
+  /** Sets typicalVar and typicalExp such that typicalVar^typicalExp
+   is the typical non-zero exponent. The typical exponent is the
+   exponent of a specific variable that occurs most often among the
+   generators. In case of ties some deterministic choice is made. If
+   there are no non-zero generators then var=exp=0 is chosen. The
+   returned value is the number of times the typical non-zero exponent
+   occurs.
+
+   This method is not const since it may re-arrange the generators for
+   efficiency.
+  */
+  size_t getTypicalExponent(size_t& typicalVar, Exponent& typicalExp);
 
   // returns the first generator that var divides or end() if no such
   // generator exists.

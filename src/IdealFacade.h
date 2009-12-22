@@ -18,6 +18,7 @@
 #define IDEAL_FACADE_GUARD
 
 #include "Facade.h"
+#include "BigattiPivotStrategy.h"
 
 #include <vector>
 
@@ -54,10 +55,17 @@ class IdealFacade : private Facade {
   /** Compute the Hilbert series of ideal. It will be the univariate
    series if univariate is true, otherwise it will be multigraded. the
    output polynomial is provided to consumer.
+
+   @todo Do something about the number of parameters.
   */
-  void computeHilbertSeries(const BigIdeal& ideal, bool univariate,
-    bool canonical,
-    auto_ptr<CoefBigTermConsumer> consumer);
+  void computeHilbertSeries
+	(const BigIdeal& ideal,
+	 bool univariate,
+	 bool canonical,
+	 auto_ptr<CoefBigTermConsumer> consumer,
+	 auto_ptr<BigattiPivotStrategy> pivot,
+	 bool printStatistics,
+	 bool printDebug);
 
   // Take the product of the minimal generators of each ideal, and add
   // the resulting monomials as generators of ideal. Requires that

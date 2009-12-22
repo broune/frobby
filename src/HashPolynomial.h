@@ -41,6 +41,8 @@ class HashPolynomial {
 
   void feedTo(CoefTermConsumer& consumer) const;
 
+  size_t getTermCount() const;
+
  private:
   size_t _varCount;
 
