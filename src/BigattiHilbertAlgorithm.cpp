@@ -19,19 +19,24 @@
 #include "BigattiHilbertAlgorithm.h"
 
 #include "Ideal.h"
-#include "CoefTermConsumer.h"
+#include "CoefBigTermConsumer.h"
 #include "BigattiState.h"
 
 BigattiHilbertAlgorithm::
-BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer& consumer):
+BigattiHilbertAlgorithm
+(const Ideal& ideal,
+ const TermTranslator& translator,
+ CoefBigTermConsumer& consumer):
+ _translator(translator),
  _consumer(&consumer),
- _baseCase(ideal.getVarCount()),
+ _baseCase(translator),
  _useGenericBaseCase(true),
  _useSimplification(true),
  _pivot(0),
  _printDebug(false),
  _printStatistics(false),
- _doCanonicalOutput(false) {
+ _doCanonicalOutput(false),
+ _computeUnivariate(false) {
 
    ASSERT(ideal.isMinimallyGenerated());
   _varCount = ideal.getVarCount();
@@ -61,6 +66,10 @@ void BigattiHilbertAlgorithm::setDoCanonicalOutput(bool value) {
   _doCanonicalOutput = value;
 }
 
+void BigattiHilbertAlgorithm::setComputeUnivariate(bool value) {
+  _computeUnivariate = value;
+}
+
 void BigattiHilbertAlgorithm::
 setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot) {
   _pivot = pivot;
@@ -70,6 +79,7 @@ void BigattiHilbertAlgorithm::run() {
   if (_pivot.get() == 0)
 	_pivot = BigattiPivotStrategy::createStrategy("median");
 
+  _baseCase.setComputeUnivariate(_computeUnivariate);
   _tasks.runTasks();
   _baseCase.feedOutputTo(*_consumer, _doCanonicalOutput);
 

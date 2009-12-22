@@ -19,10 +19,12 @@
 #define BIGATTI_BASE_CASE_GUARD
 
 class BigattiState;
+class TermTranslator;
 
 #include "Term.h"
 #include "Ideal.h"
 #include "HashPolynomial.h"
+#include "UniHashPolynomial.h"
 #include <vector>
 
 /** This class handles the base cases for the Hilbert-Poincare series
@@ -33,7 +35,7 @@ class BigattiBaseCase {
   /** Initialize this object to handle the computation of
 	  Hilbert-Poincare series numerator polynomials in a polynomial
 	  ring with varCount variables. */
-  BigattiBaseCase(size_t varCount);
+  BigattiBaseCase(const TermTranslator& translator);
 
   /** Returns ture if state is a base case slice while also
    considering genericity. This generalizes the functionality of
@@ -51,11 +53,16 @@ class BigattiBaseCase {
   /** Feed the output Hilbert-Poincare numerator polynomial computed
    so far to the consumer. This is done in canonical order if
    inCanonicalOrder is true. */
-  void feedOutputTo(CoefTermConsumer& consumer, bool inCanonicalOrder);
+  void feedOutputTo
+	(CoefBigTermConsumer& consumer, bool inCanonicalOrder);
 
   /** Starts to print debug output on what happens if value is
    true. */
   void setPrintDebug(bool value);
+
+  /** Use the fine grading if value is false, otherwise grade each
+   variable by the same variable t. */
+  void setComputeUnivariate(bool value);
 
   /** Returns the total number of base cases this object has seen. */
   size_t getTotalBaseCasesEver() const;
@@ -87,10 +94,15 @@ class BigattiBaseCase {
 
   vector<size_t> _maxCount;
   Term _lcm;
+  mpz_class _tmp;
 
-  /** The part of the Hilbert-Poincare numerator polynomial computed
-   so far. */
-  HashPolynomial _output;
+  /** The part of the finely graded Hilbert-Poincare numerator
+   polynomial computed so far. */
+  HashPolynomial _outputMultivariate;
+
+  /** The part of the coarsely graded Hilbert-Poincare numerator
+   polynomial computed so far. */
+  UniHashPolynomial _outputUnivariate;
 
   /** Used in enumerateScarfComplex and necessary to have here to
    define _states. */
@@ -103,6 +115,13 @@ class BigattiBaseCase {
   /** Used in enumerateScarfCompex. Is not a local variable to avoid
    the cost of re-allocation at every call. */
   vector<State> _states;
+
+  /** Use the fine grading if false, otherwise grade each variable by
+   the same variable t. */
+  bool _computeUnivariate;
+
+  /** Used to translate the output from ints. */
+  const TermTranslator& _translator;
 
   /** For statistics. Not a disaster if it overflows for long-running
    computations. */

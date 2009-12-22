@@ -16,78 +16,54 @@
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
 #include "stdinc.h"
-#include "HashPolynomial.h"
+#include "UniHashPolynomial.h"
 
 #include "CoefBigTermConsumer.h"
+#include "VarNames.h"
 
-#include <vector>
-#include <algorithm>
-
-HashPolynomial::HashPolynomial(size_t varCount):
-  _varCount(varCount) {
-}
-
-void HashPolynomial::clearAndSetVarCount(size_t varCount) {
-  _terms.clear();
-  _varCount = varCount;
-}
-
-void HashPolynomial::add(const mpz_class& coef, const Term& term) {
-  ASSERT(_varCount == term.getVarCount());
-
-  if (coef == 0)
-	return;
-
-  // Doing it this way incurs the penalty of looking up term twice if
-  // ref ends up zero. I don't know how to avoid two look-ups in all
-  // cases, especially when the interface of _terms is not fixed,
-  // e.g. lowerbound doesn't exist for GCC's hash_map, so we can't use
-  // that.
-  mpz_class& ref = _terms[term];
-  ref += coef;
-  if (ref == 0)
-	_terms.erase(term);
-}
-
-void HashPolynomial::add(bool plus, const Term& term) {
-  ASSERT(_varCount == term.getVarCount());
-
-  mpz_class& ref = _terms[term];
+void UniHashPolynomial::add(bool plus, const mpz_class& exponent) {
+  mpz_class& ref = _terms[exponent];
   if (plus)
 	++ref;
   else
 	--ref;
   if (ref == 0)
-	_terms.erase(term);
+	_terms.erase(exponent);
 }
 
 namespace {
   /** Helper class for feedTo. */
   class RefCompare {
   public:
-    typedef HashMap<Term, mpz_class> TermMap;
+    typedef HashMap<mpz_class, mpz_class> TermMap;
 	bool operator()(TermMap::const_iterator a, TermMap::const_iterator b) {
-	  return a->first.reverseLexCompare(b->first) < 0;
+	  return a->first > b->first;
 	}
   };
 }
 
-void HashPolynomial::feedTo
-(const TermTranslator& translator,
- CoefBigTermConsumer& consumer, bool inCanonicalOrder) const {
+void UniHashPolynomial::feedTo(CoefBigTermConsumer& consumer, bool inCanonicalOrder) const {
+  VarNames names;
+  names.addVar("t");
+  consumer.consumeRing(names);
+  vector<mpz_class> term(1);
+
   consumer.beginConsuming();
 
   if (!inCanonicalOrder) {
 	// Output the terms in whatever order _terms is storing them.
 	TermMap::const_iterator termsEnd = _terms.end();
 	TermMap::const_iterator it = _terms.begin();
-	for (; it != termsEnd; ++it)
-	  consumer.consume(it->second, it->first, translator);
+	for (; it != termsEnd; ++it) {
+	  ASSERT(it->second != 0);
+	  term[0] = it->first;
+	  consumer.consume(it->second, term);
+	}
   } else {
 
-	// Fill refs with references to the terms in order to sort
-	// them. We can't sort _terms since HashMap doesn't support that,
-	// so we have to sort references into _terms instead.
+	// Fill refs with references in order to sort them. We can't sort
+	// _terms since HashMap doesn't support that, so we have to sort
+	// references into _terms instead.
 	vector<TermMap::const_iterator> refs;
 	refs.reserve(_terms.size());
 
@@ -103,13 +79,17 @@ void HashPolynomial::feedTo
 
 	vector<TermMap::const_iterator>::const_iterator refsEnd = refs.end();
 	vector<TermMap::const_iterator>::const_iterator refIt = refs.begin();
-	for (; refIt != refsEnd; ++refIt)
-	  consumer.consume((*refIt)->second, (*refIt)->first, translator);
+	for (; refIt != refsEnd; ++refIt) {
+	  TermMap::const_iterator it = *refIt;
+	  ASSERT(it->second != 0);
+	  term[0] = it->first;
+	  consumer.consume(it->second, term);
+	}
   }
 
   consumer.doneConsuming();
 }
 
-size_t HashPolynomial::getTermCount() const {
+size_t UniHashPolynomial::getTermCount() const {
   return _terms.size();
 }
