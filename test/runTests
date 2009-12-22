@@ -13,7 +13,7 @@ normalTests="hilbert_bigatti hilbert_slice irrdecom dimension \
              primdecom intersect assoprimes minimize alexdual \
              radical frob maxstandard optimize"
 
-specialTests="error idealFormats polyFormats latticeFormats internal"
+specialTests="internal idealFormats polyFormats latticeFormats messages"
 params="$*"
 
 runNormalTests () {

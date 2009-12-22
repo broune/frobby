@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Makes Frobby report all error messages and other messages and
 # compare this to reference outputs. Parameters to this script should
 # only be parameters of ../testHelper, e.g. _generate or _valgrind,
@@ -45,7 +47,7 @@ if [ $? != 0 ]; then exit 1; fi
 $t alexdual "$noInput" option-frobNotHere $* -split frob
 if [ $? != 0 ]; then exit 1; fi
 
-$t hilbert "$noInput" option-labelNotHere $* -split varlabel
+$t hilbert "$noInput" option-labelNotHere $* -split varlabel -useSlice
 if [ $? != 0 ]; then exit 1; fi
 
 $t alexdual "$noInput" option-notonoff $* -time not_on_or_off
@@ -87,6 +89,9 @@ $t latformat "$noInput" latformat-unknownOutput $* -oformat unknownFormat
 if [ $? != 0 ]; then exit 1; fi
 
 $t genideal "$noInput" genideal-tooLargeBoard $* -type king -varCount 100000
+if [ $? != 0 ]; then exit 1; fi
+
+$t hilbert "$noInput" option-unknownBigattiSplit $* -useSlice off -split unknownSplit
 if [ $? != 0 ]; then exit 1; fi
 
 
