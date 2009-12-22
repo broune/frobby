@@ -49,8 +49,8 @@ HilbertAction::HilbertAction():
   
   _useSlice
   ("useSlice",
-   "Use the Slice Algorithm to compute the dimension instead of the Bigatti\n"
-   "et.al. algorithm.",
+   "Use the Slice Algorithm to compute the Hilbert-Poincare series\n"
+   "instead of the algorithm by Bigatti et.al.",
    false) {
 }
 

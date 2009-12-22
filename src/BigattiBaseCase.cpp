@@ -189,8 +189,7 @@ void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state, bool allF
 
 	  if (allFaces || !ideal.strictlyContains(next.term)) {
 		// If allFaces is true we do not need to check the condition
-		// since we know it should never be true. We write this as an
-		// assert.
+		// since we know it should always hold.
 		ASSERT(!ideal.strictlyContains(next.term));
 	
 		next.plus = !currentState.plus;
@@ -198,5 +197,5 @@ void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state, bool allF
 		++current;
 	  }
 	}
- }
+  }
 }

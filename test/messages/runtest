@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # This runs a test while providing diagnostic output on error. It is a
 # convenience script that wraps around ../testhelper to provide some
 # often-used options. The usage is the same, except that $2 is the
