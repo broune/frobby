@@ -108,6 +108,7 @@ class SliceParameters : public ParameterGroup {
   BoolParameter _minimal;
   BoolParameter _canonical;
   BoolParameter _useBigattiGeneric;
+  BoolParameter _widenPivot;
 
   StringParameter _split;
 };

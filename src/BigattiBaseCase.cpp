@@ -227,7 +227,7 @@ bool BigattiBaseCase::univariateAllFaces(const BigattiState& state) {
   for (size_t e = 0; e < poly.size(); ++e) {
 	if (_printDebug) {
 	  fprintf(stderr, "Debug: Outputting term %i*t^%u.\n",
-			  poly[e], e + degree);
+			  poly[e], (unsigned int)(e + degree));
 	}
 
 	++_totalTermsOutputEver;

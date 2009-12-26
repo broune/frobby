@@ -63,7 +63,7 @@ void LatticeAnalyzeAction::perform() {
 
   mpz_class triCount;
   ideal.getDoubleTriangleCount(triCount);
-  fprintf(stdout, "%u neighbors, ", ideal.getGeneratorCount());
+  fprintf(stdout, "%u neighbors, ", (unsigned int)ideal.getGeneratorCount());
   gmp_fprintf(stdout, "%Zd double triangles, ", triCount.get_mpz_t());
 
   if (!generic)

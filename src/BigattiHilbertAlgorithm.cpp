@@ -77,7 +77,7 @@ setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot) {
 
 void BigattiHilbertAlgorithm::run() {
   if (_pivot.get() == 0)
-	_pivot = BigattiPivotStrategy::createStrategy("median");
+	_pivot = BigattiPivotStrategy::createStrategy("median", true);
 
   _baseCase.setComputeUnivariate(_computeUnivariate);
   _tasks.runTasks();
@@ -85,10 +85,14 @@ void BigattiHilbertAlgorithm::run() {
 
   if (_printStatistics) {
 	fputs("*** Statistics for run of Bigatti algorithm ***\n", stderr);
-	fprintf(stderr, " %u states processed.\n", _tasks.getTotalTasksEver());
-	fprintf(stderr, " %u base cases.\n", _baseCase.getTotalBaseCasesEver());
-	fprintf(stderr, " %u terms output.\n", _baseCase.getTotalTermsOutputEver());
-	fprintf(stderr, " %u terms in final output.\n", _baseCase.getTotalTermsInOutput());
+	fprintf(stderr, " %u states processed.\n",
+			(unsigned int)_tasks.getTotalTasksEver());
+	fprintf(stderr, " %u base cases.\n",
+			(unsigned int)_baseCase.getTotalBaseCasesEver());
+	fprintf(stderr, " %u terms output.\n",
+			(unsigned int)_baseCase.getTotalTermsOutputEver());
+	fprintf(stderr, " %u terms in final output.\n",
+			(unsigned int)_baseCase.getTotalTermsInOutput());
   }
 }
 
