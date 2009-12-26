@@ -80,6 +80,12 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
    "Detect generic ideals as a base case of the Bigatti algorithm.",
    true),
 
+  _widenPivot
+  ("widenPivot",
+   "Widen selected pivots when performing pivot splits.\n"
+   "Bigatti et.al. algorithm only.",
+   true),
+
   _split
   ("split",
    "The split selection strategy to use. Slice options are maxlabel, minlabel,\n"
@@ -101,6 +107,7 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
 
   if (supportBigattiAlgorithm) {
 	addParameter(&_useBigattiGeneric);
+	addParameter(&_widenPivot);
 
 	_printDebug.appendToDescription
 	  (" Slice algorithm only.");
@@ -172,8 +179,8 @@ void SliceParameters::validateSplit(bool allowLabel,
 }
 
 void SliceParameters::validateSplitHilbert() {
-  auto_ptr<BigattiPivotStrategy>
-	split(BigattiPivotStrategy::createStrategy(_split.getValue().c_str()));
+  auto_ptr<BigattiPivotStrategy> split = BigattiPivotStrategy::createStrategy
+	 (_split.getValue().c_str(), _widenPivot);
 
   if (split.get() == 0)
 	reportError("Unknown Bigatti et.al. pivot strategy \"" +
@@ -195,8 +202,9 @@ void SliceParameters::apply(SliceFacade& facade) const {
 }
 
 void SliceParameters::apply(BigattiFacade& facade) const {
-  auto_ptr<BigattiPivotStrategy> pivot =
-	BigattiPivotStrategy::createStrategy(_split.getValue().c_str());
+  auto_ptr<BigattiPivotStrategy> pivot = BigattiPivotStrategy::createStrategy
+	(_split.getValue().c_str(), _widenPivot);
+  ASSERT(pivot.get() != 0);
   facade.setPivotStrategy(pivot);
 
   facade.setPrintDebug(_printDebug);

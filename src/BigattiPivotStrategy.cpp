@@ -173,7 +173,7 @@ namespace {
 	BigattiState* _state;
 	Ideal* _ideal;
 	size_t _var;
-	size_t _exp;
+	Exponent _exp;
 
 	/** The generic pivot strategies are designed to do away with
 		non-genericity. If we have turned detecting of generic ideals as
@@ -382,6 +382,33 @@ namespace {
 	}
   };
 
+  /** Widens the pivots selected by another pivot selection
+	  strategy. */
+  class WidenPivot : public BigattiPivotStrategy {
+  public:
+	WidenPivot(auto_ptr<BigattiPivotStrategy> strategy):
+	  _strategy(strategy) {
+	  _name = _strategy->getName();
+	  _name += " (wide)";
+	}
+
+	const Term& getPivot(BigattiState& state) {
+	  const Term& pivot = _strategy->getPivot(state);
+	  _widePivot.reset(state.getVarCount());
+	  state.getIdeal().getGcdOfMultiplesOf(_widePivot, pivot);
+	  return _widePivot;
+	}
+
+	virtual const char* getName() const {
+	  return _name.c_str();
+	}
+
+  private:
+	auto_ptr<BigattiPivotStrategy> _strategy;
+ 	string _name;
+ 	Term _widePivot;
+  };
+
   typedef NameFactory<BigattiPivotStrategy> StrategyFactory;
 
   StrategyFactory makeStrategyFactory() {
@@ -409,6 +436,12 @@ namespace {
 }
 
 auto_ptr<BigattiPivotStrategy> BigattiPivotStrategy::
-createStrategy(const string& name) {
-  return makeStrategyFactory().create(name);
+createStrategy(const string& name, bool widen) {
+  auto_ptr<BigattiPivotStrategy> strategy =
+	makeStrategyFactory().create(name);
+
+  if (widen)
+	strategy = auto_ptr<BigattiPivotStrategy>(new WidenPivot(strategy));
+
+  return strategy;
 }
