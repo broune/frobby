@@ -40,7 +40,12 @@ IOFacade::IOFacade(bool printActions):
 bool IOFacade::isValidMonomialIdealFormat(const string& format) {
   beginAction("Validating monomial ideal format name.");
 
-  bool valid = (IOHandler::createIOHandler(format).get() != 0);
+  bool valid = true;
+  try {
+	createIOHandler(format).get();
+  } catch (const UnknownFormatException& e) {
+	valid = false;
+  }
 
   endAction();
 
