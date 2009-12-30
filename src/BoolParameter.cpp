@@ -20,9 +20,9 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 
-BoolParameter::BoolParameter(const char* name,
-			     const char* description,
-			     bool defaultValue):
+BoolParameter::BoolParameter(const string& name,
+							 const string& description,
+							 bool defaultValue):
   Parameter(name, description),
   _value(defaultValue) {
 }

@@ -37,10 +37,11 @@ class IOParameters : public ParameterGroup {
   auto_ptr<IOHandler> createInputHandler() const;
   auto_ptr<IOHandler> createOutputHandler() const;
 
-  // If using the input format, this must be called before validating
-  // the ideals, since "autodetect" is not a valid format other than
-  // as a place holder for the auto detected format. If the format on
-  // in is autodetect, it will (also) be set.
+  /** If using the input format, this must be called before validating
+   the ideals, since the auto detect format is not a valid format other
+   than as a place holder for the auto detected format. If the format
+   on in is auto detect, it will (also) be set.
+  */
   void autoDetectInputFormat(Scanner& in);
 
   // Exits with an error message if the input or output format is not

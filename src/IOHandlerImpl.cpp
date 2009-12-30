@@ -50,8 +50,6 @@
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
 
-const char* FormatNameIndicatingToGuessTheFormat = "autodetect";
-
 bool IOHandlerImpl::doSupportsInput(const DataType& type) const {
   return std::find(_supportedInputs.begin(), _supportedInputs.end(),
 				   &type) != _supportedInputs.end();

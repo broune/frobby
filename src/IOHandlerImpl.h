@@ -19,6 +19,17 @@
 
 #include "IOHandler.h"
 
+class Term;
+class Scanner;
+class BigIdeal;
+class VarNames;
+class BigTermConsumer;
+class DataType;
+class CoefBigTermConsumer;
+class SatBinomConsumer;
+class TermTranslator;
+class BigPolynomial;
+
 // @todo: preliminary
 class IOHandlerImpl : public IOHandler {
  public:

@@ -21,8 +21,8 @@
 
 class StringParameter : public Parameter {
 public:
-  StringParameter(const char* name,
-				  const char* description,
+  StringParameter(const string& name,
+				  const string& description,
 				  const string& defaultValue);
 
   virtual const char* getParameterName() const;

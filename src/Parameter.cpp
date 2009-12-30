@@ -19,8 +19,8 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 
-Parameter::Parameter(const char* name,
-					 const char* description):
+Parameter::Parameter(const string& name,
+					 const string& description):
   _name(name),
   _description(description) {
 }

@@ -52,7 +52,7 @@ Scanner::Scanner(const string& formatName, FILE* in):
   _tmpStringCapacity(16),
   _formatName(formatName) {
   _tmpString = new char[16];
-  if (getFormat() == FormatNameIndicatingToGuessTheFormat)
+  if (getFormat() == getFormatNameIndicatingToGuessTheInputFormat())
 	setFormat(autoDetectFormat(*this));
 }
 

@@ -21,7 +21,8 @@
 
 class IntegerParameter : public Parameter {
 public:
-  IntegerParameter(const char* name, const char* description,
+  IntegerParameter(const string& name,
+				   const string& description,
 				   unsigned int defaultValue);
 
   virtual const char* getParameterName() const;
