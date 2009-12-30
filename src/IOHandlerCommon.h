@@ -17,19 +17,14 @@
 #ifndef IO_HANDLER_COMMON_GUARD
 #define IO_HANDLER_COMMON_GUARD
 
-#include "IOHandler.h"
+#include "IOHandlerImpl.h"
 
 /** IOHandlerCommon is an abstract base class that implements functionality
  that is useful for most but not all derivates of IOHandler.
 */
-class IOHandlerCommon : public IOHandler {
+class IOHandlerCommon : public IOHandlerImpl {
  public:
   IOHandlerCommon(const char* formatName, const char* formatDescription);
-
-  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
-  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
-  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
-  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
  protected:
   virtual void readRing(Scanner& in, VarNames& names) = 0;
@@ -39,6 +34,12 @@ class IOHandlerCommon : public IOHandler {
 	(Scanner& in, const VarNames& names, BigTermConsumer& consumer) = 0;
   virtual void readBarePolynomial
 	(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) = 0;
+
+ private:
+  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+  virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+  virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+  virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 };
 
 #endif

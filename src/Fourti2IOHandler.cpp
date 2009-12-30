@@ -32,8 +32,8 @@
 #include "SatBinomConsumer.h"
 
 Fourti2IOHandler::Fourti2IOHandler():
-  IOHandler(staticGetName(),
-			"Format used by the software package 4ti2.", true) {
+  IOHandlerImpl(staticGetName(),
+				"Format used by the software package 4ti2.", true) {
   registerInput(DataType::getMonomialIdealType());
   registerInput(DataType::getMonomialIdealListType());
   registerInput(DataType::getPolynomialType());
@@ -66,13 +66,13 @@ void Fourti2IOHandler::writeRingWithoutHeader(const VarNames& names,
   fputc('\n', out);  
 }
 
-void Fourti2IOHandler::writeTerm(const vector<mpz_class>& term,
+void Fourti2IOHandler::doWriteTerm(const vector<mpz_class>& term,
 								 const VarNames& names,
 								 FILE* out) {
   writeTermOfIdeal(term, names, false, out);
 }
 
-auto_ptr<BigTermConsumer> Fourti2IOHandler::createIdealWriter(FILE* out) {
+auto_ptr<BigTermConsumer> Fourti2IOHandler::doCreateIdealWriter(FILE* out) {
   ASSERT(supportsOutput(DataType::getMonomialIdealType()));
 
   FrobbyStringStream msg;
@@ -82,12 +82,12 @@ auto_ptr<BigTermConsumer> Fourti2IOHandler::createIdealWriter(FILE* out) {
 	"memory consumption and decreases performance.";
   displayNote(msg);
 
-  auto_ptr<BigTermConsumer> writer(IOHandler::createIdealWriter(out));
+  auto_ptr<BigTermConsumer> writer(IOHandlerImpl::doCreateIdealWriter(out));
   auto_ptr<BigTermConsumer> consolidated(new IdealConsolidator(writer));
   return consolidated;
 }
 
-auto_ptr<CoefBigTermConsumer> Fourti2IOHandler::createPolynomialWriter
+auto_ptr<CoefBigTermConsumer> Fourti2IOHandler::doCreatePolynomialWriter
 (FILE* out) {
   FrobbyStringStream msg;
   msg << "Using the format " << getName() <<
@@ -96,7 +96,7 @@ auto_ptr<CoefBigTermConsumer> Fourti2IOHandler::createPolynomialWriter
 	"memory consumption and decreases performance.";
   displayNote(msg);
 
-  auto_ptr<CoefBigTermConsumer> writer(IOHandler::createPolynomialWriter(out));
+  auto_ptr<CoefBigTermConsumer> writer(IOHandlerImpl::doCreatePolynomialWriter(out));
   auto_ptr<CoefBigTermConsumer> consolidated
 	(new PolynomialConsolidator(writer));
   return consolidated;
@@ -237,7 +237,7 @@ void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
 // of the ideal, since in some contexts what looks like the header of
 // an ideal could be a ring description, while in other contexts this
 // cannot happen.
-void Fourti2IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer,
+void Fourti2IOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer,
 								 size_t generatorCount, size_t varCount) {
   // We have to read the entire ideal before we can tell whether there is
   // a ring associated to it, so we have to store the ideal here until
@@ -262,7 +262,7 @@ void Fourti2IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer,
   consumer.consume(ideal);
 }
 
-void Fourti2IOHandler::readSatBinomIdeal
+void Fourti2IOHandler::doReadSatBinomIdeal
 (Scanner& in, SatBinomConsumer& consumer,
  size_t generatorCount, size_t varCount) {
   // We have to read the entire ideal before we can tell whether there is
@@ -289,7 +289,7 @@ void Fourti2IOHandler::readSatBinomIdeal
 }
 
 
-void Fourti2IOHandler::readSatBinomIdeal
+void Fourti2IOHandler::doReadSatBinomIdeal
 (Scanner& in, SatBinomConsumer& consumer) {
   size_t generatorCount;
   in.readSizeT(generatorCount);
@@ -297,20 +297,20 @@ void Fourti2IOHandler::readSatBinomIdeal
   size_t varCount;
   in.readSizeT(varCount);
 
-  readSatBinomIdeal(in, consumer, generatorCount, varCount);
+  doReadSatBinomIdeal(in, consumer, generatorCount, varCount);
 }
 
-void Fourti2IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+void Fourti2IOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
   size_t generatorCount;
   in.readSizeT(generatorCount);
 
   size_t varCount;
   in.readSizeT(varCount);
 
-  readIdeal(in, consumer, generatorCount, varCount);
+  doReadIdeal(in, consumer, generatorCount, varCount);
 }
 
-void Fourti2IOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+void Fourti2IOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
   // An empty list is just a ring by itself, and this has a special
   // syntax.  So we first decipher whether we are looking at a ring or
   // an ideal.  At the point where we can tell that it is an ideal, we
@@ -333,7 +333,7 @@ void Fourti2IOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
   size_t varCount;
   in.readSizeT(varCount);
 
-  readIdeal(in, consumer, generatorCount, varCount);
+  doReadIdeal(in, consumer, generatorCount, varCount);
 
   while (hasMoreInput(in))
 	readIdeal(in, consumer);
@@ -353,14 +353,14 @@ void Fourti2IOHandler::readRing(Scanner& in,
 	names.addVarSyntaxCheckUnique(in, in.readIdentifier());
 }
 
-void Fourti2IOHandler::readTerm(Scanner& in, const VarNames& names,
+void Fourti2IOHandler::doReadTerm(Scanner& in, const VarNames& names,
 								vector<mpz_class>& term) {
   term.resize(names.getVarCount());
   for (size_t var = 0; var < names.getVarCount(); ++var)
 	in.readIntegerAndNegativeAsZero(term[var]);
 }
 
-void Fourti2IOHandler::readPolynomial
+void Fourti2IOHandler::doReadPolynomial
 (Scanner& in, CoefBigTermConsumer& consumer) {
   size_t generatorCount;
   size_t varCount;

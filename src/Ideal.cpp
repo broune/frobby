@@ -173,6 +173,46 @@ void Ideal::getGcd(Exponent* gcd) const {
     Term::gcd(gcd, gcd, *it, _varCount);
 }
 
+void Ideal::getGcdAtExponent(Exponent* gcd, size_t var, Exponent exp) {
+  bool first = true;
+
+  const_iterator stop = _terms.end();
+  const_iterator it = _terms.begin();
+  for (; it != stop; ++it) {
+	Exponent* m = *it;
+	if (m[var] == exp) {
+	  if (first) {
+		first = false;
+		copy(m, m + _varCount, gcd);
+	  } else
+		Term::gcd(gcd, gcd, m, _varCount);
+	}
+  }
+
+  if (first)
+	Term::setToIdentity(gcd, _varCount);
+}
+
+void Ideal::getGcdOfMultiplesOf(Exponent* gcd, const Exponent* divisor) {
+  bool first = true;
+
+  const_iterator stop = _terms.end();
+  const_iterator it = _terms.begin();
+  for (; it != stop; ++it) {
+	Exponent* m = *it;
+	if (Term::divides(divisor, m, _varCount)) {
+	  if (first) {
+		first = false;
+		copy(m, m + _varCount, gcd);
+	  } else
+		Term::gcd(gcd, gcd, m, _varCount);
+	}
+  }
+
+  if (first)
+	Term::setToIdentity(gcd, _varCount);
+}
+
 void Ideal::getLeastExponents(Exponent* least) const {
   Term::setToIdentity(least, _varCount);
   
@@ -190,6 +230,194 @@ void Ideal::getSupportCounts(Exponent* counts) const {
 	for (size_t var = 0; var < _varCount; ++var)
 	  if ((*it)[var] > 0)
 		counts[var] += 1;
+}
+
+size_t Ideal::
+getTypicalExponent(size_t& typicalVar, Exponent& typicalExponent) {
+  size_t maxCount = 0;
+  typicalVar = 0;
+  typicalExponent = 0;
+
+  for (size_t var = 0; var < _varCount; ++var) {
+	singleDegreeSort(var);
+
+	Exponent lastExponent = 0;
+	size_t count = 0;
+	const_iterator stop = _terms.end();
+	for (const_iterator it = _terms.begin(); it != stop; ++it) {
+	  Exponent exponent = (*it)[var];
+	  if (exponent == 0)
+		continue;
+
+	  if (lastExponent == exponent)
+		++count;
+	  else
+		count = 1;
+
+	  if (count > maxCount) {
+		maxCount = count;
+		typicalVar = var;
+		typicalExponent = exponent;
+	  }
+
+	  lastExponent = exponent;
+	}
+  }
+
+  return maxCount;
+}
+
+size_t Ideal::getMostNonGenericExponent
+(size_t& mostNGVar, Exponent& mostNGExponent) {
+  Term lcm(getVarCount());
+
+  size_t maxCount = 0;
+  mostNGVar = 0;
+  mostNGExponent = 0;
+
+  for (size_t var = 0; var < _varCount; ++var) {
+	singleDegreeSort(var);
+
+	const_iterator blockBegin = _terms.begin();
+	const_iterator stop = _terms.end();
+	while (blockBegin != stop) {
+	  Exponent blockExponent = (*blockBegin)[var];
+	  const_iterator blockEnd = blockBegin;
+	  do {
+		++blockEnd;
+	  } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
+
+	  // At this point the range [blockBegin, blockEnd) contains every
+	  // generator that raises var to blockExponent. Each pair of
+	  // these is potentially non-generic, and we count the number
+	  // that actually are non-generic.
+
+	  size_t span = blockEnd - blockBegin;
+	  if (blockExponent == 0 || (span * (span + 1)) / 2  <= maxCount) {
+		blockBegin = blockEnd;
+		continue;
+	  }
+
+	  size_t nonGenericCount = 0;
+	  for (; blockBegin != blockEnd; ++blockBegin) {
+		const_iterator it = blockBegin;
+		for (++it; it != blockEnd; ++it) {
+		  lcm.lcm(*blockBegin, *it);
+		  if (!strictlyContains(lcm)) {
+			// The pair (*blockBegin, *it) is non-generic.
+			++nonGenericCount;
+		  }
+		}
+	  }
+
+	  if (nonGenericCount > maxCount) {
+		maxCount = nonGenericCount;
+		mostNGVar = var;
+		mostNGExponent = blockExponent;
+	  }
+	}
+  }
+
+  return maxCount;
+}
+
+size_t Ideal::getTypicalNonGenericExponent
+(size_t& typicalVar, Exponent& typicalExponent) {
+  Term lcm(getVarCount());
+
+  size_t maxCount = 0;
+  typicalVar = 0;
+  typicalExponent = 0;
+
+  for (size_t var = 0; var < _varCount; ++var) {
+	singleDegreeSort(var);
+
+	const_iterator blockBegin = _terms.begin();
+	const_iterator stop = _terms.end();
+	while (blockBegin != stop) {
+	  Exponent blockExponent = (*blockBegin)[var];
+	  const_iterator blockEnd = blockBegin;
+	  do {
+		++blockEnd;
+	  } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
+
+	  // At this point the range [blockBegin, blockEnd) contains every
+	  // generator that raises var to blockExponent. Each pair of
+	  // these is potentially non-generic, and we count the number
+	  // that actually are non-generic.
+
+	  size_t count = blockEnd - blockBegin;
+	  if (blockExponent == 0 || count <= maxCount) {
+		blockBegin = blockEnd;
+		continue;
+	  }
+
+	  for (; blockBegin != blockEnd; ++blockBegin) {
+		const_iterator it = blockBegin;
+		for (++it; it != blockEnd; ++it) {
+		  lcm.lcm(*blockBegin, *it);
+		  if (!strictlyContains(lcm)) {
+			// The pair (*blockBegin, *it) is non-generic.
+			ASSERT(maxCount < count);
+			maxCount = count;
+			typicalVar = var;
+			typicalExponent = blockExponent;
+			blockBegin = blockEnd;
+			goto blockDone;
+		  }
+		}
+	  }
+	blockDone:;
+	}
+  }
+
+  return maxCount;
+}
+
+bool Ideal::getNonGenericExponent
+(size_t& ngVar, Exponent& ngExponent) {
+  Term lcm(getVarCount());
+
+  ngVar = 0;
+  ngExponent = 0;
+
+  for (size_t var = 0; var < _varCount; ++var) {
+	singleDegreeSort(var);
+
+	const_iterator blockBegin = _terms.begin();
+	const_iterator stop = _terms.end();
+	while (blockBegin != stop) {
+	  Exponent blockExponent = (*blockBegin)[var];
+	  const_iterator blockEnd = blockBegin;
+	  do {
+		++blockEnd;
+	  } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
+
+	  // At this point the range [blockBegin, blockEnd) contains every
+	  // generator that raises var to blockExponent. Each pair of
+	  // these is potentially non-generic.
+
+	  if (blockExponent == 0) {
+		blockBegin = blockEnd;
+		continue;
+	  }
+
+	  for (; blockBegin != blockEnd; ++blockBegin) {
+		const_iterator it = blockBegin;
+		for (++it; it != blockEnd; ++it) {
+		  lcm.lcm(*blockBegin, *it);
+		  if (!strictlyContains(lcm)) {
+			// The pair (*blockBegin, *it) is non-generic.
+			ngVar = var;
+			ngExponent = blockExponent;
+			return true;
+		  }
+		}
+	  }
+	}
+  }
+
+  return false;
 }
 
 bool Ideal::operator==(const Ideal& ideal) const {

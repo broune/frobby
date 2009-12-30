@@ -19,45 +19,122 @@
 #define BIGATTI_BASE_CASE_GUARD
 
 class BigattiState;
+class TermTranslator;
 
 #include "Term.h"
 #include "Ideal.h"
 #include "HashPolynomial.h"
+#include "UniHashPolynomial.h"
 #include <vector>
 
+/** This class handles the base cases for the Hilbert-Poincare series
+ by Bigatti et.al.
+*/
 class BigattiBaseCase {
  public:
-  BigattiBaseCase(size_t varCount);
+  /** Initialize this object to handle the computation of
+	  Hilbert-Poincare series numerator polynomials in a polynomial
+	  ring with varCount variables. */
+  BigattiBaseCase(const TermTranslator& translator);
 
+  /** Returns ture if state is a base case slice while also
+   considering genericity. This generalizes the functionality of
+   baseCase(). */
+  bool genericBaseCase(const BigattiState& state);
+
+  /** Returns true if state is a base case slice without considering
+   genericity. */
   bool baseCase(const BigattiState& state);
   
-  void outputPlus(const Term& term);
-  void outputMinus(const Term& term);
+  /** Add +term or -term to the output polynomial when plus is true or
+   false respectively. */
+  void output(bool plus, const Term& term);
 
-  void feedOutputTo(CoefTermConsumer& consumer);
+  /** Feed the output Hilbert-Poincare numerator polynomial computed
+   so far to the consumer. This is done in canonical order if
+   inCanonicalOrder is true. */
+  void feedOutputTo
+	(CoefBigTermConsumer& consumer, bool inCanonicalOrder);
+
+  /** Starts to print debug output on what happens if value is
+   true. */
+  void setPrintDebug(bool value);
+
+  /** Use the fine grading if value is false, otherwise grade each
+   variable by the same variable t. */
+  void setComputeUnivariate(bool value);
+
+  /** Returns the total number of base cases this object has seen. */
+  size_t getTotalBaseCasesEver() const;
+
+  /** Returns the total number of terms this object has output. This
+   can be substantially more than the number of terms in the output
+   polynomial, since the sum of two terms can be just one term or even
+   zero. */
+  size_t getTotalTermsOutputEver() const;
+
+  /** Returns the number of terms in the output polynomial right
+   now. */
+  size_t getTotalTermsInOutput() const;
 
  private:
-  bool simpleBaseCase();
+  /** Computes the Hilbert-Poincare series of state and returns true
+   if state is a particularly simple and easily detected case. */
+  bool simpleBaseCase(const BigattiState& state);
 
-  void allCombinations();
-  bool nextCombination();
-  void take(size_t gen);
-  void drop(size_t gen);
+  bool univariateAllFaces(const BigattiState& state);
 
-  size_t _varCount;
+  /** The ideal in state must be weakly generic. Then the
+   Hilbert-Poincare series is computed by enumerating the facet of the
+   Scarf complex.
+
+   @param allFaces If true then every subset of monomial ideals is a
+    facet of the Scarf complex. This allows for faster computation if
+    true but yields incorrect results if not.
+  */
+  void enumerateScarfComplex(const BigattiState& state, bool allFaces);
 
   vector<size_t> _maxCount;
   Term _lcm;
+  mpz_class _tmp;
 
-  const BigattiState* _state;
-  vector<int> _taken;
-  Ideal _lcms;
-  size_t _takenCount;
+  /** The part of the finely graded Hilbert-Poincare numerator
+   polynomial computed so far. */
+  HashPolynomial _outputMultivariate;
 
-  HashPolynomial _output;
+  /** The part of the coarsely graded Hilbert-Poincare numerator
+   polynomial computed so far. */
+  UniHashPolynomial _outputUnivariate;
 
-  mpz_class _one;
-  mpz_class _minusOne;
+  /** Used in enumerateScarfComplex and necessary to have here to
+   define _states. */
+  struct State {
+	Term term;
+	Ideal::const_iterator pos;
+	bool plus;
+  };
+
+  /** Used in enumerateScarfCompex. Is not a local variable to avoid
+   the cost of re-allocation at every call. */
+  vector<State> _states;
+
+  /** Use the fine grading if false, otherwise grade each variable by
+   the same variable t. */
+  bool _computeUnivariate;
+
+  /** Used to translate the output from ints. */
+  const TermTranslator& _translator;
+
+  /** For statistics. Not a disaster if it overflows for long-running
+   computations. */
+  size_t _totalBaseCasesEver;
+
+  /** For statistics. Not a disaster if it overflows for long-running
+   computations. */
+  size_t _totalTermsOutputEver;
+
+  /** Print debug messages about what is happening if true. */
+  bool _printDebug;
 };
 
 #endif

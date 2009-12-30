@@ -17,7 +17,7 @@
 #ifndef FOURTI2_IO_HANDLER_GUARD
 #define FOURTI2_IO_HANDLER_GUARD
 
-#include "IOHandler.h"
+#include "IOHandlerImpl.h"
 
 class Scanner;
 class VarNames;
@@ -25,33 +25,35 @@ class BigIdeal;
 class BigTermConsumer;
 class BigCoefTermConsumer;
 
-class Fourti2IOHandler : public IOHandler {
+class Fourti2IOHandler : public IOHandlerImpl {
 public:
   Fourti2IOHandler();
 
-  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
-  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
+  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+  virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
 
-  virtual void readTerm(Scanner& in, const VarNames& names,
+  virtual void doReadTerm(Scanner& in, const VarNames& names,
 						vector<mpz_class>& term);
-  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+  virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
-  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+  virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
-  virtual void writeTerm(const vector<mpz_class>& term,
-						 const VarNames& names,
-						 FILE* out);
+  virtual void doWriteTerm(const vector<mpz_class>& term,
+						   const VarNames& names,
+						   FILE* out);
 
-  auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
-  auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
+  auto_ptr<BigTermConsumer> doCreateIdealWriter(FILE* out);
+  auto_ptr<CoefBigTermConsumer> doCreatePolynomialWriter(FILE* out);
 
   static const char* staticGetName();
 
  protected:
-  void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer,
-						 size_t generatorCount, size_t varCount);
-  void readIdeal(Scanner& in, BigTermConsumer& consumer,
-				 size_t generatorCount, size_t varCount);
+  virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer,
+								   size_t generatorCount, size_t varCount);
+  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer,
+						   size_t generatorCount, size_t varCount);
+
+
   void readRing(Scanner& in, VarNames& names);
   void readRing(Scanner& in, VarNames& names, size_t varCount);
   void writeRingWithoutHeader(const VarNames& names, FILE* out);

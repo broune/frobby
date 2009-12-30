@@ -63,13 +63,11 @@ public:
 
   TermTranslator& operator=(const TermTranslator& translator);
 
-  /** This method translates from IDs to infinite precision
-   integers.
+  /** This method translates from IDs to arbitrary precision integers.
   */
   const mpz_class& getExponent(size_t variable, Exponent exponent) const;
 
-  /** This method translates from IDs to infinite precision
-   integers.
+  /** This method translates from IDs to arbitrary precision integers.
   */
   const mpz_class& getExponent(size_t variable, const Term& term) const;
 

@@ -36,9 +36,14 @@ class InternalFrobbyException : public std::logic_error {
   InternalFrobbyException(const string& str): logic_error(str) {}
 };
 
+#define INTERNAL_ERROR(msg) \
+  reportInternalError(msg, __FILE__, __LINE__)
+
 // These methods throw exceptions.
 void reportError(const string& errorMsg);
 void reportInternalError(const string& errorMsg);
+void reportInternalError
+(const string& errorMsg, const char* file, unsigned int lineNumber);
 void reportSyntaxError(const Scanner& scanner, const string& errorMsg);
 
 // These methods return normally.

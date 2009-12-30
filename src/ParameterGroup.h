@@ -22,6 +22,11 @@
 
 class ParameterGroup : public Parameter {
  public:
+  typedef vector<Parameter*>::iterator iterator;
+
+  iterator begin() {return _parameters.begin();}
+  iterator end() {return _parameters.end();}
+
   ParameterGroup();
   virtual ~ParameterGroup();
 

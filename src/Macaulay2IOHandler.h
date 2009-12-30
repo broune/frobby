@@ -29,13 +29,13 @@ class Macaulay2IOHandler : public IOHandlerCommon {
 public:
   Macaulay2IOHandler();
 
-  virtual void writeTerm(const vector<mpz_class>& term,
-						 const VarNames& names,
-						 FILE* out);
-
   static const char* staticGetName();
 
  private:
+  virtual void doWriteTerm(const vector<mpz_class>& term,
+						   const VarNames& names,
+						   FILE* out);
+
   static string getRingName(const VarNames& names);
 
   virtual void readRing(Scanner& in, VarNames& names);

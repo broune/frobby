@@ -98,15 +98,92 @@ class Ideal {
   */
   bool disjointSupport() const;
 
+  /** Sets lcm to the least common multiple of all generators. If
+   there are no generators then we define the lcm as the identity. */
   void getLcm(Exponent* lcm) const;
+
+  /** Sets gcd to the greatest common divisor of all generators. If
+   there are no generators then we define the gcd as the identity. */
   void getGcd(Exponent* gcd) const;
+
+  /** Sets gcd to the greatest common divisor of those generators that
+   raise the variable var to the power exp. If there are no such
+   generators then we define the gcd as the identity.
+  */
+  void getGcdAtExponent(Exponent* gcd, size_t var, Exponent exp);
+
+  /** Sets gcd to the greatest common divisor of those generators that
+   are divisible by divisor. If there are no such generators then we
+   define the gcd as the identity.
+   */
+  void getGcdOfMultiplesOf(Exponent* gcd, const Exponent* divisor);
 
   // least[var] will be the smallest non-zero exponent of var that
   // appears among the generators.
   void getLeastExponents(Exponent* least) const;
 
-  // counts[var] will be the number of generators divisible by var.
+  /** counts[var] will be the number of generators divisible by var.
+   @todo Make counts a vector<size_t>.
+   */
   void getSupportCounts(Exponent* counts) const;
+
+  /** Sets var and exp such that var^exp is the typical non-zero
+   exponent. The typical exponent is the exponent of a specific
+   variable that occurs most often among the generators. In case of
+   ties some deterministic choice is made. If there are no non-zero
+   generators then var=exp=0 is chosen and the return value is
+   zero. The returned value is the number of times the typical
+   non-zero exponent occurs.
+
+   This method is not const since it may re-arrange the generators for
+   efficiency.
+  */
+  size_t getTypicalExponent(size_t& var, Exponent& exp);
+
+  /** Sets var and exp such that var^exp is the most non-generic
+   degree. A unordered pair of generators a and b is non-generic if a
+   and b raise some var to the same non-zero exponent and lcm(a,b) is
+   not strictly divisible by any generator. The most non-generic
+   degree is the exponent that occurs most often as the shared degree
+   for non-generic pairs. In case of ties some deterministic choice is
+   made.
+
+   The return value is the number of non-generic pairs that concern
+   the most non-generic degree. If there are no non-generic pairs
+   (i.e. the ideal is generic) then the return value is zero and
+   var=exp=0.
+
+   This method is not const since it may re-arrange the generators for
+   efficiency.
+  */
+  size_t getMostNonGenericExponent(size_t& var, Exponent& exp);
+
+  /** Sets var and exp such that var^exp is the typical non-generic
+   degree. A unordered pair of generators a and b is non-generic if a
+   and b raise some var to the same non-zero exponent and lcm(a,b) is
+   not strictly divisible by any generator. A degree var^exp is
+   non-generic if it occurs as the shared degree for some non-generic
+   pair. The typical non-generic degree is the non-generic degree that
+   occurs most often among all generators. So it does not matter how
+   non-generic the degree is, just that it is non-generic at all.
+
+   The return value is the number of generators that raise var to
+   exp. If there are no non-generic pairs (i.e. the ideal is generic)
+   then the return value is zero and var=exp=0.
+
+   This method is not const since it may re-arrange the generators for
+   efficiency.
+  */
+  size_t getTypicalNonGenericExponent(size_t& var, Exponent& exp);
+
+  /** Sets var and exp such that var^exp is some non-generic
+   degree. Returns true if there are any non-generic degrees and
+   otherwise returns false.
+
+   This method is not const since it may re-arrange the generators for
+   efficiency.
+  */
+  bool getNonGenericExponent(size_t& var, Exponent& exp);
 
   // returns the first generator that var divides or end() if no such
   // generator exists.

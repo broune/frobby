@@ -10,22 +10,22 @@ as a parameter and may thus have more generators, depending on the type.
 
 The parameters accepted by genideal are as follows.
 
- -time [BOOL]   (default is off)
-   Display and time each subcomputation.
+ -expRange INTEGER   (default is 9)
+   Exponents are chosen uniformly in the range [0,INTEGER].
+
+ -genCount INTEGER   (default is 5)
+   The number of minimal generators.
 
  -oformat STRING   (default is m2)
    The format used to write the output. This action supports the formats:
      m2 cocoa4 singular monos newmonos 4ti2 null count.
    Type 'frobby help io' for more information on output formats.
 
- -expRange INTEGER   (default is 9)
-   Exponents are chosen uniformly in the range [0,INTEGER].
-
- -varCount INTEGER   (default is 3)
-   The number of variables.
-
- -genCount INTEGER   (default is 5)
-   The number of minimal generators.
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.
 
  -type STRING   (default is random)
    The supported types of ideals are random, edge, list, king and knight.
+
+ -varCount INTEGER   (default is 3)
+   The number of variables.

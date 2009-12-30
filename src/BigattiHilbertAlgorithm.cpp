@@ -19,55 +19,115 @@
 #include "BigattiHilbertAlgorithm.h"
 
 #include "Ideal.h"
-#include "CoefTermConsumer.h"
+#include "CoefBigTermConsumer.h"
 #include "BigattiState.h"
 
-BigattiHilbertAlgorithm::BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer* consumer):
- _consumer(consumer),
- _baseCase(ideal.getVarCount()) {
+BigattiHilbertAlgorithm::
+BigattiHilbertAlgorithm
+(const Ideal& ideal,
+ const TermTranslator& translator,
+ CoefBigTermConsumer& consumer):
+ _translator(translator),
+ _consumer(&consumer),
+ _baseCase(translator),
+ _useGenericBaseCase(true),
+ _useSimplification(true),
+ _pivot(0),
+ _printDebug(false),
+ _printStatistics(false),
+ _doCanonicalOutput(false),
+ _computeUnivariate(false) {
 
    ASSERT(ideal.isMinimallyGenerated());
   _varCount = ideal.getVarCount();
-  _tmp_getPivot_counts.reset(_varCount);
   _tmp_simplify_gcd.reset(_varCount);
 
   _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
 }
 
+void BigattiHilbertAlgorithm::setPrintStatistics(bool value) {
+  _printStatistics = value;
+}
+
+void BigattiHilbertAlgorithm::setPrintDebug(bool value) {
+  _printDebug = value;
+  _baseCase.setPrintDebug(value);
+}
+
+void BigattiHilbertAlgorithm::setUseGenericBaseCase(bool value) {
+  _useGenericBaseCase = value;
+}
+
+void BigattiHilbertAlgorithm::setUseSimplification(bool value) {
+  _useSimplification = value;
+}
+
+void BigattiHilbertAlgorithm::setDoCanonicalOutput(bool value) {
+  _doCanonicalOutput = value;
+}
+
+void BigattiHilbertAlgorithm::setComputeUnivariate(bool value) {
+  _computeUnivariate = value;
+}
+
+void BigattiHilbertAlgorithm::
+setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot) {
+  _pivot = pivot;
+}
+
 void BigattiHilbertAlgorithm::run() {
+  if (_pivot.get() == 0)
+	_pivot = BigattiPivotStrategy::createStrategy("median", true);
+
+  _baseCase.setComputeUnivariate(_computeUnivariate);
   _tasks.runTasks();
-  _baseCase.feedOutputTo(*_consumer);
-  //_output.feedTo(*_consumer);
+  _baseCase.feedOutputTo(*_consumer, _doCanonicalOutput);
+
+  if (_printStatistics) {
+	fputs("*** Statistics for run of Bigatti algorithm ***\n", stderr);
+	fprintf(stderr, " %u states processed.\n",
+			(unsigned int)_tasks.getTotalTasksEver());
+	fprintf(stderr, " %u base cases.\n",
+			(unsigned int)_baseCase.getTotalBaseCasesEver());
+	fprintf(stderr, " %u terms output.\n",
+			(unsigned int)_baseCase.getTotalTermsOutputEver());
+	fprintf(stderr, " %u terms in final output.\n",
+			(unsigned int)_baseCase.getTotalTermsInOutput());
+  }
 }
 
 void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
-  simplify(*state);
+  if (_useSimplification)
+	simplify(*state);
 
-  if (_baseCase.baseCase(*state)) {
+  if (_printDebug) {
+	fputs("Debug: Processing state.\n", stderr);
+	state->print(stderr);
+  }
+
+  bool isBaseCase = _useGenericBaseCase ?
+	_baseCase.genericBaseCase(*state) :
+	_baseCase.baseCase(*state);
+  if (isBaseCase) {
 	freeState(state);
 	return;
   }
 
-  size_t pivotVar;
-  Exponent pivotExponent;
-  getPivot(*state, pivotVar, pivotExponent);
+  const Term& pivot = _pivot->getPivot(*state);
+  if (_printDebug) {
+	fputs("Debug: Performing pivot split on ", stderr);
+	pivot.print(stderr);
+	fputs(".\n", stderr);
+  }
+  ASSERT(!pivot.isIdentity());
+  ASSERT(!state->getIdeal().contains(pivot));
 
   auto_ptr<BigattiState> colonState(_stateCache.newObjectCopy(*state));
-  colonState->colonStep(pivotVar, pivotExponent);
+  colonState->colonStep(pivot);
   _tasks.addTask(colonState.release());
 
-  state->addStep(pivotVar, pivotExponent);
+  state->addStep(pivot);
   _tasks.addTask(state.release());
-}
-
-
-void BigattiHilbertAlgorithm::getPivot(BigattiState& state, size_t& var, Exponent& e) {
-  Term& counts = _tmp_getPivot_counts;
-  ASSERT(counts.getVarCount() == _varCount);
-
-  state.getIdeal().getSupportCounts(counts);
-  var = counts.getFirstMaxExponent();
-  e = state.getMedianPositiveExponentOf(var);
 }
 
 void BigattiHilbertAlgorithm::simplify(BigattiState& state) {
@@ -77,11 +137,9 @@ void BigattiHilbertAlgorithm::simplify(BigattiState& state) {
   state.getIdeal().getGcd(gcd);
   if (!gcd.isIdentity()) {
     // Do colon and output multiply-gcd*multiply.
-    //_output.add(1, state.getMultiply());
-    _baseCase.outputPlus(state.getMultiply());
+    _baseCase.output(true, state.getMultiply());
 	state.colonStep(gcd);
-	//_output.add(-1, state.getMultiply());
-    _baseCase.outputMinus(state.getMultiply());
+    _baseCase.output(false, state.getMultiply());
   }
 
   IF_DEBUG(state.getIdeal().getGcd(gcd));
