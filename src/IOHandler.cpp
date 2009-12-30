@@ -217,3 +217,11 @@ string autoDetectFormat(Scanner& in) {
 	return Macaulay2IOHandler::staticGetName();
   }
 }
+
+string getFormatNameIndicatingToUseInputFormatAsOutputFormat() {
+  return "input";
+}
+
+string getFormatNameIndicatingToGuessTheInputFormat() {
+  return "autodetect";
+}

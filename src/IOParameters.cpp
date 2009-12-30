@@ -35,7 +35,7 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 
   string defaultOutput;
   if (!_inputType.isNull())
-	defaultOutput = "input";
+	defaultOutput = getFormatNameIndicatingToUseInputFormatAsOutputFormat();
 
   vector<string> names;
   getIOHandlerNames(names);
@@ -60,11 +60,15 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 	string desc =
       "The format used to read the input. "
 	  "This action supports the formats:\n " + inputFormats + ".\n"
-	  "The format \"autodetect\" instructs Frobby to guess the format.\n"
+	  "The format \"" +
+	  getFormatNameIndicatingToGuessTheInputFormat() +
+	  "\" instructs Frobby to guess the format.\n"
 	  "Type 'frobby help io' for more information on input formats.";
 
 	_inputFormat.reset
-	  (new StringParameter("iformat", desc.c_str(), "autodetect"));
+	  (new StringParameter
+	   ("iformat", desc.c_str(),
+		getFormatNameIndicatingToGuessTheInputFormat()));
 	addParameter(_inputFormat.get());
   }
 
@@ -74,7 +78,9 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 	  "This action supports the formats:\n " + outputFormats + ".\n";
 	if (!_inputType.isNull()) {
 	  desc +=
-		"The format \"input\" instructs Frobby to use the input format.\n";
+		"The format \"" +
+		getFormatNameIndicatingToUseInputFormatAsOutputFormat()
+		+ "\" instructs Frobby to use the input format.\n";
 	}
 	desc += "Type 'frobby help io' for more information on output formats.";
 
@@ -108,7 +114,9 @@ const string& IOParameters::getOutputFormat() const {
   ASSERT(!_outputType.isNull());
   ASSERT(_outputFormat.get() != 0);
 
-  if (!_inputType.isNull() && _outputFormat->getValue() == "input") {
+  if (!_inputType.isNull() &&
+	  _outputFormat->getValue() ==
+	  getFormatNameIndicatingToUseInputFormatAsOutputFormat()) {
 	ASSERT(_inputFormat.get() != 0);
 	return *_inputFormat;
   }
@@ -132,10 +140,12 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
   ASSERT(!_inputType.isNull());
   ASSERT(_inputFormat.get() != 0);
 
-  if (_inputFormat->getValue() == "autodetect")
+  if (_inputFormat->getValue() ==
+	  getFormatNameIndicatingToGuessTheInputFormat())
 	*_inputFormat = autoDetectFormat(in);
 
-  if (in.getFormat() == "autodetect")
+  if (in.getFormat() ==
+	  getFormatNameIndicatingToGuessTheInputFormat())
 	in.setFormat(*_inputFormat);
 }
 

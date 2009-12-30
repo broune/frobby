@@ -20,8 +20,9 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 
-IntegerParameter::IntegerParameter(const char* name, const char* description,
-				   unsigned int defaultValue):
+IntegerParameter::IntegerParameter(const string& name,
+								   const string& description,
+								   unsigned int defaultValue):
   Parameter(name, description),
   _value(defaultValue) {
 }

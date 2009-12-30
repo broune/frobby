@@ -19,13 +19,14 @@
 #include "IdealParams.h"
 
 #include "CliParams.h"
+#include "IOHandler.h"
 
 namespace Params {
   IdealParams::IdealParams():
 	_idealIsMinimal(false),
 	_printActions(false),
-	_inputFormat("autodetect"), 
-	_outputFormat("input") {
+	_inputFormat(getFormatNameIndicatingToGuessTheInputFormat()), 
+	_outputFormat(getFormatNameIndicatingToUseInputFormatAsOutputFormat()) {
   }
 
   namespace {

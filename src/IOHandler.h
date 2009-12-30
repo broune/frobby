@@ -22,11 +22,7 @@
 class Term;
 class Scanner;
 class BigIdeal;
-class TermTranslator;
-class CoefTermConsumer;
-class TermConsumer;
 class VarNames;
-class BigPolynomial;
 class BigTermConsumer;
 class DataType;
 class CoefBigTermConsumer;
@@ -104,15 +100,16 @@ void getIOHandlerNames(vector<string>& names);
 
 void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers);
 
-/** Using this string where the name of a format is expected indicates
-	to guess the format based on what is being read.
-
-	@todo Use this all over.
-*/
-extern const char* FormatNameIndicatingToGuessTheFormat;
-
 /** Return the format of what in is reading based on the first
  non-whitespace character. */
 string autoDetectFormat(Scanner& in);
+
+/** Using the returned string in place of an (input) format name
+ indicates to guess the format based on what is being read. */
+string getFormatNameIndicatingToGuessTheInputFormat();
+
+/** Using the returned string in place of an (output) format name
+ indicates to use the input format as the output format. */
+string getFormatNameIndicatingToUseInputFormatAsOutputFormat();
 
 #endif
