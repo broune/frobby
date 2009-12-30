@@ -69,7 +69,7 @@ void Scanner::setFormat(const string& format) {
 }
 
 auto_ptr<IOHandler> Scanner::createIOHandler() const {
-  return IOHandler::createIOHandler(getFormat());
+  return ::createIOHandler(getFormat());
 }
 
 bool Scanner::match(char c) {

@@ -46,52 +46,31 @@ class IOHandler {
   virtual ~IOHandler();
 
   /** Read an ideal and feed it to the consumer. */
-  void readIdeal(Scanner& in, BigTermConsumer& consumer)
-  {doReadIdeal(in, consumer);}
+  void readIdeal(Scanner& in, BigTermConsumer& consumer);
 
   /** Read a number of ideals and feed them to the consumer. */
-  void readIdeals(Scanner& in, BigTermConsumer& consumer)
-  {doReadIdeals(in, consumer);}
+  void readIdeals(Scanner& in, BigTermConsumer& consumer);
 
-  void readTerm(Scanner& in, const VarNames& names,
-				vector<mpz_class>& term)
-  {doReadTerm(in, names, term);}
+  void readTerm
+	(Scanner& in, const VarNames& names, vector<mpz_class>& term);
 
-  void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer)
-  {doReadPolynomial(in, consumer);}
+  void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
-  void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer)
-  {doReadSatBinomIdeal(in, consumer);}
+  void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
-  void writeTerm(const vector<mpz_class>& term,
-				 const VarNames& names, FILE* out)
-  {doWriteTerm(term, names, out);}
+  void writeTerm
+	(const vector<mpz_class>& term, const VarNames& names, FILE* out);
 
-  bool hasMoreInput(Scanner& in) const
-  {return doHasMoreInput(in);}
+  bool hasMoreInput(Scanner& in) const;
 
-  const char* getName() const
-  {return doGetName();}
-  const char* getDescription() const
-  {return doGetDescription();}
+  const char* getName() const;
+  const char* getDescription() const;
 
   auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
   auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
 
-  bool supportsInput(const DataType& type) const
-  {return doSupportsInput(type);}
-  bool supportsOutput(const DataType& type) const
-  {return doSupportsOutput(type);}
-
-  /** Returns an IOHandler for the format with the passed in
-	  name. Throws a FrobbyException for unknown formats.
-
-	  @todo: make non-member.
-  */
-  static auto_ptr<IOHandler> createIOHandler(const string& name);
-
-  /** Add the name of each fomat to names. @todo: rename and make non-member. */
-  static void addFormatNames(vector<string>& names);
+  bool supportsInput(const DataType& type) const;
+  bool supportsOutput(const DataType& type) const;
 
  protected:
   virtual auto_ptr<BigTermConsumer> doCreateIdealWriter(FILE* out) = 0;
@@ -115,6 +94,13 @@ class IOHandler {
   virtual bool doSupportsInput(const DataType& type) const = 0;
   virtual bool doSupportsOutput(const DataType& type) const = 0;
 };
+
+/** Returns an IOHandler for the format with the passed in
+	name. Throws an UnknownFormatException for unknown formats. */
+auto_ptr<IOHandler> createIOHandler(const string& name);
+
+/** Add the name of each fomat to names. */
+void getIOHandlerNames(vector<string>& names);
 
 void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers);
 

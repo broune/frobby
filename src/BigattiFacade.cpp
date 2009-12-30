@@ -70,8 +70,7 @@ BigattiFacade::BigattiFacade(const BigattiParams& params):
 	io.validateFormats();
 
 	// TODO: fix leak
-	_ioHandler = IOHandler::createIOHandler
-	  (io.getOutputFormat()).release(); 
+	_ioHandler = createIOHandler(io.getOutputFormat()).release(); 
 
 	IOFacade facade(params.getPrintActions());
 	facade.readIdeal(in, bigIdeal);

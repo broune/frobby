@@ -53,9 +53,74 @@
 IOHandler::~IOHandler() {
 }
 
+void IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+  doReadIdeal(in, consumer);
+}
+
+void IOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+  doReadIdeals(in, consumer);
+}
+
+void IOHandler::readTerm
+(Scanner& in, const VarNames& names, vector<mpz_class>& term) {
+  doReadTerm(in, names, term);
+}
+
+void IOHandler::readPolynomial(Scanner& in, CoefBigTermConsumer& consumer) {
+  doReadPolynomial(in, consumer);
+}
+
+void IOHandler::readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) {
+  doReadSatBinomIdeal(in, consumer);
+}
+
+void IOHandler::writeTerm(const vector<mpz_class>& term,
+						  const VarNames& names, FILE* out) {
+  doWriteTerm(term, names, out);
+}
+
+bool IOHandler::hasMoreInput(Scanner& in) const {
+  return doHasMoreInput(in);
+}
+
+const char* IOHandler::getName() const {
+  return doGetName();
+}
+
+const char* IOHandler::getDescription() const {
+  return doGetDescription();
+}
+
+auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
+  if (!supportsOutput(DataType::getMonomialIdealType())) {
+	FrobbyStringStream errorMsg;
+	errorMsg << "The " << getName()
+			 << " format does not support output of a monomial ideal.";
+	reportError(errorMsg);
+  }
+  return doCreateIdealWriter(out);
+}
+
+auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
+  if (!supportsOutput(DataType::getPolynomialType())) {
+	FrobbyStringStream errorMsg;
+	errorMsg << "The " << getName()
+			 << " format does not support output of a polynomial.";
+	reportError(errorMsg);
+  }
+  return doCreatePolynomialWriter(out);
+}
+
+bool IOHandler::supportsInput(const DataType& type) const {
+  return doSupportsInput(type);
+}
+
+bool IOHandler::supportsOutput(const DataType& type) const {
+  return doSupportsOutput(type);
+}
+
 namespace {
   typedef NameFactory<IOHandler> IOHandlerFactory;
-
   IOHandlerFactory getIOHandlerFactory() {
 	IOHandlerFactory factory;
 
@@ -72,15 +137,15 @@ namespace {
   }
 }
 
-auto_ptr<IOHandler> IOHandler::createIOHandler(const string& name) {
+auto_ptr<IOHandler> createIOHandler(const string& name) {
   auto_ptr<IOHandler> handler = getIOHandlerFactory().create(name);
   if (handler.get() == 0)
-	reportError("Unknown format \"" + name + "\".");	
+	throwError<UnknownFormatException>("Unknown format \"" + name + "\".");	
   return handler;
 }
 
-void IOHandler::addFormatNames(vector<string>& names) {
-  getIOHandlerFactory().addNamesWithPrefix("", names);
+void getIOHandlerNames(vector<string>& names) {
+  getIOHandlerFactory().getNamesWithPrefix("", names);
 }
 
 void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
@@ -129,46 +194,26 @@ string autoDetectFormat(Scanner& in) {
   switch (in.peek()) {
   case 'U': // correct
   case 'u': // incorrect
-	return "cocoa4";
+	return CoCoA4IOHandler::staticGetName();
 
   case 'r': // correct
-	return "singular";
+	return SingularIOHandler::staticGetName();
 
   case '(': // correct
   case 'l': // incorrect
   case ')': // incorrect
-	return "newmonos";
+	return NewMonosIOHandler::staticGetName();
 
   case '0': case '1': case '2': case '3': case '4': // correct
   case '5': case '6': case '7': case '8': case '9': // correct
   case '+': case '-': // incorrect
-	return "4ti2";
+	return Fourti2IOHandler::staticGetName();
 
   case 'v': // correct
-	return "monos";
+	return MonosIOHandler::staticGetName();
 
   case 'R': // correct
   default: // incorrect
-	return "m2";
+	return Macaulay2IOHandler::staticGetName();
   }
-}
-
-auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
-  if (!supportsOutput(DataType::getMonomialIdealType())) {
-	FrobbyStringStream errorMsg;
-	errorMsg << "The " << getName()
-			 << " format does not support output of a monomial ideal.";
-	reportError(errorMsg);
-  }
-  return doCreateIdealWriter(out);
-}
-
-auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
-  if (!supportsOutput(DataType::getPolynomialType())) {
-	FrobbyStringStream errorMsg;
-	errorMsg << "The " << getName()
-			 << " format does not support output of a polynomial.";
-	reportError(errorMsg);
-  }
-  return doCreatePolynomialWriter(out);
 }

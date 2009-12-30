@@ -22,15 +22,14 @@
 
 class Scanner;
 
-// This class is pure virtual to ensure that it is catch'ed by
-// reference. This is necessary to prevent object slicing, since the
-// actual exceptions thrown have more data members and it is
-// undesirable to expose those in this header.
+/** This is the base of the Frobby exception hierarchy for exceptions
+ that can occur due to expected error conditions. */
 class FrobbyException : public std::runtime_error {
  public:
   FrobbyException(const string& str): runtime_error(str) {}
 };
 
+/** This exception signals that a bug in Frobby has been detected. */
 class InternalFrobbyException : public std::logic_error {
  public:
   InternalFrobbyException(const string& str): logic_error(str) {}
@@ -46,6 +45,11 @@ void reportInternalError
 (const string& errorMsg, const char* file, unsigned int lineNumber);
 void reportSyntaxError(const Scanner& scanner, const string& errorMsg);
 
+template<class Exception>
+void throwError(const string& errorMsg) {
+  throw Exception("ERROR: " + errorMsg + '\n');
+}
+
 // These methods return normally.
 void displayNote(const string& msg);
 void displayDebugNote(const string& msg);
@@ -54,5 +58,10 @@ void reportErrorNoThrow(const string& errorMsg);
 void reportInternalErrorNoThrow(const string& errorMsg);
 void reportErrorNoThrow(const FrobbyException& e);
 void reportErrorNoThrow(const InternalFrobbyException& e);
+
+class UnknownFormatException : public FrobbyException {
+ public:
+  UnknownFormatException(const string& str): FrobbyException(str) {}
+};
 
 #endif

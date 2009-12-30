@@ -46,7 +46,7 @@ void HelpAction::processNonParameter(const char* str) {
 
   if (_topic != "io") {
 	vector<string> names;
-	Action::addNamesWithPrefix(str, names);
+	Action::getNamesWithPrefix(str, names);
 	if (names.empty())
 	  reportError("Unknown help topic \"" + _topic + "\".");
   }
@@ -120,10 +120,10 @@ void HelpAction::displayIOHelp() {
 		"support are as follows.\n\n", stderr);
 
   vector<string> names;
-  IOHandler::addFormatNames(names);
+  getIOHandlerNames(names);
   for (vector<string>::const_iterator name = names.begin();
 	   name != names.end(); ++name) {
-	auto_ptr<IOHandler> handler = IOHandler::createIOHandler(*name);
+	auto_ptr<IOHandler> handler = createIOHandler(*name);
 	ASSERT(handler.get() != 0);
 
 	fprintf(stderr, "* The format %s: %s\n",
@@ -173,7 +173,7 @@ void HelpAction::perform() {
 	  constants::version);
 
   vector<string> names;
-  Action::addNamesWithPrefix("", names);
+  Action::getNamesWithPrefix("", names);
 
   // Compute maximum name length to make descriptions line up.
   size_t maxNameLength = 0;
