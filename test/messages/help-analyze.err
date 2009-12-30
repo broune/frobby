@@ -6,26 +6,8 @@ that need information about the ideal.
 
 The parameters accepted by analyze are as follows.
 
- -summaryLevel INTEGER   (default is 1)
-   If non-zero, then print a summary of the ideal to the error output
-   stream. A higher summary level results in more expensive analysis in
-   order to provide more information. Currently levels 0, 1 and 2 are
-   available.
-
- -lcm [BOOL]   (default is off)
-   Print the least common multiple of the generators.
-
- -varCount [BOOL]   (default is off)
-   Print the number of variables.
-
  -genCount [BOOL]   (default is off)
    Print the number of generators.
-
- -maxExp [BOOL]   (default is off)
-   Print the largest exponent that appears in the input file
-
- -minimal [BOOL]   (default is off)
-   Print 1 if the ideal has no non-minimal generators. Print 0 otherwise.
 
  -iformat STRING   (default is autodetect)
    The format used to read the input. This action supports the formats:
@@ -33,11 +15,29 @@ The parameters accepted by analyze are as follows.
    The format "autodetect" instructs Frobby to guess the format.
    Type 'frobby help io' for more information on input formats.
 
+ -lcm [BOOL]   (default is off)
+   Print the least common multiple of the generators.
+
+ -maxExp [BOOL]   (default is off)
+   Print the largest exponent that appears in the input file
+
+ -minimal [BOOL]   (default is off)
+   Print 1 if the ideal has no non-minimal generators. Print 0 otherwise.
+
  -oformat STRING   (default is input)
    The format used to write the output. This action supports the formats:
      m2 cocoa4 singular monos newmonos 4ti2 null count.
    The format "input" instructs Frobby to use the input format.
    Type 'frobby help io' for more information on output formats.
 
+ -summaryLevel INTEGER   (default is 1)
+   If non-zero, then print a summary of the ideal to the error output
+   stream. A higher summary level results in more expensive analysis in
+   order to provide more information. Currently levels 0, 1 and 2 are
+   available.
+
  -time [BOOL]   (default is off)
    Display and time each subcomputation.
+
+ -varCount [BOOL]   (default is off)
+   Print the number of variables.

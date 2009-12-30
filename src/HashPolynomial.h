@@ -21,8 +21,12 @@
 #include "Term.h"
 #include "HashMap.h"
 
-class CoefTermConsumer;
+class CoefBigTermConsumer;
+class TermTranslator;
 
+/** This template specialization makes the hash code of a term
+ available to the implementation of HashMap.
+*/
 template<>
 class FrobbyHash<Term> {
  public:
@@ -31,15 +35,27 @@ class FrobbyHash<Term> {
   }
 };
 
+/** A sparse multivariate polynomial represented by a hash table
+ mapping terms to coefficients. This allows to avoid duplicate terms
+ without a large overhead.
+*/
 class HashPolynomial {
  public:
   HashPolynomial(size_t varCount = 0);
 
   void clearAndSetVarCount(size_t varCount);
 
+  /** Add coef*term to the polynomial. */
   void add(const mpz_class& coef, const Term& term);
 
-  void feedTo(CoefTermConsumer& consumer) const;
+  /** Add +term or -term to the polynomial depending on whether plus
+   is true or false, respectively. */
+  void add(bool plus, const Term& term);
+
+  void feedTo(const TermTranslator& translator,
+			  CoefBigTermConsumer& consumer, bool inCanonicalOrder = false) const;
+
+  size_t getTermCount() const;
 
  private:
   size_t _varCount;

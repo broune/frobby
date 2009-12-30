@@ -59,15 +59,19 @@ void LatticeAnalyzeAction::perform() {
   SatBinomIdeal ideal;
   ioFacade.readSatBinomIdeal(in, ideal);
 
-  bool generic = ideal.isGeneric();
-  bool tri = ideal.hasDoubleTriangle();
+  bool generic = ideal.hasZeroEntry();
 
-  if (generic)
-	fputs("Is generic\n", stdout);
-  if (tri)
-	fputs("Has double triangle\n", stdout);
+  mpz_class triCount;
+  ideal.getDoubleTriangleCount(triCount);
+  fprintf(stdout, "%u neighbors, ", (unsigned int)ideal.getGeneratorCount());
+  gmp_fprintf(stdout, "%Zd double triangles, ", triCount.get_mpz_t());
 
-  if (/*generic && */!tri)
+  if (!generic)
+	fputs("generic.\n", stdout);
+  else
+	fputs("not generic.\n", stdout);
+
+  if (triCount == 0)
 	exit(1);
   if (generic)
 	exit(2);

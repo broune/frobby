@@ -9,10 +9,11 @@ fi
 
 TIMEFORMAT=$' (%2lR real)'
 
-normalTests="hilbert irrdecom dimension primdecom intersect assoprimes \
-             minimize alexdual radical frob maxstandard optimize"
+normalTests="hilbert_bigatti hilbert_slice irrdecom dimension \
+             primdecom intersect assoprimes minimize alexdual \
+             radical frob maxstandard optimize"
 
-specialTests="error idealFormats polyFormats latticeFormats internal"
+specialTests="internal idealFormats polyFormats latticeFormats messages"
 params="$*"
 
 runNormalTests () {
@@ -56,4 +57,4 @@ do
   cd ../..
 done
 
-echo "All tests passed."
+echo "All normal tests passed."

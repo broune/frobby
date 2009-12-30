@@ -27,9 +27,9 @@
 #include <cstdio>
 
 NewMonosIOHandler::NewMonosIOHandler():
-  IOHandler(staticGetName(),
-			"Newer format used by the program Monos.",
-			false) {
+  IOHandlerImpl(staticGetName(),
+				"Newer format used by the program Monos.",
+				false) {
   registerInput(DataType::getMonomialIdealType());
   registerInput(DataType::getMonomialIdealListType());
   registerOutput(DataType::getMonomialIdealType());
@@ -39,9 +39,9 @@ const char* NewMonosIOHandler::staticGetName() {
   return "newmonos";
 }
 
-void NewMonosIOHandler::writeTerm(const vector<mpz_class>& term,
-								  const VarNames& names,
-								  FILE* out) {
+void NewMonosIOHandler::doWriteTerm(const vector<mpz_class>& term,
+									const VarNames& names,
+									FILE* out) {
   writeTermProduct(term, names, out);
 }
 
@@ -66,7 +66,7 @@ void NewMonosIOHandler::writeTermOfIdeal(const Term& term,
 										 bool isFirst,
 										 FILE* out) {
   fputs("\n ", out);
-  IOHandler::writeTermProduct(term, translator, out);
+  IOHandlerImpl::writeTermProduct(term, translator, out);
 }
 
 void NewMonosIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
@@ -74,7 +74,7 @@ void NewMonosIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 										 bool isFirst,
 										 FILE* out) {
   fputs("\n ", out);
-  IOHandler::writeTermProduct(term, names, out);
+  IOHandlerImpl::writeTermProduct(term, names, out);
 }
 
 void NewMonosIOHandler::writeIdealFooter(const VarNames& names,
@@ -109,12 +109,12 @@ void NewMonosIOHandler::readIdealNoLeftParen(Scanner& in,
   consumer.doneConsuming();
 }
 
-void NewMonosIOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+void NewMonosIOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
   in.expect('(');
   readIdealNoLeftParen(in, consumer);
 }
 
-void NewMonosIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+void NewMonosIOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
   in.expect('(');
   if (in.peek('l') || in.peek('L')) {
 	VarNames names;
@@ -128,13 +128,13 @@ void NewMonosIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
   } while (in.match('('));
 }
 
-void NewMonosIOHandler::readPolynomial
+void NewMonosIOHandler::doReadPolynomial
 (Scanner& in, CoefBigTermConsumer& consumer) {
   ASSERT(false);
   reportInternalError("Called NewMonosIOHandler::readPolynomial.");
 }
 
-void NewMonosIOHandler::readSatBinomIdeal
+void NewMonosIOHandler::doReadSatBinomIdeal
 (Scanner& in, SatBinomConsumer& consumer) {
   ASSERT(false);
   reportInternalError("Called NewMonosIOHandler::readSatBinomIdeal.");

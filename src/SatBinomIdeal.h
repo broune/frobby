@@ -76,7 +76,7 @@ class SatBinomIdeal {
 
   /// Returns true if there are generators a and b such that {0,a,a+b}
   /// {0,b,a+b} are both interior point-free bodies.
-  bool hasDoubleTriangle() const;
+  void getDoubleTriangleCount(mpz_class& count) const;
 
   /// Returns true if the smallest body containing zero, a and b has a
   /// generator in its interior.

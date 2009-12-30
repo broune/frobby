@@ -23,7 +23,9 @@
 #include "Scanner.h"
 #include "DataType.h"
 #include "IdealFacade.h"
-#include "CoefBigTermConsumer.h"
+#include "BigattiFacade.h"
+#include "SliceParams.h"
+#include "BigattiParams.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -40,6 +42,8 @@ HilbertAction::HilbertAction():
 
   _io(DataType::getMonomialIdealType(), DataType::getPolynomialType()),
 
+  _sliceParams(false, true, true),
+
   _univariate
   ("univariate",
    "Output a univariate polynomial by substituting t for each variable.",
@@ -47,23 +51,34 @@ HilbertAction::HilbertAction():
   
   _useSlice
   ("useSlice",
-   "Use the Slice Algorithm to compute the dimension instead of the usual\n"
-   "algorithm.",
+   "Use the Slice Algorithm to compute the Hilbert-Poincare series\n"
+   "instead of the algorithm by Bigatti et.al.",
    false) {
-}
 
-void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
-  _io.obtainParameters(parameters);
-  parameters.push_back(&_univariate);
-  parameters.push_back(&_useSlice);
-  _sliceParams.obtainParameters(parameters);
-  Action::obtainParameters(parameters);
+  _params.add(_io);
+  _params.add(_sliceParams);
+  _params.add(_univariate);
+  _params.add(_useSlice);
 }
 
 void HilbertAction::perform() {
+  if (!_useSlice) {
+	BigattiParams params;
+	extractCliValues(params, _params);
+	BigattiFacade facade(params);
+    if (_univariate)
+	  facade.computeUnivariateHilbertSeries();
+    else
+	  facade.computeMultigradedHilbertSeries();
+	return;
+  }
+
   BigIdeal ideal;
 
-  _sliceParams.validateSplit(false, false);
+  if (_useSlice)
+	_sliceParams.validateSplit(false, false);
+  else
+	_sliceParams.validateSplitHilbert();
 
   {
 	Scanner in(_io.getInputFormat(), stdin);
@@ -77,6 +92,8 @@ void HilbertAction::perform() {
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();
   if (_useSlice) {
+	SliceParams params;
+	extractCliValues(params, _params);
     SliceFacade facade(ideal, output.get(), stdout, _printActions);
     _sliceParams.apply(facade);
     if (_univariate)
@@ -84,11 +101,14 @@ void HilbertAction::perform() {
     else
 	  facade.computeMultigradedHilbertSeries();
   } else {
-	IdealFacade facade(_printActions);
-    auto_ptr<CoefBigTermConsumer> consumer =
-      output->createPolynomialWriter(stdout);
-    facade.computeHilbertSeries
-      (ideal, _univariate, _sliceParams.getCanonical(), consumer);
+	BigattiParams params;
+	extractCliValues(params, _params);
+	BigattiFacade facade(ideal, output.get(), stdout, _printActions);
+    _sliceParams.apply(facade);
+    if (_univariate)
+	  facade.computeUnivariateHilbertSeries();
+    else
+	  facade.computeMultigradedHilbertSeries();
   }
 }
 

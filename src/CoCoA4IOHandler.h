@@ -29,13 +29,13 @@ class CoCoA4IOHandler : public IOHandlerCommon {
 public:
   CoCoA4IOHandler();
 
-  virtual void writeTerm(const vector<mpz_class>& term,
-						 const VarNames& names,
-						 FILE* out);
-
   static const char* staticGetName();
 
  private:
+  virtual void doWriteTerm(const vector<mpz_class>& term,
+						   const VarNames& names,
+						   FILE* out);
+
   virtual void readRing(Scanner& in, VarNames& names);
   virtual bool peekRing(Scanner& in);
   virtual void writeRing(const VarNames& names, FILE* out);

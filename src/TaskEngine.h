@@ -39,6 +39,7 @@ class Task;
 */
 class TaskEngine {
  public:
+  TaskEngine();
   ~TaskEngine();
 
   /** Add a task at the head of the list of pending tasks.
@@ -63,9 +64,21 @@ class TaskEngine {
   */
   void runTasks();
 
+  /** Returns the number of times addTask has been successfully
+   called. This value may overflow if it becomes too large to contain
+   in a size_t.
+  */
+  size_t getTotalTasksEver();
+
  private:
   void dispose(Task* task);
 
+  /** Stores the number of times addTask has been successfully
+   called. Is used for statistics so that it is not a disaster if this
+   overflows for very long-running computations. */
+  size_t _totalTasksEver;
+
+	/** Stores the tasks to process. */
   vector<Task*> _tasks;
 };
 

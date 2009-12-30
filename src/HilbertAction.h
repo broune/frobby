@@ -26,8 +26,6 @@ class HilbertAction : public Action {
  public:
   HilbertAction();
 
-  virtual void obtainParameters(vector<Parameter*>& parameters);
-
   virtual void perform();
 
   static const char* staticGetName();

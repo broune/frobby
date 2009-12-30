@@ -23,15 +23,30 @@
 #include "ObjectCache.h"
 #include "BigattiState.h"
 #include "BigattiBaseCase.h"
+#include "BigattiPivotStrategy.h"
 
-class CoefTermConsumer;
+class CoefBigTermConsumer;
 class Term;
 
 class BigattiHilbertAlgorithm {
 public:
-	BigattiHilbertAlgorithm(const Ideal& ideal, CoefTermConsumer* consumer);
+  /** Construct an object for running the Bigatti et.al. algorithm on
+   ideal. No association is made to ideal, but translator and consumer
+   must remain valid for the lifetime of this object.
+  */
+  BigattiHilbertAlgorithm(const Ideal& ideal,
+						  const TermTranslator& translator,
+						  CoefBigTermConsumer& consumer);
 
-	void run();
+  void setPrintStatistics(bool value);
+  void setPrintDebug(bool value);
+  void setUseGenericBaseCase(bool value);
+  void setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot);
+  void setUseSimplification(bool value);
+  void setDoCanonicalOutput(bool value);
+  void setComputeUnivariate(bool value);
+
+  void run();
 
 private:
 	void processState(auto_ptr<BigattiState> state);
@@ -41,15 +56,24 @@ private:
 	void freeState(auto_ptr<BigattiState> state);
 
 	size_t _varCount;
-	CoefTermConsumer* _consumer;
+	const TermTranslator& _translator;
+	CoefBigTermConsumer* _consumer;
 	TaskEngine _tasks;
 	ObjectCache<BigattiState> _stateCache;
 
 	Term _tmp_processState_pivot;
-	Term _tmp_getPivot_counts;
 	Term _tmp_simplify_gcd;
 
     BigattiBaseCase _baseCase;
+
+	bool _useGenericBaseCase;
+	bool _useSimplification;
+	auto_ptr<BigattiPivotStrategy>  _pivot;
+
+	bool _printDebug;
+	bool _printStatistics;
+	bool _doCanonicalOutput;
+	bool _computeUnivariate;
 
     friend class BigattiState;
 };

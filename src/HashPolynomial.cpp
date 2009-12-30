@@ -18,7 +18,7 @@
 #include "stdinc.h"
 #include "HashPolynomial.h"
 
-#include "CoefTermConsumer.h"
+#include "CoefBigTermConsumer.h"
 
 #include <vector>
 #include <algorithm>
@@ -41,7 +41,7 @@ void HashPolynomial::add(const mpz_class& coef, const Term& term) {
   // Doing it this way incurs the penalty of looking up term twice if
   // ref ends up zero. I don't know how to avoid two look-ups in all
   // cases, especially when the interface of _terms is not fixed,
-  // e.g. lowerbound don't exist for GCC's hash_map, so we can't use
+  // e.g. lowerbound doesn't exist for GCC's hash_map, so we can't use
   // that.
   mpz_class& ref = _terms[term];
   ref += coef;
@@ -49,8 +49,20 @@ void HashPolynomial::add(const mpz_class& coef, const Term& term) {
 	_terms.erase(term);
 }
 
+void HashPolynomial::add(bool plus, const Term& term) {
+  ASSERT(_varCount == term.getVarCount());
+
+  mpz_class& ref = _terms[term];
+  if (plus)
+	++ref;
+  else
+	--ref;
+  if (ref == 0)
+	_terms.erase(term);
+}
+
 namespace {
-  // Helper class for feedTo.
+  /** Helper class for feedTo. */
   class RefCompare {
   public:
     typedef HashMap<Term, mpz_class> TermMap;
@@ -60,27 +72,44 @@ namespace {
   };
 }
 
-void HashPolynomial::feedTo(CoefTermConsumer& consumer) const {
-  // Fill refs with references to the terms in order to sort them. We
-  // can't sort _terms, so we have to sort references instead.
-  vector<TermMap::const_iterator> refs;
-  refs.reserve(_terms.size());
-
-  TermMap::const_iterator termsEnd = _terms.end();
-  TermMap::const_iterator it = _terms.begin();
-  for (; it != termsEnd; ++it)
-	refs.push_back(it);
-
-  // Sort the references.
-  sort(refs.begin(), refs.end(), RefCompare());
-
-  // Output the terms in the sorted order specified by refs.
+void HashPolynomial::feedTo
+(const TermTranslator& translator,
+ CoefBigTermConsumer& consumer, bool inCanonicalOrder) const {
   consumer.beginConsuming();
 
-  vector<TermMap::const_iterator>::const_iterator refsEnd = refs.end();
-  vector<TermMap::const_iterator>::const_iterator refIt = refs.begin();
-  for (; refIt != refsEnd; ++refIt)
-	consumer.consume((*refIt)->second, (*refIt)->first);
+  if (!inCanonicalOrder) {
+	// Output the terms in whatever order _terms is storing them.
+	TermMap::const_iterator termsEnd = _terms.end();
+	TermMap::const_iterator it = _terms.begin();
+	for (; it != termsEnd; ++it)
+	  consumer.consume(it->second, it->first, translator);
+  } else {
+
+	// Fill refs with references to the terms in order to sort
+	// them. We can't sort _terms since HashMap doesn't support that,
+	// so we have to sort references into _terms instead.
+	vector<TermMap::const_iterator> refs;
+	refs.reserve(_terms.size());
+
+	TermMap::const_iterator termsEnd = _terms.end();
+	TermMap::const_iterator it = _terms.begin();
+	for (; it != termsEnd; ++it)
+	  refs.push_back(it);
+
+	// Sort the references.
+	sort(refs.begin(), refs.end(), RefCompare());
+
+	// Output the terms in the sorted order specified by refs.
+
+	vector<TermMap::const_iterator>::const_iterator refsEnd = refs.end();
+	vector<TermMap::const_iterator>::const_iterator refIt = refs.begin();
+	for (; refIt != refsEnd; ++refIt)
+	  consumer.consume((*refIt)->second, (*refIt)->first, translator);
+  }
 
   consumer.doneConsuming();
+}
+
+size_t HashPolynomial::getTermCount() const {
+  return _terms.size();
 }
