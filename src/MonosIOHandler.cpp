@@ -22,6 +22,7 @@
 #include "error.h"
 #include "BigTermConsumer.h"
 #include "DataType.h"
+#include "IOHandlerImpl.h"
 
 #include <cstdio>
 
@@ -48,7 +49,7 @@ void MonosIOHandler::writeRing(const VarNames& names, FILE* out) {
   fputs(";\n", out);
 }
 
-void MonosIOHandler::writeTerm(const vector<mpz_class>& term,
+void MonosIOHandler::doWriteTerm(const vector<mpz_class>& term,
 							   const VarNames& names,
 							   FILE* out) {
   writeTermProduct(term, names, out);
@@ -66,7 +67,7 @@ void MonosIOHandler::writeTermOfIdeal(const Term& term,
 									  bool isFirst,
 									  FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, translator, out);
+  IOHandlerImpl::writeTermProduct(term, translator, out);
 }
 
 void MonosIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
@@ -74,7 +75,7 @@ void MonosIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 									  bool isFirst,
 									  FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, names, out);
+  IOHandlerImpl::writeTermProduct(term, names, out);
 }
 
 void MonosIOHandler::writeIdealFooter(const VarNames& names,

@@ -46,9 +46,9 @@ const char* CoCoA4IOHandler::staticGetName() {
   return "cocoa4";
 }
 
-void CoCoA4IOHandler::writeTerm(const vector<mpz_class>& term,
-								const VarNames& names,
-								FILE* out) {
+void CoCoA4IOHandler::doWriteTerm(const vector<mpz_class>& term,
+								  const VarNames& names,
+								  FILE* out) {
   writeCoCoA4TermProduct(term, names, out);
 }
 

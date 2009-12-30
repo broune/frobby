@@ -1,5 +1,6 @@
 /* Frobby: Software for monomial ideal computations.
-   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+   Copyright (C) 2009 University of Aarhus
+   Contact Bjarke Hammersholt Roune for license information (www.broune.com)
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,27 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_ACTION_GUARD
-#define HILBERT_ACTION_GUARD
+#include "stdinc.h"
+#include "IdealFacadeCommon.h"
 
-#include "Action.h"
-#include "IOParameters.h"
-#include "BoolParameter.h"
-#include "SliceParameters.h"
-
-class HilbertAction : public Action {
- public:
-  HilbertAction();
-
-  virtual void perform();
-
-  static const char* staticGetName();
-
- private:
-  IOParameters _io;
-  SliceParameters _sliceParams;
-  BoolParameter _univariate;
-  BoolParameter _useSlice;
-};
-
-#endif
+ 

@@ -1,5 +1,6 @@
 /* Frobby: Software for monomial ideal computations.
-   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+   Copyright (C) 2009 University of Aarhus
+   Contact Bjarke Hammersholt Roune for license information (www.broune.com)
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,27 +15,30 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_ACTION_GUARD
-#define HILBERT_ACTION_GUARD
+#ifndef IDEAL_FACADE_COMMON
+#define IDEAL_FACADE_COMMON
 
-#include "Action.h"
-#include "IOParameters.h"
-#include "BoolParameter.h"
-#include "SliceParameters.h"
+#include "Facade.h"
+#include "TermTranslator.h"
+#include "Ideal.h"
 
-class HilbertAction : public Action {
- public:
-  HilbertAction();
+class IdealFacadeParams;
 
-  virtual void perform();
+namespace Facades {
 
-  static const char* staticGetName();
+  class IdealFacadeCommon : public Facade {
+  protected:
+	IdealFacadeCommon(const IdealFacadeParams& params);
 
- private:
-  IOParameters _io;
-  SliceParameters _sliceParams;
-  BoolParameter _univariate;
-  BoolParameter _useSlice;
-};
+	void minimizeIdeal();
+
+  private:
+	bool _idealIsKnownMinimal;
+	const auto_ptr<TermTranslator> _translator;
+	Ideal _ideal;
+  };
+
+}
+using Facades::IdealFacadeCommon;
 
 #endif

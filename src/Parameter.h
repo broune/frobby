@@ -19,6 +19,7 @@
 
 #include <string>
 
+// TODO: rename to CliParam
 class Parameter {
  public:
   Parameter(const char* name, const char* description);

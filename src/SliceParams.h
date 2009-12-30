@@ -1,5 +1,6 @@
 /* Frobby: Software for monomial ideal computations.
-   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+   Copyright (C) 2009 University of Aarhus
+   Contact Bjarke Hammersholt Roune for license information (www.broune.com)
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,27 +15,32 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef HILBERT_ACTION_GUARD
-#define HILBERT_ACTION_GUARD
+#ifndef SLICE_PARAMS_GUARD
+#define SLICE_PARAMS_GUARD
 
-#include "Action.h"
-#include "IOParameters.h"
-#include "BoolParameter.h"
-#include "SliceParameters.h"
+#include "SliceLikeParams.h"
+#include "SplitStrategy.h"
 
-class HilbertAction : public Action {
- public:
-  HilbertAction();
+class Action;
 
-  virtual void perform();
+namespace Params {
+  class SliceParams : public SliceLikeParams {
+  public:
+	SliceParams();
 
-  static const char* staticGetName();
+	// TOOO: throw exception if invalid
+	SliceParams& setSplit(const string& name);
+	SliceParams& useIndependenceSplits(bool value);
 
- private:
-  IOParameters _io;
-  SliceParameters _sliceParams;
-  BoolParameter _univariate;
-  BoolParameter _useSlice;
-};
+  private:
+	auto_ptr<SplitStrategy> _split;
+	bool _useIndependence;
+  };
+
+  void addIdealParams(CliParams& params);
+  void extractCliValues(SliceParams& slice, const CliParams& cli);
+}
+
+using Params::SliceParams;
 
 #endif

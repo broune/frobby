@@ -24,6 +24,8 @@
 #include "DataType.h"
 #include "IdealFacade.h"
 #include "BigattiFacade.h"
+#include "SliceParams.h"
+#include "BigattiParams.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -52,17 +54,25 @@ HilbertAction::HilbertAction():
    "Use the Slice Algorithm to compute the Hilbert-Poincare series\n"
    "instead of the algorithm by Bigatti et.al.",
    false) {
-}
 
-void HilbertAction::obtainParameters(vector<Parameter*>& parameters) {
-  _io.obtainParameters(parameters);
-  parameters.push_back(&_univariate);
-  parameters.push_back(&_useSlice);
-  _sliceParams.obtainParameters(parameters);
-  Action::obtainParameters(parameters);
+  _params.add(_io);
+  _params.add(_sliceParams);
+  _params.add(_univariate);
+  _params.add(_useSlice);
 }
 
 void HilbertAction::perform() {
+  if (!_useSlice) {
+	BigattiParams params;
+	extractCliValues(params, _params);
+	BigattiFacade facade(params);
+    if (_univariate)
+	  facade.computeUnivariateHilbertSeries();
+    else
+	  facade.computeMultigradedHilbertSeries();
+	return;
+  }
+
   BigIdeal ideal;
 
   if (_useSlice)
@@ -82,6 +92,8 @@ void HilbertAction::perform() {
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();
   if (_useSlice) {
+	SliceParams params;
+	extractCliValues(params, _params);
     SliceFacade facade(ideal, output.get(), stdout, _printActions);
     _sliceParams.apply(facade);
     if (_univariate)
@@ -89,6 +101,8 @@ void HilbertAction::perform() {
     else
 	  facade.computeMultigradedHilbertSeries();
   } else {
+	BigattiParams params;
+	extractCliValues(params, _params);
 	BigattiFacade facade(ideal, output.get(), stdout, _printActions);
     _sliceParams.apply(facade);
     if (_univariate)

@@ -27,6 +27,11 @@ class BigIdeal;
 class IOHandler;
 class CoefBigTermConsumer;
 
+namespace Params {
+  class BigattiParams;
+}
+using Params::BigattiParams;
+
 /** A facade for computing Hilbert series of monomial ideals using the
  divide-and-conquer algorithm by Bigatti et.al.
 
@@ -45,6 +50,8 @@ class BigattiFacade : public Facade {
 				IOHandler* handler,
 				FILE* out,
 				bool printActions = false);
+
+  BigattiFacade(const BigattiParams& params);
 
   /** Sort the variable in a canonical order, permuting the entries of
    generators of _ideal to match. */

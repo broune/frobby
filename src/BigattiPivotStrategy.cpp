@@ -22,6 +22,7 @@
 #include "Ideal.h"
 #include "Term.h"
 #include "NameFactory.h"
+#include "error.h"
 
 BigattiPivotStrategy::BigattiPivotStrategy() {
 }
@@ -437,11 +438,15 @@ namespace {
 
 auto_ptr<BigattiPivotStrategy> BigattiPivotStrategy::
 createStrategy(const string& name, bool widen) {
-  auto_ptr<BigattiPivotStrategy> strategy =
-	makeStrategyFactory().create(name);
+  auto_ptr<BigattiPivotStrategy> strategy = makeStrategyFactory().create(name);
+  if (strategy.get() == 0) {
+	reportError("Unknown Bigatti et.al. pivot strategy \"" + name + "\".");
+	ASSERT(false); // Should not reach here due to exception.
+  }
 
   if (widen)
 	strategy = auto_ptr<BigattiPivotStrategy>(new WidenPivot(strategy));
 
+  ASSERT(strategy.get() != 0);
   return strategy;
 }

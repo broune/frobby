@@ -21,28 +21,38 @@ class VarNames;
 class IOHandler;
 
 /** This class offers an input interface which is more convenient and
-    for some purposes more efficient than dealing with a FILE*
-    directly.  It keeps track of the current linenumber to report
-    better error messages, so accurate error messages require that all
-    input from the file be read through the same Scanner.
+ for some purposes more efficient than dealing with a FILE*
+ directly. It keeps track of the current line number to report better
+ error messages. Only one Scanner should be reading from a given
+ FILE*, since otherwise the line numbers will be inaccurate.
 
-	All input methods whose documentation does not specifically say otherwise
-	skip whitespace as defined by the standard isspace() method.
+ All input methods whose documentation does not specifically say
+ otherwise skip whitespace as defined by the standard isspace()
+ method.
 
-	There are three concepts for consuming input through a Scanner:
-	
-	Read X: Require an X to be in the input, and return what is read.
+ There are four concepts for consuming input through a Scanner:
 
-	Expect X: Require the exact value X to be in the input and skip past it.
+ Read X: Require an X to be in the input, and return what is read.
+ 
+ Expect X: Require the exact value X to be in the input and skip past it.
+ 
+ Match X: Return true if the exact value X is in the input, and in that case
+ skip past it. Otherwise return false and do nothing else.
 
-	Match X: Return true if the exact value X is in the input, and in that case
-    skip past it.
-	
-	If a requirement is not met, Scanner reports a syntax error using the
-	functions in the error.h header.
+ Peek X: Return true if X is the next thing int he input. Do not skip
+ past anything. May or may not skip whitespace depending on what X is.
+ 
+ If a requirement is not met, Scanner reports a syntax error using the
+ functions in the error.h header.
 */
 class Scanner {
 public:
+  /** Construct a Scanner object.
+
+   @param formatName The format being read. Is used for e.g. error
+    messages.
+   @param in The file to read input from.
+   */
   Scanner(const string& formatName, FILE* in);
   ~Scanner();
 
@@ -94,7 +104,9 @@ public:
   const char* readIdentifier();
 
   /** Reads an identifier and returns the index of that identifier as
-	  a variable in names. */
+	  the index of a variable in names. Throws an exception if there
+	  is no identifier or the identifier is not a variable in
+	  names. */
   size_t readVariable(const VarNames& names);
 
   /** Skips whitespace and returns true if the next token is an

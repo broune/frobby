@@ -44,9 +44,9 @@ const char* SingularIOHandler::staticGetName() {
   return "singular";
 }
 
-void SingularIOHandler::writeTerm(const vector<mpz_class>& term,
-								   const VarNames& names,
-								   FILE* out) {
+void SingularIOHandler::doWriteTerm(const vector<mpz_class>& term,
+									const VarNames& names,
+									FILE* out) {
   writeTermProduct(term, names, out);
 }
 
@@ -94,7 +94,7 @@ void SingularIOHandler::writeTermOfIdeal(const Term& term,
 										 bool isFirst,
 										 FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, translator, out);
+  IOHandlerImpl::writeTermProduct(term, translator, out);
 }
 
 void SingularIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
@@ -102,7 +102,7 @@ void SingularIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 										 bool isFirst,
 										 FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, names, out);
+  IOHandlerImpl::writeTermProduct(term, names, out);
 }
 
 void SingularIOHandler::writeIdealFooter(const VarNames& names,

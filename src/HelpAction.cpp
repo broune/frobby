@@ -21,6 +21,7 @@
 #include "IOHandler.h"
 #include "error.h"
 #include "DataType.h"
+#include <algorithm>
 
 HelpAction::HelpAction():
   Action
@@ -51,12 +52,22 @@ void HelpAction::processNonParameter(const char* str) {
   }
 }
 
+namespace {
+  // Helper function for displayActionHelp().
+  bool paramCmp(Parameter* a, Parameter* b) {
+	ASSERT(a != 0);
+	ASSERT(b != 0);
+	return string(a->getName()) < b->getName();
+  }
+}
+
 void HelpAction::displayActionHelp(Action* action) {
   fprintf(stderr, "Displaying information on action: %s\n\n%s\n",
 		  action->getName(), action->getDescription());
 
   vector<Parameter*> parameters;
   action->obtainParameters(parameters);
+  sort(parameters.begin(), parameters.end(), paramCmp);
 
   if (!parameters.empty()) {
     fprintf(stderr, "\nThe parameters accepted by %s are as follows.\n",

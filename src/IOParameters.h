@@ -29,6 +29,7 @@ class IOParameters : public ParameterGroup {
   IOParameters(const DataType& input, const DataType& output);
 
   void setOutputFormat(const string& format);
+  void setInputFormat(const string& format);
 
   const string& getInputFormat() const;
   const string& getOutputFormat() const;

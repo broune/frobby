@@ -18,8 +18,7 @@
 #define ACTION_GUARD
 
 #include "BoolParameter.h"
-
-#include <vector>
+#include "CliParams.h"
 
 class Parameter;
 
@@ -40,7 +39,7 @@ class Action {
   bool acceptsNonParameter() const;
   virtual void processNonParameter(const char* str);
 
-  virtual void obtainParameters(vector<Parameter*>& parameters) = 0;
+  virtual void obtainParameters(vector<Parameter*>& parameters);
 
   virtual void parseCommandLine(unsigned int tokenCount,
 								const char** tokens);
@@ -51,11 +50,17 @@ class Action {
 	help action.*/
   virtual bool displayAction() const;
 
+  const Parameter& getParam(const string& name) const;
+
   static void addNamesWithPrefix(const string& prefix,
 								 vector<string>& names);
   static auto_ptr<Action> createActionWithPrefix(const string& prefix);
 
  protected:
+  CliParams _params;
+
+
+
   const char* _name;
   const char* _shortDescription;
   const char* _description;
@@ -63,12 +68,6 @@ class Action {
 
   BoolParameter _printActions;
 
- private:
-  void processOption(const string& optionName,
-					 const char** params,
-					 unsigned int paramCount);
-
-  vector<Parameter*> _parameters;
 };
 
 #endif
