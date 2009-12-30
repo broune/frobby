@@ -32,6 +32,15 @@ void reportInternalError(const string& errorMsg) {
   throw InternalFrobbyException(err);
 }
 
+void reportInternalError
+(const string& errorMsg, const char* file, unsigned int lineNumber) {
+  FrobbyStringStream err;
+  err << errorMsg << '\n'
+	  << "The internal Error occured in file " << file
+	  << " on line " << lineNumber << '.';
+  reportInternalError(err);
+}
+
 void reportSyntaxError(const Scanner& scanner, const string& errorMsg) {
   FrobbyStringStream err;
   err << "SYNTAX ERROR (";

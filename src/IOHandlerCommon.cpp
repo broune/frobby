@@ -24,16 +24,16 @@
 
 IOHandlerCommon::IOHandlerCommon(const char* formatName,
 								 const char* formatDescription):
-  IOHandler(formatName, formatDescription, false) {
+  IOHandlerImpl(formatName, formatDescription, false) {
 }
 
-void IOHandlerCommon::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+void IOHandlerCommon::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
   VarNames names;
   readRing(in, names);
   readBareIdeal(in, names, consumer);
 }
 
-void IOHandlerCommon::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+void IOHandlerCommon::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
   VarNames names;
   readRing(in, names);
   if (!hasMoreInput(in)) {
@@ -49,15 +49,15 @@ void IOHandlerCommon::readIdeals(Scanner& in, BigTermConsumer& consumer) {
   }
 }
 
-void IOHandlerCommon::readPolynomial
+void IOHandlerCommon::doReadPolynomial
 (Scanner& in, CoefBigTermConsumer& consumer) {
   VarNames names;
   readRing(in, names);
   readBarePolynomial(in, names, consumer);
 }
 
-void IOHandlerCommon::readSatBinomIdeal(Scanner& in,
-										SatBinomConsumer& consumer) {
+void IOHandlerCommon::doReadSatBinomIdeal(Scanner& in,
+										  SatBinomConsumer& consumer) {
   ASSERT(false);
   reportInternalError
 	("Unimplemented method IOHandlerCommon::readSatBinomIdeal called.");

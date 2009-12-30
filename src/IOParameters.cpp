@@ -91,6 +91,12 @@ void IOParameters::setOutputFormat(const string& format) {
   *_outputFormat = format;
 }
 
+void IOParameters::setInputFormat(const string& format) {
+  ASSERT(!_outputType.isNull());
+
+  *_inputFormat = format;
+}
+
 const string& IOParameters::getInputFormat() const {
   ASSERT(!_inputType.isNull());
   ASSERT(_inputFormat.get() != 0);
@@ -126,29 +132,8 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
   ASSERT(!_inputType.isNull());
   ASSERT(_inputFormat.get() != 0);
 
-  if (_inputFormat->getValue() == "autodetect") {
-	// Get to the first non-whitespace character.
-	in.eatWhite();
-	int c = in.peek();
-
-	// The first condition at each if is the correct one. The other ones
-	// are attempts to catch easy mistakes.
-	if (c == 'R' || c == 'I' || c == 'Z' || c == '=' || c == 'm' ||
-		c == 'W' || c == 'q' || c == 'Q')
-	  *_inputFormat = "m2";
-	else if (c == 'U' || c == 'u')
-	  *_inputFormat = "cocoa4";
-	else if (c == 'r')
-	  *_inputFormat = "singular";
-	else if (c == '(' || c == 'l' || c == ')')
-	  *_inputFormat = "newmonos";
-	else if (isdigit(c) || c == '+' || c == '-')
-	  *_inputFormat = "4ti2";
-	else if (c == 'v')
-	  *_inputFormat = "monos";
-	else
-	  *_inputFormat = "m2"; // We use m2 as a fall-back
-  }
+  if (_inputFormat->getValue() == "autodetect")
+	*_inputFormat = autoDetectFormat(in);
 
   if (in.getFormat() == "autodetect")
 	in.setFormat(*_inputFormat);
@@ -159,9 +144,7 @@ void IOParameters::validateFormats() const {
 
   if (!_inputType.isNull()) {
 	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getInputFormat()));
-	if (handler.get() == 0)
-	  reportError("Unknown input format \"" + getInputFormat() + "\".");
-
+	
 	if (!handler->supportsInput(_inputType)) {
 	  FrobbyStringStream errorMsg;
 	  errorMsg << "The "
@@ -175,9 +158,7 @@ void IOParameters::validateFormats() const {
 
   if (!_outputType.isNull()) {
 	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getOutputFormat()));
-	if (handler.get() == 0)
-	  reportError("Unknown output format \"" + getOutputFormat() + "\".");
-
+	/*
 	if (!handler->supportsOutput(_outputType)) {
 	  FrobbyStringStream errorMsg;
 	  errorMsg << "The "
@@ -187,5 +168,6 @@ void IOParameters::validateFormats() const {
 			   << '.';
 	  reportError(errorMsg);
 	}
+	*/
   }
 }

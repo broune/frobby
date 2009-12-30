@@ -24,6 +24,11 @@
 #include "TranslatingCoefTermConsumer.h"
 #include "TotalDegreeCoefTermConsumer.h"
 #include "BigattiHilbertAlgorithm.h"
+#include "BigattiParams.h"
+#include "IOFacade.h"
+#include "IOParameters.h"
+#include "DataType.h"
+#include "Scanner.h"
 
 BigattiFacade::BigattiFacade
 (const BigIdeal& bigIdeal, IOHandler* handler, FILE* out,
@@ -33,6 +38,45 @@ BigattiFacade::BigattiFacade
   _ioHandler(handler),
   _out(out) {
   ASSERT(_ioHandler != 0);
+
+  beginAction("Translating ideal to internal data structure.");
+  _translator.reset(new TermTranslator(bigIdeal, _ideal, false));
+  endAction();
+}
+
+BigattiFacade::BigattiFacade(const BigattiParams& params):
+  Facade(params.getPrintActions()),
+  _out(stdout) {
+
+  setDoCanonicalOutput(params.getProduceCanonicalOutput());
+  setIsMinimallyGenerated(params.getIdealIsMinimal());
+  setPrintStatistics(params.getPrintStatistics());
+  setPrintDebug(params.getPrintDebug());
+  setUseGenericBaseCase(params.getUseGenericBaseCase());
+  setUseSimplification(params.getUseSimplification());
+
+  setPivotStrategy
+	(BigattiPivotStrategy::createStrategy(params.getPivot(),
+										  params.getWidenPivot()));
+
+  BigIdeal bigIdeal;
+  {
+	IOParameters io(DataType::getMonomialIdealType(),
+					DataType::getPolynomialType());
+	Scanner in(params.getInputFormat(), stdin);
+	io.setInputFormat(params.getInputFormat());
+	io.setOutputFormat(params.getOutputFormat());
+	io.autoDetectInputFormat(in);
+	io.validateFormats();
+
+	// TODO: fix leak
+	_ioHandler = IOHandler::createIOHandler
+	  (io.getOutputFormat()).release(); 
+
+	IOFacade facade(params.getPrintActions());
+	facade.readIdeal(in, bigIdeal);
+	in.expectEOF();
+  }
 
   beginAction("Translating ideal to internal data structure.");
   _translator.reset(new TermTranslator(bigIdeal, _ideal, false));

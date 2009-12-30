@@ -17,26 +17,26 @@
 #ifndef NEW_MONOS_HANDLER_IO
 #define NEW_MONOS_HANDLER_IO
 
-#include "IOHandler.h"
+#include "IOHandlerImpl.h"
 
 class Scanner;
 class VarNames;
 class BigIdeal;
 
-class NewMonosIOHandler : public IOHandler {
+class NewMonosIOHandler : public IOHandlerImpl {
 public:
   NewMonosIOHandler();
-
-  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
-  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
-
-  virtual void writeTerm(const vector<mpz_class>& term,
-						 const VarNames& names,
-						 FILE* out);
 
   static const char* staticGetName();
 
  private:
+  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+  virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+
+  virtual void doWriteTerm(const vector<mpz_class>& term,
+						 const VarNames& names,
+						 FILE* out);
+
   void readRingNoLeftParen(Scanner& in, VarNames& names);
   void readIdealNoLeftParen(Scanner& in, BigTermConsumer& consumer);
   virtual void writeRing(const VarNames& names, FILE* out);
@@ -57,10 +57,10 @@ public:
 								FILE* out);
 
   /// Not supported.
-  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+  virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
   /// Not supported.
-  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+  virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 };
 
 #endif

@@ -56,9 +56,9 @@ string Macaulay2IOHandler::getRingName(const VarNames& names) {
   }
 }
 
-void Macaulay2IOHandler::writeTerm(const vector<mpz_class>& term,
-								   const VarNames& names,
-								   FILE* out) {
+void Macaulay2IOHandler::doWriteTerm(const vector<mpz_class>& term,
+									 const VarNames& names,
+									 FILE* out) {
   writeTermProduct(term, names, out);
 }
 
@@ -75,7 +75,7 @@ void Macaulay2IOHandler::writeTermOfIdeal(const Term& term,
 										  bool isFirst,
 										  FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, translator, out);
+  IOHandlerImpl::writeTermProduct(term, translator, out);
 
   size_t varCount = translator->getVarCount();
   for (size_t var = 0; var < varCount; ++var)
@@ -91,7 +91,7 @@ void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
 										  bool isFirst,
 										  FILE* out) {
   fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, names, out);
+  IOHandlerImpl::writeTermProduct(term, names, out);
 
   size_t varCount = term.size();
   for (size_t var = 0; var < varCount; ++var)

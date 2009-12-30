@@ -107,7 +107,7 @@ namespace {
 
 
 CountingIOHandler::CountingIOHandler():
-  IOHandler(staticGetName(), "Writes the number of output terms.", false) {
+  IOHandlerImpl(staticGetName(), "Writes the number of output terms.", false) {
 
   registerOutput(DataType::getMonomialIdealType());
   registerOutput(DataType::getPolynomialType());
@@ -118,84 +118,15 @@ const char* CountingIOHandler::staticGetName() {
   return "count";
 }
 
-void CountingIOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
-}
-
-void CountingIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
-}
-
-void CountingIOHandler::writeRing(const VarNames& names, FILE* out) {
-}
-
-void CountingIOHandler::writeTerm(const vector<mpz_class>& term,
-								  const VarNames& names,
-								  FILE* out) {
-}
-
-auto_ptr<BigTermConsumer> CountingIOHandler::createIdealWriter(FILE* out) {
+auto_ptr<BigTermConsumer> CountingIOHandler::doCreateIdealWriter(FILE* out) {
   return auto_ptr<BigTermConsumer>(new CountingConsumer(out));
 }
 
-void CountingIOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-										  const Term& term,
-										  const TermTranslator* translator,
-										  bool isFirst,
-										  FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-										  const vector<mpz_class>& term,
-										  const VarNames& names,
-										  bool isFirst,
-										  FILE* out) {
-}
-
-void CountingIOHandler::writePolynomialFooter(const VarNames& names,
-										  bool wroteAnyGenerators,
-										  FILE* out) {
-}
-
-void CountingIOHandler::writeIdealHeader(const VarNames& names,
-									 bool defineNewRing,
-									 FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfIdeal(const Term& term,
-									 const TermTranslator* translator,
-									 bool isFirst,
-									 FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
-									 const VarNames& names,
-									 bool isFirst,
-									 FILE* out) {
-}
-
-void CountingIOHandler::writeIdealFooter(const VarNames& names,
-									 bool wroteAnyGenerators,
-									 FILE* out) {
-}
-
-auto_ptr<CoefBigTermConsumer> CountingIOHandler::createPolynomialWriter
+auto_ptr<CoefBigTermConsumer> CountingIOHandler::doCreatePolynomialWriter
 (FILE* out) {
   return auto_ptr<CoefBigTermConsumer>(new CountingConsumer(out));
 }
 
-void CountingIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-}
-
-bool CountingIOHandler::hasMoreInput(Scanner& scanner) const {
+bool CountingIOHandler::doHasMoreInput(Scanner& scanner) const {
   return false;
-}
-
-void CountingIOHandler::readPolynomial
-(Scanner& in, CoefBigTermConsumer& consumer) {
-}
-
-void CountingIOHandler::readSatBinomIdeal
-(Scanner& in, SatBinomConsumer& consumer) {
 }

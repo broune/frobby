@@ -17,6 +17,7 @@
 #include "stdinc.h"
 #include "IOHandler.h"
 
+// TODO: clean this up
 #include "Scanner.h"
 #include "BigIdeal.h"
 #include "TermTranslator.h"
@@ -49,333 +50,7 @@
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
 
-bool IOHandler::supportsInput(const DataType& type) const {
-  return std::find(_supportedInputs.begin(), _supportedInputs.end(),
-				   &type) != _supportedInputs.end();
-}
-
-bool IOHandler::supportsOutput(const DataType& type) const {
-  return std::find(_supportedOutputs.begin(), _supportedOutputs.end(),
-				   &type) != _supportedOutputs.end();
-}
-
-void IOHandler::registerInput(const DataType& type) {
-  ASSERT(!type.isNull());
-  ASSERT(!supportsInput(type));
-
-  _supportedInputs.push_back(&type);
-}
-
-void IOHandler::registerOutput(const DataType& type) {
-  ASSERT(!type.isNull());
-  ASSERT(!supportsOutput(type));
-
-  _supportedOutputs.push_back(&type);
-}
-
-class IdealWriter : public BigTermConsumer {
-public:
-  IdealWriter(IOHandler* handler, FILE* out):
-	_handler(handler),
-	_out(out),
-	_firstIdeal(true),
-	_firstGenerator(true),
-	_names() {
-	ASSERT(handler != 0);
-	ASSERT(out != 0);
-  }
-
-  virtual void consumeRing(const VarNames& names) {
-	if (_names != names) {
-	  _names = names;
-	  _firstIdeal = true;
-	}
-  }
-
-  virtual void beginConsumingList() {
-	_firstIdeal = true;
-  }
-
-  virtual void beginConsuming() {
-	_handler->writeIdealHeader(_names, _firstIdeal, _out);
-	_firstGenerator = true;
-  }
-
-  virtual void consume(const Term& term) {
-	ASSERT(term.getVarCount() == _names.getVarCount());
-
-	BigTermConsumer::consume(term);
-	_firstGenerator = false;
-  }
-
-  virtual void consume(const Term& term, const TermTranslator& translator) {
-	ASSERT(term.getVarCount() == _names.getVarCount());
-
-	_handler->writeTermOfIdeal(term, &translator, _firstGenerator, _out);
-	_firstGenerator = false;	
-  }
-
-  virtual void consume(const vector<mpz_class>& term) {
-	ASSERT(term.size() == _names.getVarCount());
-
-	_handler->writeTermOfIdeal
-	  (term, _names, _firstGenerator, _out);
-	_firstGenerator = false;
-  }
-
-  virtual void doneConsuming() {
-	_handler->writeIdealFooter(_names, !_firstGenerator, _out);
-	_firstIdeal = false;
-  }
-
-  virtual void doneConsumingList() {
-	if (_firstIdeal)
-	  _handler->writeRing(_names, _out);
-  }
-
-  virtual void consume(const BigIdeal& ideal) {
-	consumeRing(ideal.getNames());
-
-	// We do not just call beginConsuming() because we need to call
-	// the overload of writeIdealHeader that specifies the number of
-	// generators to follow.
-	_handler->writeIdealHeader(_names, _firstIdeal,
-							   ideal.getGeneratorCount(), _out);
-	_firstGenerator = true;
-
-	for (size_t term = 0; term < ideal.getGeneratorCount(); ++term)
-	  consume(ideal.getTerm(term));
-	doneConsuming();
-  }
-
-private:
-  IOHandler* _handler;
-  FILE* _out;
-  bool _firstIdeal;
-  bool _firstGenerator;
-  VarNames _names;
-};
-
-void IOHandler::readTerm(Scanner& in,
-						 const VarNames& names,
-						 vector<mpz_class>& term) {
-  // TODO: Consider eliminating the code duplication from the other
-  // readTerm.
-
-  term.resize(names.getVarCount());
-  for (size_t var = 0; var < term.size(); ++var)
-	term[var] = 0;
-
-  if (in.match('1'))
-    return;
-
-  do {
-    readVarPower(term, names, in);
-  } while (in.match('*'));
-}
-
 IOHandler::~IOHandler() {
-}
-
-bool IOHandler::hasMoreInput(Scanner& in) const {
-  return !in.matchEOF();
-}
-
-const char* IOHandler::getName() const {
-  return _formatName;
-}
-
-const char* IOHandler::getDescription() const {
-  return _formatDescription;
-}
-
-IOHandler::IOHandler(const char* formatName,
-					 const char* formatDescription,
-					 bool requiresSizeForIdealOutput):
-  _formatName(formatName),
-  _formatDescription(formatDescription),
-  _requiresSizeForIdealOutput(requiresSizeForIdealOutput) {
-  ASSERT(formatName != 0);
-  ASSERT(formatDescription != 0);
-}
-
-auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
-  ASSERT(supportsOutput(DataType::getMonomialIdealType()));
-
-  auto_ptr<BigTermConsumer> writer(new IdealWriter(this, out));
-  return writer;
-}
-
-void IOHandler::writeCoefTermProduct(const mpz_class& coef,
-									 const Term& term,
-									 const TermTranslator* translator,
-									 bool hidePlus,
-									 FILE* out) {
-  if (coef >= 0 && !hidePlus)
-	fputc('+', out);
-
-  if (term.isIdentity()) {
-	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
-	return;
-  }
-
-  if (coef == -1)
-	fputc('-', out);
-  else if (coef != 1)
-	gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
-
-  writeTermProduct(term, translator, out);
-}
-
-void IOHandler::writeCoefTermProduct(const mpz_class& coef,
-									 const vector<mpz_class>& term,
-									 const VarNames& names,
-									 bool hidePlus,
-									 FILE* out) {
-  if (coef >= 0 && !hidePlus)
-	fputc('+', out);
-
-  bool isIdentity = true;
-  for (size_t var = 0; var < term.size(); ++var)
-	if (term[var] != 0)
-	  isIdentity = false;
-
-  if (isIdentity) {
-	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
-	return;
-  }
-
-  if (coef == -1)
-	fputc('-', out);
-  else if (coef != 1)
-	gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
-
-  writeTermProduct(term, names, out);
-}
-
-void IOHandler::writeTermProduct(const Term& term,
-								 const TermTranslator* translator,
-								 FILE* out) {
-  bool seenNonZero = false;
-  size_t varCount = term.getVarCount();
-  for (size_t var = 0; var < varCount; ++var) {
-	const char* exp = translator->getVarExponentString(var, term[var]);
-	if (exp == 0)
-	  continue;
-
-	if (seenNonZero)
-	  putc('*', out);
-	else
-	  seenNonZero = true;
-
-	fputs(exp, out);
-  }
-
-  if (!seenNonZero)
-	fputc('1', out);
-}
-
-void IOHandler::writeTermProduct(const vector<mpz_class>& term,
-								 const VarNames& names,
-								 FILE* out) {
-  bool seenNonZero = false;
-  size_t varCount = term.size();
-  for (size_t var = 0; var < varCount; ++var) {
-    if (term[var] == 0)
-      continue;
-
-	if (seenNonZero)
-	  fputc('*', out);
-	else
-	  seenNonZero = true;
-
-    fputs(names.getName(var).c_str(), out);
-    if ((term[var]) != 1) {
-	  fputc('^', out);
-	  mpz_out_str(out, 10, term[var].get_mpz_t());
-	}
-  }
-
-  if (!seenNonZero)
-    fputc('1', out);
-}
-
-void IOHandler::readTerm(BigIdeal& ideal, Scanner& in) {
-  ideal.newLastTerm();
-
-  if (in.match('1'))
-    return;
-
-  do {
-    readVarPower(ideal.getLastTermRef(), ideal.getNames(), in);
-  } while (in.match('*'));
-}
-
-void IOHandler::readCoefTerm
-(mpz_class& coef,
- vector<mpz_class>& term,
- const VarNames& names,
- bool firstTerm,
- Scanner& in) {
-  term.resize(names.getVarCount());
-  for (size_t var = 0; var < term.size(); ++var)
-	term[var] = 0;
-
-  bool positive = true;
-  if (!firstTerm && in.match('+'))
-	positive = !in.match('-');
-  else if (in.match('-'))
-	positive = false;
-  else if (!firstTerm) {
-	in.expect('+');
-	return;
-  }
-  if (in.match('+') || in.match('-'))
-	reportSyntaxError(in, "Too many adjacent signs.");
-
-  if (in.peekIdentifier()) {
-	coef = 1;
-	readVarPower(term, names, in);
-  } else
-	in.readInteger(coef);
-
-  while (in.match('*'))
-	readVarPower(term, names, in);
-
-  if (!positive)
-	coef = -coef;
-}
-
-void IOHandler::readCoefTerm(BigPolynomial& polynomial,
-							 bool firstTerm,
-							 Scanner& in) {
-  polynomial.newLastTerm();
-  mpz_class& coef = polynomial.getLastCoef();
-  vector<mpz_class>& term = polynomial.getLastTerm();
-
-  readCoefTerm(coef, term, polynomial.getNames(), firstTerm, in);
-}
-
-void IOHandler::readVarPower(vector<mpz_class>& term,
-							 const VarNames& names, Scanner& in) {
-  size_t var = in.readVariable(names);
-
-  if (term[var] != 0) {
-	const string& name = names.getName(var);
-	reportSyntaxError(in, "The variable " + 
-					  name + " appears more than once in monomial.");
-  }
-
-  if (in.match('^')) {
-    in.readInteger(term[var]);
-    if (term[var] <= 0) {
-	  FrobbyStringStream errorMsg;
-	  errorMsg << "Expected positive integer as exponent but got "
-			   << term[var] << ".";
-	  reportSyntaxError(in, errorMsg);
-    }
-  } else
-    term[var] = 1;
 }
 
 namespace {
@@ -398,111 +73,14 @@ namespace {
 }
 
 auto_ptr<IOHandler> IOHandler::createIOHandler(const string& name) {
-  return getIOHandlerFactory().create(name);
+  auto_ptr<IOHandler> handler = getIOHandlerFactory().create(name);
+  if (handler.get() == 0)
+	reportError("Unknown format \"" + name + "\".");	
+  return handler;
 }
 
 void IOHandler::addFormatNames(vector<string>& names) {
   getIOHandlerFactory().addNamesWithPrefix("", names);
-}
-
-void IOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
-  ASSERT(false);
-  reportInternalError("Called IOHandler::writePolynomialHeader.");
-}
-
-void IOHandler::writePolynomialHeader(const VarNames& names,
-									  size_t termCount,
-									  FILE* out) {
-  writePolynomialHeader(names, out);
-}
-
-void IOHandler::writeTermOfPolynomial(const mpz_class& coef,
-									  const Term& term,
-									  const TermTranslator* translator,
-									  bool isFirst,
-									  FILE* out) {
-  ASSERT(false);
-  reportInternalError("Called IOHandler::writeTermOfPolynomial (small).");
-}
-
-void IOHandler::writeTermOfPolynomial(const mpz_class& coef,
-									  const vector<mpz_class>& term,
-									  const VarNames& names,
-									  bool isFirst,
-									  FILE* out) {
-  ASSERT(false);
-  reportInternalError("Called IOHandler::writeTermOfPolynomial (big).");
-}
-
-void IOHandler::writePolynomialFooter(const VarNames& names,
-									  bool wroteAnyGenerators,
-									  FILE* out) {
-  ASSERT(false);
-  reportInternalError("Called IOHandler::writePolynomialFooter.\n");
-}
-
-void IOHandler::writeIdealHeader(const VarNames& names,
-								 bool defineNewRing,
-								 size_t generatorCount,
-								 FILE* out) {
-  writeIdealHeader(names, defineNewRing, out);
-}
-
-class PolynomialWriter : public CoefBigTermConsumer {
-public:
-  PolynomialWriter(IOHandler* handler, FILE* out):
-	_handler(handler),
-	_out(out),
-	_firstTerm(true) {
-	ASSERT(handler != 0);
-  }
-
-  virtual void consumeRing(const VarNames& names) {
-	_names = names;
-  }
-
-  virtual void beginConsuming() {
-	_handler->writePolynomialHeader(_names, _out);
-	_firstTerm = true;
-  }
-
-  virtual void consume(const mpz_class& coef, const vector<mpz_class>& term) {
-	_handler->writeTermOfPolynomial(coef, term, _names, _firstTerm, _out);
-	_firstTerm = false;	
-  }
-
-  virtual void consume
-  (const mpz_class& coef, const Term& term, const TermTranslator& translator) {
-	_handler->writeTermOfPolynomial(coef, term, &translator, _firstTerm, _out);
-	_firstTerm = false;
-  }	
-
-  virtual void doneConsuming() {
-	_handler->writePolynomialFooter(_names, !_firstTerm, _out);
-  }
-
-  virtual void consume(const BigPolynomial& poly) {
-	consumeRing(poly.getNames());
-
-	// We do this instead of calling beginConsuming directly so that
-	// we can specify the number of terms.
-	_handler->writePolynomialHeader(_names, poly.getTermCount(), _out);
-
-	for (size_t index = 0; index < poly.getTermCount(); ++index)
-	  consume(poly.getCoef(index), poly.getTerm(index));
-	doneConsuming();
-  }
-
-private:
-  IOHandler* _handler;
-  FILE* _out;
-  bool _firstTerm;
-  VarNames _names;
-};
-
-auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
-  ASSERT(supportsOutput(DataType::getPolynomialType()));
-  return auto_ptr<CoefBigTermConsumer>(new PolynomialWriter(this, out));
 }
 
 void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
@@ -541,4 +119,56 @@ void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
 			 << gcd << '.';
 	reportSyntaxError(in, errorMsg);
   }
+}
+
+string autoDetectFormat(Scanner& in) {
+  // We guess based on the initial non-whitespace character. We detect
+  // more than the correct initial character to try to guess the
+  // intended format in the face of mistakes.
+  in.eatWhite();
+  switch (in.peek()) {
+  case 'U': // correct
+  case 'u': // incorrect
+	return "cocoa4";
+
+  case 'r': // correct
+	return "singular";
+
+  case '(': // correct
+  case 'l': // incorrect
+  case ')': // incorrect
+	return "newmonos";
+
+  case '0': case '1': case '2': case '3': case '4': // correct
+  case '5': case '6': case '7': case '8': case '9': // correct
+  case '+': case '-': // incorrect
+	return "4ti2";
+
+  case 'v': // correct
+	return "monos";
+
+  case 'R': // correct
+  default: // incorrect
+	return "m2";
+  }
+}
+
+auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
+  if (!supportsOutput(DataType::getMonomialIdealType())) {
+	FrobbyStringStream errorMsg;
+	errorMsg << "The " << getName()
+			 << " format does not support output of a monomial ideal.";
+	reportError(errorMsg);
+  }
+  return doCreateIdealWriter(out);
+}
+
+auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
+  if (!supportsOutput(DataType::getPolynomialType())) {
+	FrobbyStringStream errorMsg;
+	errorMsg << "The " << getName()
+			 << " format does not support output of a polynomial.";
+	reportError(errorMsg);
+  }
+  return doCreatePolynomialWriter(out);
 }
