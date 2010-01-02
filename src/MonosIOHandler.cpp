@@ -17,114 +17,129 @@
 #include "stdinc.h"
 #include "MonosIOHandler.h"
 
-#include "BigIdeal.h"
 #include "Scanner.h"
-#include "error.h"
 #include "BigTermConsumer.h"
 #include "DataType.h"
-#include "IOHandlerImpl.h"
+#include "IdealWriter.h"
+#include "error.h"
 
 #include <cstdio>
 
-MonosIOHandler::MonosIOHandler():
-  IOHandlerCommon(staticGetName(), "Older format used by the program Monos.") {
-  registerInput(DataType::getMonomialIdealType());
-  registerInput(DataType::getMonomialIdealListType());
-  registerOutput(DataType::getMonomialIdealType());
-  registerOutput(DataType::getMonomialIdealListType());
-}
-
-const char* MonosIOHandler::staticGetName() {
-  return "monos";
-}
-
-void MonosIOHandler::writeRing(const VarNames& names, FILE* out) {
-  fputs("vars ", out);
-  const char* pre = "";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-	fputs(pre, out);
-	fputs(names.getName(i).c_str(), out);
-	pre = ", ";
+namespace IO {
+  namespace Monos {
+	void writeRing(const VarNames& names, FILE* out);
   }
-  fputs(";\n", out);
-}
+  namespace M = Monos;
 
-void MonosIOHandler::doWriteTerm(const vector<mpz_class>& term,
-							   const VarNames& names,
-							   FILE* out) {
-  writeTermProduct(term, names, out);
-}
-
-void MonosIOHandler::writeIdealHeader(const VarNames& names,
-									  bool defineNewRing,
-									  FILE* out) {
-  writeRing(names, out);
-  fputc('[', out);
-}
-
-void MonosIOHandler::writeTermOfIdeal(const Term& term,
-									  const TermTranslator* translator,
-									  bool isFirst,
-									  FILE* out) {
-  fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandlerImpl::writeTermProduct(term, translator, out);
-}
-
-void MonosIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
-									  const VarNames& names,
-									  bool isFirst,
-									  FILE* out) {
-  fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandlerImpl::writeTermProduct(term, names, out);
-}
-
-void MonosIOHandler::writeIdealFooter(const VarNames& names,
-									  bool wroteAnyGenerators,
-									  FILE* out) {
-  fputs("\n];\n", out);
-}
-
-void MonosIOHandler::readRing(Scanner& in, VarNames& names) {
-  names.clear();
-  in.expect("vars");
-  if (!in.match(';')) {
-	do {
-	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
-	} while (in.match(','));
-	in.expect(';');
-  }  
-}
-
-bool MonosIOHandler::peekRing(Scanner& in) {
-  return in.peek('v');
-}
-
-void MonosIOHandler::readBareIdeal(Scanner& in,
-								   const VarNames& names,
-								   BigTermConsumer& consumer) {
-  consumer.beginConsuming(names);
-  vector<mpz_class> term(names.getVarCount());
-
-  in.expect('[');
-  if (!in.match(']')) {
-    do {
-      readTerm(in, names, term);
-	  consumer.consume(term);
-    } while (in.match(','));
-	if (!in.match(']')) {
-	  if (in.peekIdentifier())
-		in.expect('*');
-	  else
-		in.expect(']');
+  class MonosIdealWriter : public IdealWriter {
+  public:
+	MonosIdealWriter(FILE* out): IdealWriter(out) {
 	}
+
+  private:
+	virtual void doWriteHeader(bool first) {
+	  M::writeRing(getNames(), getFile());
+	  fputc('[', getFile());
+	}
+
+	virtual void doWriteTerm(const Term& term,
+							 const TermTranslator& translator,
+							 bool first) {
+	  fputs(first ? "\n " : ",\n ", getFile());
+	  writeTermProduct(term, translator, getFile());
+	}
+
+	virtual void doWriteTerm(const vector<mpz_class>& term,
+							 bool first) {
+	  fputs(first ? "\n " : ",\n ", getFile());
+	  writeTermProduct(term, getNames(), getFile());
+	}
+
+	virtual void doWriteFooter(bool wasZeroIdeal) {
+	  fputs("\n];\n", getFile());
+	}
+
+	virtual void doWriteEmptyList() {
+	  M::writeRing(getNames(), getFile());
+	}
+  };
+
+  MonosIOHandler::MonosIOHandler():
+	IOHandlerCommon(staticGetName(),
+					"Older format used by the program Monos.") {
+	registerInput(DataType::getMonomialIdealType());
+	registerInput(DataType::getMonomialIdealListType());
+	registerOutput(DataType::getMonomialIdealType());
+	registerOutput(DataType::getMonomialIdealListType());
   }
-  in.expect(';');
 
-  consumer.doneConsuming();
-}
+  const char* MonosIOHandler::staticGetName() {
+	return "monos";
+  }
 
-void MonosIOHandler::readBarePolynomial
-(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) {
-  ASSERT(false);
-  reportInternalError("Called MonosIOHandler::readBarePolynomial.");
+  BigTermConsumer* MonosIOHandler::doCreateIdealWriter(FILE* out) {
+	return new MonosIdealWriter(out);
+  }
+
+  void MonosIOHandler::doWriteTerm(const vector<mpz_class>& term,
+									const VarNames& names,
+									FILE* out) {
+	writeTermProduct(term, names, out);
+  }
+
+  void MonosIOHandler::doReadTerm(Scanner& in,
+								   const VarNames& names,
+								   vector<mpz_class>& term) {
+	readTermProduct(in, names, term);
+  }
+
+  void MonosIOHandler::doReadRing(Scanner& in, VarNames& names) {
+	names.clear();
+	in.expect("vars");
+	if (!in.match(';')) {
+	  do {
+		names.addVarSyntaxCheckUnique(in, in.readIdentifier());
+	  } while (in.match(','));
+	  in.expect(';');
+	}  
+  }
+
+  bool MonosIOHandler::doPeekRing(Scanner& in) {
+	return in.peek('v');
+  }
+
+  void MonosIOHandler::doReadBareIdeal(Scanner& in,
+									   const VarNames& names,
+									   BigTermConsumer& consumer) {
+	consumer.beginConsuming(names);
+	vector<mpz_class> term(names.getVarCount());
+
+	in.expect('[');
+	if (!in.match(']')) {
+	  do {
+		readTerm(in, names, term);
+		consumer.consume(term);
+	  } while (in.match(','));
+	  if (!in.match(']')) {
+		if (in.peekIdentifier())
+		  in.expect('*');
+		else
+		  in.expect(']');
+	  }
+	}
+	in.expect(';');
+
+	consumer.doneConsuming();
+  }
+
+  void M::writeRing(const VarNames& names, FILE* out) {
+	fputs("vars ", out);
+	const char* pre = "";
+	for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+	  fputs(pre, out);
+	  fputs(names.getName(i).c_str(), out);
+	  pre = ", ";
+	}
+	fputs(";\n", out);
+  }
 }

@@ -1,5 +1,6 @@
 /* Frobby: Software for monomial ideal computations.
-   Copyright (C) 2007 Bjarke Hammersholt Roune (www.broune.com)
+   Copyright (C) 2009 University of Aarhus
+   Contact Bjarke Hammersholt Roune for license information (www.broune.com)
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,27 +20,54 @@
 
 #include "IOHandlerImpl.h"
 
-/** IOHandlerCommon is an abstract base class that implements functionality
- that is useful for most but not all derivates of IOHandler.
-*/
-class IOHandlerCommon : public IOHandlerImpl {
- public:
-  IOHandlerCommon(const char* formatName, const char* formatDescription);
+class Scanner;
+class VarNames;
+class BigTermConsumer;
+class CoefBigTermConsumer;
 
- protected:
-  virtual void readRing(Scanner& in, VarNames& names) = 0;
-  virtual bool peekRing(Scanner& in) = 0;
+namespace IO {
+  /** This class contains further functionality that makes it more
+   convenient to derive from than IOHandlerImpl in most but not all
+   cases. */
+  class IOHandlerCommon : public IOHandlerImpl {
+  public:
+	IOHandlerCommon(const char* formatName,
+					const char* formatDescription);
 
-  virtual void readBareIdeal
-	(Scanner& in, const VarNames& names, BigTermConsumer& consumer) = 0;
-  virtual void readBarePolynomial
-	(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) = 0;
+	/** Reads a ring, i.e. the names of the variables. */
+	void readRing(Scanner& in, VarNames& names);
 
- private:
-  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-  virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
-  virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
-  virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
-};
+	/** Returns true if what follows in the input is a ring, assuming
+	 there are no syntax errors. */
+	bool peekRing(Scanner& in);
+
+	/** Reads an ideal without a ring preceding it. */
+	void readBareIdeal(Scanner& in,
+					   const VarNames& names,
+					   BigTermConsumer& consumer);
+
+	/** Reads a polynomial without a ring preceding it. */
+	void readBarePolynomial(Scanner& in,
+							const VarNames& names,
+							CoefBigTermConsumer& consumer);
+
+  private:
+	// The following methods are implemented in terms of the new methods.
+	virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+	virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+	virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+
+	// Override these methods except for those that do input
+	// of un-supported type.
+	virtual void doReadRing(Scanner& in, VarNames& names) = 0;
+	virtual bool doPeekRing(Scanner& in) = 0;
+	virtual void doReadBareIdeal(Scanner& in,
+								 const VarNames& names,
+								 BigTermConsumer& consumer);
+	virtual void doReadBarePolynomial(Scanner& in,
+									  const VarNames& names,
+									  CoefBigTermConsumer& consumer);
+  };
+}
 
 #endif

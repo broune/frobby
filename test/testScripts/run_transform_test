@@ -6,6 +6,7 @@
 # specifying the output format.
 
 testhelper=../testScripts/testhelper
+frobby=../../bin/frobby
 testName="$1"
 shift
 
@@ -40,6 +41,34 @@ then
   # And again with -canon option
   $testhelper transform $testName.canon $testName.canon $* -canon $null;
   if [ $? != 0 ]; then exit 1; fi
+
+  # The Alexander dual option is the only one that reads a raw term
+  # that is not a part of an ideal. The -lcm option of analyze is the
+  # only one that writes a raw term that is not part of an ideal. We
+  # test both of these by adding the lcm at the bottom of an Alexander
+  # dual instance. This should not change the output since the
+  # Alexander dual assumes the lcm if no point is specified, so we
+  # also have a way to ensure that the reading and writing of the term
+  # has been done correctly.
+
+  # We first take the intersection of the ideals in the input to
+  # ensure that there is only one, since the Alexander dual expects
+  # only one.
+
+  for format in $formats; do
+    id="-$testName-$format";
+    $frobby intersect < $inputFile > /tmp/frobby_intersect$id \
+       -oformat $format 2>/dev/null $null;
+    $frobby alexdual < /tmp/frobby_intersect$id \
+      > /tmp/frobby_alex_out$id 2>/dev/null -canon;
+    $frobby transform < /tmp/frobby_intersect$id -minimize 2>/dev/null| \
+	  $frobby analyze -summaryLevel 0 -lcm 2>/dev/null| \
+      cat /tmp/frobby_intersect$id - > /tmp/frobby_alex_in$id;
+    $testhelper alexdual /tmp/frobby_alex_in$id \
+      /tmp/frobby_alex_out$id -canon;
+    if [ $? != 0 ]; then exit 1; fi
+	rm /tmp/frobby_intersect$id /tmp/frobby_alex_in$id /tmp/frobby_alex_out$id
+  done
 fi
 
 for format in $formats null count; do

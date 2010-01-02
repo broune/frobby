@@ -35,8 +35,17 @@ class InternalFrobbyException : public std::logic_error {
   InternalFrobbyException(const string& str): logic_error(str) {}
 };
 
+// The do {...} while (0) is to collect everything into a single
+// statement that still requires a semicolon after it. The throw is to
+// prevent spurious compiler warnings about a missing return
+// statement.
 #define INTERNAL_ERROR(msg) \
-  reportInternalError(msg, __FILE__, __LINE__)
+  do { \
+    reportInternalError(msg, __FILE__, __LINE__); \
+    throw; \
+  } while (false)
+#define INTERNAL_ERROR_UNIMPLEMENTED() \
+  INTERNAL_ERROR("Called function that has not been implemented.")
 
 // These methods throw exceptions.
 void reportError(const string& errorMsg);
@@ -59,9 +68,13 @@ void reportInternalErrorNoThrow(const string& errorMsg);
 void reportErrorNoThrow(const FrobbyException& e);
 void reportErrorNoThrow(const InternalFrobbyException& e);
 
-class UnknownFormatException : public FrobbyException {
- public:
-  UnknownFormatException(const string& str): FrobbyException(str) {}
-};
+#define DEFINE_EXCEPTION(NAME) \
+  class NAME##Exception : public FrobbyException { \
+  public: \
+    NAME##Exception(const string& str): FrobbyException(str) {} \
+  }
+
+DEFINE_EXCEPTION(UnknownFormat);
+DEFINE_EXCEPTION(Unsupported);
 
 #endif

@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
 
 /** A NameFactory takes a name and then creates an instance of a class
  that has been previously registered under that name. This is done
@@ -35,7 +36,7 @@ class NameFactory {
   auto_ptr<AbstractProduct> create(const string& name) const;
 
   /** Inserts into names all registered names that have the indicated
-   prefix. */
+   prefix in lexicographic increasing order. */
   void getNamesWithPrefix(const string& prefix, vector<string>& names) const;
 
   /** Returns true if no names have been registered. */
@@ -82,6 +83,7 @@ getNamesWithPrefix(const string& prefix, vector<string>& names) const {
   for (const_iterator it = _pairs.begin(); it != _pairs.end(); ++it)
 	if (it->first.compare(0, prefix.size(), prefix) == 0)
 	  names.push_back(it->first);
+  sort(names.begin(), names.end());
 }
 
 template<class AbstractProduct>
