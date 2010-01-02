@@ -18,86 +18,39 @@
 #define FOURTI2_IO_HANDLER_GUARD
 
 #include "IOHandlerImpl.h"
+#include <vector>
 
 class Scanner;
 class VarNames;
-class BigIdeal;
 class BigTermConsumer;
 class BigCoefTermConsumer;
+class SatBinomConsumer;
 
-class Fourti2IOHandler : public IOHandlerImpl {
-public:
-  Fourti2IOHandler();
+namespace IO {
+  class Fourti2IOHandler : public IOHandlerImpl {
+  public:
+	Fourti2IOHandler();
 
-  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-  virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+	static const char* staticGetName();
 
-  virtual void doReadTerm(Scanner& in, const VarNames& names,
-						vector<mpz_class>& term);
-  virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+  private:
+	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
+	virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-  virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+	virtual void doWriteTerm(const vector<mpz_class>& term,
+							 const VarNames& names,
+							 FILE* out);
+	virtual void doReadTerm(Scanner& in,
+							const VarNames& names,
+							vector<mpz_class>& term);
 
-  virtual void doWriteTerm(const vector<mpz_class>& term,
-						   const VarNames& names,
-						   FILE* out);
-
-  auto_ptr<BigTermConsumer> doCreateIdealWriter(FILE* out);
-  auto_ptr<CoefBigTermConsumer> doCreatePolynomialWriter(FILE* out);
-
-  static const char* staticGetName();
-
- protected:
-  virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer,
-								   size_t generatorCount, size_t varCount);
-  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer,
-						   size_t generatorCount, size_t varCount);
-
-
-  void readRing(Scanner& in, VarNames& names);
-  void readRing(Scanner& in, VarNames& names, size_t varCount);
-  void writeRingWithoutHeader(const VarNames& names, FILE* out);
-
-  virtual void writeRing(const VarNames& names, FILE* out);
-
-  virtual void writePolynomialHeader(const VarNames& names,
-									 size_t termCount,
-									 FILE* out);
-  virtual void writeTermOfPolynomial(const mpz_class& coef,
-									 const Term& term,
-									 const TermTranslator* translator,
-									 bool isFirst,
-									 FILE* out);
-  virtual void writeTermOfPolynomial(const mpz_class& coef,
-									 const vector<mpz_class>& term,
-									 const VarNames& names,
-									 bool isFirst,
-									 FILE* out);
-  virtual void writePolynomialFooter(const VarNames& names,
-									 bool wroteAnyGenerators,
-									 FILE* out);
-
-  virtual void writeIdealHeader(const VarNames& names,
-								bool defineNewRing,
-								size_t generatorCount,
-								FILE* out);
-  virtual void writeTermOfIdeal(const Term& term,
-								const TermTranslator* translator,
-								bool isFirst,
-								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
-								const VarNames& names,
-								bool isFirst,
-								FILE* out);
-  virtual void writeIdealFooter(const VarNames& names,
-								bool wroteAnyGenerators,
-								FILE* out);
-
-  // These are not supported.
-  virtual void writePolynomialHeader(const VarNames& names, FILE* out);
-  virtual void writeIdealHeader(const VarNames& names, bool
-								defineNewRing,
-								FILE* out);
-};
+	virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+	virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+	virtual void doReadPolynomial(Scanner& in,
+								  CoefBigTermConsumer& consumer);
+	virtual void doReadSatBinomIdeal(Scanner& in,
+									 SatBinomConsumer& consumer);
+  };
+}
 
 #endif

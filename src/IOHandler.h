@@ -69,8 +69,8 @@ class IOHandler {
   bool supportsOutput(const DataType& type) const;
 
  protected:
-  virtual auto_ptr<BigTermConsumer> doCreateIdealWriter(FILE* out) = 0;
-  virtual auto_ptr<CoefBigTermConsumer> doCreatePolynomialWriter(FILE* out) = 0;
+  virtual BigTermConsumer* doCreateIdealWriter(FILE* out) = 0;
+  virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out) = 0;
 
  private:
   virtual const char* doGetName() const = 0;
@@ -78,7 +78,8 @@ class IOHandler {
 
   virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer) = 0;
   virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer) = 0;
-  virtual void doReadTerm(Scanner& in, const VarNames& names,
+  virtual void doReadTerm(Scanner& in,
+						  const VarNames& names,
 						  vector<mpz_class>& term) = 0;
   virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer) = 0;
   virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) = 0;

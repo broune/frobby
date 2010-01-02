@@ -17,31 +17,14 @@
 #include "stdinc.h"
 #include "IOHandler.h"
 
-// TODO: clean this up
 #include "Scanner.h"
-#include "BigIdeal.h"
-#include "TermTranslator.h"
-#include "Ideal.h"
-#include "Term.h"
-#include "TermConsumer.h"
 #include "VarNames.h"
-#include "CoefTermConsumer.h"
-#include "Polynomial.h"
-#include "BigPolynomial.h"
 #include "NameFactory.h"
-#include "error.h"
 #include "FrobbyStringStream.h"
-#include "ElementDeleter.h"
-#include "BigTermConsumer.h"
-#include "BigTermRecorder.h"
-#include "TranslatingTermConsumer.h"
-#include "IrreducibleIdealSplitter.h"
 #include "DataType.h"
-#include "IdealConsolidator.h"
+#include "BigTermConsumer.h"
 #include "CoefBigTermConsumer.h"
-#include "TranslatingCoefTermConsumer.h"
 #include "CountingIOHandler.h"
-
 #include "NewMonosIOHandler.h"
 #include "MonosIOHandler.h"
 #include "Macaulay2IOHandler.h"
@@ -49,6 +32,8 @@
 #include "NullIOHandler.h"
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
+#include "error.h"
+
 
 IOHandler::~IOHandler() {
 }
@@ -93,22 +78,20 @@ const char* IOHandler::getDescription() const {
 
 auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
   if (!supportsOutput(DataType::getMonomialIdealType())) {
-	FrobbyStringStream errorMsg;
-	errorMsg << "The " << getName()
-			 << " format does not support output of a monomial ideal.";
-	reportError(errorMsg);
+	throwError<UnsupportedException>
+	  ("The " + string(getName()) +
+	   " format does not support output of a monomial ideal.");
   }
-  return doCreateIdealWriter(out);
+  return auto_ptr<BigTermConsumer>(doCreateIdealWriter(out));
 }
 
 auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
   if (!supportsOutput(DataType::getPolynomialType())) {
-	FrobbyStringStream errorMsg;
-	errorMsg << "The " << getName()
-			 << " format does not support output of a polynomial.";
-	reportError(errorMsg);
+	throwError<UnsupportedException>
+	  ("The " + string(getName()) +
+	   " format does not support output of a polynomial.");
   }
-  return doCreatePolynomialWriter(out);
+  return auto_ptr<CoefBigTermConsumer>(doCreatePolynomialWriter(out));
 }
 
 bool IOHandler::supportsInput(const DataType& type) const {
@@ -124,14 +107,14 @@ namespace {
   IOHandlerFactory getIOHandlerFactory() {
 	IOHandlerFactory factory;
 
-	nameFactoryRegister<Macaulay2IOHandler>(factory);
-	nameFactoryRegister<CoCoA4IOHandler>(factory);
-	nameFactoryRegister<SingularIOHandler>(factory);
-	nameFactoryRegister<MonosIOHandler>(factory);
-	nameFactoryRegister<NewMonosIOHandler>(factory);
-	nameFactoryRegister<Fourti2IOHandler>(factory);
-	nameFactoryRegister<NullIOHandler>(factory);
-	nameFactoryRegister<CountingIOHandler>(factory);
+	nameFactoryRegister<IO::Macaulay2IOHandler>(factory);
+	nameFactoryRegister<IO::CoCoA4IOHandler>(factory);
+	nameFactoryRegister<IO::SingularIOHandler>(factory);
+	nameFactoryRegister<IO::MonosIOHandler>(factory);
+	nameFactoryRegister<IO::NewMonosIOHandler>(factory);
+	nameFactoryRegister<IO::Fourti2IOHandler>(factory);
+	nameFactoryRegister<IO::NullIOHandler>(factory);
+	nameFactoryRegister<IO::CountingIOHandler>(factory);
 
 	return factory;
   }
@@ -194,27 +177,27 @@ string autoDetectFormat(Scanner& in) {
   switch (in.peek()) {
   case 'U': // correct
   case 'u': // incorrect
-	return CoCoA4IOHandler::staticGetName();
+	return IO::CoCoA4IOHandler::staticGetName();
 
   case 'r': // correct
-	return SingularIOHandler::staticGetName();
+	return IO::SingularIOHandler::staticGetName();
 
   case '(': // correct
   case 'l': // incorrect
   case ')': // incorrect
-	return NewMonosIOHandler::staticGetName();
+	return IO::NewMonosIOHandler::staticGetName();
 
   case '0': case '1': case '2': case '3': case '4': // correct
   case '5': case '6': case '7': case '8': case '9': // correct
   case '+': case '-': // incorrect
-	return Fourti2IOHandler::staticGetName();
+	return IO::Fourti2IOHandler::staticGetName();
 
   case 'v': // correct
-	return MonosIOHandler::staticGetName();
+	return IO::MonosIOHandler::staticGetName();
 
   case 'R': // correct
   default: // incorrect
-	return Macaulay2IOHandler::staticGetName();
+	return IO::Macaulay2IOHandler::staticGetName();
   }
 }
 

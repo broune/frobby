@@ -18,7 +18,7 @@
 #include "IOParameters.h"
 
 #include "IOFacade.h"
-#include "MonosIOHandler.h"
+#include "Macaulay2IOHandler.h"
 #include "Scanner.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
@@ -36,6 +36,10 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
   string defaultOutput;
   if (!_inputType.isNull())
 	defaultOutput = getFormatNameIndicatingToUseInputFormatAsOutputFormat();
+  else {
+	defaultOutput = IO::Macaulay2IOHandler::staticGetName();
+	ASSERT(createIOHandler(defaultOutput)->supportsOutput(_outputType));
+  }
 
   vector<string> names;
   getIOHandlerNames(names);
@@ -49,8 +53,6 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 	  inputFormats += handler->getName();
 	}
 	if (handler->supportsOutput(_outputType)) {
-	  if (defaultOutput.empty())
-		defaultOutput = handler->getName();
 	  outputFormats += ' ';
 	  outputFormats += handler->getName();
 	}

@@ -32,8 +32,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   SplitStrategy.cpp CanonicalTermConsumer.cpp StatisticsStrategy.cpp	\
   TestAction.cpp NameFactory.cpp error.cpp DebugAllocator.cpp			\
   FrobbyStringStream.cpp SliceStrategy.cpp PrimaryDecomAction.cpp		\
-  IdealComparator.cpp IOHandlerCommon.cpp IrreducibleIdealSplitter.cpp	\
-  DataType.cpp IdealConsolidator.cpp CoefBigTermConsumer.cpp			\
+  IdealComparator.cpp IrreducibleIdealSplitter.cpp DataType.cpp			\
+  IdealConsolidator.cpp CoefBigTermConsumer.cpp							\
   PolynomialConsolidator.cpp OptimizeAction.cpp							\
   MaximalStandardAction.cpp test/Test.cpp test/TestCase.cpp				\
   test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp			\
@@ -50,12 +50,14 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   HashPolynomial.cpp BigattiBaseCase.cpp BigattiPivotStrategy.cpp		\
   BigattiFacade.cpp UniHashPolynomial.cpp IdealFacadeCommon.cpp			\
   IdealParams.cpp CliParams.cpp SliceParams.cpp SliceLikeParams.cpp		\
-  BigattiParams.cpp IOHandlerImpl.cpp
+  BigattiParams.cpp IOHandlerImpl.cpp IdealWriter.cpp PolyWriter.cpp	\
+  IOHandlerCommon.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
 # -L/sw/lib for ldflags.
 ifndef GMP_INC_DIR
+
   GMP_INC_DIR="/sw/include"
 endif
 

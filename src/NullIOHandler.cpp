@@ -23,102 +23,62 @@
 #include "BigPolynomial.h"
 #include "VarNames.h"
 #include "DataType.h"
+#include "SatBinomConsumer.h"
+#include "SatBinomIdeal.h"
 
-NullIOHandler::NullIOHandler():
-  IOHandlerImpl(staticGetName(), "Ignores input and produces no output.", false) {
-  registerInput(DataType::getMonomialIdealType());
-  registerInput(DataType::getPolynomialType());
-  registerInput(DataType::getMonomialIdealListType());
+namespace IO {
+  NullIOHandler::NullIOHandler():
+	IOHandlerImpl(staticGetName(),
+				  "Ignores input and produces no output.") {
+	registerInput(DataType::getMonomialIdealType());
+	registerInput(DataType::getPolynomialType());
+	registerInput(DataType::getMonomialIdealListType());
 
-  registerOutput(DataType::getMonomialIdealType());
-  registerOutput(DataType::getPolynomialType());
-  registerOutput(DataType::getMonomialIdealListType());
-}
+	registerOutput(DataType::getMonomialIdealType());
+	registerOutput(DataType::getPolynomialType());
+	registerOutput(DataType::getMonomialIdealListType());
+  }
 
-const char* NullIOHandler::staticGetName() {
-  return "null";
-}
+  const char* NullIOHandler::staticGetName() {
+	return "null";
+  }
 
-void NullIOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
-  consumer.consume(BigIdeal());
-}
+  BigTermConsumer* NullIOHandler::doCreateIdealWriter(FILE* out) {
+	return new NullTermConsumer();
+  }
 
-void NullIOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
-}
+  CoefBigTermConsumer* NullIOHandler::doCreatePolynomialWriter(FILE* out) {
+	return new NullCoefTermConsumer();
+  }
 
-void NullIOHandler::writeRing(const VarNames& names, FILE* out) {
-}
+  void NullIOHandler::doWriteTerm(const vector<mpz_class>& term,
+								  const VarNames& names,
+								  FILE* out) {
+  }
 
-void NullIOHandler::doWriteTerm(const vector<mpz_class>& term,
-								const VarNames& names,
-								FILE* out) {
-}
+  void NullIOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
+	consumer.consume(BigIdeal());
+  }
 
-auto_ptr<BigTermConsumer> NullIOHandler::doCreateIdealWriter
-(TermTranslator* translator, FILE* file) {
-  return auto_ptr<BigTermConsumer>(new NullTermConsumer());
-}
+  void NullIOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+	consumer.consumeRing(VarNames());
+  }
 
-void NullIOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
-}
+  void NullIOHandler::doReadTerm(Scanner& in,
+								 const VarNames& names,
+								 vector<mpz_class>& term) {
+	term.clear();
+  }
 
-void NullIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-										  const Term& term,
-										  const TermTranslator* translator,
-										  bool isFirst,
-										  FILE* out) {
-}
-void NullIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-										  const vector<mpz_class>& term,
-										  const VarNames& names,
-										  bool isFirst,
-										  FILE* out) {
-}
+  void NullIOHandler::doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer) {
+	consumer.consume(BigPolynomial());
+  }
 
-void NullIOHandler::writePolynomialFooter(const VarNames& names,
-										  bool wroteAnyGenerators,
-										  FILE* out) {
-}
+  void NullIOHandler::doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) {
+	consumer.consume(SatBinomIdeal());
+  }
 
-void NullIOHandler::writeIdealHeader(const VarNames& names,
-									 bool defineNewRing,
-									 FILE* out) {
-}
-
-void NullIOHandler::writeTermOfIdeal(const Term& term,
-									 const TermTranslator* translator,
-									 bool isFirst,
-									 FILE* out) {
-}
-
-void NullIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
-									 const VarNames& names,
-									 bool isFirst,
-									 FILE* out) {
-}
-
-void NullIOHandler::writeIdealFooter(const VarNames& names,
-									 bool wroteAnyGenerators,
-									 FILE* out) {
-}
-
-auto_ptr<CoefBigTermConsumer> NullIOHandler::doCreatePolynomialWriter
-(const TermTranslator* translator, FILE* out) {
-  return auto_ptr<CoefBigTermConsumer>(new NullCoefTermConsumer());
-}
-
-void NullIOHandler::doReadIdeal(Scanner& scanner, BigIdeal& ideal) {
-  ideal.clearAndSetNames(VarNames());
-}
-
-bool NullIOHandler::doHasMoreInput(Scanner& scanner) const {
-  return false;
-}
-
-void NullIOHandler::doReadPolynomial
-(Scanner& in, CoefBigTermConsumer& consumer) {
-}
-
-void NullIOHandler::doReadSatBinomIdeal
-(Scanner& in, SatBinomConsumer& consumer) {
+  bool NullIOHandler::doHasMoreInput(Scanner& in) const {
+	return false;
+  }
 }

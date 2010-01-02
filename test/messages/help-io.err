@@ -22,19 +22,25 @@ these with the transform action allows translation between formats.
 The formats available in Frobby and the types of data they
 support are as follows.
 
-* The format m2: Format understandable by the program Macaulay 2.
+* The format 4ti2: Format used by the software package 4ti2.
   - supports input and output of a monomial ideal.
   - supports input and output of a list of monomial ideals.
   - supports input and output of a polynomial.
+  - supports input of a saturated binomial ideal.
 
 * The format cocoa4: Format understandable by the program CoCoA 4.
   - supports input and output of a monomial ideal.
   - supports input of a list of monomial ideals.
   - supports input and output of a polynomial.
 
-* The format singular: Format understandable by the program Singular.
+* The format count: Writes the number of output terms.
+  - supports output of a monomial ideal.
+  - supports output of a list of monomial ideals.
+  - supports output of a polynomial.
+
+* The format m2: Format understandable by the program Macaulay 2.
   - supports input and output of a monomial ideal.
-  - supports input of a list of monomial ideals.
+  - supports input and output of a list of monomial ideals.
   - supports input and output of a polynomial.
 
 * The format monos: Older format used by the program Monos.
@@ -45,19 +51,13 @@ support are as follows.
   - supports input and output of a monomial ideal.
   - supports input of a list of monomial ideals.
 
-* The format 4ti2: Format used by the software package 4ti2.
-  - supports input and output of a monomial ideal.
-  - supports input and output of a list of monomial ideals.
-  - supports input and output of a polynomial.
-  - supports input of a saturated binomial ideal.
-
 * The format null: Ignores input and produces no output.
   - supports input and output of a monomial ideal.
   - supports input and output of a list of monomial ideals.
   - supports input and output of a polynomial.
 
-* The format count: Writes the number of output terms.
-  - supports output of a monomial ideal.
-  - supports output of a list of monomial ideals.
-  - supports output of a polynomial.
+* The format singular: Format understandable by the program Singular.
+  - supports input and output of a monomial ideal.
+  - supports input of a list of monomial ideals.
+  - supports input and output of a polynomial.
 

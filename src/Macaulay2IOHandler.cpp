@@ -18,257 +18,278 @@
 #include "Macaulay2IOHandler.h"
 
 #include "Scanner.h"
-#include "BigIdeal.h"
 #include "VarNames.h"
-#include "BigPolynomial.h"
 #include "TermTranslator.h"
-#include "BigTermConsumer.h"
-#include "error.h"
 #include "DataType.h"
-#include "CoefBigTermConsumer.h"
+#include "Term.h"
+#include "IdealWriter.h"
+#include "PolyWriter.h"
+#include "error.h"
 
 #include <cstdio>
 
-Macaulay2IOHandler::Macaulay2IOHandler():
-  IOHandlerCommon(staticGetName(),
-				  "Format understandable by the program Macaulay 2.") {
-  registerInput(DataType::getMonomialIdealType());
-  registerInput(DataType::getMonomialIdealListType());
-  registerInput(DataType::getPolynomialType());
-  registerOutput(DataType::getMonomialIdealType());
-  registerOutput(DataType::getMonomialIdealListType());
-  registerOutput(DataType::getPolynomialType());
-}
-
-const char* Macaulay2IOHandler::staticGetName() {
-  return "m2";
-}
-
-string Macaulay2IOHandler::getRingName(const VarNames& names) {
-  if (!names.contains("R"))
-	return "R";
-
-  string name;
-  for (mpz_class i = 1; true; ++i) {
-	name = "R" + i.get_str();
-	if (!names.contains(name))
-	  return name;
-  }
-}
-
-void Macaulay2IOHandler::doWriteTerm(const vector<mpz_class>& term,
-									 const VarNames& names,
-									 FILE* out) {
-  writeTermProduct(term, names, out);
-}
-
-void Macaulay2IOHandler::writeIdealHeader(const VarNames& names,
-										  bool defineNewRing,
-										  FILE* out) {
-  if (defineNewRing)
-	writeRing(names, out);
-  fputs("I = monomialIdeal(", out);
-}
-
-void Macaulay2IOHandler::writeTermOfIdeal(const Term& term,
-										  const TermTranslator* translator,
-										  bool isFirst,
-										  FILE* out) {
-  fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandlerImpl::writeTermProduct(term, translator, out);
-
-  size_t varCount = translator->getVarCount();
-  for (size_t var = 0; var < varCount; ++var)
-	if (translator->getExponent(var, term) != 0)
-	  return;
-
-  fputc('_', out);
-  fputs(getRingName(translator->getNames()).c_str(), out);
-}
-
-void Macaulay2IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
-										  const VarNames& names,
-										  bool isFirst,
-										  FILE* out) {
-  fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandlerImpl::writeTermProduct(term, names, out);
-
-  size_t varCount = term.size();
-  for (size_t var = 0; var < varCount; ++var)
-	if (term[var] != 0)
-	  return;
-
-  fputc('_', out);
-  fputs(getRingName(names).c_str(), out);
-}
-
-void Macaulay2IOHandler::writeIdealFooter(const VarNames& names,
-										  bool wroteAnyGenerators,
-										  FILE* out) {
-  if (wroteAnyGenerators)
-	fputc('\n', out);
-  else {
-	// Macaulay 2's monomialIdeal reports an error if 0 is not
-	// explicitly embedded in the a polynomial ideal.
-	fputs("0_", out);
-	fputs(getRingName(names).c_str(), out);
-  }
-  fputs(");\n", out);  
-}
-
-void Macaulay2IOHandler::readRing(Scanner& in, VarNames& names) {
-  names.clear();
-  const char* ringName = in.readIdentifier();
-  ASSERT(ringName != 0 && string(ringName) != "");
-  if (ringName[0] != 'R') {
-	reportSyntaxError
-	  (in, "Expected name of ring to start with an upper case R.");
-	ASSERT(false); // shouldn't reach here.
+namespace IO {
+  namespace {
+	string m2GetRingName(const VarNames& names);
+	void m2WriteRing(const VarNames& names, FILE* out);
   }
 
-  in.expect('=');
+  class M2IdealWriter : public IdealWriter {
+  public:
+	M2IdealWriter(FILE* out): IdealWriter(out) {
+	}
 
-  in.eatWhite();
-  if (in.peek() == 'Z') {
-	displayNote("In the Macaulay 2 format, writing ZZ as the ground field "
-				"instead of QQ is deprecated and may not work in future "
-				"releases of Frobby.");
-	in.expect("ZZ");
-  } else
-	in.expect("QQ");
-  in.expect('[');
+  private:
+	virtual void doWriteHeader(bool first) {
+	  if (first)
+		m2WriteRing(getNames(), getFile());
+	  fputs("I = monomialIdeal(", getFile());
+	}
 
-  // The enclosing braces are optional, but if the start brace is
-  // there, then the end brace should be there too.
-  bool readBrace = in.match('{'); 
-  if (readBrace) {
-	displayNote("In the Macaulay 2 format, putting braces { } around the "
-				"variables is deprecated and may not work in future "
-				"releases of Frobby.");
+	virtual void doWriteTerm(const Term& term,
+							 const TermTranslator& translator,
+							 bool first) {
+	  fputs(first ? "\n " : ",\n ", getFile());
+	  writeTermProduct(term, translator, getFile());
+
+	  const size_t varCount = translator.getVarCount();
+	  for (size_t var = 0; var < varCount; ++var)
+		if (translator.getExponent(var, term) != 0)
+		  return;
+
+	  fputc('_', getFile());
+	  fputs(m2GetRingName(translator.getNames()).c_str(), getFile());	
+	}
+
+	virtual void doWriteTerm(const vector<mpz_class>& term,
+							 bool first) {
+	  fputs(first ? "\n " : ",\n ", getFile());
+	  writeTermProduct(term, getNames(), getFile());
+
+	  const size_t varCount = term.size();
+	  for (size_t var = 0; var < varCount; ++var)
+		if (term[var] != 0)
+		  return;
+
+	  fputc('_', getFile());
+	  fputs(m2GetRingName(getNames()).c_str(), getFile());
+	}
+
+	virtual void doWriteFooter(bool wasZeroIdeal) {
+	  if (wasZeroIdeal) {
+		// Macaulay 2's monomialIdeal reports an error if we give it an
+		// empty list, so to get the zero ideal we have to explicitly
+		// specify zero as a generator.
+		fprintf(getFile(), "0_%s);\n", m2GetRingName(getNames()).c_str());
+	  } else
+		fputs("\n);\n", getFile());  
+	}
+
+	virtual void doWriteEmptyList() {
+	  m2WriteRing(getNames(), getFile());
+	}
+  };
+
+  class M2PolyWriter : public PolyWriter {
+  public:
+	M2PolyWriter(FILE* out): PolyWriter(out) {
+	}
+
+	virtual void doWriteHeader() {
+	  m2WriteRing(getNames(), getFile());
+	  fputs("p =", getFile());
+	}
+
+	virtual void doWriteTerm(const mpz_class& coef,
+							 const Term& term,
+							 const TermTranslator& translator,
+							 bool firstGenerator) {
+	  if (firstGenerator)
+		fputs("\n ", getFile());
+	  else
+		fputs(" +\n ", getFile());
+
+	  writeCoefTermProduct(coef, term, translator, true, getFile());
+	}
+
+	virtual void doWriteTerm(const mpz_class& coef,
+							 const vector<mpz_class>& term,
+							 bool firstGenerator) {
+	  if (firstGenerator)
+		fputs("\n ", getFile());
+	  else
+		fputs(" +\n ", getFile());
+
+	  writeCoefTermProduct(coef, term, getNames(), true, getFile());
+	}
+
+	virtual void doWriteFooter(bool wasZero) {
+	  if (wasZero)
+		fputs("\n 0", getFile());
+	  fputs(";\n", getFile());
+	}
+  }; 
+
+  Macaulay2IOHandler::Macaulay2IOHandler():
+	IOHandlerCommon(staticGetName(),
+					"Format understandable by the program Macaulay 2.") {
+	registerInput(DataType::getMonomialIdealType());
+	registerInput(DataType::getMonomialIdealListType());
+	registerInput(DataType::getPolynomialType());
+	registerOutput(DataType::getMonomialIdealType());
+	registerOutput(DataType::getMonomialIdealListType());
+	registerOutput(DataType::getPolynomialType());
   }
 
-  if (in.peekIdentifier()) {
-	do {
-	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
-	} while (in.match(','));
+  const char* Macaulay2IOHandler::staticGetName() {
+	return "m2";
   }
 
-  if (readBrace)
-	in.expect('}');
-  in.expect(']');
-  in.expect(';');
-}
+  BigTermConsumer* Macaulay2IOHandler::doCreateIdealWriter(FILE* out) {
+	return new M2IdealWriter(out);
+  }
 
-void Macaulay2IOHandler::readBareIdeal(Scanner& in,
+  CoefBigTermConsumer* Macaulay2IOHandler::doCreatePolynomialWriter(FILE* out) {
+	return new M2PolyWriter(out);
+  }
+
+  void Macaulay2IOHandler::doWriteTerm(const vector<mpz_class>& term,
 									   const VarNames& names,
-									   BigTermConsumer& consumer) {
-  consumer.beginConsuming(names);
-  vector<mpz_class> term(names.getVarCount());
+									   FILE* out) {
+	writeTermProduct(term, names, out);
+  }
 
-  in.expect('I');
-  in.expect('=');
-  in.expect("monomialIdeal");
-  in.expect('(');
+  void Macaulay2IOHandler::doReadTerm(Scanner& in,
+									  const VarNames& names,
+									  vector<mpz_class>& term) {
+	readTermProduct(in, names, term);
+  }
 
-  if (in.match('0')) {
-	if (in.match('_'))
-	  in.readIdentifier();
-  } else {
-	do {
-	  readTerm(in, names, term);
+  void Macaulay2IOHandler::doReadRing(Scanner& in, VarNames& names) {
+	names.clear();
+	const char* ringName = in.readIdentifier();
+	ASSERT(ringName != 0 && string(ringName) != "");
+	if (ringName[0] != 'R') {
+	  reportSyntaxError
+		(in, "Expected name of ring to start with an upper case R.");
+	  ASSERT(false); // shouldn't reach here.
+	}
+
+	in.expect('=');
+
+	in.eatWhite();
+	if (in.peek() == 'Z') {
+	  displayNote("In the Macaulay 2 format, writing ZZ as the ground field "
+				  "instead of QQ is deprecated and may not work in future "
+				  "releases of Frobby.");
+	  in.expect("ZZ");
+	} else
+	  in.expect("QQ");
+	in.expect('[');
+
+	// The enclosing braces are optional, but if the start brace is
+	// there, then the end brace should be there too.
+	bool readBrace = in.match('{'); 
+	if (readBrace) {
+	  displayNote("In the Macaulay 2 format, putting braces { } around the "
+				  "variables is deprecated and may not work in future "
+				  "releases of Frobby.");
+	}
+
+	if (in.peekIdentifier()) {
+	  do {
+		names.addVarSyntaxCheckUnique(in, in.readIdentifier());
+	  } while (in.match(','));
+	}
+
+	if (readBrace)
+	  in.expect('}');
+	in.expect(']');
+	in.expect(';');
+  }
+
+  bool Macaulay2IOHandler::doPeekRing(Scanner& in) {
+	return in.peek('R') || in.peek('r');
+  }
+
+  void Macaulay2IOHandler::doReadBareIdeal(Scanner& in,
+										   const VarNames& names,
+										   BigTermConsumer& consumer) {
+	consumer.beginConsuming(names);
+	vector<mpz_class> term(names.getVarCount());
+
+	in.expect('I');
+	in.expect('=');
+	in.expect("monomialIdeal");
+	in.expect('(');
+
+	if (in.match('0')) {
 	  if (in.match('_'))
 		in.readIdentifier();
-	  consumer.consume(term);
-	} while (in.match(','));
-  }
-  in.expect(')');
-  in.expect(';');
-  consumer.doneConsuming();
-}
-
-void Macaulay2IOHandler::readBarePolynomial
-(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) {
-  consumer.consumeRing(names);
-  vector<mpz_class> term(names.getVarCount());
-  mpz_class coef;
-
-  in.expect('p');
-  in.expect('=');
-
-  consumer.beginConsuming();
-  bool first = true;
-  do {
-	readCoefTerm(coef, term, names, first, in);
-	consumer.consume(coef, term);
-	first = false;
-  } while (!in.match(';'));
-  consumer.doneConsuming();
-}
-
-bool Macaulay2IOHandler::peekRing(Scanner& in) {
-  return in.peek('R') || in.peek('r');
-}
-
-void Macaulay2IOHandler::writePolynomialHeader(const VarNames& names,
-											   FILE* out) {
-  writeRing(names, out);
-  fputs("p =", out);
-}
-
-void Macaulay2IOHandler::writeTermOfPolynomial
-(const mpz_class& coef,
- const Term& term,
- const TermTranslator* translator,
- bool isFirst,
- FILE* out) {
-  ASSERT(translator != 0);
-  ASSERT(out != 0);
-
-  if (isFirst)
-	fputs("\n ", out);
-  else
-	fputs(" +\n ", out);
-
-  writeCoefTermProduct(coef, term, translator, true, out);
-}
-
-void Macaulay2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
-											   const vector<mpz_class>& term,
-											   const VarNames& names,
-											   bool isFirst,
-											   FILE* out) {
-  if (isFirst)
-	fputs("\n ", out);
-  else
-	fputs(" +\n ", out);
-
-  writeCoefTermProduct(coef, term, names, true, out);
-}
-
-void Macaulay2IOHandler::writePolynomialFooter(const VarNames& names,
-											   bool wroteAnyGenerators,
-											   FILE* out) {
-  if (!wroteAnyGenerators)
-	fputs("\n 0", out);
-  fputs(";\n", out);
-}
-
-void Macaulay2IOHandler::writeRing(const VarNames& names, FILE* out) {
-  fputs(getRingName(names).c_str(), out);
-  fputs(" = QQ[", out);
-
-  const char* pre = "";
-  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-	fputs(pre, out);
-	if (names.getName(i) == "R") {
-	  string msg = 
-		"The name of the ring in Macaulay 2 format is usually named R,\n"
-		"but in this case there is already a variable named R. Thus,\n"
-		"the ring has been renamed to " + getRingName(names) + '.';
-	  displayNote(msg);
+	} else {
+	  do {
+		readTerm(in, names, term);
+		if (in.match('_'))
+		  in.readIdentifier();
+		consumer.consume(term);
+	  } while (in.match(','));
 	}
-	fputs(names.getName(i).c_str(), out);
-	pre = ", ";
+	in.expect(')');
+	in.expect(';');
+	consumer.doneConsuming();
   }
-  fputs("];\n", out);
+
+  void Macaulay2IOHandler::doReadBarePolynomial(Scanner& in,
+												const VarNames& names,
+												CoefBigTermConsumer& consumer) {
+	consumer.consumeRing(names);
+	vector<mpz_class> term(names.getVarCount());
+	mpz_class coef;
+
+	in.expect('p');
+	in.expect('=');
+
+	consumer.beginConsuming();
+	bool first = true;
+	do {
+	  readCoefTerm(coef, term, names, first, in);
+	  consumer.consume(coef, term);
+	  first = false;
+	} while (!in.match(';'));
+	consumer.doneConsuming();
+  }
+
+  namespace {
+	string m2GetRingName(const VarNames& names) {
+	  string name = "R";
+	  if (!names.contains(name))
+		return name;
+
+	  for (mpz_class i = 1; true; ++i) {
+		name = "R" + i.get_str();
+		if (!names.contains(name))
+		  return name;
+	  }
+	}
+
+	void m2WriteRing(const VarNames& names, FILE* out) {
+	  fputs(m2GetRingName(names).c_str(), out);
+	  fputs(" = QQ[", out);
+
+	  const char* pre = "";
+	  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+		fputs(pre, out);
+		if (names.getName(i) == "R") {
+		  string msg = 
+			"The name of the ring in Macaulay 2 format is usually named R,\n"
+			"but in this case there is already a variable named R. Thus,\n"
+			"the ring has been renamed to " + m2GetRingName(names) + '.';
+		  displayNote(msg);
+		}
+		fputs(names.getName(i).c_str(), out);
+		pre = ", ";
+	  }
+	  fputs("];\n", out);
+	}
+  }
 }
