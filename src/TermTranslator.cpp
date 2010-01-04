@@ -428,7 +428,7 @@ Exponent TermTranslator::getMaxId(size_t variable) const {
 }
 
 Exponent TermTranslator::shrinkExponent(size_t var,
-				    const mpz_class& exponent) const {
+										const mpz_class& exponent) const {
   const vector<mpz_class>& exponents = _exponents[var];
 
   // We subtract 1 from exponents.end() to skip past the 0 that is
@@ -476,6 +476,17 @@ bool TranslatedReverseLexComparator::operator()(const Exponent* a,
   ASSERT(b != 0 || _translator.getVarCount() == 0);
 
   return _translator.lessThanReverseLex(a, b);
+}
+
+void setToZeroOne(TermTranslator& translator) {
+  BigIdeal zeroOneIdeal(translator.getNames());
+  zeroOneIdeal.newLastTerm(); // Add term with all exponents zero.
+  zeroOneIdeal.newLastTerm(); // Add term with all exponents one.
+  for (size_t var = 0; var < translator.getVarCount(); ++var)
+	zeroOneIdeal.getLastTermExponentRef(var) = 1;
+
+  Ideal dummy;
+  translator = TermTranslator(zeroOneIdeal, dummy, false);  
 }
 
 ostream& operator<<(ostream& out, const TermTranslator& translator) {

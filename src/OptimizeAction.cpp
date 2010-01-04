@@ -24,6 +24,7 @@
 #include "BigIdeal.h"
 #include "BigTermConsumer.h"
 #include "NullTermConsumer.h"
+#include "SliceParams.h"
 #include "error.h"
 
 #include <algorithm>
@@ -102,7 +103,8 @@ void OptimizeAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void OptimizeAction::perform() {
-  _sliceParams.validateSplit(true, true);
+  SliceParams params(_params);
+  validateSplit(params, true, true);
 
   BigIdeal ideal;
   vector<mpz_class> v;
@@ -145,23 +147,18 @@ void OptimizeAction::perform() {
   } else
 	output.reset(new NullTermConsumer());
 
-  SliceFacade facade(ideal, output.get(), _printActions);
-  _sliceParams.apply(facade);
+  SliceFacade facade(params, ideal, *output);
 
   mpz_class optimalValue = 0;
 
   bool displayAll = (_displayLevel >= 2);
-  bool useBoundElimination = _sliceParams.getUseBoundElimination();
-  bool useBoundSimplification = _sliceParams.getUseBoundSimplification();
   bool anySolution;
   if (_maxStandard)
 	anySolution = facade.solveStandardProgram
-	  (v, optimalValue, displayAll,
-	   useBoundElimination, useBoundSimplification);
+	  (v, optimalValue, displayAll);
   else
 	anySolution = facade.solveIrreducibleDecompositionProgram
-	  (v, optimalValue, displayAll,
-	   useBoundElimination, useBoundSimplification);
+	  (v, optimalValue, displayAll);
 
   if (_displayValue) {
 	if (!anySolution)

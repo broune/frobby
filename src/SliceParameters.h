@@ -45,14 +45,6 @@ class SliceParameters : public ParameterGroup {
 				  bool exposeIndependenceParam = true,
 				  bool supportBigattiAlgorithm = false);
 
-  /** Set facade up according to the values of the options of this
-   object. */
-  void apply(SliceFacade& facade) const;
-
-  /** Set facade up according to the values of the options of this
-   object. */
-  void apply(BigattiFacade& facade) const;
-
   /** Set the value of the independence split option. This is useful
    for setting the default value before parsing the user-supplied
    options.

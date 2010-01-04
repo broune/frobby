@@ -20,150 +20,54 @@
 
 #include "BigIdeal.h"
 #include "IOHandler.h"
-#include "VarSorter.h"
 #include "TranslatingCoefTermConsumer.h"
 #include "TotalDegreeCoefTermConsumer.h"
 #include "BigattiHilbertAlgorithm.h"
 #include "BigattiParams.h"
+#include "BigattiPivotStrategy.h"
 #include "IOFacade.h"
 #include "IOParameters.h"
 #include "DataType.h"
 #include "Scanner.h"
-
-BigattiFacade::BigattiFacade
-(const BigIdeal& bigIdeal, IOHandler* handler, FILE* out,
- bool printActions):
-  Facade(printActions),
-  _ideal(bigIdeal.getVarCount()),
-  _ioHandler(handler),
-  _out(out) {
-  ASSERT(_ioHandler != 0);
-
-  beginAction("Translating ideal to internal data structure.");
-  _translator.reset(new TermTranslator(bigIdeal, _ideal, false));
-  endAction();
-}
+#include "TermTranslator.h"
+#include "Ideal.h"
 
 BigattiFacade::BigattiFacade(const BigattiParams& params):
   Facade(params.getPrintActions()),
-  _out(stdout) {
-
-  setDoCanonicalOutput(params.getProduceCanonicalOutput());
-  setIsMinimallyGenerated(params.getIdealIsMinimal());
-  setPrintStatistics(params.getPrintStatistics());
-  setPrintDebug(params.getPrintDebug());
-  setUseGenericBaseCase(params.getUseGenericBaseCase());
-  setUseSimplification(params.getUseSimplification());
-
-  setPivotStrategy
-	(BigattiPivotStrategy::createStrategy(params.getPivot(),
-										  params.getWidenPivot()));
-
-  BigIdeal bigIdeal;
-  {
-	IOParameters io(DataType::getMonomialIdealType(),
-					DataType::getPolynomialType());
-	Scanner in(params.getInputFormat(), stdin);
-	io.setInputFormat(params.getInputFormat());
-	io.setOutputFormat(params.getOutputFormat());
-	io.autoDetectInputFormat(in);
-	io.validateFormats();
-
-	// TODO: fix leak
-	_ioHandler = createIOHandler(io.getOutputFormat()).release(); 
-
-	IOFacade facade(params.getPrintActions());
-	facade.readIdeal(in, bigIdeal);
-	in.expectEOF();
-  }
-
-  beginAction("Translating ideal to internal data structure.");
-  _translator.reset(new TermTranslator(bigIdeal, _ideal, false));
-  endAction();
+  _pivot(BigattiPivotStrategy::createStrategy
+		 (params.getPivot(), params.getWidenPivot())),
+  _params(params) {
+  _common.readIdealAndSetPolyOutput(params);
 }
 
-void BigattiFacade::setPrintStatistics(bool value) {
-  _printStatistics = value;
-}
-
-void BigattiFacade::setPrintDebug(bool value) {
-  _printDebug = value;
-}
-
-void BigattiFacade::setUseGenericBaseCase(bool value) {
-  _useGenericBaseCase = value;
-}
-
-void BigattiFacade::setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot) {
-  _pivot = pivot;
-}
-
-void BigattiFacade::setIsMinimallyGenerated(bool value) {
-  _isMinimallyGenerated = value;
-}
-
-void BigattiFacade::setDoCanonicalOutput(bool value) {
-  _doCanonicalOutput = value;
-}
-
-void BigattiFacade::setUseSimplification(bool value) {
-  _useSimplification = value;
-}
-
-void BigattiFacade::minimize() {
-  if (_isMinimallyGenerated)
-	return;
-
-  beginAction("Minimizing ideal.");
-
-  _ideal.minimize();
-  _isMinimallyGenerated = true;
-
-  endAction();
+BigattiFacade::~BigattiFacade() {
+  // Destructor defined so auto_ptr<T> in the header does not need
+  // definition of T.
 }
 
 void BigattiFacade::computeMultigradedHilbertSeries() {
-  runAlgorithm("Computing multigraded Hilbert-Poincare series.", false);
-}
+  beginAction("Computing multigraded Hilbert-Poincare series.");
 
-void BigattiFacade::computeUnivariateHilbertSeries() {
-  runAlgorithm("Computing univariate Hilbert-Poincare series", true);
-}
-
-void BigattiFacade::sortVars() {
-  beginAction("Sorting variables for canonical representation.");
-
-  VarSorter sorter(_translator->getNames());
-  sorter.permute(_translator.get());
-
-  Ideal::iterator stop = _ideal.end();
-  for (Ideal::iterator it = _ideal.begin(); it != stop; ++it)
-    sorter.permute(*it);
+  BigattiHilbertAlgorithm alg(_common.takeIdeal(),
+							  _common.getTranslator(),
+							  _params,
+							  _pivot,
+							  _common.getPolyConsumer());
+  alg.setComputeUnivariate(false);
+  alg.run();
 
   endAction();
 }
 
-void BigattiFacade::runAlgorithm
-(const char* action, bool univariate) {
-  minimize();
-  if (_doCanonicalOutput)
-	sortVars();
+void BigattiFacade::computeUnivariateHilbertSeries() {
+  beginAction("Computing univariate Hilbert-Poincare series");
 
-  auto_ptr<CoefBigTermConsumer> consumer =
-	_ioHandler->createPolynomialWriter(_out);
-
-  consumer->consumeRing(_translator->getNames());
-
-  beginAction(action);
-  BigattiHilbertAlgorithm alg(_ideal, *_translator, *consumer);
-  alg.setPrintStatistics(_printStatistics);
-  alg.setPrintDebug(_printDebug);
-  alg.setUseGenericBaseCase(_useGenericBaseCase);
-  alg.setPivotStrategy(_pivot);
-  alg.setUseSimplification(_useSimplification);
-  alg.setDoCanonicalOutput(_doCanonicalOutput);
-  alg.setComputeUnivariate(univariate);
-
+  BigattiHilbertAlgorithm alg(_common.takeIdeal(),
+							  _common.getTranslator(),
+							  _params,
+							  _pivot,
+							  _common.getPolyConsumer());
+  alg.setComputeUnivariate(true);
   alg.run();
 
   endAction();

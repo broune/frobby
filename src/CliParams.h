@@ -25,37 +25,38 @@
 
 class ParameterGroup;
 
-namespace Params {
-  class CliParams {
-  public:
-	void add(auto_ptr<Parameter> param);
+class CliParams {
+ public:
+  typedef vector<Parameter*>::iterator iterator;
+  typedef vector<Parameter*>::const_iterator const_iterator;
 
-	// TODO: remove this!
-	void add(Parameter& param);
-	void add(ParameterGroup& params);
+  const_iterator begin() const {return _params.begin();}
+  const_iterator end() const {return _params.end();}
 
-	const Parameter& getParam(const string& name) const;
+  /** @todo: fix that this doesn't actually take over ownership */
+  void add(auto_ptr<Parameter> param);
 
-	// TODO: get RID of this.
-	vector<Parameter*>& getParamsREMOVE() {return _params;}
+  void add(Parameter& param);
+  void add(ParameterGroup& params);
 
-	void parseCommandLine(unsigned int tokenCount, const char** tokens);
-	void processOption(const string& optionName,
-					   const char** params,
-					   unsigned int paramCount);
+  bool hasParam(const string& name) const;
+  const Parameter& getParam(const string& name) const;
+  Parameter& getParam(const string& name);
 
-  private:
-	typedef vector<Parameter*>::iterator iterator;
-	typedef vector<Parameter*>::const_iterator const_iterator;
+  void parseCommandLine(unsigned int tokenCount, const char** tokens);
+  void processOption(const string& optionName,
+					 const char** params,
+					 unsigned int paramCount);
 
-	vector<Parameter*> _params;
-	//ElementDeleter _paramsDeleter; TODO: reinstate
-  };
+ private:
+  vector<Parameter*> _params;
+  //ElementDeleter _paramsDeleter; TODO: reinstate
+};
 
-  bool getBool(const CliParams& params, const string& name);
-  const string& getString(const CliParams& params, const string& name);
-  unsigned int getInt(const CliParams& params, const string& name);
-}
-using Params::CliParams;
+bool getBool(const CliParams& params, const string& name);
+const string& getString(const CliParams& params, const string& name);
+unsigned int getInt(const CliParams& params, const string& name);
+
+void setBool(CliParams& params, const string& name, bool newValue);
 
 #endif

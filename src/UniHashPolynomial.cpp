@@ -31,13 +31,22 @@ void UniHashPolynomial::add(bool plus, const mpz_class& exponent) {
 	_terms.erase(exponent);
 }
 
-void UniHashPolynomial::add(int coef, size_t e) {
+void UniHashPolynomial::add(int coef, size_t exponent) {
   if (coef == 0)
 	return;
-  mpz_class& ref = _terms[e];
+  mpz_class& ref = _terms[exponent];
   ref += coef;
   if (ref == 0)
-	_terms.erase(e);
+	_terms.erase(exponent);
+}
+
+void UniHashPolynomial::add(const mpz_class& coef, const mpz_class& exponent) {
+  if (coef == 0)
+	return;
+  mpz_class& ref = _terms[exponent];
+  ref += coef;
+  if (ref == 0)
+	_terms.erase(exponent);
 }
 
 namespace {

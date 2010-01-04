@@ -25,6 +25,9 @@
 	on and off with a boolean flag.
 
 	@ingroup Facade
+
+	@todo Replace this with ActionPrinter using aggregation instead of
+	inheritance.
 */
 class Facade {
  protected:

@@ -48,8 +48,12 @@ class IdealFacade : private Facade {
 	  @param squareFreeAndMinimal If true, then ideal must be square
 	  free and minimally generated. This can speed up the computation,
 	  but will result in undefined behavior if it is not true.
+
+	  @param codimension If true, return the codimension instead.
   */
-  mpz_class computeDimension(const BigIdeal& ideal, bool squareFreeAndMinimal = false);
+  mpz_class computeDimension(const BigIdeal& ideal,
+							 bool codimension = false,
+							 bool squareFreeAndMinimal = false);
 
   // Take the product of the minimal generators of each ideal, and add
   // the resulting monomials as generators of ideal. Requires that

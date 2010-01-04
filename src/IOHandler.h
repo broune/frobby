@@ -63,6 +63,7 @@ class IOHandler {
   const char* getDescription() const;
 
   auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
+  auto_ptr<BigTermConsumer> createIdealListWriter(FILE* out);
   auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
 
   bool supportsInput(const DataType& type) const;
@@ -93,8 +94,13 @@ class IOHandler {
 };
 
 /** Returns an IOHandler for the format with the passed in
-	name. Throws an UnknownFormatException for unknown formats. */
+ name. Throws an UnknownFormatException for unknown formats. */
 auto_ptr<IOHandler> createIOHandler(const string& name);
+
+/** Returns an IOHandler for the output format. This can depend on the
+ input format since the output name can specify to let the output
+ format be the input format. */
+auto_ptr<IOHandler> createOHandler(const string& input, const string& output);
 
 /** Add the name of each fomat to names. */
 void getIOHandlerNames(vector<string>& names);
@@ -106,11 +112,13 @@ void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers);
 string autoDetectFormat(Scanner& in);
 
 /** Using the returned string in place of an (input) format name
- indicates to guess the format based on what is being read. */
+ indicates to guess the format based on what is being read. This was
+ the shortest clear name that I could come up with. */
 string getFormatNameIndicatingToGuessTheInputFormat();
 
 /** Using the returned string in place of an (output) format name
- indicates to use the input format as the output format. */
+ indicates to use the input format as the output format. This was the
+ shortest clear name that I could come up with. */
 string getFormatNameIndicatingToUseInputFormatAsOutputFormat();
 
 #endif

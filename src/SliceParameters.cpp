@@ -161,7 +161,7 @@ void SliceParameters::validateSplit(bool allowLabel,
 	reportError("Unknown Slice split strategy \"" + _split.getValue() + "\".");
 
   if (!allowLabel && split->isLabelSplit())
-	reportError("Label split strategy is not appropriate "
+	reportError("Label split strategy is not appropriate " 
 				"in this context.");
 
   // TODO: implement degree when there is no grading too, so that it
@@ -185,34 +185,6 @@ void SliceParameters::validateSplitHilbert() {
   if (split.get() == 0)
 	reportError("Unknown Bigatti et.al. pivot strategy \"" +
 				_split.getValue() + "\".");
-}
-
-void SliceParameters::apply(SliceFacade& facade) const {
-  auto_ptr<SplitStrategy> split =
-	SplitStrategy::createStrategy(_split.getValue().c_str());
-  facade.setSplitStrategy(split);
-
-  facade.setPrintDebug(_printDebug);
-  facade.setPrintStatistics(_printStatistics);
-  facade.setUseIndependence(_useIndependence);
-  facade.setUseSimplification(_useSimplification);
-  facade.setIsMinimallyGenerated(_minimal);
-  if (_canonical)
-	facade.setCanonicalOutput();
-}
-
-void SliceParameters::apply(BigattiFacade& facade) const {
-  auto_ptr<BigattiPivotStrategy> pivot = BigattiPivotStrategy::createStrategy
-	(_split.getValue().c_str(), _widenPivot);
-  ASSERT(pivot.get() != 0);
-  facade.setPivotStrategy(pivot);
-
-  facade.setPrintDebug(_printDebug);
-  facade.setPrintStatistics(_printStatistics);
-  facade.setUseSimplification(_useSimplification);
-  facade.setIsMinimallyGenerated(_minimal);
-  facade.setDoCanonicalOutput(_canonical);
-  facade.setUseGenericBaseCase(_useBigattiGeneric);
 }
 
 bool SliceParameters::getPrintDebug() const {

@@ -60,8 +60,9 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
   endAction();
 }
 
-mpz_class IdealFacade::computeDimension
-(const BigIdeal& bigIdeal, bool squareFreeAndMinimal) {
+mpz_class IdealFacade::computeDimension(const BigIdeal& bigIdeal,
+										bool codimension,
+										bool squareFreeAndMinimal) {
   beginAction("Computing dimension of ideal.");
 
   size_t varCount = bigIdeal.getVarCount();
@@ -90,7 +91,11 @@ mpz_class IdealFacade::computeDimension
   mpz_class result = alg.getMaxIndepSetSize();
 
   endAction();
-  return result;
+
+  if (codimension)
+	return varCount - result;
+  else
+	return result;
 }
 
 void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,

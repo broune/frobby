@@ -22,35 +22,63 @@
 #include "error.h"
 #include "CliParams.h"
 
-namespace Params { 
-  SliceParams::SliceParams():
-	_useIndependence(true) {
-  }
+SliceParams::SliceParams():
+  _split("median"),
+  _useIndependence(true),
+  _useBoundElimination(true),
+  _useBoundSimplification(true) {
+}
 
-  SliceParams& SliceParams::setSplit(const string& name) {
-	_split = SplitStrategy::createStrategy(name.c_str());
-	if (_split.get() == 0) {
-	  INTERNAL_ERROR("Unknown Slice split " + name + ".");
-	}
-	return *this;
-  }
+SliceParams::SliceParams(const CliParams& cli):
+  _split("median"),
+  _useIndependence(true),
+  _useBoundElimination(true),
+  _useBoundSimplification(true) {
+  extractCliValues(*this, cli);
+}
 
-  SliceParams& SliceParams::useIndependenceSplits(bool value) {
-	_useIndependence = value;
-	return *this;
-  }
+namespace {
+  const char* SplitParamName = "split";
+  const char* UseIndependenceName = "independence";
+  const char* UseBoundElimination = "bound";
+  const char* UseBoundSimplification = "boundSimplify";
+}
 
-  namespace {
-	static const char* SplitParamName = "split";
-	static const char* UseIndependenceName = "independence";
-  }
+void addSliceParams(CliParams& params) {
+}
 
-  void addSliceParams(CliParams& params) {
-  }
-
-  void extractCliValues(SliceParams& slice, const CliParams& cli) {
-	extractCliValues(static_cast<SliceLikeParams&>(slice), cli);
-	slice.setSplit(getString(cli, SplitParamName));
+void extractCliValues(SliceParams& slice, const CliParams& cli) {
+  extractCliValues(static_cast<SliceLikeParams&>(slice), cli);
+  slice.setSplit(getString(cli, SplitParamName));
+  if (cli.hasParam(UseIndependenceName))
 	slice.useIndependenceSplits(getBool(cli, UseIndependenceName));
+  if (cli.hasParam(UseBoundElimination))
+	slice.useBoundElimination(getBool(cli, UseBoundElimination));
+  if (cli.hasParam(UseBoundSimplification))
+	slice.useBoundElimination(getBool(cli, UseBoundSimplification));
+}
+
+void validateSplit(const SliceParams& params,
+				   bool allowLabel,
+				   bool allowDegree) {
+  auto_ptr<SplitStrategy>
+	split(SplitStrategy::createStrategy(params.getSplit()));
+  ASSERT(split.get() != 0)
+
+  if (!allowLabel && split->isLabelSplit())
+	reportError("Label split strategy is not appropriate " 
+				"in this context.");
+
+  // TODO: implement degree when there is no grading too, so that it
+  // is always appropriate.
+  if (!allowDegree && params.getSplit() == "degree") {
+	reportError("The split strategy degree is not appropriate "
+				"in this context.");
+  }
+
+  // TODO: remove the deprecated frob.
+  if (!allowDegree && params.getSplit() == "frob") {
+	reportError("The split strategy frob is not appropriate "
+				"in this context.");
   }
 }

@@ -17,15 +17,11 @@
 #include "stdinc.h"
 #include "HilbertAction.h"
 
-#include "BigIdeal.h"
-#include "IOFacade.h"
 #include "SliceFacade.h"
-#include "Scanner.h"
-#include "DataType.h"
-#include "IdealFacade.h"
-#include "BigattiFacade.h"
 #include "SliceParams.h"
+#include "BigattiFacade.h"
 #include "BigattiParams.h"
+#include "DataType.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -63,52 +59,20 @@ HilbertAction::HilbertAction():
 
 void HilbertAction::perform() {
   if (!_useSlice) {
-	BigattiParams params;
-	extractCliValues(params, _params);
+	BigattiParams params(_params);
 	BigattiFacade facade(params);
     if (_univariate)
 	  facade.computeUnivariateHilbertSeries();
     else
 	  facade.computeMultigradedHilbertSeries();
-	return;
-  }
-
-  BigIdeal ideal;
-
-  if (_useSlice)
-	_sliceParams.validateSplit(false, false);
-  else
-	_sliceParams.validateSplitHilbert();
-
-  {
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
-
-	IOFacade facade(_printActions);
-	facade.readIdeal(in, ideal);
-	in.expectEOF();
-  }
-
-  auto_ptr<IOHandler> output = _io.createOutputHandler();
-  if (_useSlice) {
-	SliceParams params;
-	extractCliValues(params, _params);
-    SliceFacade facade(ideal, output.get(), stdout, _printActions);
-    _sliceParams.apply(facade);
-    if (_univariate)
-	  facade.computeUnivariateHilbertSeries();
-    else
-	  facade.computeMultigradedHilbertSeries();
   } else {
-	BigattiParams params;
-	extractCliValues(params, _params);
-	BigattiFacade facade(ideal, output.get(), stdout, _printActions);
-    _sliceParams.apply(facade);
-    if (_univariate)
-	  facade.computeUnivariateHilbertSeries();
-    else
-	  facade.computeMultigradedHilbertSeries();
+	SliceParams params(_params);
+	validateSplit(params, false, false);
+	SliceFacade sliceFacade(params, DataType::getPolynomialType()); 
+	if (_univariate)
+	  sliceFacade.computeUnivariateHilbertSeries();
+	else
+	  sliceFacade.computeMultigradedHilbertSeries();
   }
 }
 

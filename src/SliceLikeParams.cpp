@@ -20,29 +20,24 @@
 
 #include "CliParams.h"
 
-namespace Params {
-  SliceLikeParams::SliceLikeParams():
-	_printDebug(false),
-	_printStatistics(false),
-	_produceCanonicalOutput(false),
-	_useSimplification(true) {
-  }
+SliceLikeParams::SliceLikeParams():
+  _printDebug(false),
+  _printStatistics(false),
+  _useSimplification(true) {
+}
 
-  namespace {
-	static const char* PrintDebugName = "debug";
-	static const char* PrintStatisticsName = "stats";
-	static const char* CanonicalName = "canon";
-	static const char* UseSimplificationName = "simplify";
-  }
+namespace {
+  static const char* PrintDebugName = "debug";
+  static const char* PrintStatisticsName = "stats";
+  static const char* UseSimplificationName = "simplify";
+}
 
-  void addSliceLikeParams(CliParams& params) {
-  }
+void addSliceLikeParams(CliParams& params) {
+}
 
-  void extractCliValues(SliceLikeParams& slice, const CliParams& cli) {
-	extractCliValues(static_cast<IdealParams&>(slice), cli);
-	slice.printDebug(getBool(cli, PrintDebugName));
-	slice.printStatistics(getBool(cli, PrintStatisticsName));
-	slice.produceCanonicalOutput(getBool(cli, CanonicalName));
-	slice.useSimplification(getBool(cli, UseSimplificationName));
-  }
+void extractCliValues(SliceLikeParams& slice, const CliParams& cli) {
+  extractCliValues(static_cast<CommonParams&>(slice), cli);
+  slice.printDebug(getBool(cli, PrintDebugName));
+  slice.printStatistics(getBool(cli, PrintStatisticsName));
+  slice.useSimplification(getBool(cli, UseSimplificationName));
 }

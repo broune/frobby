@@ -105,7 +105,8 @@ void BigattiBaseCase::output(bool plus, const Term& term) {
 }
 
 void BigattiBaseCase::feedOutputTo
-(CoefBigTermConsumer& consumer, bool inCanonicalOrder) {
+(CoefBigTermConsumer& consumer,
+ bool inCanonicalOrder) {
   if (_computeUnivariate)
 	_outputUnivariate.feedTo(consumer, inCanonicalOrder);
   else
