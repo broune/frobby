@@ -149,14 +149,14 @@ void Action::processNonParameter(const char*) {
 }
 
 void Action::obtainParameters(vector<Parameter*>& parameters) {
-  parameters.insert(parameters.end(),
-					_params.getParamsREMOVE().begin(),
-					_params.getParamsREMOVE().end());
+  parameters.insert(parameters.end(), _params.begin(), _params.end());
 }
 
 void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
-  vector<Parameter*>& paramsV = _params.getParamsREMOVE();
-  obtainParameters(paramsV);
+  vector<Parameter*> tmp;
+  obtainParameters(tmp);
+  for (size_t i = 0; i < tmp.size(); ++i)
+	_params.add(*tmp[i]);
 
   if (acceptsNonParameter() && tokenCount > 0 && tokens[0][0] != '-') {
     processNonParameter(tokens[0]);

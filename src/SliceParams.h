@@ -19,28 +19,43 @@
 #define SLICE_PARAMS_GUARD
 
 #include "SliceLikeParams.h"
-#include "SplitStrategy.h"
+#include <string>
+class CliParams;
 
-class Action;
+class SliceParams : public SliceLikeParams {
+ public:
+  SliceParams();
+  SliceParams(const CliParams& params);
 
-namespace Params {
-  class SliceParams : public SliceLikeParams {
-  public:
-	SliceParams();
+  const string& getSplit() const {return _split;}
+  void setSplit(const string& name) {_split = name;}
 
-	// TOOO: throw exception if invalid
-	SliceParams& setSplit(const string& name);
-	SliceParams& useIndependenceSplits(bool value);
+  bool getUseIndependenceSplits() const {return _useIndependence;}
+  void useIndependenceSplits(bool value) {_useIndependence = value;}
 
-  private:
-	auto_ptr<SplitStrategy> _split;
-	bool _useIndependence;
-  };
+  /** Returns whether to use branch-and-bound to speed up Slice
+   optimization computations by eliminating non-improving slices. */
+  bool getUseBoundElimination() const {return _useBoundElimination;}
+  void useBoundElimination(bool value) {_useBoundElimination = value;}
 
-  void addIdealParams(CliParams& params);
-  void extractCliValues(SliceParams& slice, const CliParams& cli);
-}
+  /** Returns whether to simplify slices by seeking to generate
+   non-improving slices that are then eliminated. This requires
+   that elimination of non-improving slices is turned on. */
+  bool getUseBoundSimplification() const {return _useBoundSimplification;}
+  void useBoundSimplification(bool value) {_useBoundSimplification = value;}
 
-using Params::SliceParams;
+ private:
+  string _split;
+  bool _useIndependence;
+  bool _useBoundElimination;
+  bool _useBoundSimplification;
+};
+
+void addIdealParams(CliParams& params);
+void extractCliValues(SliceParams& slice, const CliParams& cli);
+
+void validateSplit(const SliceParams& params,
+				   bool allowLabel,
+				   bool allowDegree);
 
 #endif

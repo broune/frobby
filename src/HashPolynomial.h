@@ -53,7 +53,8 @@ class HashPolynomial {
   void add(bool plus, const Term& term);
 
   void feedTo(const TermTranslator& translator,
-			  CoefBigTermConsumer& consumer, bool inCanonicalOrder = false) const;
+			  CoefBigTermConsumer& consumer,
+			  bool inCanonicalOrder) const;
 
   size_t getTermCount() const;
 

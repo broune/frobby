@@ -17,11 +17,8 @@
 #include "stdinc.h"
 #include "PrimaryDecomAction.h"
 
-#include "BigIdeal.h"
-#include "IOFacade.h"
-#include "error.h"
-#include "Scanner.h"
 #include "SliceFacade.h"
+#include "SliceParams.h"
 #include "DataType.h"
 
 PrimaryDecomAction::PrimaryDecomAction():
@@ -44,23 +41,9 @@ void PrimaryDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void PrimaryDecomAction::perform() {
-  BigIdeal ideal;
-
-  _sliceParams.validateSplit(true, false);
-
-  {
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
-
-	IOFacade ioFacade(_printActions);
-	ioFacade.readIdeal(in, ideal);
-	in.expectEOF();
-  }
-
-  auto_ptr<IOHandler> output = _io.createOutputHandler();
-  SliceFacade facade(ideal, output.get(), stdout, _printActions);
-  _sliceParams.apply(facade);
+  SliceParams params(_params);
+  validateSplit(params, true, false);
+  SliceFacade facade(params, DataType::getMonomialIdealListType()); 
   facade.computePrimaryDecomposition();
 }
 

@@ -21,26 +21,25 @@
 #include "error.h"
 #include "CliParams.h"
 
-namespace Params { 
-  BigattiParams::BigattiParams():
-	_pivot("median"),
-	_widenPivot(true),
-	_useGenericBaseCase(true) {
-  }
+BigattiParams::BigattiParams(const CliParams& cli):
+  _pivot("median"),
+  _widenPivot(true),
+  _useGenericBaseCase(true) {
+  extractCliValues(*this, cli);
+}
 
-  namespace {
-	static const char* PivotParamName = "split";
-	static const char* GenericBaseCaseName = "genericBase";
-	static const char* WidenPivotName = "widenPivot";
-  }
+namespace {
+  static const char* PivotParamName = "split";
+  static const char* GenericBaseCaseName = "genericBase";
+  static const char* WidenPivotName = "widenPivot";
+}
 
-  void addBigattParams(CliParams& params) {
-  }
+void addBigattParams(CliParams& params) {
+}
 
-  void extractCliValues(BigattiParams& bigatti, const CliParams& cli) {
-	extractCliValues(static_cast<SliceLikeParams&>(bigatti), cli);
-	bigatti.setPivot(getString(cli, PivotParamName));
-	bigatti.useGenericBaseCase(getBool(cli, GenericBaseCaseName));
-	bigatti.widenPivot(getBool(cli, WidenPivotName));
-  }
+void extractCliValues(BigattiParams& bigatti, const CliParams& cli) {
+  extractCliValues(static_cast<SliceLikeParams&>(bigatti), cli);
+  bigatti.setPivot(getString(cli, PivotParamName));
+  bigatti.useGenericBaseCase(getBool(cli, GenericBaseCaseName));
+  bigatti.widenPivot(getBool(cli, WidenPivotName));
 }

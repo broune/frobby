@@ -24,6 +24,7 @@
 
 class IrreducibleIdealSplitter : public BigTermConsumer {
 public:
+  IrreducibleIdealSplitter(BigTermConsumer& consumer);
   IrreducibleIdealSplitter(auto_ptr<BigTermConsumer> consumer);
 
   virtual void consumeRing(const VarNames& names);
@@ -36,7 +37,8 @@ public:
   virtual void doneConsumingList();
 
 private:
-  auto_ptr<BigTermConsumer> _consumer;
+  BigTermConsumer& _consumer;
+  auto_ptr<BigTermConsumer> _consumerDeleter;
   Term _tmp;
   vector<mpz_class> _bigTmp;
   bool _inList;

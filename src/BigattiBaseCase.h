@@ -53,8 +53,7 @@ class BigattiBaseCase {
   /** Feed the output Hilbert-Poincare numerator polynomial computed
    so far to the consumer. This is done in canonical order if
    inCanonicalOrder is true. */
-  void feedOutputTo
-	(CoefBigTermConsumer& consumer, bool inCanonicalOrder);
+  void feedOutputTo(CoefBigTermConsumer& consumer, bool inCanonicalOrder);
 
   /** Starts to print debug output on what happens if value is
    true. */

@@ -20,30 +20,33 @@
 
 #include "SliceLikeParams.h"
 
-namespace Params {
-  class CliParams;
+class CliParams;
 
-  class BigattiParams : public SliceLikeParams {
-  public:
-	BigattiParams();
+class BigattiParams : public SliceLikeParams {
+ public:
+  BigattiParams(const CliParams& cli);
 
-	void setPivot(const string& name) {_pivot = name;}
-	void widenPivot(bool value) {_widenPivot = value;}
-	void useGenericBaseCase(bool value) {_useGenericBaseCase = value;}
+  /** Returns whether to detect generic monomial ideals as a base
+	  case. */
+  bool getUseGenericBaseCase() const {return _useGenericBaseCase;}
+  void setPivot(const string& name) {_pivot = name;}
 
-	const string& getPivot() const {return _pivot;}
-	bool getWidenPivot() const {return _widenPivot;}
-	bool getUseGenericBaseCase() const {return _useGenericBaseCase;}
+  /** Returns the name of the pivot selection strategy used for
+	  pivots splits. */
+  const string& getPivot() const {return _pivot;}
+  void useGenericBaseCase(bool value) {_useGenericBaseCase = value;}
 
-  private:
-	string _pivot;
-	bool _widenPivot;
-	bool _useGenericBaseCase;
-  };
+  /** Returns whether to widen the pivots of pivot splits. */
+  bool getWidenPivot() const {return _widenPivot;}
+  void widenPivot(bool value) {_widenPivot = value;}
 
-  void addBigattiParams(CliParams& params);
-  void extractCliValues(BigattiParams& slice, const CliParams& cli);
-}
-using Params::BigattiParams;
+ private:
+  string _pivot;
+  bool _widenPivot;
+  bool _useGenericBaseCase;
+};
+
+void addBigattiParams(CliParams& params);
+void extractCliValues(BigattiParams& slice, const CliParams& cli);
 
 #endif

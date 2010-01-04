@@ -151,6 +151,8 @@ class TranslatedReverseLexComparator {
   const TermTranslator& _translator;
 };
 
+void setToZeroOne(TermTranslator& translator);
+
 ostream& operator<<(ostream& out, const TermTranslator& translator);
 
 #endif

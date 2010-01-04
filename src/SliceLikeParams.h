@@ -18,34 +18,37 @@
 #ifndef SLICE_LIKE_PARAMS
 #define SLICE_LIKE_PARAMS
 
-#include "IdealParams.h"
+#include "CommonParams.h"
 
-namespace Params {
-  class CliParams;
+class CliParams;
 
-  class SliceLikeParams : public IdealParams {
-  public:
-	SliceLikeParams();
+class SliceLikeParams : public CommonParams {
+ public:
+  SliceLikeParams();
 
-	void printDebug(bool value) {_printDebug = value;}
-	void printStatistics(bool value) {_printStatistics = value;}
-	void produceCanonicalOutput(bool value) {_produceCanonicalOutput = value;}
-	void useSimplification(bool value) {_useSimplification = value;}
+  /** Returns whether to print information about what the algorithm
+	  is doing to standard error as it runs. */
+  bool getPrintDebug() const {return _printDebug;}
+  void printDebug(bool value) {_printDebug = value;}
 
-	bool getPrintDebug() const {return _printDebug;}
-	bool getPrintStatistics() const {return _printStatistics;}
-	bool getProduceCanonicalOutput() const {return _produceCanonicalOutput;}
-	bool getUseSimplification() const {return _useSimplification;}
+  /** Returns whether to print statistics on what the algorithm did
+	  to standard error after it has run. */
+  bool getPrintStatistics() const {return _printStatistics;}
+  void printStatistics(bool value) {_printStatistics = value;}
 
-  private:
-	bool _printDebug;
-	bool _printStatistics;
-	bool _produceCanonicalOutput;
-	bool _useSimplification;
-  };
+  /** Apply simplification to the state of the algorithm when
+	  possible. E.g. slices have a notion of simplification, as does
+	  the Bigatti algorithm. */
+  bool getUseSimplification() const {return _useSimplification;}
+  void useSimplification(bool value) {_useSimplification = value;}
 
-  void addSliceLikeParams(CliParams& params);
-  void extractCliValues(SliceLikeParams& slice, const CliParams& cli);
-}
+ private:
+  bool _printDebug;
+  bool _printStatistics;
+  bool _useSimplification;
+};
+
+void addSliceLikeParams(CliParams& params);
+void extractCliValues(SliceLikeParams& slice, const CliParams& cli);
 
 #endif

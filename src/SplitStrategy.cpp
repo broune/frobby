@@ -494,5 +494,10 @@ namespace {
 }
 
 auto_ptr<SplitStrategy> SplitStrategy::createStrategy(const string& name) {
-  return getSplitFactory().create(name);
+  auto_ptr<SplitStrategy> split = getSplitFactory().create(name);
+  if (split.get() == 0)
+	reportError("Unknown Slice split strategy \"" + name + "\".");
+
+  ASSERT(split.get() != 0);
+  return split;
 }

@@ -20,6 +20,7 @@
 #include "BigIdeal.h"
 #include "IOFacade.h"
 #include "SliceFacade.h"
+#include "SliceParams.h"
 #include "BigTermRecorder.h"
 #include "Scanner.h"
 #include "error.h"
@@ -62,7 +63,8 @@ void FrobeniusAction::perform() {
 	 "release of Frobby. Use the action optimize with options "
 	 "-chopFirstAndSubtract and -maxStandard instead to get the same effect.");
 
-  _sliceParams.validateSplit(true, true);
+  SliceParams params(_params);
+  validateSplit(params, true, true);
 
   vector<mpz_class> instance;
   BigIdeal ideal;
@@ -77,13 +79,9 @@ void FrobeniusAction::perform() {
 
   BigTermRecorder recorder;
 
-  SliceFacade facade(ideal, &recorder, _printActions);
-  _sliceParams.apply(facade);
+  SliceFacade facade(params, ideal, recorder);
   mpz_class dummy;
-  facade.solveStandardProgram
-	(shiftedDegrees, dummy, false,
-	 _sliceParams.getUseBoundElimination(),
-	 _sliceParams.getUseBoundSimplification());
+  facade.solveStandardProgram(shiftedDegrees, dummy, false);
 
   BigIdeal maxSolution = *(recorder.releaseIdeal());
 

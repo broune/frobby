@@ -85,6 +85,18 @@ auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
   return auto_ptr<BigTermConsumer>(doCreateIdealWriter(out));
 }
 
+auto_ptr<BigTermConsumer> IOHandler::createIdealListWriter(FILE* out) {
+  if (!supportsOutput(DataType::getMonomialIdealListType())) {
+	throwError<UnsupportedException>
+	  ("The " + string(getName()) +
+	   " format does not support output of a list of monomial ideals.");
+  }
+  // This is the same kind of object as for a non-list ideal
+  // writer. The only difference is that we checked for support for
+  // output of lists above.
+  return auto_ptr<BigTermConsumer>(doCreateIdealWriter(out));
+}
+
 auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
   if (!supportsOutput(DataType::getPolynomialType())) {
 	throwError<UnsupportedException>
@@ -125,6 +137,13 @@ auto_ptr<IOHandler> createIOHandler(const string& name) {
   if (handler.get() == 0)
 	throwError<UnknownFormatException>("Unknown format \"" + name + "\".");	
   return handler;
+}
+
+auto_ptr<IOHandler> createOHandler(const string& input, const string& output) {
+  if (output == getFormatNameIndicatingToUseInputFormatAsOutputFormat())
+	return createIOHandler(input);
+  else
+	return createIOHandler(output);
 }
 
 void getIOHandlerNames(vector<string>& names) {
