@@ -23,7 +23,6 @@
 #include "CoefTermConsumer.h"
 #include "Projection.h"
 #include "IndependenceSplitter.h"
-#include "SliceEvent.h"
 #include "HilbertIndependenceConsumer.h"
 #include "ElementDeleter.h"
 

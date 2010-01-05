@@ -24,7 +24,6 @@
 #include <vector>
 #include "Projection.h"
 #include "TermGrader.h"
-#include "SliceEvent.h"
 
 MsmStrategy::MsmStrategy(TermConsumer* consumer,
 						 const SplitStrategy* splitStrategy):
@@ -176,9 +175,9 @@ void MsmStrategy::labelSplit(auto_ptr<Slice> sliceParam) {
   _tasks.addTask(slice.release());
 }
 
-class MsmIndependenceSplit : public TermConsumer, public SliceEvent {
+class MsmIndependenceSplit : public TermConsumer, public Task {
 public:
-  SliceEvent* getLeftEvent() {
+  Task* getLeftEvent() {
 	return this;
   }
 
@@ -211,7 +210,7 @@ public:
   }
 
 private:
-  virtual void raiseEvent() {
+  virtual void run(TaskEngine& engine) {
   }
 
   virtual void dispose() {

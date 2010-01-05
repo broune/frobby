@@ -90,11 +90,9 @@ void UniHashPolynomial::feedTo(CoefBigTermConsumer& consumer, bool inCanonicalOr
 	for (; it != termsEnd; ++it)
 	  refs.push_back(it);
 
-	// Sort the references.
 	sort(refs.begin(), refs.end(), RefCompare());
 
 	// Output the terms in the sorted order specified by refs.
-
 	vector<TermMap::const_iterator>::const_iterator refsEnd = refs.end();
 	vector<TermMap::const_iterator>::const_iterator refIt = refs.begin();
 	for (; refIt != refsEnd; ++refIt) {
