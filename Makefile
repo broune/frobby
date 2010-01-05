@@ -25,20 +25,19 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   BigTermRecorder.cpp CoCoA4IOHandler.cpp SingularIOHandler.cpp			\
   TotalDegreeCoefTermConsumer.cpp BigPolynomial.cpp						\
   CoefBigTermRecorder.cpp PolyTransformAction.cpp VarSorter.cpp			\
-  SliceEvent.cpp TermConsumer.cpp NullTermConsumer.cpp					\
-  CoefTermConsumer.cpp NullCoefTermConsumer.cpp							\
-  TranslatingCoefTermConsumer.cpp PolynomialFacade.cpp					\
-  HilbertBasecase.cpp HilbertIndependenceConsumer.cpp					\
-  SplitStrategy.cpp CanonicalTermConsumer.cpp StatisticsStrategy.cpp	\
-  TestAction.cpp NameFactory.cpp error.cpp DebugAllocator.cpp			\
-  FrobbyStringStream.cpp SliceStrategy.cpp PrimaryDecomAction.cpp		\
-  IdealComparator.cpp IrreducibleIdealSplitter.cpp DataType.cpp			\
-  IdealConsolidator.cpp CoefBigTermConsumer.cpp							\
-  PolynomialConsolidator.cpp OptimizeAction.cpp							\
-  MaximalStandardAction.cpp test/Test.cpp test/TestCase.cpp				\
-  test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp			\
-  test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp				\
-  LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp					\
+  TermConsumer.cpp NullTermConsumer.cpp CoefTermConsumer.cpp			\
+  NullCoefTermConsumer.cpp TranslatingCoefTermConsumer.cpp				\
+  PolynomialFacade.cpp HilbertBasecase.cpp								\
+  HilbertIndependenceConsumer.cpp SplitStrategy.cpp						\
+  CanonicalTermConsumer.cpp StatisticsStrategy.cpp TestAction.cpp		\
+  NameFactory.cpp error.cpp DebugAllocator.cpp FrobbyStringStream.cpp	\
+  SliceStrategy.cpp PrimaryDecomAction.cpp IdealComparator.cpp			\
+  IrreducibleIdealSplitter.cpp DataType.cpp IdealConsolidator.cpp		\
+  CoefBigTermConsumer.cpp PolynomialConsolidator.cpp					\
+  OptimizeAction.cpp MaximalStandardAction.cpp test/Test.cpp			\
+  test/TestCase.cpp test/TestQualifier.cpp test/TestRunner.cpp			\
+  test/TestSuite.cpp test/TestVisitor.cpp test/macroes.cpp				\
+  test/asserts.cpp LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp	\
   LibIrreducibleDecomTest.cpp IdealFactory.cpp PolynomialFactory.cpp	\
   LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp					\
   OptimizeStrategyTest.cpp TermTest.cpp TermTranslatorTest.cpp			\
