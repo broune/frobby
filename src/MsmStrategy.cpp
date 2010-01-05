@@ -211,6 +211,7 @@ public:
 
 private:
   virtual void run(TaskEngine& engine) {
+	dispose();
   }
 
   virtual void dispose() {
