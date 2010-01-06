@@ -56,8 +56,6 @@ class CommonParams {
   bool getProduceCanonicalOutput() const {return _produceCanonicalOutput;}
   void produceCanonicalOutput(bool value) {_produceCanonicalOutput = value;}
 
-<<<<<<< local
-
   /** Returns whether to print information about what the algorithm
 	  is doing to standard error as it runs. */
   bool getPrintDebug() const {return _printDebug;}
