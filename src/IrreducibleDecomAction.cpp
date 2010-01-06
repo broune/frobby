@@ -17,10 +17,8 @@
 #include "stdinc.h"
 #include "IrreducibleDecomAction.h"
 
-#include "BigIdeal.h"
 #include "SliceFacade.h"
-#include "IOFacade.h"
-#include "Scanner.h"
+#include "SliceParams.h"
 #include "DataType.h"
 
 IrreducibleDecomAction::IrreducibleDecomAction():
@@ -50,23 +48,12 @@ void IrreducibleDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void IrreducibleDecomAction::perform() {
-  BigIdeal ideal;
-
-  _sliceParams.validateSplit(true, false);
-
-  {
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
-
-	IOFacade ioFacade(_printActions);
-	ioFacade.readIdeal(in, ideal);
-	in.expectEOF();
-  }
-
-  auto_ptr<IOHandler> output = _io.createOutputHandler();
-  SliceFacade facade(ideal, output.get(), stdout, _printActions);
-  _sliceParams.apply(facade);
+  SliceParams params(_params);
+  validateSplit(params, true, false);
+  const DataType& output = _encode ?
+	DataType::getMonomialIdealType() :
+	DataType::getMonomialIdealListType();
+  SliceFacade facade(params, output);
   facade.computeIrreducibleDecomposition(_encode);
 }
 

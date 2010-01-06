@@ -105,7 +105,8 @@ void BigattiBaseCase::output(bool plus, const Term& term) {
 }
 
 void BigattiBaseCase::feedOutputTo
-(CoefBigTermConsumer& consumer, bool inCanonicalOrder) {
+(CoefBigTermConsumer& consumer,
+ bool inCanonicalOrder) {
   if (_computeUnivariate)
 	_outputUnivariate.feedTo(consumer, inCanonicalOrder);
   else
@@ -227,7 +228,7 @@ bool BigattiBaseCase::univariateAllFaces(const BigattiState& state) {
   for (size_t e = 0; e < poly.size(); ++e) {
 	if (_printDebug) {
 	  fprintf(stderr, "Debug: Outputting term %i*t^%u.\n",
-			  poly[e], e + degree);
+			  poly[e], (unsigned int)(e + degree));
 	}
 
 	++_totalTermsOutputEver;
@@ -237,7 +238,8 @@ bool BigattiBaseCase::univariateAllFaces(const BigattiState& state) {
   return true;
 }
 
-void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state, bool allFaces) {
+void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state,
+											bool allFaces) {
   if (allFaces &&
 	  _computeUnivariate &&
 	  univariateAllFaces(state)) {

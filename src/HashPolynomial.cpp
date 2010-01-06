@@ -19,6 +19,7 @@
 #include "HashPolynomial.h"
 
 #include "CoefBigTermConsumer.h"
+#include "TermTranslator.h"
 
 #include <vector>
 #include <algorithm>
@@ -74,7 +75,10 @@ namespace {
 
 void HashPolynomial::feedTo
 (const TermTranslator& translator,
- CoefBigTermConsumer& consumer, bool inCanonicalOrder) const {
+ CoefBigTermConsumer& consumer,
+ bool inCanonicalOrder) const {
+
+  consumer.consumeRing(translator.getNames());
   consumer.beginConsuming();
 
   if (!inCanonicalOrder) {

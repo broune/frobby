@@ -25,20 +25,19 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   BigTermRecorder.cpp CoCoA4IOHandler.cpp SingularIOHandler.cpp			\
   TotalDegreeCoefTermConsumer.cpp BigPolynomial.cpp						\
   CoefBigTermRecorder.cpp PolyTransformAction.cpp VarSorter.cpp			\
-  SliceEvent.cpp TermConsumer.cpp NullTermConsumer.cpp					\
-  CoefTermConsumer.cpp NullCoefTermConsumer.cpp							\
-  TranslatingCoefTermConsumer.cpp PolynomialFacade.cpp					\
-  HilbertBasecase.cpp HilbertIndependenceConsumer.cpp					\
-  SplitStrategy.cpp CanonicalTermConsumer.cpp StatisticsStrategy.cpp	\
-  TestAction.cpp NameFactory.cpp error.cpp DebugAllocator.cpp			\
-  FrobbyStringStream.cpp SliceStrategy.cpp PrimaryDecomAction.cpp		\
-  IdealComparator.cpp IOHandlerCommon.cpp IrreducibleIdealSplitter.cpp	\
-  DataType.cpp IdealConsolidator.cpp CoefBigTermConsumer.cpp			\
-  PolynomialConsolidator.cpp OptimizeAction.cpp							\
-  MaximalStandardAction.cpp test/Test.cpp test/TestCase.cpp				\
-  test/TestQualifier.cpp test/TestRunner.cpp test/TestSuite.cpp			\
-  test/TestVisitor.cpp test/macroes.cpp test/asserts.cpp				\
-  LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp					\
+  TermConsumer.cpp NullTermConsumer.cpp CoefTermConsumer.cpp			\
+  NullCoefTermConsumer.cpp TranslatingCoefTermConsumer.cpp				\
+  PolynomialFacade.cpp HilbertBasecase.cpp								\
+  HilbertIndependenceConsumer.cpp SplitStrategy.cpp						\
+  CanonicalTermConsumer.cpp StatisticsStrategy.cpp TestAction.cpp		\
+  NameFactory.cpp error.cpp DebugAllocator.cpp FrobbyStringStream.cpp	\
+  SliceStrategy.cpp PrimaryDecomAction.cpp IdealComparator.cpp			\
+  IrreducibleIdealSplitter.cpp DataType.cpp IdealConsolidator.cpp		\
+  CoefBigTermConsumer.cpp PolynomialConsolidator.cpp					\
+  OptimizeAction.cpp MaximalStandardAction.cpp test/Test.cpp			\
+  test/TestCase.cpp test/TestQualifier.cpp test/TestRunner.cpp			\
+  test/TestSuite.cpp test/TestVisitor.cpp test/macroes.cpp				\
+  test/asserts.cpp LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp	\
   LibIrreducibleDecomTest.cpp IdealFactory.cpp PolynomialFactory.cpp	\
   LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp					\
   OptimizeStrategyTest.cpp TermTest.cpp TermTranslatorTest.cpp			\
@@ -48,12 +47,17 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   SizeMaxIndepSetAlg.cpp IdealTest.cpp TaskEngine.cpp Task.cpp			\
   BigattiHilbertAlgorithm.cpp BigattiState.cpp ObjectCache.cpp			\
   HashPolynomial.cpp BigattiBaseCase.cpp BigattiPivotStrategy.cpp		\
-  BigattiFacade.cpp UniHashPolynomial.cpp
+  BigattiFacade.cpp UniHashPolynomial.cpp IdealFacadeCommon.cpp			\
+  CommonParams.cpp CliParams.cpp SliceParams.cpp SliceLikeParams.cpp	\
+  BigattiParams.cpp IOHandlerImpl.cpp IdealWriter.cpp PolyWriter.cpp	\
+  IOHandlerCommon.cpp CommonParamsHelper.cpp ActionPrinter.cpp			\
+  ScarfHilbertAlgorithm.cpp ScarfFacade.cpp Deformer.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
 # -L/sw/lib for ldflags.
 ifndef GMP_INC_DIR
+
   GMP_INC_DIR="/sw/include"
 endif
 

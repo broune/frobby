@@ -23,6 +23,7 @@
 #include "LatticeFacade.h"
 #include "Scanner.h"
 #include "error.h"
+#include "IOHandler.h"
 
 LatticeFormatAction::LatticeFormatAction():
 Action
@@ -39,8 +40,10 @@ _inputFormat
   
   _outputFormat
   ("oformat",
-   "The output format. The additional format \"input\" means use input format.",
-   "input"),
+   "The output format. The additional format \"" +
+   getFormatNameIndicatingToUseInputFormatAsOutputFormat() +
+   "\" means use input format.",
+   getFormatNameIndicatingToUseInputFormatAsOutputFormat()),
 
   _zero
   ("zero",
@@ -59,7 +62,7 @@ void LatticeFormatAction::perform() {
   string iformat = _inputFormat.getValue();
   string oformat = _outputFormat.getValue();
 
-  if (oformat == "input")
+  if (oformat == getFormatNameIndicatingToUseInputFormatAsOutputFormat())
     oformat = iformat;
 
   IOFacade facade(_printActions);

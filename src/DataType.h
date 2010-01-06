@@ -35,6 +35,7 @@ class DataType {
   bool isNull() const;
 
   bool operator==(const DataType& type) const;
+  bool operator!=(const DataType& type) const;
 
   /** Returns the one and only instance for null. */
   static const DataType& getNullType();

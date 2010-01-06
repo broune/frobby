@@ -21,7 +21,7 @@
 #include "error.h"
 #include "Ideal.h"
 #include "test/TestCase.h"
-
+#include "IOHandler.h"
 #include <limits>
 
 #ifdef DEBUG

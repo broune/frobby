@@ -40,11 +40,15 @@ class FrobbyHash<mpz_class> {
 */
 class UniHashPolynomial {
  public:
-  /** Add +term or -term to the polynomial depending on whether plus
-   is true or false, respectively. */
+  /** Add +t^exponent or -t^exponent to the polynomial depending on
+   whether plus is true or false, respectively. */
   void add(bool plus, const mpz_class& exponent);
 
-  void add(int coef, size_t e);
+  /** Add coef*t^exponent to the polynomial. */
+  void add(int coef, size_t exponent);
+  
+  /** Add coef*t^exponent to the polynomial. */
+  void add(const mpz_class& coef, const mpz_class& exponent);
 
   void feedTo(CoefBigTermConsumer& consumer, bool inCanonicalOrder = false) const;
 

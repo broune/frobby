@@ -22,8 +22,8 @@ then
   if [ $? != 0 ]; then exit 1; fi
 fi
 
-$testhelper hilbert $test.*test $test.multi $* -univariate off -canon -useSlice off -oformat m2
+$testhelper hilbert $test.*test $test.multi $* -univariate off -canon -algorithm bigatti -oformat m2
 if [ $? != 0 ]; then exit 1; fi
 
-$testhelper hilbert $test.*test $test.uni $* -univariate -useSlice off -canon -oformat m2
+$testhelper hilbert $test.*test $test.uni $* -univariate -algorithm bigatti -canon -oformat m2
 if [ $? != 0 ]; then exit 1; fi

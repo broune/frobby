@@ -68,7 +68,7 @@ Exponent BigattiState::getMedianPositiveExponentOf(size_t var) {
   return median;
 }
 
-size_t BigattiState::getTypicalExponent(size_t& var, size_t& exp) {
+size_t BigattiState::getTypicalExponent(size_t& var, Exponent& exp) {
   return _ideal.getTypicalExponent(var, exp);
 }
 

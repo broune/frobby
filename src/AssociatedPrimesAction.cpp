@@ -17,12 +17,8 @@
 #include "stdinc.h"
 #include "AssociatedPrimesAction.h"
 
-#include "BigIdeal.h"
-#include "IOFacade.h"
 #include "SliceFacade.h"
-#include "SliceParameters.h"
-#include "Scanner.h"
-#include "BigTermConsumer.h"
+#include "SliceParams.h"
 #include "DataType.h"
 
 AssociatedPrimesAction::AssociatedPrimesAction():
@@ -47,23 +43,9 @@ void AssociatedPrimesAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AssociatedPrimesAction::perform() {
-  _sliceParams.validateSplit(true, false);
-
-  BigIdeal ideal;
-
-  {
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
-	
-	IOFacade ioFacade(_printActions);
-	ioFacade.readIdeal(in, ideal);
-	in.expectEOF();
-  }
-
-  auto_ptr<IOHandler> output = _io.createOutputHandler();
-  SliceFacade facade(ideal, output.get(), stdout, _printActions);
-  _sliceParams.apply(facade);
+  SliceParams params(_params);
+  validateSplit(params, true, false);
+  SliceFacade facade(params, DataType::getMonomialIdealListType()); 
   facade.computeAssociatedPrimes();
 }
 

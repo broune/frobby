@@ -193,6 +193,26 @@ void Ideal::getGcdAtExponent(Exponent* gcd, size_t var, Exponent exp) {
 	Term::setToIdentity(gcd, _varCount);
 }
 
+void Ideal::getGcdOfMultiplesOf(Exponent* gcd, const Exponent* divisor) {
+  bool first = true;
+
+  const_iterator stop = _terms.end();
+  const_iterator it = _terms.begin();
+  for (; it != stop; ++it) {
+	Exponent* m = *it;
+	if (Term::divides(divisor, m, _varCount)) {
+	  if (first) {
+		first = false;
+		copy(m, m + _varCount, gcd);
+	  } else
+		Term::gcd(gcd, gcd, m, _varCount);
+	}
+  }
+
+  if (first)
+	Term::setToIdentity(gcd, _varCount);
+}
+
 void Ideal::getLeastExponents(Exponent* least) const {
   Term::setToIdentity(least, _varCount);
   

@@ -18,7 +18,6 @@
 #include "Slice.h"
 
 #include "Projection.h"
-#include "SliceEvent.h"
 #include "TaskEngine.h"
 #include "SliceStrategy.h"
 

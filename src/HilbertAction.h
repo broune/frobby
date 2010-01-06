@@ -21,12 +21,11 @@
 #include "IOParameters.h"
 #include "BoolParameter.h"
 #include "SliceParameters.h"
+#include "StringParameter.h"
 
 class HilbertAction : public Action {
  public:
   HilbertAction();
-
-  virtual void obtainParameters(vector<Parameter*>& parameters);
 
   virtual void perform();
 
@@ -36,7 +35,7 @@ class HilbertAction : public Action {
   IOParameters _io;
   SliceParameters _sliceParams;
   BoolParameter _univariate;
-  BoolParameter _useSlice;
+  StringParameter _algorithm;
 };
 
 #endif

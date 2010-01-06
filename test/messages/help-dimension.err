@@ -11,20 +11,20 @@ The parameters accepted by dimension are as follows.
    Compute the codimension instead of the dimension. The codimension is the
    number of variables in the polynomial ring minus the dimension.
 
+ -iformat STRING   (default is autodetect)
+   The format used to read the input. This action supports the formats:
+     4ti2 cocoa4 m2 monos newmonos null singular.
+   The format "autodetect" instructs Frobby to guess the format.
+   Type 'frobby help io' for more information on input formats.
+
  -squareFreeAndMinimal [BOOL]   (default is off)
    State that the input ideal is square free and minimally generated. This
    can speed up the the computation, but will result in unpredictable
    behavior if it is not true.
 
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.
+
  -useSlice [BOOL]   (default is off)
    Use the Slice Algorithm to compute the dimension instead of the usual
    algorithm.
-
- -iformat STRING   (default is autodetect)
-   The format used to read the input. This action supports the formats:
-     m2 cocoa4 singular monos newmonos 4ti2 null.
-   The format "autodetect" instructs Frobby to guess the format.
-   Type 'frobby help io' for more information on input formats.
-
- -time [BOOL]   (default is off)
-   Display and time each subcomputation.

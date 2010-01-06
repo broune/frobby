@@ -18,7 +18,7 @@
 #include "IOParameters.h"
 
 #include "IOFacade.h"
-#include "MonosIOHandler.h"
+#include "Macaulay2IOHandler.h"
 #include "Scanner.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
@@ -35,13 +35,17 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 
   string defaultOutput;
   if (!_inputType.isNull())
-	defaultOutput = "input";
+	defaultOutput = getFormatNameIndicatingToUseInputFormatAsOutputFormat();
+  else {
+	defaultOutput = IO::Macaulay2IOHandler::staticGetName();
+	ASSERT(createIOHandler(defaultOutput)->supportsOutput(_outputType));
+  }
 
   vector<string> names;
-  IOHandler::addFormatNames(names);
+  getIOHandlerNames(names);
   for (vector<string>::const_iterator name = names.begin();
 	   name != names.end(); ++name) {
-	auto_ptr<IOHandler> handler = IOHandler::createIOHandler(*name);
+	auto_ptr<IOHandler> handler = createIOHandler(*name);
 	ASSERT(handler.get() != 0);
 
 	if (handler->supportsInput(_inputType)) {
@@ -49,8 +53,6 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 	  inputFormats += handler->getName();
 	}
 	if (handler->supportsOutput(_outputType)) {
-	  if (defaultOutput.empty())
-		defaultOutput = handler->getName();
 	  outputFormats += ' ';
 	  outputFormats += handler->getName();
 	}
@@ -60,11 +62,15 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 	string desc =
       "The format used to read the input. "
 	  "This action supports the formats:\n " + inputFormats + ".\n"
-	  "The format \"autodetect\" instructs Frobby to guess the format.\n"
+	  "The format \"" +
+	  getFormatNameIndicatingToGuessTheInputFormat() +
+	  "\" instructs Frobby to guess the format.\n"
 	  "Type 'frobby help io' for more information on input formats.";
 
 	_inputFormat.reset
-	  (new StringParameter("iformat", desc.c_str(), "autodetect"));
+	  (new StringParameter
+	   ("iformat", desc.c_str(),
+		getFormatNameIndicatingToGuessTheInputFormat()));
 	addParameter(_inputFormat.get());
   }
 
@@ -74,7 +80,9 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 	  "This action supports the formats:\n " + outputFormats + ".\n";
 	if (!_inputType.isNull()) {
 	  desc +=
-		"The format \"input\" instructs Frobby to use the input format.\n";
+		"The format \"" +
+		getFormatNameIndicatingToUseInputFormatAsOutputFormat()
+		+ "\" instructs Frobby to use the input format.\n";
 	}
 	desc += "Type 'frobby help io' for more information on output formats.";
 
@@ -91,6 +99,12 @@ void IOParameters::setOutputFormat(const string& format) {
   *_outputFormat = format;
 }
 
+void IOParameters::setInputFormat(const string& format) {
+  ASSERT(!_outputType.isNull());
+
+  *_inputFormat = format;
+}
+
 const string& IOParameters::getInputFormat() const {
   ASSERT(!_inputType.isNull());
   ASSERT(_inputFormat.get() != 0);
@@ -102,7 +116,9 @@ const string& IOParameters::getOutputFormat() const {
   ASSERT(!_outputType.isNull());
   ASSERT(_outputFormat.get() != 0);
 
-  if (!_inputType.isNull() && _outputFormat->getValue() == "input") {
+  if (!_inputType.isNull() &&
+	  _outputFormat->getValue() ==
+	  getFormatNameIndicatingToUseInputFormatAsOutputFormat()) {
 	ASSERT(_inputFormat.get() != 0);
 	return *_inputFormat;
   }
@@ -111,13 +127,13 @@ const string& IOParameters::getOutputFormat() const {
 }
 
 auto_ptr<IOHandler> IOParameters::createInputHandler() const {
-  auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getInputFormat()));
+  auto_ptr<IOHandler> handler(createIOHandler(getInputFormat()));
   ASSERT(handler.get() != 0);
   return handler;
 }
 
 auto_ptr<IOHandler> IOParameters::createOutputHandler() const {
-  auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getOutputFormat()));
+  auto_ptr<IOHandler> handler(createIOHandler(getOutputFormat()));
   ASSERT(handler.get() != 0);
   return handler;
 }
@@ -126,31 +142,12 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
   ASSERT(!_inputType.isNull());
   ASSERT(_inputFormat.get() != 0);
 
-  if (_inputFormat->getValue() == "autodetect") {
-	// Get to the first non-whitespace character.
-	in.eatWhite();
-	int c = in.peek();
+  if (_inputFormat->getValue() ==
+	  getFormatNameIndicatingToGuessTheInputFormat())
+	*_inputFormat = autoDetectFormat(in);
 
-	// The first condition at each if is the correct one. The other ones
-	// are attempts to catch easy mistakes.
-	if (c == 'R' || c == 'I' || c == 'Z' || c == '=' || c == 'm' ||
-		c == 'W' || c == 'q' || c == 'Q')
-	  *_inputFormat = "m2";
-	else if (c == 'U' || c == 'u')
-	  *_inputFormat = "cocoa4";
-	else if (c == 'r')
-	  *_inputFormat = "singular";
-	else if (c == '(' || c == 'l' || c == ')')
-	  *_inputFormat = "newmonos";
-	else if (isdigit(c) || c == '+' || c == '-')
-	  *_inputFormat = "4ti2";
-	else if (c == 'v')
-	  *_inputFormat = "monos";
-	else
-	  *_inputFormat = "m2"; // We use m2 as a fall-back
-  }
-
-  if (in.getFormat() == "autodetect")
+  if (in.getFormat() ==
+	  getFormatNameIndicatingToGuessTheInputFormat())
 	in.setFormat(*_inputFormat);
 }
 
@@ -158,10 +155,8 @@ void IOParameters::validateFormats() const {
   IOFacade facade(false);
 
   if (!_inputType.isNull()) {
-	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getInputFormat()));
-	if (handler.get() == 0)
-	  reportError("Unknown input format \"" + getInputFormat() + "\".");
-
+	auto_ptr<IOHandler> handler(createIOHandler(getInputFormat()));
+	
 	if (!handler->supportsInput(_inputType)) {
 	  FrobbyStringStream errorMsg;
 	  errorMsg << "The "
@@ -174,10 +169,8 @@ void IOParameters::validateFormats() const {
   }
 
   if (!_outputType.isNull()) {
-	auto_ptr<IOHandler> handler(IOHandler::createIOHandler(getOutputFormat()));
-	if (handler.get() == 0)
-	  reportError("Unknown output format \"" + getOutputFormat() + "\".");
-
+	auto_ptr<IOHandler> handler(createIOHandler(getOutputFormat()));
+	/*
 	if (!handler->supportsOutput(_outputType)) {
 	  FrobbyStringStream errorMsg;
 	  errorMsg << "The "
@@ -187,5 +180,6 @@ void IOParameters::validateFormats() const {
 			   << '.';
 	  reportError(errorMsg);
 	}
+	*/
   }
 }

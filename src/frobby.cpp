@@ -19,13 +19,13 @@
 
 #include "BigIdeal.h"
 #include "SliceFacade.h"
-#include "SliceParameters.h"
 #include "BigTermConsumer.h"
 #include "TermTranslator.h"
 #include "Term.h"
 #include "error.h"
 #include "CoefBigTermConsumer.h"
 #include "IdealFacade.h"
+#include "SliceParams.h"
 
 class ConsumerWrapper {
 protected:
@@ -246,9 +246,9 @@ bool Frobby::alexanderDual(const Ideal& ideal,
 
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params;
-  params.apply(facade);
+
+  SliceParams params;
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
 
   if (reflectionMonomial == 0)
 	facade.computeAlexanderDual();
@@ -298,9 +298,8 @@ void Frobby::multigradedHilbertPoincareSeries(const Ideal& ideal,
 
   ExternalPolynomialConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params;
-  params.apply(facade);
+  SliceParams params;
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
 
   facade.computeMultigradedHilbertSeries();
 }
@@ -310,9 +309,8 @@ void Frobby::univariateHilbertPoincareSeries(const Ideal& ideal,
   const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
 
   ExternalPolynomialConsumerWrapper wrappedConsumer(&consumer, 1);
-  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params;
-  params.apply(facade);
+  SliceParams params;
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
 
   facade.computeUnivariateHilbertSeries();
 }
@@ -395,9 +393,8 @@ bool Frobby::irreducibleDecompositionAsMonomials(const Ideal& ideal,
 
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params;
-  params.apply(facade);
+  SliceParams params;
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
 
   facade.computeIrreducibleDecomposition(true);
   return true;
@@ -409,9 +406,8 @@ void Frobby::maximalStandardMonomials(const Ideal& ideal,
 
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params;
-  params.apply(facade);
+  SliceParams params;
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
 
   facade.computeMaximalStandardMonomials();
 }
@@ -429,12 +425,12 @@ bool Frobby::solveStandardMonomialProgram(const Ideal& ideal,
 
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
-  SliceFacade facade(bigIdeal, &wrappedConsumer, false);
-  SliceParameters params(true, false);
-  params.apply(facade);
+  SliceParams params;
+  params.useIndependenceSplits(false); // not supported
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
 
   mpz_class dummy;
-  return facade.solveStandardProgram(grading, dummy, false, true, true);
+  return facade.solveStandardProgram(grading, dummy, false);
 }
 
 void Frobby::codimension(const Ideal& ideal, mpz_t codim) {

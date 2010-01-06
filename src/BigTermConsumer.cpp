@@ -53,6 +53,7 @@ void BigTermConsumer::beginConsuming(const VarNames& names) {
 }
 
 void BigTermConsumer::consume(const BigIdeal& ideal) {
+  consumeRing(ideal.getNames());
   beginConsuming(ideal.getNames());
   for (size_t term = 0; term < ideal.getGeneratorCount(); ++term)
 	consume(ideal.getTerm(term));

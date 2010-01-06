@@ -28,7 +28,7 @@
 //#define ENABLE_SCANNER_LOG
 
 // This enables logging of what the scanner is reading and what it is
-// being asked to do. This is very useful for debugging of code using
+// being asked to do. This is very useful for debugging code using
 // Scanner, but the overhead is too high to include this when reading
 // normally. Thus the inclusion of logging is controlled using the
 // preprocessor.
@@ -48,9 +48,12 @@ Scanner::Scanner(const string& formatName, FILE* in):
   _in(in),
   _lineNumber(1),
   _char(' '),
-  _tmpString(new char[16]),
+  _tmpString(0),
   _tmpStringCapacity(16),
   _formatName(formatName) {
+  _tmpString = new char[16];
+  if (getFormat() == getFormatNameIndicatingToGuessTheInputFormat())
+	setFormat(autoDetectFormat(*this));
 }
 
 Scanner::~Scanner() {
@@ -66,7 +69,7 @@ void Scanner::setFormat(const string& format) {
 }
 
 auto_ptr<IOHandler> Scanner::createIOHandler() const {
-  return IOHandler::createIOHandler(getFormat());
+  return ::createIOHandler(getFormat());
 }
 
 bool Scanner::match(char c) {

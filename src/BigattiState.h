@@ -37,7 +37,7 @@ class BigattiState : public Task {
   Term& getMultiply();
 
   Exponent getMedianPositiveExponentOf(size_t var);
-  size_t getTypicalExponent(size_t& var, size_t& exp);
+  size_t getTypicalExponent(size_t& var, Exponent& exp);
   void singleDegreeSort(size_t var);
 
   void colonStep(const Term& term);

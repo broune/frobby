@@ -30,7 +30,11 @@ bool DataType::isNull() const {
 }
 
 bool DataType::operator==(const DataType& type) const {
-  return getName() == type.getName();
+  return this == &type; // There is only one object of each kind.
+}
+
+bool DataType::operator!=(const DataType& type) const {
+  return this != &type; // There is only one object of each kind.
 }
 
 const DataType& DataType::getNullType() {

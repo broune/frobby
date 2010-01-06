@@ -189,17 +189,23 @@ class Term {
   }
 
   /** Returns whether a strictly divides b. \f$a\f$ strictly divides
-	  \f$b\f$ if \f$a * gcd(a, x_1...x_n)\f$ divides \f$b\f$, i.e.\ if,
-	  for each $i$, \f$u_i<b_i\f$ or $v_i=0$ where $a=x^u$ and $b=x^v$.
+	  \f$b\f$ if \f$a * gcd(a, x_1...x_n)\f$ divides \f$b\f$ and
+	  \f$b\neq 1\f$, i.e.\ if, for each $i$, \f$u_i<b_i\f$ or $v_i=0$
+	  where $a=x^u$, $b=x^v\neq x^0$
   */
   inline static bool strictlyDivides(const Exponent* a, const Exponent* b,
 									 size_t varCount) {
 	ASSERT(a != 0 || varCount == 0);
 	ASSERT(b != 0 || varCount == 0);
-	for (size_t var = 0; var < varCount; ++var)
-	  if (a[var] >= b[var] && a[var] > 0)
+	bool bIsIdentity = true;
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (a[var] >= b[var] && a[var] != 0)
 		return false;
-	return true;
+	  if (b[var] != 0)
+		bIsIdentity = false;
+	}
+
+	return !bIsIdentity;
   }
 
   bool strictlyDivides(const Term& term) const {

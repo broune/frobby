@@ -19,9 +19,10 @@
 
 #include <string>
 
+// TODO: rename to CliParam
 class Parameter {
  public:
-  Parameter(const char* name, const char* description);
+  Parameter(const string& name, const string& description);
   virtual ~Parameter();
 
   const char* getName() const;

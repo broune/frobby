@@ -21,7 +21,9 @@
 #include "IOFacade.h"
 #include "Scanner.h"
 #include "SliceFacade.h"
+#include "SliceParams.h"
 #include "DataType.h"
+#include "BigTermConsumer.h"
 
 AlexanderDualAction::AlexanderDualAction():
   Action
@@ -44,7 +46,8 @@ void AlexanderDualAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void AlexanderDualAction::perform() {
-  _sliceParams.validateSplit(true, false);
+  SliceParams params(_params);
+  validateSplit(params, true, false);
 
   BigIdeal ideal;
   vector<mpz_class> point;
@@ -60,9 +63,9 @@ void AlexanderDualAction::perform() {
 	in.expectEOF();
   }
 
-  auto_ptr<IOHandler> output = _io.createOutputHandler();
-  SliceFacade facade(ideal, output.get(), stdout, _printActions);
-  _sliceParams.apply(facade);
+  auto_ptr<BigTermConsumer> output =
+	_io.createOutputHandler()->createIdealWriter(stdout);
+  SliceFacade facade(params, ideal, *output);
 
   if (pointSpecified)
 	facade.computeAlexanderDual(point);

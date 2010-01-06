@@ -2,22 +2,22 @@ Frobby version 0.8.2 Copyright (C) 2007 Bjarke Hammersholt Roune
 Frobby performs a number of computations related to monomial ideals. You
 run it by typing `frobby ACTION', where ACTION is one of the following.
 
- hilbert      - Compute the Hilbert-Poincare series of the input ideal.
- irrdecom     - Compute the irreducible decomposition of the input ideal.
- primdecom    - Compute the primary decomposition of monomial ideals.
  alexdual     - Compute the Alexander dual of the input ideal.
+ analyze      - Display information about the input ideal.
  assoprimes   - Compute the associated primes of the input ideal.
- maxstandard  - Compute the maximal standard monomials of the input ideal.
  dimension    - Compute the (co)dimension of the input ideal.
- optimize     - Solve optimization problems related to the input ideal.
- transform    - Change the representation of the input ideal.
- ptransform   - Change the representation of the input polynomial.
- intersection - Intersect the input ideals.
- genideal     - Generate a random monomial ideal.
  frobdyn      - Compute Frobenius number using dynamic programming.
  genfrob      - Generate a random Frobenius problem instance.
- analyze      - Display information about the input ideal.
+ genideal     - Generate a random monomial ideal.
+ hilbert      - Compute the Hilbert-Poincare series of the input ideal.
+ intersection - Intersect the input ideals.
+ irrdecom     - Compute the irreducible decomposition of the input ideal.
  latformat    - Change the representation of the input lattice.
+ maxstandard  - Compute the maximal standard monomials of the input ideal.
+ optimize     - Solve optimization problems related to the input ideal.
+ primdecom    - Compute the primary decomposition of monomial ideals.
+ ptransform   - Change the representation of the input polynomial.
+ transform    - Change the representation of the input ideal.
 
 Type 'frobby help ACTION' to get more details on a specific action.
 Note that all input and output is done via the standard streams.
