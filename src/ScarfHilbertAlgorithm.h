@@ -33,12 +33,10 @@ class ScarfHilbertAlgorithm {
   void enumerateScarfComplex(const Ideal& ideal,
 							 CoefTermConsumer& consumer,
 							 bool everythingIsAFace);
-
   void runGeneric(const Ideal& ideal,
 				  CoefBigTermConsumer& consumer,
 				  bool univariate,
 				  bool canonical);
-
 
  private:
   const TermTranslator& _translator;
