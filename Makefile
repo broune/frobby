@@ -50,7 +50,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   BigattiFacade.cpp UniHashPolynomial.cpp IdealFacadeCommon.cpp			\
   CommonParams.cpp CliParams.cpp SliceParams.cpp SliceLikeParams.cpp	\
   BigattiParams.cpp IOHandlerImpl.cpp IdealWriter.cpp PolyWriter.cpp	\
-  IOHandlerCommon.cpp CommonParamsHelper.cpp ActionPrinter.cpp
+  IOHandlerCommon.cpp CommonParamsHelper.cpp ActionPrinter.cpp			\
+  ScarfHilbertAlgorithm.cpp ScarfFacade.cpp Deformer.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

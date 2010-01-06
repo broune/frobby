@@ -238,7 +238,8 @@ bool BigattiBaseCase::univariateAllFaces(const BigattiState& state) {
   return true;
 }
 
-void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state, bool allFaces) {
+void BigattiBaseCase::enumerateScarfComplex(const BigattiState& state,
+											bool allFaces) {
   if (allFaces &&
 	  _computeUnivariate &&
 	  univariateAllFaces(state)) {

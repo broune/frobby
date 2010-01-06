@@ -18,19 +18,9 @@
 #include "stdinc.h"
 #include "BigattiFacade.h"
 
-#include "BigIdeal.h"
-#include "IOHandler.h"
-#include "TranslatingCoefTermConsumer.h"
-#include "TotalDegreeCoefTermConsumer.h"
 #include "BigattiHilbertAlgorithm.h"
 #include "BigattiParams.h"
 #include "BigattiPivotStrategy.h"
-#include "IOFacade.h"
-#include "IOParameters.h"
-#include "DataType.h"
-#include "Scanner.h"
-#include "TermTranslator.h"
-#include "Ideal.h"
 
 BigattiFacade::BigattiFacade(const BigattiParams& params):
   Facade(params.getPrintActions()),
