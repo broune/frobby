@@ -22,7 +22,6 @@
 #include "CommonParamsHelper.h"
 #include "BigattiParams.h"
 
-class CoefBigTermConsumer;
 class BigattiPivotStrategy;
 
 /** A facade for computing Hilbert series of monomial ideals using the

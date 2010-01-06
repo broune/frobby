@@ -120,8 +120,7 @@ namespace IO {
 	return new SingularIdealWriter(out);
   }
 
-  CoefBigTermConsumer* SingularIOHandler::
-  doCreatePolynomialWriter(FILE* out) {
+  CoefBigTermConsumer* SingularIOHandler::doCreatePolynomialWriter(FILE* out) {
 	return new SingularPolyWriter(out);
   }
 

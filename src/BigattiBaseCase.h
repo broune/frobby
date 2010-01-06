@@ -124,15 +124,12 @@ class BigattiBaseCase {
   /** Used to translate the output from ints. */
   const TermTranslator& _translator;
 
-  /** For statistics. Not a disaster if it overflows for long-running
-   computations. */
+  /** For statistics. Can overflow. */
   size_t _totalBaseCasesEver;
 
-  /** For statistics. Not a disaster if it overflows for long-running
-   computations. */
+  /** For statistics. Can overflow. */
   size_t _totalTermsOutputEver;
 
-  /** Print debug messages about what is happening if true. */
   bool _printDebug;
 };
 

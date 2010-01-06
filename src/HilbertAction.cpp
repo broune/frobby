@@ -21,7 +21,9 @@
 #include "SliceParams.h"
 #include "BigattiFacade.h"
 #include "BigattiParams.h"
+#include "ScarfFacade.h"
 #include "DataType.h"
+#include "error.h"
 
 HilbertAction::HilbertAction():
   Action
@@ -44,28 +46,27 @@ HilbertAction::HilbertAction():
   ("univariate",
    "Output a univariate polynomial by substituting t for each variable.",
    false),
-  
-  _useSlice
-  ("useSlice",
-   "Use the Slice Algorithm to compute the Hilbert-Poincare series\n"
-   "instead of the algorithm by Bigatti et.al.",
-   false) {
+
+  _algorithm
+  ("algorithm",
+   "Which algorithm to use. Options are slice, bigatti and deform.",
+   "deform") {
 
   _params.add(_io);
   _params.add(_sliceParams);
   _params.add(_univariate);
-  _params.add(_useSlice);
+  _params.add(_algorithm);
 }
 
 void HilbertAction::perform() {
-  if (!_useSlice) {
+  if (_algorithm.getValue() == "slice") {
 	BigattiParams params(_params);
 	BigattiFacade facade(params);
     if (_univariate)
 	  facade.computeUnivariateHilbertSeries();
     else
 	  facade.computeMultigradedHilbertSeries();
-  } else {
+  } else if (_algorithm.getValue() == "bigatti") {
 	SliceParams params(_params);
 	validateSplit(params, false, false);
 	SliceFacade sliceFacade(params, DataType::getPolynomialType()); 
@@ -73,7 +74,17 @@ void HilbertAction::perform() {
 	  sliceFacade.computeUnivariateHilbertSeries();
 	else
 	  sliceFacade.computeMultigradedHilbertSeries();
-  }
+  } else if (_algorithm.getValue() == "deform") {
+	CommonParams params;
+	extractCliValues(params, _params);
+	ScarfFacade facade(params);
+    if (_univariate)
+	  facade.computeUnivariateHilbertSeries();
+    else
+	  facade.computeMultigradedHilbertSeries();
+  } else
+	reportError("Unknown Hilbert-Poincare series algorithm \"" +
+				_algorithm.getValue() + "\".");
 }
 
 const char* HilbertAction::staticGetName() {
