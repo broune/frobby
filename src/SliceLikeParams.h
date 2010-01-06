@@ -38,6 +38,7 @@ class SliceLikeParams : public CommonParams {
   void useSimplification(bool value) {_useSimplification = value;}
 
  private:
+  bool _printDebug;
   bool _printStatistics;
   bool _useSimplification;
 };
