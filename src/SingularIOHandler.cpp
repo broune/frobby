@@ -18,203 +18,229 @@
 #include "SingularIOHandler.h"
 
 #include "Scanner.h"
-#include "BigIdeal.h"
 #include "VarNames.h"
-#include "CoefTermConsumer.h"
-#include "BigPolynomial.h"
-#include "error.h"
 #include "BigTermConsumer.h"
 #include "FrobbyStringStream.h"
 #include "DataType.h"
 #include "CoefBigTermConsumer.h"
+#include "IdealWriter.h"
+#include "PolyWriter.h"
+#include "error.h"
 
 #include <cstdio>
 
-SingularIOHandler::SingularIOHandler():
-  IOHandlerCommon(staticGetName(),
-				  "Format understandable by the program Singular.") {
-  registerInput(DataType::getMonomialIdealType());
-  registerInput(DataType::getMonomialIdealListType());
-  registerInput(DataType::getPolynomialType());
-  registerOutput(DataType::getMonomialIdealType());
-  registerOutput(DataType::getPolynomialType());
-}
+namespace IO {
+  namespace Singular {
+	void writeRing(const VarNames& names, FILE* out);
+  }
+  namespace S = Singular;
 
-const char* SingularIOHandler::staticGetName() {
-  return "singular";
-}
-
-void SingularIOHandler::writeTerm(const vector<mpz_class>& term,
-								   const VarNames& names,
-								   FILE* out) {
-  writeTermProduct(term, names, out);
-}
-
-void SingularIOHandler::writePolynomialHeader(const VarNames& names,
-											  FILE* out) {
-  writeRing(names, out);
-  fputs("poly p =", out);
-}
-
-void SingularIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-											  const Term& term,
-											  const TermTranslator* translator,
-											  bool isFirst,
-											  FILE* out) {
-  fputs("\n ", out);
-  writeCoefTermProduct(coef, term, translator, isFirst, out);
-}
-
-void SingularIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-											  const vector<mpz_class>& term,
-											  const VarNames& names,
-											  bool isFirst,
-											  FILE* out) {
-  fputs("\n ", out);
-  writeCoefTermProduct(coef, term, names, isFirst, out);
-}
-
-void SingularIOHandler::writePolynomialFooter(const VarNames& names,
-											  bool wroteAnyGenerators,
-											  FILE* out) {
-  if (!wroteAnyGenerators)
-	fputs("\n 0", out);
-  fputs(";\n", out);
-}
-
-void SingularIOHandler::writeIdealHeader(const VarNames& names,
-										 bool defineNewRing,
-										 FILE* out) {
-  writeRing(names, out);
-  fputs("ideal I =", out);
-}
-
-void SingularIOHandler::writeTermOfIdeal(const Term& term,
-										 const TermTranslator* translator,
-										 bool isFirst,
-										 FILE* out) {
-  fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, translator, out);
-}
-
-void SingularIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
-										 const VarNames& names,
-										 bool isFirst,
-										 FILE* out) {
-  fputs(isFirst ? "\n " : ",\n ", out);
-  IOHandler::writeTermProduct(term, names, out);
-}
-
-void SingularIOHandler::writeIdealFooter(const VarNames& names,
-										 bool wroteAnyGenerators,
-										 FILE* out) {
-  if (!wroteAnyGenerators)
-	fputs("\n 0", out);
-  fputs(";\n", out);  
-}
-
-void SingularIOHandler::readRing(Scanner& in, VarNames& names) {
-  names.clear();
-
-  in.expect("ring");
-  in.expect('R');
-  in.expect('=');
-  in.expect('0');
-  in.expect(',');
-  in.expect('(');
-
-  do {
-	names.addVarSyntaxCheckUnique(in, in.readIdentifier());
-  } while (in.match(','));
-
-  in.expect(')');
-  in.expect(',');
-  in.expect("lp");
-  in.expect(';');
-
-  in.expect("int");
-  in.expect("noVars");
-  in.expect("=");
-  if (in.match('1')) {
-	if (names.getVarCount() != 1 ||
-		names.getName(0) != string("dummy")) {
-	  FrobbyStringStream errorMsg;
-	  errorMsg <<
-		"A singular ring with no actual variables must have a single "
-		"place-holder variable named \"dummy\", and in this case ";
-	  if (names.getVarCount() != 1)
-		errorMsg << "there are " << names.getVarCount()
-				 << " place-holder variables.";
-	  else
-		errorMsg << "it has the name \"" << names.getName(0) << "\".";
-
-	  reportSyntaxError(in, errorMsg);
+  class SingularIdealWriter : public IdealWriter {
+  public:
+	SingularIdealWriter(FILE* out): IdealWriter(out) {
 	}
+
+  private:
+	virtual void doWriteHeader(bool first) {
+	  S::writeRing(getNames(), getFile());
+	  fputs("ideal I =", getFile());
+	}
+
+	virtual void doWriteTerm(const Term& term,
+							 const TermTranslator& translator,
+							 bool first) {
+	  fputs(first ? "\n " : ",\n ", getFile());
+	  IO::writeTermProduct(term, translator, getFile());
+	}
+
+	virtual void doWriteTerm(const vector<mpz_class>& term,
+							 bool first) {
+	  fputs(first ? "\n " : ",\n ", getFile());
+	  writeTermProduct(term, getNames(), getFile());
+	}
+
+	virtual void doWriteFooter(bool wasZeroIdeal) {
+	  if (wasZeroIdeal)
+		fputs("\n 0", getFile());
+	  fputs(";\n", getFile());  
+	}
+
+	virtual void doWriteEmptyList() {
+	  S::writeRing(getNames(), getFile());
+	}
+  };
+
+  class SingularPolyWriter : public PolyWriter {
+  public:
+	SingularPolyWriter(FILE* out): PolyWriter(out) {
+	}
+
+	virtual void doWriteHeader() {
+	  S::writeRing(getNames(), getFile());
+	  fputs("poly p =", getFile());
+	}
+
+	virtual void doWriteTerm(const mpz_class& coef,
+							 const Term& term,
+							 const TermTranslator& translator,
+							 bool firstGenerator) {
+	  fputs("\n ", getFile());
+	  writeCoefTermProduct(coef, term, translator, firstGenerator, getFile());
+	}
+
+	virtual void doWriteTerm(const mpz_class& coef,
+							 const vector<mpz_class>& term,
+							 bool firstGenerator) {
+	  fputs("\n ", getFile());
+	  writeCoefTermProduct(coef, term, getNames(), firstGenerator, getFile());
+	}
+
+	virtual void doWriteFooter(bool wasZero) {
+	  if (wasZero)
+		fputs("\n 0", getFile());
+	  fputs(";\n", getFile());
+	}
+  };
+
+  SingularIOHandler::SingularIOHandler():
+	IOHandlerCommon(staticGetName(),
+					"Format understandable by the program Singular.") {
+	registerInput(DataType::getMonomialIdealType());
+	registerInput(DataType::getMonomialIdealListType());
+	registerInput(DataType::getPolynomialType());
+	registerOutput(DataType::getMonomialIdealType());
+	registerOutput(DataType::getPolynomialType());
+  }
+
+  const char* SingularIOHandler::staticGetName() {
+	return "singular";
+  }
+
+  BigTermConsumer* SingularIOHandler::doCreateIdealWriter(FILE* out) {
+	return new SingularIdealWriter(out);
+  }
+
+  CoefBigTermConsumer* SingularIOHandler::
+  doCreatePolynomialWriter(FILE* out) {
+	return new SingularPolyWriter(out);
+  }
+
+  void SingularIOHandler::doWriteTerm(const vector<mpz_class>& term,
+									  const VarNames& names,
+									  FILE* out) {
+	writeTermProduct(term, names, out);
+  }
+
+  void SingularIOHandler::doReadTerm(Scanner& in,
+									 const VarNames& names,
+									 vector<mpz_class>& term) {
+	readTermProduct(in, names, term);
+  }
+
+  void SingularIOHandler::doReadRing(Scanner& in, VarNames& names) {
 	names.clear();
-  } else if (!in.match('0')) {
-	// TODO: Replace following line with: in.expect('0', '1');
-	reportSyntaxError(in, "noVars must be either 0 or 1.");
-  }
 
-  in.expect(';');
-}
+	in.expect("ring");
+	in.expect('R');
+	in.expect('=');
+	in.expect('0');
+	in.expect(',');
+	in.expect('(');
 
-void SingularIOHandler::readBareIdeal(Scanner& in, const VarNames& names,
-									  BigTermConsumer& consumer) {
-  consumer.beginConsuming(names);
-  vector<mpz_class> term(names.getVarCount());
-
-  in.expect("ideal");
-  in.expect('I');
-  in.expect('=');
-
-  if (!in.match('0')) {
 	do {
-	  readTerm(in, names, term);
-	  consumer.consume(term);
+	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
 	} while (in.match(','));
+
+	in.expect(')');
+	in.expect(',');
+	in.expect("lp");
+	in.expect(';');
+
+	in.expect("int");
+	in.expect("noVars");
+	in.expect("=");
+	if (in.match('1')) {
+	  if (names.getVarCount() != 1 ||
+		  names.getName(0) != string("dummy")) {
+		FrobbyStringStream errorMsg;
+		errorMsg <<
+		  "A singular ring with no actual variables must have a single "
+		  "place-holder variable named \"dummy\", and in this case ";
+		if (names.getVarCount() != 1)
+		  errorMsg << "there are " << names.getVarCount()
+				   << " place-holder variables.";
+		else
+		  errorMsg << "it has the name \"" << names.getName(0) << "\".";
+
+		reportSyntaxError(in, errorMsg);
+	  }
+	  names.clear();
+	} else if (!in.match('0')) {
+	  // TODO: Replace following line with: in.expect('0', '1');
+	  reportSyntaxError(in, "noVars must be either 0 or 1.");
+	}
+
+	in.expect(';');
   }
-  in.expect(';');
 
-  consumer.doneConsuming();
-}
+  bool SingularIOHandler::doPeekRing(Scanner& in) {
+	return in.peek('r') || in.peek('R');
+  }
 
-void SingularIOHandler::readBarePolynomial
-(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer) {
-  consumer.consumeRing(names);
-  vector<mpz_class> term(names.getVarCount());
-  mpz_class coef;
+  void SingularIOHandler::doReadBareIdeal(Scanner& in, const VarNames& names,
+										  BigTermConsumer& consumer) {
+	consumer.beginConsuming(names);
+	vector<mpz_class> term(names.getVarCount());
 
-  in.expect("poly");
-  in.expect('p');
-  in.expect('=');
+	in.expect("ideal");
+	in.expect('I');
+	in.expect('=');
 
-  consumer.beginConsuming();
-  bool first = true;
-  do {
-	readCoefTerm(coef, term, names, first, in);
-	consumer.consume(coef, term);
-	first = false;
-  } while (!in.match(';'));
-  consumer.doneConsuming();
-}
+	if (!in.match('0')) {
+	  do {
+		readTerm(in, names, term);
+		consumer.consume(term);
+	  } while (in.match(','));
+	}
+	in.expect(';');
 
-bool SingularIOHandler::peekRing(Scanner& in) {
-  return in.peek('r') || in.peek('R');
-}
+	consumer.doneConsuming();
+  }
 
-void SingularIOHandler::writeRing(const VarNames& names, FILE* out) {
-  if (names.getVarCount() == 0)
-	fputs("ring R = 0, (dummy), lp;\nint noVars = 1;\n", out);
-  else {
-    fputs("ring R = 0, (", out);
+  void SingularIOHandler::doReadBarePolynomial(Scanner& in,
+											   const VarNames& names,
+											   CoefBigTermConsumer& consumer) {
+	consumer.consumeRing(names);
+	vector<mpz_class> term(names.getVarCount());
+	mpz_class coef;
 
-    const char* pre = "";
-    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-      fputs(pre, out);
-      fputs(names.getName(i).c_str(), out);
-      pre = ", ";
-    }
-    fputs("), lp;\nint noVars = 0;\n", out);
+	in.expect("poly");
+	in.expect('p');
+	in.expect('=');
+
+	consumer.beginConsuming();
+	bool first = true;
+	do {
+	  readCoefTerm(coef, term, names, first, in);
+	  consumer.consume(coef, term);
+	  first = false;
+	} while (!in.match(';'));
+	consumer.doneConsuming();
+  }
+
+  void S::writeRing(const VarNames& names, FILE* out) {
+	if (names.getVarCount() == 0)
+	  fputs("ring R = 0, (dummy), lp;\nint noVars = 1;\n", out);
+	else {
+	  fputs("ring R = 0, (", out);
+
+	  const char* pre = "";
+	  for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+		fputs(pre, out);
+		fputs(names.getName(i).c_str(), out);
+		pre = ", ";
+	  }
+	  fputs("), lp;\nint noVars = 0;\n", out);
+	}
   }
 }

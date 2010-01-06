@@ -17,107 +17,58 @@
 #ifndef NAME_FACTORY_GUARD
 #define NAME_FACTORY_GUARD
 
-// A NameFactory takes a name and then creates an instance of a class
-// that has been previously registered under that name. This is done
-// in a general way using templates.
-//
-// There are also some utility functions concerned with finding names
-// from a prefix of that name.
-
 #include <vector>
 #include <string>
+#include <algorithm>
 
+/** A NameFactory takes a name and then creates an instance of a class
+ that has been previously registered under that name. This is done
+ in a general way using templates.
+*/
 template<class AbstractProduct>
 class NameFactory {
  public:
-  // Returns null if name has not been registered. Otherwse calls the
-  // function registered to that name and returns the result.
-  auto_ptr<AbstractProduct> create(const string& name);
-
   typedef auto_ptr<AbstractProduct> (*FactoryFunction)();
   void registerProduct(const string& name, FactoryFunction function);
 
-  // Returns null if no name is uniquely determined by the
-  // prefix. Otherwse calls the function registered to that name and
-  // returns the result.
-  auto_ptr<AbstractProduct> createWithPrefix(const string& prefix);
-  void addNamesWithPrefix(const string& prefix,
-						  vector<string>& names);
-  size_t countNamesWithPrefix(const string& prefix) const;
+  /** Calls the function registered to the parameter name and returns
+   the result. Returns null if name has not been registered. */
+  auto_ptr<AbstractProduct> create(const string& name) const;
 
-  bool isEmpty() const;
+  /** Inserts into names all registered names that have the indicated
+   prefix in lexicographic increasing order. */
+  void getNamesWithPrefix(const string& prefix, vector<string>& names) const;
+
+  /** Returns true if no names have been registered. */
+  bool empty() const;
 
  private:
-  class Pair {
-  public:
-	Pair(const string& name, FactoryFunction function):
-	  _name(name),
-	  _function(function) {
-	  ASSERT(function != 0);
-	}
-
-	const string& getName() const {
-	  return _name;
-	}
-
-	bool hasPrefix(const string& prefix) const {
-	  return _name.compare(0, prefix.size(), prefix) == 0;
-	}
-
-	auto_ptr<AbstractProduct> create() const {
-	  ASSERT(_function != 0);
-	  return _function();
-	}
-
-  private:
-	string _name;
-	FactoryFunction _function;
-  };
-
+  typedef pair<string, FactoryFunction> Pair;
+  typedef typename vector<Pair>::const_iterator const_iterator;
   vector<Pair> _pairs;
 };
 
-// This is a utility function wrapping the registerProduct method of a
-// NameFactory. It would make more sense as a member function, but
-// some compilers have problems with template member functions.
-//
-// The ConcreteProduct class must have a static method staticGetName
-// which returns a std::string or a const char*.
+/** Registers the string returned by ConcreteProduct::getStaticName()
+ to a function that default-constructs a ConcreteProduct.
+
+ This is a utility function wrapping the registerProduct method of
+ a NameFactory. It would make more sense as a member function, but
+ some compilers have problems with template member functions. */
 template<class ConcreteProduct, class AbstractProduct>
 void nameFactoryRegister(NameFactory<AbstractProduct>& factory);
 
 
 
-// These are implementations that have to be included here due to
-// being templates.
+// These are implementations that have to be included here due
+// to being templates.
 
 template<class AbstractProduct>
 auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
-create(const string& name) {
-  for (typename vector<Pair>::const_iterator it = _pairs.begin();
-	   it != _pairs.end(); ++it)
-	if (it->getName() == name)
-	  return it->create();
+create(const string& name) const {
+  for (const_iterator it = _pairs.begin(); it != _pairs.end(); ++it)
+	if (it->first == name)
+	  return it->second();
   return auto_ptr<AbstractProduct>();
-}
-
-template<class AbstractProduct>
-auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
-createWithPrefix(const string& prefix) {
-  typename vector<Pair>::const_iterator match = _pairs.end();
-  for (typename vector<Pair>::const_iterator it = _pairs.begin();
-	   it != _pairs.end(); ++it) {
-	if (it->hasPrefix(prefix)) {
-	  if (match != _pairs.end())
-		return auto_ptr<AbstractProduct>(); // not unique
-	  match = it; // first match
-	}
-  }
-
-  if (match == _pairs.end())
-	return auto_ptr<AbstractProduct>();
-  else
-	return match->create();
 }
 
 template<class AbstractProduct>
@@ -128,46 +79,28 @@ registerProduct(const string& name, FactoryFunction function) {
 
 template<class AbstractProduct>
 void NameFactory<AbstractProduct>::
-addNamesWithPrefix(const string& prefix, vector<string>& names) {
-  for (typename vector<Pair>::const_iterator it = _pairs.begin();
-	   it != _pairs.end(); ++it)
-	if (it->hasPrefix(prefix))
-	  names.push_back(it->getName());
+getNamesWithPrefix(const string& prefix, vector<string>& names) const {
+  for (const_iterator it = _pairs.begin(); it != _pairs.end(); ++it)
+	if (it->first.compare(0, prefix.size(), prefix) == 0)
+	  names.push_back(it->first);
+  sort(names.begin(), names.end());
 }
 
 template<class AbstractProduct>
-size_t NameFactory<AbstractProduct>::
-countNamesWithPrefix(const string& prefix) const {
-  size_t count = 0;
-  for (typename vector<Pair>::const_iterator it = _pairs.begin();
-	   it != _pairs.end(); ++it)
-	if (it->hasPrefix(prefix))
-	  ++count;
-  return count;
-}
-
-template<class AbstractProduct>
-bool NameFactory<AbstractProduct>::isEmpty() const {
+bool NameFactory<AbstractProduct>::empty() const {
   return _pairs.empty();
 }
 
-namespace {
-  // Helper function for nameFactoryRegister.
-  template<class AbstractProduct, class ConcreteProduct>
-  auto_ptr<AbstractProduct> createConcreteProductHelper() {
-	return auto_ptr<AbstractProduct>(new ConcreteProduct());
-  }
-}
-
 template<class ConcreteProduct, class AbstractProduct>
-  void nameFactoryRegister(NameFactory<AbstractProduct>& factory) {
-  
-  const char* name = ConcreteProduct::staticGetName();
-  typename NameFactory<AbstractProduct>::FactoryFunction
-	createConcreteProduct =
-	createConcreteProductHelper<AbstractProduct, ConcreteProduct>;
-  
-  factory.registerProduct(name, createConcreteProduct);
+void nameFactoryRegister(NameFactory<AbstractProduct>& factory) {
+  struct HoldsFunction {
+	static auto_ptr<AbstractProduct> createConcreteProduct() {
+	  return auto_ptr<AbstractProduct>(new ConcreteProduct());
+	}
+  };
+
+  factory.registerProduct(ConcreteProduct::staticGetName(),
+						  HoldsFunction::createConcreteProduct);
 }
 
 #endif

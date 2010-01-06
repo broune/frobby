@@ -17,9 +17,9 @@
 #include "stdinc.h"
 #include "StringParameter.h"
 
-StringParameter::StringParameter(const char* name,
-				 const char* description,
-				 const string& defaultValue):
+StringParameter::StringParameter(const string& name,
+								 const string& description,
+								 const string& defaultValue):
   Parameter(name, description),
   _value(defaultValue) {
 }

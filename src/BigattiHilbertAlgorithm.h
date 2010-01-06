@@ -24,6 +24,7 @@
 #include "BigattiState.h"
 #include "BigattiBaseCase.h"
 #include "BigattiPivotStrategy.h"
+#include "BigattiParams.h"
 
 class CoefBigTermConsumer;
 class Term;
@@ -31,17 +32,17 @@ class Term;
 class BigattiHilbertAlgorithm {
 public:
   /** Construct an object for running the Bigatti et.al. algorithm on
-   ideal. No association is made to ideal, but translator and consumer
-   must remain valid for the lifetime of this object.
+   ideal. Both translator and consumer must remain valid for the
+   lifetime of this object.
   */
-  BigattiHilbertAlgorithm(const Ideal& ideal,
+  BigattiHilbertAlgorithm(auto_ptr<Ideal> ideal,
 						  const TermTranslator& translator,
+						  const BigattiParams& params,
+						  auto_ptr<BigattiPivotStrategy> pivot,
 						  CoefBigTermConsumer& consumer);
 
   void setPrintStatistics(bool value);
   void setPrintDebug(bool value);
-  void setUseGenericBaseCase(bool value);
-  void setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot);
   void setUseSimplification(bool value);
   void setDoCanonicalOutput(bool value);
   void setComputeUnivariate(bool value);
@@ -66,14 +67,10 @@ private:
 
     BigattiBaseCase _baseCase;
 
-	bool _useGenericBaseCase;
-	bool _useSimplification;
 	auto_ptr<BigattiPivotStrategy>  _pivot;
 
-	bool _printDebug;
-	bool _printStatistics;
-	bool _doCanonicalOutput;
 	bool _computeUnivariate;
+	BigattiParams _params;
 
     friend class BigattiState;
 };

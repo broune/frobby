@@ -56,33 +56,9 @@ void TotalDegreeCoefTermConsumer::consume(const mpz_class& coef,
   for (size_t var = 0; var < term.getVarCount(); ++var)
 	_tmp += _translator.getExponent(var, term);
 
-  pair<map<mpz_class, mpz_class>::iterator, bool> insertionResult =
-	_polynomial.insert(make_pair(_tmp, coef));
-  map<mpz_class, mpz_class>::iterator entry = insertionResult.first;
-
-  if (!insertionResult.second) {
-	entry->second += coef;
-	if (entry->second == 0)
-	  _polynomial.erase(entry);
-  }
+  _poly.add(coef, _tmp);
 }
 
 void TotalDegreeCoefTermConsumer::doneConsuming() {
-  VarNames names;
-  names.addVar("t");
-  _consumer.consumeRing(names);
-
-  _consumer.beginConsuming();
-  vector<mpz_class> term(1);
-
-  // Reverse direction to get canonical reverse lex order.
-  map<mpz_class, mpz_class>::reverse_iterator stop = _polynomial.rend();
-  for (map<mpz_class, mpz_class>::reverse_iterator it = _polynomial.rbegin();
-	   it != stop; ++it) {
-	ASSERT(it->second != 0);
-	term[0] = it->first;
-	_consumer.consume(it->second, term);
-  }
-
-  _consumer.doneConsuming();
+  _poly.feedTo(_consumer, true);
 }

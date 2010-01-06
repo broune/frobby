@@ -23,179 +23,103 @@
 #include "BigIdeal.h"
 #include "BigPolynomial.h"
 
-namespace {
-  /** This class is a helper class for CountingIOHandler. It counts
-   the number of terms that it consumes.
-  */
-  class CountingConsumer :
-	public BigTermConsumer, public CoefBigTermConsumer {
-  public:
-	CountingConsumer(FILE* out):
-	  _termCount(0),
-	  _out(out) {
-	}
-
-	/** This destructor writes the final number out.
-
-	 @todo This should not be happening in a destructor. Make a
-	  doneAllConsuming or something like that to do the output.
-	*/
-	virtual ~CountingConsumer() {
-	  // Destructors must not throw exceptions. As far as I know,
-	  // bad_alloc is the only thing that could be thrown from
-	  // gmp_fprintf.
-	  try {
-		gmp_fprintf(_out, "%Zd\n", _termCount.get_mpz_t());
-	  } catch (std::bad_alloc) {
-		// Not good to ignore this, but what can we do... 
-	  } catch (...) {
-		ASSERT(false);
-		throw;
+namespace IO {
+  namespace {
+	/** This class is a helper class for CountingIOHandler. It counts
+		the number of terms that it consumes. */
+	class CountingConsumer :
+	  public BigTermConsumer, public CoefBigTermConsumer {
+	public:
+	  CountingConsumer(FILE* out):
+		_termCount(0),
+		_out(out) {
 	  }
-	}
 
-	virtual void consumeRing(const VarNames& names) {
-	}
+	  /** This destructor writes the final number out.
 
-	virtual void beginConsuming() {
-	}
+		  @todo This should not be happening in a destructor. Make a
+		  doneAllConsuming or something like that to do the output.
+	  */
+	  virtual ~CountingConsumer() {
+		// Destructors must not throw exceptions. As far as I know,
+		// bad_alloc is the only thing that could be thrown from
+		// gmp_fprintf.
+	  }
 
-	virtual void consume(const Term& term, const TermTranslator& translator) {
-	  ++_termCount;
-	}
+	  virtual void consumeRing(const VarNames& names) {
+	  }
 
-	virtual void consume(const vector<mpz_class>& term) {
-	  ++_termCount;
-	}
+	  virtual void beginConsuming() {
+		_termCount = 0;
+	  }
 
-	virtual void consume(const BigIdeal& ideal) {
-	  beginConsuming();
-	  _termCount += ideal.getGeneratorCount();
-	  doneConsuming();
-	}
+	  virtual void consume(const Term& term, const TermTranslator& translator) {
+		++_termCount;
+	  }
 
-	virtual void consume(const mpz_class& coef, const Term& term) {
-	  ++_termCount;
-	}
+	  virtual void consume(const vector<mpz_class>& term) {
+		++_termCount;
+	  }
 
-	virtual void consume
-	(const mpz_class& coef,
-	 const Term& term,
-	 const TermTranslator& translator) {
-	  ++_termCount;
-	}
+	  virtual void consume(const BigIdeal& ideal) {
+		beginConsuming();
+		_termCount += ideal.getGeneratorCount();
+		doneConsuming();
+	  }
 
-	virtual void consume
-	(const mpz_class& coef, const vector<mpz_class>& term) {
-	  ++_termCount;
-	}
+	  virtual void consume(const mpz_class& coef, const Term& term) {
+		++_termCount;
+	  }
 
-	virtual void consume(const BigPolynomial& poly) {
-	  beginConsuming();
-	  _termCount += poly.getTermCount();
-	  doneConsuming();
-	}
+	  virtual void consume(const mpz_class& coef,
+						   const Term& term,
+						   const TermTranslator& translator) {
+		++_termCount;
+	  }
 
-	virtual void doneConsuming() {
-	}
+	  virtual void consume(const mpz_class& coef,
+						   const vector<mpz_class>& term) {
+		++_termCount;
+	  }
 
-  private:
-	mpz_class _termCount;
-	FILE* _out;
-  };
-}
+	  virtual void consume(const BigPolynomial& poly) {
+		beginConsuming();
+		_termCount += poly.getTermCount();
+		doneConsuming();
+	  }
 
+	  virtual void doneConsuming() {
+		gmp_fprintf(_out, "%Zd\n", _termCount.get_mpz_t());
+	  }
 
-CountingIOHandler::CountingIOHandler():
-  IOHandler(staticGetName(), "Writes the number of output terms.", false) {
+	private:
+	  mpz_class _termCount;
+	  FILE* _out;
+	};
+  }
 
-  registerOutput(DataType::getMonomialIdealType());
-  registerOutput(DataType::getPolynomialType());
-  registerOutput(DataType::getMonomialIdealListType());
-}
+  CountingIOHandler::CountingIOHandler():
+	IOHandlerImpl(staticGetName(), "Writes the number of output terms.") {
+	registerOutput(DataType::getMonomialIdealType());
+	registerOutput(DataType::getPolynomialType());
+	registerOutput(DataType::getMonomialIdealListType());
+  }
 
-const char* CountingIOHandler::staticGetName() {
-  return "count";
-}
+  const char* CountingIOHandler::staticGetName() {
+	return "count";
+  }
 
-void CountingIOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
-}
+  BigTermConsumer* CountingIOHandler::doCreateIdealWriter(FILE* out) {
+	return new CountingConsumer(out);
+  }
 
-void CountingIOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
-}
+  CoefBigTermConsumer* CountingIOHandler::doCreatePolynomialWriter(FILE* out) {
+	return new CountingConsumer(out);
+  }
 
-void CountingIOHandler::writeRing(const VarNames& names, FILE* out) {
-}
-
-void CountingIOHandler::writeTerm(const vector<mpz_class>& term,
-								  const VarNames& names,
-								  FILE* out) {
-}
-
-auto_ptr<BigTermConsumer> CountingIOHandler::createIdealWriter(FILE* out) {
-  return auto_ptr<BigTermConsumer>(new CountingConsumer(out));
-}
-
-void CountingIOHandler::writePolynomialHeader(const VarNames& names, FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-										  const Term& term,
-										  const TermTranslator* translator,
-										  bool isFirst,
-										  FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfPolynomial(const mpz_class& coef,
-										  const vector<mpz_class>& term,
-										  const VarNames& names,
-										  bool isFirst,
-										  FILE* out) {
-}
-
-void CountingIOHandler::writePolynomialFooter(const VarNames& names,
-										  bool wroteAnyGenerators,
-										  FILE* out) {
-}
-
-void CountingIOHandler::writeIdealHeader(const VarNames& names,
-									 bool defineNewRing,
-									 FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfIdeal(const Term& term,
-									 const TermTranslator* translator,
-									 bool isFirst,
-									 FILE* out) {
-}
-
-void CountingIOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
-									 const VarNames& names,
-									 bool isFirst,
-									 FILE* out) {
-}
-
-void CountingIOHandler::writeIdealFooter(const VarNames& names,
-									 bool wroteAnyGenerators,
-									 FILE* out) {
-}
-
-auto_ptr<CoefBigTermConsumer> CountingIOHandler::createPolynomialWriter
-(FILE* out) {
-  return auto_ptr<CoefBigTermConsumer>(new CountingConsumer(out));
-}
-
-void CountingIOHandler::readIdeal(Scanner& scanner, BigIdeal& ideal) {
-}
-
-bool CountingIOHandler::hasMoreInput(Scanner& scanner) const {
-  return false;
-}
-
-void CountingIOHandler::readPolynomial
-(Scanner& in, CoefBigTermConsumer& consumer) {
-}
-
-void CountingIOHandler::readSatBinomIdeal
-(Scanner& in, SatBinomConsumer& consumer) {
+  void CountingIOHandler::doWriteTerm(const vector<mpz_class>& term,
+									  const VarNames& names,
+									  FILE* out) {
+	fputc('1', out);
+  }
 }

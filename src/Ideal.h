@@ -108,9 +108,15 @@ class Ideal {
 
   /** Sets gcd to the greatest common divisor of those generators that
    raise the variable var to the power exp. If there are no such
-   generators then we define the lcm as the identity.
+   generators then we define the gcd as the identity.
   */
   void getGcdAtExponent(Exponent* gcd, size_t var, Exponent exp);
+
+  /** Sets gcd to the greatest common divisor of those generators that
+   are divisible by divisor. If there are no such generators then we
+   define the gcd as the identity.
+   */
+  void getGcdOfMultiplesOf(Exponent* gcd, const Exponent* divisor);
 
   // least[var] will be the smallest non-zero exponent of var that
   // appears among the generators.

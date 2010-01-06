@@ -5,48 +5,48 @@ number of parameters allow to transform the input ideal in various ways.
 
 The parameters accepted by transform are as follows.
 
- -iformat STRING   (default is autodetect)
-   The format used to read the input. This action supports the formats:
-     m2 cocoa4 singular monos newmonos 4ti2 null.
-   The format "autodetect" instructs Frobby to guess the format.
-   Type 'frobby help io' for more information on input formats.
-
- -oformat STRING   (default is input)
-   The format used to write the output. This action supports the formats:
-     m2 cocoa4 singular monos newmonos 4ti2 null count.
-   The format "input" instructs Frobby to use the input format.
-   Type 'frobby help io' for more information on output formats.
-
- -canon [BOOL]   (default is off)
-   Sort variables, generators and ideals to get canonical representation.
-
- -minimize [BOOL]   (default is off)
-   Remove non-minimial generators.
-
- -sort [BOOL]   (default is off)
-   Sort generators according to the reverse lexicographic order.
-
- -unique [BOOL]   (default is off)
-   Remove duplicate generators.
-
- -deform [BOOL]   (default is off)
-   Apply a generic deformation to the input ideal.
-
- -radical [BOOL]   (default is off)
-   Take the radical of the generators. Combine this with -minimize to
-   get rid of any non-minimal ones.
-
- -product [BOOL]   (default is off)
-   Replace each ideal with the product of its generators.
-
  -addPurePowers [BOOL]   (default is off)
    Adds a pure power for each variable that does not already have a pure power
    in the ideal. Each exponent is chosen to be one larger than the maximal
    exponent of that variable that appears in the ideal.
 
+ -canon [BOOL]   (default is off)
+   Sort variables, generators and ideals to get canonical representation.
+
+ -deform [BOOL]   (default is off)
+   Apply a generic deformation to the input ideal.
+
+ -iformat STRING   (default is autodetect)
+   The format used to read the input. This action supports the formats:
+     4ti2 cocoa4 m2 monos newmonos null singular.
+   The format "autodetect" instructs Frobby to guess the format.
+   Type 'frobby help io' for more information on input formats.
+
+ -minimize [BOOL]   (default is off)
+   Remove non-minimial generators.
+
+ -oformat STRING   (default is input)
+   The format used to write the output. This action supports the formats:
+     4ti2 cocoa4 count m2 monos newmonos null singular.
+   The format "input" instructs Frobby to use the input format.
+   Type 'frobby help io' for more information on output formats.
+
+ -product [BOOL]   (default is off)
+   Replace each ideal with the product of its generators.
+
  -projectVar INTEGER   (default is 0)
    Project away the i'th variable counting from 1. No action is taken for a
    value of 0 or more than the number of variables in the ring.
 
+ -radical [BOOL]   (default is off)
+   Take the radical of the generators. Combine this with -minimize to
+   get rid of any non-minimal ones.
+
+ -sort [BOOL]   (default is off)
+   Sort generators according to the reverse lexicographic order.
+
  -time [BOOL]   (default is off)
    Display and time each subcomputation.
+
+ -unique [BOOL]   (default is off)
+   Remove duplicate generators.

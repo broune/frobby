@@ -21,15 +21,14 @@
 #include "Term.h"
 #include "Ideal.h"
 #include "CoefTermConsumer.h"
-#include "SliceEvent.h"
+#include "Task.h"
 
 #include <vector>
 
 class IndependenceSplitter;
 class HilbertStrategy;
 
-class HilbertIndependenceConsumer : public CoefTermConsumer,
-									public SliceEvent {
+class HilbertIndependenceConsumer : public CoefTermConsumer, public Task {
 public:
   HilbertIndependenceConsumer(HilbertStrategy* strategy);
 
@@ -39,7 +38,7 @@ public:
 
   void clear();
 
-  virtual void raiseEvent();
+  virtual void run(TaskEngine& engine);
   virtual void dispose();
 
   CoefTermConsumer* getLeftConsumer();

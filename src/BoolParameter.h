@@ -21,7 +21,9 @@
 
 class BoolParameter : public Parameter {
 public:
-  BoolParameter(const char* name, const char* description, bool defaultValue);
+  BoolParameter(const string& name,
+				const string& description,
+				bool defaultValue);
 
   virtual const char* getParameterName() const;
   virtual void getValue(string& str) const;

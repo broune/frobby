@@ -24,84 +24,64 @@
 
 BigattiHilbertAlgorithm::
 BigattiHilbertAlgorithm
-(const Ideal& ideal,
+(auto_ptr<Ideal> ideal,
  const TermTranslator& translator,
+ const BigattiParams& params,
+ auto_ptr<BigattiPivotStrategy> pivot,
  CoefBigTermConsumer& consumer):
  _translator(translator),
  _consumer(&consumer),
  _baseCase(translator),
- _useGenericBaseCase(true),
- _useSimplification(true),
- _pivot(0),
- _printDebug(false),
- _printStatistics(false),
- _doCanonicalOutput(false),
- _computeUnivariate(false) {
+ _pivot(pivot),
+ _computeUnivariate(false),
+ _params(params) {
 
-   ASSERT(ideal.isMinimallyGenerated());
-  _varCount = ideal.getVarCount();
+  ASSERT(ideal.get() != 0);
+  ASSERT(ideal->isMinimallyGenerated());
+  _varCount = ideal->getVarCount();
   _tmp_simplify_gcd.reset(_varCount);
 
-  _tasks.addTask(new BigattiState(this, ideal, Term(_varCount)));
-}
+  _baseCase.setPrintDebug(_params.getPrintDebug());
 
-void BigattiHilbertAlgorithm::setPrintStatistics(bool value) {
-  _printStatistics = value;
-}
-
-void BigattiHilbertAlgorithm::setPrintDebug(bool value) {
-  _printDebug = value;
-  _baseCase.setPrintDebug(value);
-}
-
-void BigattiHilbertAlgorithm::setUseGenericBaseCase(bool value) {
-  _useGenericBaseCase = value;
-}
-
-void BigattiHilbertAlgorithm::setUseSimplification(bool value) {
-  _useSimplification = value;
-}
-
-void BigattiHilbertAlgorithm::setDoCanonicalOutput(bool value) {
-  _doCanonicalOutput = value;
+  // TODO: use swap to avoid copy of ideal.
+  _tasks.addTask(new BigattiState(this, *ideal, Term(_varCount)));
 }
 
 void BigattiHilbertAlgorithm::setComputeUnivariate(bool value) {
   _computeUnivariate = value;
 }
 
-void BigattiHilbertAlgorithm::
-setPivotStrategy(auto_ptr<BigattiPivotStrategy> pivot) {
-  _pivot = pivot;
-}
-
 void BigattiHilbertAlgorithm::run() {
   if (_pivot.get() == 0)
-	_pivot = BigattiPivotStrategy::createStrategy("median");
+	_pivot = BigattiPivotStrategy::createStrategy("median", true);
 
   _baseCase.setComputeUnivariate(_computeUnivariate);
   _tasks.runTasks();
-  _baseCase.feedOutputTo(*_consumer, _doCanonicalOutput);
+  _baseCase.feedOutputTo(*_consumer, _params.getProduceCanonicalOutput());
 
-  if (_printStatistics) {
+  if (_params.getPrintStatistics()) {
 	fputs("*** Statistics for run of Bigatti algorithm ***\n", stderr);
-	fprintf(stderr, " %u states processed.\n", _tasks.getTotalTasksEver());
-	fprintf(stderr, " %u base cases.\n", _baseCase.getTotalBaseCasesEver());
-	fprintf(stderr, " %u terms output.\n", _baseCase.getTotalTermsOutputEver());
-	fprintf(stderr, " %u terms in final output.\n", _baseCase.getTotalTermsInOutput());
+	fprintf(stderr, " %u states processed.\n",
+			(unsigned int)_tasks.getTotalTasksEver());
+	fprintf(stderr, " %u base cases.\n",
+			(unsigned int)_baseCase.getTotalBaseCasesEver());
+	fprintf(stderr, " %u terms output.\n",
+			(unsigned int)_baseCase.getTotalTermsOutputEver());
+	fprintf(stderr, " %u terms in final output.\n",
+			(unsigned int)_baseCase.getTotalTermsInOutput());
   }
 }
 
 void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
-  if (_useSimplification)
+  if (_params.getUseSimplification())
 	simplify(*state);
 
-  if (_printDebug) {
+  if (_params.getPrintDebug()) {
 	fputs("Debug: Processing state.\n", stderr);
 	state->print(stderr);
   }
 
-  bool isBaseCase = _useGenericBaseCase ?
+  bool isBaseCase = _params.getUseGenericBaseCase() ?
 	_baseCase.genericBaseCase(*state) :
 	_baseCase.baseCase(*state);
   if (isBaseCase) {
@@ -110,7 +90,7 @@ void BigattiHilbertAlgorithm::processState(auto_ptr<BigattiState> state) {
   }
 
   const Term& pivot = _pivot->getPivot(*state);
-  if (_printDebug) {
+  if (_params.getPrintDebug()) {
 	fputs("Debug: Performing pivot split on ", stderr);
 	pivot.print(stderr);
 	fputs(".\n", stderr);

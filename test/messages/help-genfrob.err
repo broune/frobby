@@ -4,12 +4,12 @@ Generate a random Frobenius problem instance.
 
 The parameters accepted by genfrob are as follows.
 
- -time [BOOL]   (default is off)
-   Display and time each subcomputation.
-
  -entryCount INTEGER   (default is 4)
    The number of entries in the random instance.
 
  -maxEntryDigits INTEGER   (default is 2)
    The largest allowed number of decimal digits for entries in the
    random instance.
+
+ -time [BOOL]   (default is off)
+   Display and time each subcomputation.

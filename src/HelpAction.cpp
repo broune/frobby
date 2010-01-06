@@ -21,6 +21,7 @@
 #include "IOHandler.h"
 #include "error.h"
 #include "DataType.h"
+#include <algorithm>
 
 HelpAction::HelpAction():
   Action
@@ -45,9 +46,18 @@ void HelpAction::processNonParameter(const char* str) {
 
   if (_topic != "io") {
 	vector<string> names;
-	Action::addNamesWithPrefix(str, names);
+	Action::getNamesWithPrefix(str, names);
 	if (names.empty())
 	  reportError("Unknown help topic \"" + _topic + "\".");
+  }
+}
+
+namespace {
+  // Helper function for displayActionHelp().
+  bool paramCmp(Parameter* a, Parameter* b) {
+	ASSERT(a != 0);
+	ASSERT(b != 0);
+	return string(a->getName()) < b->getName();
   }
 }
 
@@ -57,6 +67,7 @@ void HelpAction::displayActionHelp(Action* action) {
 
   vector<Parameter*> parameters;
   action->obtainParameters(parameters);
+  sort(parameters.begin(), parameters.end(), paramCmp);
 
   if (!parameters.empty()) {
     fprintf(stderr, "\nThe parameters accepted by %s are as follows.\n",
@@ -109,10 +120,10 @@ void HelpAction::displayIOHelp() {
 		"support are as follows.\n\n", stderr);
 
   vector<string> names;
-  IOHandler::addFormatNames(names);
+  getIOHandlerNames(names);
   for (vector<string>::const_iterator name = names.begin();
 	   name != names.end(); ++name) {
-	auto_ptr<IOHandler> handler = IOHandler::createIOHandler(*name);
+	auto_ptr<IOHandler> handler = createIOHandler(*name);
 	ASSERT(handler.get() != 0);
 
 	fprintf(stderr, "* The format %s: %s\n",
@@ -162,7 +173,7 @@ void HelpAction::perform() {
 	  constants::version);
 
   vector<string> names;
-  Action::addNamesWithPrefix("", names);
+  Action::getNamesWithPrefix("", names);
 
   // Compute maximum name length to make descriptions line up.
   size_t maxNameLength = 0;

@@ -17,71 +17,31 @@
 #ifndef COUNTING_IO_HANDLER_GUARD
 #define COUNTING_IO_HANDLER_GUARD
 
-#include "IOHandler.h"
+#include "IOHandlerImpl.h"
+#include <vector>
 
 class VarNames;
 class Scanner;
-class BigIdeal;
-class BigPolynomial;
-class SatBinonConsumer;
+class BigTermConsumer;
+class CoefBigTermConsumer;
 
-/** This IO format does not support input, and merely displays the
- number of things written to output, without actually displaying the
- output.
-*/
-class CountingIOHandler : public IOHandler {
-public:
-  CountingIOHandler();
+namespace IO {
+  /** This class displays the total number of things written to
+   output, without actually displaying those things. */
+  class CountingIOHandler : public IOHandlerImpl {
+  public:
+	CountingIOHandler();
 
-  virtual void readIdeal(Scanner& in, BigTermConsumer& consumer);
-  virtual void readIdeals(Scanner& in, BigTermConsumer& consumer);
-  virtual void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
-  virtual void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+	static const char* staticGetName();
 
-  virtual void readIdeal(Scanner& scanner, BigIdeal& ideal);
-  virtual void writeTerm(const vector<mpz_class>& term,
-						 const VarNames& names,
-						 FILE* out);
+  private:
+	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
+	virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-  virtual auto_ptr<BigTermConsumer> createIdealWriter(FILE* out);
-  virtual auto_ptr<CoefBigTermConsumer> createPolynomialWriter(FILE* out);
-
-  static const char* staticGetName();
-
- protected:
-  virtual void writeRing(const VarNames& names, FILE* out);
-
-  virtual void writePolynomialHeader(const VarNames& names, FILE* out);
-  virtual void writeTermOfPolynomial(const mpz_class& coef,
-									 const Term& term,
-									 const TermTranslator* translator,
-									 bool isFirst,
-									 FILE* out);
-  virtual void writeTermOfPolynomial(const mpz_class& coef,
-									 const vector<mpz_class>& term,
-									 const VarNames& names,
-									 bool isFirst,
-									 FILE* out);
-  virtual void writePolynomialFooter(const VarNames& names,
-									 bool wroteAnyGenerators,
-									 FILE* out);
-
-  virtual void writeIdealHeader(const VarNames& names,
-								bool defineNewRing,
-								FILE* out);
-  virtual void writeTermOfIdeal(const Term& term,
-								const TermTranslator* translator,
-								bool isFirst,
-								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
-								const VarNames& names,
-								bool isFirst,
-								FILE* out);
-  virtual void writeIdealFooter(const VarNames& names,
-								bool wroteAnyGenerators,
-								FILE* out);
-
-  virtual bool hasMoreInput(Scanner& scanner) const;
-};
+	virtual void doWriteTerm(const vector<mpz_class>& term,
+							 const VarNames& names,
+							 FILE* out);
+  };
+}
 
 #endif

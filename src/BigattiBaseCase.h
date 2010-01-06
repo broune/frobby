@@ -53,8 +53,7 @@ class BigattiBaseCase {
   /** Feed the output Hilbert-Poincare numerator polynomial computed
    so far to the consumer. This is done in canonical order if
    inCanonicalOrder is true. */
-  void feedOutputTo
-	(CoefBigTermConsumer& consumer, bool inCanonicalOrder);
+  void feedOutputTo(CoefBigTermConsumer& consumer, bool inCanonicalOrder);
 
   /** Starts to print debug output on what happens if value is
    true. */
@@ -125,15 +124,12 @@ class BigattiBaseCase {
   /** Used to translate the output from ints. */
   const TermTranslator& _translator;
 
-  /** For statistics. Not a disaster if it overflows for long-running
-   computations. */
+  /** For statistics. Can overflow. */
   size_t _totalBaseCasesEver;
 
-  /** For statistics. Not a disaster if it overflows for long-running
-   computations. */
+  /** For statistics. Can overflow. */
   size_t _totalTermsOutputEver;
 
-  /** Print debug messages about what is happening if true. */
   bool _printDebug;
 };
 

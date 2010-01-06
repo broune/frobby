@@ -22,389 +22,405 @@
 #include "Term.h"
 #include "TermTranslator.h"
 #include "BigPolynomial.h"
-#include "error.h"
 #include "BigTermConsumer.h"
 #include "DataType.h"
-#include "FrobbyStringStream.h"
 #include "IdealConsolidator.h"
 #include "PolynomialConsolidator.h"
 #include "SatBinomIdeal.h"
 #include "SatBinomConsumer.h"
+#include "IdealWriter.h"
+#include "PolyWriter.h"
+#include "error.h"
 
-Fourti2IOHandler::Fourti2IOHandler():
-  IOHandler(staticGetName(),
-			"Format used by the software package 4ti2.", true) {
-  registerInput(DataType::getMonomialIdealType());
-  registerInput(DataType::getMonomialIdealListType());
-  registerInput(DataType::getPolynomialType());
-  registerInput(DataType::getSatBinomIdealType());
-  registerOutput(DataType::getMonomialIdealType());
-  registerOutput(DataType::getMonomialIdealListType());
-  registerOutput(DataType::getPolynomialType());
-}
-
-const char* Fourti2IOHandler::staticGetName() {
-  return "4ti2";
-}
-
-void Fourti2IOHandler::writeRing(const VarNames& names, FILE* out) {
-  fputs("42 ring\n", out);
-  writeRingWithoutHeader(names, out);
-}
-
-void Fourti2IOHandler::writeRingWithoutHeader(const VarNames& names,
-											  FILE* out) {
-  if (names.getVarCount() == 0)
-	return;
-
-  fputc(' ', out);
-  for (size_t var = 0; var < names.getVarCount(); ++var) {
-	if (var > 0)
-	  fputc(' ', out);
-	fputs(names.getName(var).c_str(), out);
+namespace IO {
+  namespace Fourti2 {
+	void writeRing(const VarNames& names, FILE* out);
+	void writeRingWithoutHeader(const VarNames& names, FILE* out);
+	void readRing(Scanner& in, VarNames& names);
+	void readRing(Scanner& in, VarNames& names, size_t varCount);
+	void writeTerm(const vector<mpz_class>& term, FILE* out);
+	void writeTerm(const Term& term,
+				   const TermTranslator& translator,
+				   FILE* out);
+	void readIdeal(Scanner& in,
+				   BigTermConsumer& consumer,
+				   size_t generatorCount,
+				   size_t varCount);
+	void readSatBinomIdeal(Scanner& in,
+						   SatBinomConsumer& consumer,
+						   size_t generatorCount,
+						   size_t varCount);
+	void display4ti2Warning();
   }
-  fputc('\n', out);  
-}
+  namespace F = Fourti2;
 
-void Fourti2IOHandler::writeTerm(const vector<mpz_class>& term,
-								 const VarNames& names,
-								 FILE* out) {
-  writeTermOfIdeal(term, names, false, out);
-}
+  class Fourti2IdealWriter : public IdealWriter {
+  public:
+	Fourti2IdealWriter(FILE* out): IdealWriter(out) {
+	}
 
-auto_ptr<BigTermConsumer> Fourti2IOHandler::createIdealWriter(FILE* out) {
-  ASSERT(supportsOutput(DataType::getMonomialIdealType()));
+  private:
+	virtual void doWriteHeader(bool first) {
+	  INTERNAL_ERROR_UNIMPLEMENTED();
+	}
 
-  FrobbyStringStream msg;
-  msg << "Using the format " << getName() <<
-	" makes it necessary to store all of the output in "
-	"memory before writing it out. This increases "
-	"memory consumption and decreases performance.";
-  displayNote(msg);
+	virtual void doWriteHeader(bool first, size_t generatorCount) {
+	  fprintf(getFile(), "%lu %lu\n",
+			  (unsigned long)generatorCount,
+			  (unsigned long)getNames().getVarCount());
+	}
 
-  auto_ptr<BigTermConsumer> writer(IOHandler::createIdealWriter(out));
-  auto_ptr<BigTermConsumer> consolidated(new IdealConsolidator(writer));
-  return consolidated;
-}
+	virtual void doWriteTerm(const Term& term,
+							 const TermTranslator& translator,
+							 bool first) {
+	  F::writeTerm(term, translator, getFile());
+	}
 
-auto_ptr<CoefBigTermConsumer> Fourti2IOHandler::createPolynomialWriter
-(FILE* out) {
-  FrobbyStringStream msg;
-  msg << "Using the format " << getName() <<
-	" makes it necessary to store all of the output in "
-	"memory before writing it out. This increases "
-	"memory consumption and decreases performance.";
-  displayNote(msg);
+	virtual void doWriteTerm(const vector<mpz_class>& term, bool first) {
+	  F::writeTerm(term, getFile());
+	}
 
-  auto_ptr<CoefBigTermConsumer> writer(IOHandler::createPolynomialWriter(out));
-  auto_ptr<CoefBigTermConsumer> consolidated
-	(new PolynomialConsolidator(writer));
-  return consolidated;
-}
+	virtual void doWriteFooter(bool wasZeroIdeal) {
+	  if (!getNames().namesAreDefault())
+		F::writeRingWithoutHeader(getNames(), getFile());
+	}
 
-void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,
-											 size_t termCount,
-											 FILE* out) {
-  ASSERT(out != 0);
+	virtual void doWriteEmptyList() {
+	  F::writeRing(getNames(), getFile());
+	}
+  };
 
-  fprintf(out, "%lu %lu\n",
-		  (unsigned long)termCount,
-		  (unsigned long)names.getVarCount() + 1);
-}
+  class Fourti2PolyWriter : public PolyWriter {
+  public:
+	Fourti2PolyWriter(FILE* out): PolyWriter(out) {
+	}
 
-void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
-											 const Term& term,
-											 const TermTranslator* translator,
-											 bool isFirst,
-											 FILE* out) {
-  ASSERT(translator != 0);
-  ASSERT(out != 0);
-  ASSERT(term.getVarCount() == translator->getVarCount());
+  private:
+	virtual void doWriteHeader() {
+	  INTERNAL_ERROR_UNIMPLEMENTED();
+	}
 
-  mpz_out_str(out, 10, coef.get_mpz_t());
+	virtual void doWriteHeader(size_t termCount) {
+	  fprintf(getFile(), "%lu %lu\n",
+			  (unsigned long)termCount,
+			  (unsigned long)getNames().getVarCount() + 1);
+	}
 
-  if (term.getVarCount() > 0) {
-	fputc(' ', out);
-	writeTermOfIdeal(term, translator, isFirst, out);  
-  } else
-	fputc('\n', out);
-}
+	virtual void doWriteTerm(const mpz_class& coef,
+							 const Term& term,
+							 const TermTranslator& translator,
+							 bool firstGenerator) {
+	  ASSERT(term.getVarCount() == translator.getVarCount());
 
-void Fourti2IOHandler::writeTermOfPolynomial(const mpz_class& coef,
-											 const vector<mpz_class>& term,
-											 const VarNames& names,
-											 bool isFirst,
-											 FILE* out) {
-  ASSERT(out != 0);
-  ASSERT(term.size() == names.getVarCount());
+	  mpz_out_str(getFile(), 10, coef.get_mpz_t());
 
-  mpz_out_str(out, 10, coef.get_mpz_t());
+	  if (term.getVarCount() > 0) {
+		fputc(' ', getFile());
+		F::writeTerm(term, translator, getFile());
+	  } else
+		fputc('\n', getFile());
+	}
 
-  if (!term.empty()) {
-	fputc(' ', out);
-	writeTermOfIdeal(term, names, isFirst, out);  
-  } else
-	fputc('\n', out);
-}
+	virtual void doWriteTerm(const mpz_class& coef,
+							 const vector<mpz_class>& term,
+							 bool firstGenerator) {
+	  ASSERT(term.size() == getNames().getVarCount());
 
-void Fourti2IOHandler::writePolynomialFooter(const VarNames& names,
-											 bool wroteAnyGenerators,
-											 FILE* out) {
-  fputs("(coefficient)", out);
-  if (!names.namesAreDefault())
-	writeRingWithoutHeader(names, out);
-  else
-	fputc('\n', out);
-}
+	  mpz_out_str(getFile(), 10, coef.get_mpz_t());
 
-void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
-										bool defineNewRing,
-										size_t generatorCount,
-										FILE* out) {
-  ASSERT(out != 0);
+	  if (!term.empty()) {
+		fputc(' ', getFile());
+		F::writeTerm(term, getFile());
+	  } else
+		fputc('\n', getFile());
+	}
 
-  fprintf(out, "%lu %lu\n",
-		  (unsigned long)generatorCount,
-		  (unsigned long)names.getVarCount());
-}
+	virtual void doWriteFooter(bool wasZero) {
+	  fputs("(coefficient)", getFile());
+	  if (!getNames().namesAreDefault())
+		F::writeRingWithoutHeader(getNames(), getFile());
+	  else
+		fputc('\n', getFile());
+	};
+  };
 
-void Fourti2IOHandler::writeTermOfIdeal(const Term& term,
-										const TermTranslator* translator,
-										bool isFirst,
-										FILE* out) {
-  ASSERT(translator != 0);
-  ASSERT(out != 0);
-  ASSERT(term.getVarCount() == translator->getVarCount());
-
-  size_t varCount = term.getVarCount();
-  if (varCount == 0)
-	return; // Avoids the newline.
-
-  for (size_t var = 0; var < varCount; ++var) {
-	fputc(' ', out);
-	const char* exp = translator->getExponentString(var, term[var]);
-	if (exp == 0)
-	  exp = "0";
-	fputs(exp, out);
-  }
-  fputc('\n', out);
-}
-
-void Fourti2IOHandler::writeTermOfIdeal(const vector<mpz_class>& term,
-										const VarNames& names,
-										bool isFirst,
-										FILE* out) {
-  ASSERT(out != 0);
-  ASSERT(term.size() == names.getVarCount());
-
-  size_t varCount = term.size();
-  if (varCount == 0)
-	return; // Avoids the newline.
-
-  for (size_t var = 0; var < varCount; ++var) {
-	fputc(' ', out);
-	mpz_out_str(out, 10, term[var].get_mpz_t());
-  }
-  fputc('\n', out);
-}
-
-void Fourti2IOHandler::writeIdealFooter(const VarNames& names,
-										bool wroteAnyGenerators,
-										FILE* out) {
-  if (!names.namesAreDefault())
-	writeRingWithoutHeader(names, out);
-}
-
-void Fourti2IOHandler::writePolynomialHeader(const VarNames& names,
-											 FILE* out) {
-  ASSERT(false);
-  reportInternalError
-	("The method writePolynomialHeader called on object of type "
-	 "Fourti2IOHandler using the overload that does not specify size.");
-}
-
-void Fourti2IOHandler::writeIdealHeader(const VarNames& names,
-										bool defineNewRing,
-										FILE* out) {
-  ASSERT(false);
-  reportInternalError
-	("The method writeIdealHeader called on object of type "
-	 "Fourti2IOHandler using the overload that does not specify size.");
-}
-
-// The parsing of the header with the number of generators and
-// variables has to be separate from the code below reading the rest
-// of the ideal, since in some contexts what looks like the header of
-// an ideal could be a ring description, while in other contexts this
-// cannot happen.
-void Fourti2IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer,
-								 size_t generatorCount, size_t varCount) {
-  // We have to read the entire ideal before we can tell whether there is
-  // a ring associated to it, so we have to store the ideal here until
-  // that time.
-
-  BigIdeal ideal((VarNames(varCount)));
-  ideal.reserve(generatorCount);
-  for (size_t t = 0; t < generatorCount; ++t) {
-	// Read a term
-	ideal.newLastTerm();
-	vector<mpz_class>& term = ideal.getLastTermRef();
-	for (size_t var = 0; var < varCount; ++var)
-	  in.readIntegerAndNegativeAsZero(term[var]);
+  Fourti2IOHandler::Fourti2IOHandler():
+	IOHandlerImpl(staticGetName(),
+				  "Format used by the software package 4ti2.") {
+	registerInput(DataType::getMonomialIdealType());
+	registerInput(DataType::getMonomialIdealListType());
+	registerInput(DataType::getPolynomialType());
+	registerInput(DataType::getSatBinomIdealType());
+	registerOutput(DataType::getMonomialIdealType());
+	registerOutput(DataType::getMonomialIdealListType());
+	registerOutput(DataType::getPolynomialType());
   }
 
-  if (in.peekIdentifier()) {
-	VarNames names;
-	readRing(in, names, varCount);
-	ideal.renameVars(names);
+  const char* Fourti2IOHandler::staticGetName() {
+	return "4ti2";
   }
 
-  consumer.consume(ideal);
-}
-
-void Fourti2IOHandler::readSatBinomIdeal
-(Scanner& in, SatBinomConsumer& consumer,
- size_t generatorCount, size_t varCount) {
-  // We have to read the entire ideal before we can tell whether there is
-  // a ring associated to it, so we have to store the ideal here until
-  // that time.
-
-  SatBinomIdeal ideal((VarNames(varCount)));
-  ideal.reserve(generatorCount);
-  for (size_t t = 0; t < generatorCount; ++t) {
-	// Read a term
-	ideal.newLastTerm();
-	vector<mpz_class>& binom = ideal.getLastBinomRef();
-	for (size_t var = 0; var < varCount; ++var)
-	  in.readInteger(binom[var]);
+  BigTermConsumer* Fourti2IOHandler::doCreateIdealWriter(FILE* out) {
+	F::display4ti2Warning();
+	auto_ptr<BigTermConsumer> writer(new Fourti2IdealWriter(out));
+	return new IdealConsolidator(writer);
   }
 
-  if (in.peekIdentifier()) {
-	VarNames names;
-	readRing(in, names, varCount);
-	ideal.renameVars(names);
+  CoefBigTermConsumer* Fourti2IOHandler::doCreatePolynomialWriter(FILE* out) {
+	F::display4ti2Warning();
+	auto_ptr<CoefBigTermConsumer> writer(new Fourti2PolyWriter(out));
+	return new PolynomialConsolidator(writer);
   }
 
-  consumer.consume(ideal);
-}
-
-
-void Fourti2IOHandler::readSatBinomIdeal
-(Scanner& in, SatBinomConsumer& consumer) {
-  size_t generatorCount;
-  in.readSizeT(generatorCount);
-
-  size_t varCount;
-  in.readSizeT(varCount);
-
-  readSatBinomIdeal(in, consumer, generatorCount, varCount);
-}
-
-void Fourti2IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
-  size_t generatorCount;
-  in.readSizeT(generatorCount);
-
-  size_t varCount;
-  in.readSizeT(varCount);
-
-  readIdeal(in, consumer, generatorCount, varCount);
-}
-
-void Fourti2IOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
-  // An empty list is just a ring by itself, and this has a special
-  // syntax.  So we first decipher whether we are looking at a ring or
-  // an ideal.  At the point where we can tell that it is an ideal, we
-  // have already read part of the ideal, so we have to do something
-  // to pass the read information on to the code for reading the rest
-  // of the ideal.
-
-  size_t generatorCount;
-  in.readSizeT(generatorCount);
-
-  if (generatorCount == 42 && in.peekIdentifier()) {
-	in.expect("ring");
-	VarNames names;
-	readRing(in, names);
-	consumer.consumeRing(names);
-	in.expectEOF();
-	return;
+  void Fourti2IOHandler::doWriteTerm(const vector<mpz_class>& term,
+									 const VarNames& names,
+									 FILE* out) {
+	if (term.empty()) {
+	  // Otherwise we will print nothing, which would be OK inside an
+	  // ideal since then it is possible to see what happened from the
+	  // number of generators and variables. We do not have that
+	  // information here, so we have to print something.
+	  fputs("fourtitwo_identity", out);
+	}
+	F::writeTerm(term, out);
   }
 
-  size_t varCount;
-  in.readSizeT(varCount);
-
-  readIdeal(in, consumer, generatorCount, varCount);
-
-  while (hasMoreInput(in))
-	readIdeal(in, consumer);
-}
-
-void Fourti2IOHandler::readRing(Scanner& in, VarNames& names) {
-  names.clear();
-  while (in.peekIdentifier())
-	names.addVarSyntaxCheckUnique(in, in.readIdentifier());
-}
-
-void Fourti2IOHandler::readRing(Scanner& in,
-								VarNames& names,
-								size_t varCount) {
-  names.clear();
-  for (size_t var = 0; var < varCount; ++var)
-	names.addVarSyntaxCheckUnique(in, in.readIdentifier());
-}
-
-void Fourti2IOHandler::readTerm(Scanner& in, const VarNames& names,
-								vector<mpz_class>& term) {
-  term.resize(names.getVarCount());
-  for (size_t var = 0; var < names.getVarCount(); ++var)
-	in.readIntegerAndNegativeAsZero(term[var]);
-}
-
-void Fourti2IOHandler::readPolynomial
-(Scanner& in, CoefBigTermConsumer& consumer) {
-  size_t generatorCount;
-  size_t varCount;
-
-  in.readSizeT(generatorCount);
-  in.readSizeT(varCount);
-
-  if (varCount == 0)
-	reportError
-	  ("A polynomial has at least one column in the matrix,"
-	   "but this matrix has no columns.");
-
-  // The first column is the coefficient and so does not represent a
-  // variable.
-  --varCount;
-
-  BigPolynomial polynomial((VarNames(varCount)));
-
-  for (size_t t = 0; t < generatorCount; ++t) {
-	// Read a term
-	polynomial.newLastTerm();
-	in.readInteger(polynomial.getLastCoef());
-
-	vector<mpz_class>& term = polynomial.getLastTerm();
-	for (size_t var = 0; var < varCount; ++var) {
-	  ASSERT(var < term.size());
-	  in.readIntegerAndNegativeAsZero(term[var]);
+  void Fourti2IOHandler::doReadTerm(Scanner& in,
+									const VarNames& names,
+									vector<mpz_class>& term) {
+	term.resize(names.getVarCount());
+	if (term.empty())
+	  in.expect("fourtitwo_identity");
+	else {
+	  for (size_t var = 0; var < names.getVarCount(); ++var)
+		in.readIntegerAndNegativeAsZero(term[var]);
 	}
   }
 
-  if (!in.match('(')) {
-	// This expect will fail which improves the error message compared
-	// to just expect('(').
-	in.expect("(coefficient)");
+  void Fourti2IOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
+	size_t generatorCount;
+	in.readSizeT(generatorCount);
+
+	size_t varCount;
+	in.readSizeT(varCount);
+
+	F::readIdeal(in, consumer, generatorCount, varCount);
   }
-  in.expect("coefficient");
-  in.expect(')');
 
-  if (in.peekIdentifier()) {
-	VarNames names;
+  void Fourti2IOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+	// An empty list is just a ring by itself, and this has a special
+	// syntax.  So we first decipher whether we are looking at a ring or
+	// an ideal.  At the point where we can tell that it is an ideal, we
+	// have already read part of the ideal, so we have to do something
+	// to pass the read information on to the code for reading the rest
+	// of the ideal.
+
+	size_t generatorCount;
+	in.readSizeT(generatorCount);
+
+	if (generatorCount == 42 && in.peekIdentifier()) {
+	  in.expect("ring");
+	  VarNames names;
+	  F::readRing(in, names);
+	  consumer.consumeRing(names);
+	  in.expectEOF();
+	  return;
+	}
+
+	size_t varCount;
+	in.readSizeT(varCount);
+
+	F::readIdeal(in, consumer, generatorCount, varCount);
+
+	while (hasMoreInput(in))
+	  readIdeal(in, consumer);
+  }
+
+  void Fourti2IOHandler::doReadPolynomial(Scanner& in,
+										  CoefBigTermConsumer& consumer) {
+	size_t generatorCount;
+	size_t varCount;
+
+	in.readSizeT(generatorCount);
+	in.readSizeT(varCount);
+
+	if (varCount == 0)
+	  reportError
+		("A polynomial has at least one column in the matrix,"
+		 "but this matrix has no columns.");
+
+	// The first column is the coefficient and so does not represent a
+	// variable.
+	--varCount;
+
+	BigPolynomial polynomial((VarNames(varCount)));
+
+	for (size_t t = 0; t < generatorCount; ++t) {
+	  // Read a term
+	  polynomial.newLastTerm();
+	  in.readInteger(polynomial.getLastCoef());
+
+	  vector<mpz_class>& term = polynomial.getLastTerm();
+	  for (size_t var = 0; var < varCount; ++var) {
+		ASSERT(var < term.size());
+		in.readIntegerAndNegativeAsZero(term[var]);
+	  }
+	}
+
+	if (!in.match('(')) {
+	  // This expect will fail which improves the error message compared
+	  // to just expect('(').
+	  in.expect("(coefficient)");
+	}
+	in.expect("coefficient");
+	in.expect(')');
+
+	if (in.peekIdentifier()) {
+	  VarNames names;
+	  for (size_t var = 0; var < varCount; ++var)
+		names.addVar(in.readIdentifier());
+	  polynomial.renameVars(names);
+	}  
+
+	consumer.consume(polynomial);
+  }
+
+  void Fourti2IOHandler::doReadSatBinomIdeal(Scanner& in,
+											 SatBinomConsumer& consumer) {
+	size_t generatorCount;
+	in.readSizeT(generatorCount);
+
+	size_t varCount;
+	in.readSizeT(varCount);
+
+	F::readSatBinomIdeal(in, consumer, generatorCount, varCount);
+  }
+
+  void F::writeRing(const VarNames& names, FILE* out) {
+	fputs("42 ring\n", out);
+	writeRingWithoutHeader(names, out);
+  }
+
+  void F::writeRingWithoutHeader(const VarNames& names, FILE* out) {
+	if (names.getVarCount() == 0)
+	  return;
+
+	fputc(' ', out);
+	for (size_t var = 0; var < names.getVarCount(); ++var) {
+	  if (var > 0)
+		fputc(' ', out);
+	  fputs(names.getName(var).c_str(), out);
+	}
+	fputc('\n', out);  
+  }
+
+  void F::readRing(Scanner& in, VarNames& names) {
+	names.clear();
+	while (in.peekIdentifier())
+	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
+  }
+
+  void F::readRing(Scanner& in, VarNames& names, size_t varCount) {
+	names.clear();
 	for (size_t var = 0; var < varCount; ++var)
-	  names.addVar(in.readIdentifier());
-	polynomial.renameVars(names);
-  }  
+	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
+  }
 
-  consumer.consume(polynomial);
+  void F::writeTerm(const vector<mpz_class>& term, FILE* out) {
+	size_t varCount = term.size();
+	for (size_t var = 0; var < varCount; ++var) {
+	  fputc(' ', out);
+	  mpz_out_str(out, 10, term[var].get_mpz_t());
+	}
+
+	if (varCount != 0)
+	  fputc('\n', out);
+  }
+
+  void F::writeTerm(const Term& term,
+					const TermTranslator& translator,
+					FILE* out) {
+	ASSERT(term.getVarCount() == translator.getVarCount());
+
+	size_t varCount = term.getVarCount();
+	for (size_t var = 0; var < varCount; ++var) {
+	  fputc(' ', out);
+	  const char* exp = translator.getExponentString(var, term[var]);
+	  if (exp == 0)
+		exp = "0";
+	  fputs(exp, out);
+	}
+
+	if (varCount != 0)
+	  fputc('\n', out);
+  }
+
+  /** The parsing of the header with the number of generators and
+	  variables has to be separate from the code below reading the rest
+	  of the ideal, since in some contexts what looks like the header
+	  of an ideal could be a ring description, while in other contexts
+	  this cannot happen. The code below is the common code for these
+	  two cases. */
+  void F::readIdeal(Scanner& in,
+					BigTermConsumer& consumer,
+					size_t generatorCount,
+					size_t varCount) {
+	// We have to read the entire ideal before we can tell whether there is
+	// a ring associated to it, so we have to store the ideal here until
+	// that time.
+
+	BigIdeal ideal((VarNames(varCount)));
+	ideal.reserve(generatorCount);
+	for (size_t t = 0; t < generatorCount; ++t) {
+	  // Read a term
+	  ideal.newLastTerm();
+	  vector<mpz_class>& term = ideal.getLastTermRef();
+	  for (size_t var = 0; var < varCount; ++var)
+		in.readIntegerAndNegativeAsZero(term[var]);
+	}
+
+	if (in.peekIdentifier()) {
+	  VarNames names;
+	  F::readRing(in, names, varCount);
+	  ideal.renameVars(names);
+	}
+
+	consumer.consume(ideal);
+  }
+
+  void F::readSatBinomIdeal(Scanner& in,
+							SatBinomConsumer& consumer,
+							size_t generatorCount,
+							size_t varCount) {
+	// We have to read the entire ideal before we can tell whether there is
+	// a ring associated to it, so we have to store the ideal here until
+	// that time.
+
+	SatBinomIdeal ideal((VarNames(varCount)));
+	ideal.reserve(generatorCount);
+	for (size_t t = 0; t < generatorCount; ++t) {
+	  // Read a term
+	  ideal.newLastTerm();
+	  vector<mpz_class>& binom = ideal.getLastBinomRef();
+	  for (size_t var = 0; var < varCount; ++var)
+		in.readInteger(binom[var]);
+	}
+
+	if (in.peekIdentifier()) {
+	  VarNames names;
+	  F::readRing(in, names, varCount);
+	  ideal.renameVars(names);
+	}
+
+	consumer.consume(ideal);
+  }
+
+  void F::display4ti2Warning() {
+	string msg = "Using the format ";
+	msg += Fourti2IOHandler::staticGetName();
+	msg += " makes it necessary to store all of the output in "
+	  "memory before writing it out. This increases "
+	  "memory consumption and decreases performance.";
+	displayNote(msg);
+  }
 }

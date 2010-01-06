@@ -18,6 +18,7 @@
 #define TOTAL_DEGREE_COEF_TERM_CONSUMER_GUARD
 
 #include "CoefTermConsumer.h"
+#include "UniHashPolynomial.h"
 
 class Term;
 class CoefBigTermConsumer;
@@ -50,8 +51,7 @@ class TotalDegreeCoefTermConsumer : public CoefTermConsumer {
   const TermTranslator& _translator;
   mpz_class _tmp;
 
-  // A map from exponents to coefficients.
-  map<mpz_class, mpz_class> _polynomial;
+  UniHashPolynomial _poly;
 };
 
 #endif

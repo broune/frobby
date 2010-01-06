@@ -20,6 +20,7 @@
 
 #include "CoefBigTermConsumer.h"
 #include "VarNames.h"
+#include <algorithm>
 
 void UniHashPolynomial::add(bool plus, const mpz_class& exponent) {
   mpz_class& ref = _terms[exponent];
@@ -31,13 +32,22 @@ void UniHashPolynomial::add(bool plus, const mpz_class& exponent) {
 	_terms.erase(exponent);
 }
 
-void UniHashPolynomial::add(int coef, size_t e) {
+void UniHashPolynomial::add(int coef, size_t exponent) {
   if (coef == 0)
 	return;
-  mpz_class& ref = _terms[e];
+  mpz_class& ref = _terms[exponent];
   ref += coef;
   if (ref == 0)
-	_terms.erase(e);
+	_terms.erase(exponent);
+}
+
+void UniHashPolynomial::add(const mpz_class& coef, const mpz_class& exponent) {
+  if (coef == 0)
+	return;
+  mpz_class& ref = _terms[exponent];
+  ref += coef;
+  if (ref == 0)
+	_terms.erase(exponent);
 }
 
 namespace {
@@ -81,11 +91,9 @@ void UniHashPolynomial::feedTo(CoefBigTermConsumer& consumer, bool inCanonicalOr
 	for (; it != termsEnd; ++it)
 	  refs.push_back(it);
 
-	// Sort the references.
 	sort(refs.begin(), refs.end(), RefCompare());
 
 	// Output the terms in the sorted order specified by refs.
-
 	vector<TermMap::const_iterator>::const_iterator refsEnd = refs.end();
 	vector<TermMap::const_iterator>::const_iterator refIt = refs.begin();
 	for (; refIt != refsEnd; ++refIt) {

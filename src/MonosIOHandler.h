@@ -18,48 +18,34 @@
 #define MONOS_IO_HANDLER_GUARD
 
 #include "IOHandlerCommon.h"
+#include <vector>
 
 class Scanner;
 class VarNames;
-class BigIdeal;
+class BigTermConsumer;
 
-class MonosIOHandler : public IOHandlerCommon {
-public:
-  MonosIOHandler();
+namespace IO {
+  class MonosIOHandler : public IOHandlerCommon {
+  public:
+	MonosIOHandler();
 
-  virtual void writeTerm(const vector<mpz_class>& term,
-						 const VarNames& names,
-						 FILE* out);
+	static const char* staticGetName();
 
-  static const char* staticGetName();
+  private:
+	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
 
- private:
-  virtual void readRing(Scanner& in, VarNames& names);
-  virtual bool peekRing(Scanner& in);
-  virtual void writeRing(const VarNames& names, FILE* out);
-
-  virtual void readBareIdeal(Scanner& in,
+	virtual void doWriteTerm(const vector<mpz_class>& term,
 							 const VarNames& names,
-							 BigTermConsumer& consumer);
-
-  virtual void writeIdealHeader(const VarNames& names,
-								bool defineNewRing,
-								FILE* out);
-  virtual void writeTermOfIdeal(const Term& term,
-								const TermTranslator* translator,
-								bool isFirst,
-								FILE* out);
-  virtual void writeTermOfIdeal(const vector<mpz_class>& term,
-								const VarNames& names,
-								bool isFirst,
-								FILE* out);
-  virtual void writeIdealFooter(const VarNames& names,
-								bool wroteAnyGenerators,
-								FILE* out);
-
-  // Not supported.
-  virtual void readBarePolynomial
-	(Scanner& in, const VarNames& names, CoefBigTermConsumer& consumer);
-};
+							 FILE* out);
+	virtual void doReadTerm(Scanner& in,
+							const VarNames& names,
+							vector<mpz_class>& term);
+	virtual void doReadRing(Scanner& in, VarNames& names);
+	virtual bool doPeekRing(Scanner& in);
+	virtual void doReadBareIdeal(Scanner& in,
+								 const VarNames& names,
+								 BigTermConsumer& consumer);
+  };
+}
 
 #endif
