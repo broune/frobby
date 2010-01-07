@@ -47,7 +47,7 @@ if [ $? != 0 ]; then exit 1; fi
 $t alexdual "$noInput" option-frobNotHere $* -split frob
 if [ $? != 0 ]; then exit 1; fi
 
-$t hilbert "$noInput" option-labelNotHere $* -split varlabel -useSlice
+$t hilbert "$noInput" option-labelNotHere $* -split varlabel -algorithm slice
 if [ $? != 0 ]; then exit 1; fi
 
 $t alexdual "$noInput" option-notonoff $* -time not_on_or_off
@@ -91,7 +91,7 @@ if [ $? != 0 ]; then exit 1; fi
 $t genideal "$noInput" genideal-tooLargeBoard $* -type king -varCount 100000
 if [ $? != 0 ]; then exit 1; fi
 
-$t hilbert "$noInput" option-unknownBigattiSplit $* -useSlice off -split unknownSplit
+$t hilbert "$noInput" option-unknownBigattiSplit $* -algorithm bigatti -split unknownSplit
 if [ $? != 0 ]; then exit 1; fi
 
 
