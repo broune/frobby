@@ -27,6 +27,8 @@ class CommonParams;
 #include "Term.h"
 #include "Ideal.h"
 
+class IdealTree;
+
 class ScarfHilbertAlgorithm {
  public:
   ScarfHilbertAlgorithm(const TermTranslator& translator,
@@ -51,6 +53,7 @@ class ScarfHilbertAlgorithm {
   void initializeEnumeration(const Ideal& ideal,
 							 size_t& activeStateCount);
   bool doEnumerationStep(const Ideal& ideal,
+						 const IdealTree& tree,
 						 State& state,
 						 State& nextState);
   void doEnumerationBaseCase(const State& state,

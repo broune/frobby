@@ -25,6 +25,7 @@
 #include "HashPolynomial.h"
 #include "UniHashPolynomial.h"
 #include "CommonParams.h"
+#include "IdealTree.h"
 
 class UndeformConsumer : public CoefTermConsumer {
 public:
@@ -150,6 +151,7 @@ void ScarfHilbertAlgorithm::initializeEnumeration(const Ideal& ideal,
 }
 
 bool ScarfHilbertAlgorithm::doEnumerationStep(const Ideal& ideal,
+											  const IdealTree& tree,
 											  State& state,
 											  State& nextState) {
   if (_params.getPrintDebug()) {
@@ -193,14 +195,15 @@ bool ScarfHilbertAlgorithm::doEnumerationStep(const Ideal& ideal,
 	  if (Term::strictlyDivides(state.face[i],
 								nextState.term,
 								ideal.getVarCount())) {
-		ASSERT(ideal.strictlyContains(nextState.term));
 		goto doNext;
 	  }
 	}
-	if (ideal.strictlyContains(nextState.term))
+	if (tree.strictlyContains(nextState.term))
 	  goto doNext;
+	ASSERT(!ideal.strictlyContains(nextState.term));
 	break;
   doNext:;
+	ASSERT(ideal.strictlyContains(nextState.term));
   }
 
   nextState.plus = !state.plus;
@@ -231,13 +234,15 @@ void ScarfHilbertAlgorithm::enumerateScarfComplex(const Ideal& ideal,
 												  CoefTermConsumer& consumer) {
   ASSERT(Ideal(ideal).isStronglyGeneric());
 
+  IdealTree tree(ideal);
+
   size_t activeStateCount = 0;
   initializeEnumeration(ideal, activeStateCount);
   while (activeStateCount > 0) {
 	ASSERT(activeStateCount < _states.size());
 	State& currentState = _states[activeStateCount - 1];
 	State& nextState = _states[activeStateCount];
-	if (doEnumerationStep(ideal, currentState, nextState))
+	if (doEnumerationStep(ideal, tree, currentState, nextState))
 	  ++activeStateCount;
 	else {
 	  doEnumerationBaseCase(currentState, consumer);

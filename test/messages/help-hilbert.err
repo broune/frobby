@@ -11,6 +11,9 @@ computes the polynomial in the numerator of this fraction.
 
 The parameters accepted by hilbert are as follows.
 
+ -algorithm STRING   (default is deform)
+   Which algorithm to use. Options are slice, bigatti and deform.
+
  -canon [BOOL]   (default is off)
    Sort the output, including the variables, to get a canonical
    representation. This requires storing the entire output in memory, which
@@ -65,10 +68,6 @@ The parameters accepted by hilbert are as follows.
 
  -univariate [BOOL]   (default is off)
    Output a univariate polynomial by substituting t for each variable.
-
- -useSlice [BOOL]   (default is off)
-   Use the Slice Algorithm to compute the Hilbert-Poincare series
-   instead of the algorithm by Bigatti et.al.
 
  -widenPivot [BOOL]   (default is on)
    Widen selected pivots when performing pivot splits.

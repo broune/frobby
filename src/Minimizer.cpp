@@ -20,6 +20,10 @@
 #include "Term.h"
 #include <algorithm>
 
+/** @todo: Convert everything in this file to be in terms of
+	IdealTree. After that, consider converting all clients of this
+	code to use IdealTree directly. */
+
 namespace {
   typedef vector<Exponent*>::iterator TermIterator;
 }
