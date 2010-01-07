@@ -62,11 +62,10 @@ class SplitStrategy {
   /** Returns the name of the strategy. */
   virtual const char* getName() const = 0;
 
-  /** Returns a strategy with the given name. Returns null if no
-   strategy has that name. This is the only way to create a
-   SplitStrategy.
+  /** Returns the strategy whose name has the given prefix. This is
+   the only way to create a SplitStrategy.
   */
-  static auto_ptr<SplitStrategy> createStrategy(const string& name);
+  static auto_ptr<SplitStrategy> createStrategy(const string& prefix);
 
  protected:
   SplitStrategy();

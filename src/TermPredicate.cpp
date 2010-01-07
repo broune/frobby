@@ -40,8 +40,8 @@ namespace {
   }
 }
 
-auto_ptr<TermPredicate> createTermPredicate(const string& name, size_t varCount) {
-  auto_ptr<TermPredicate> pred = getPredFactory().createNoNull(name);
+auto_ptr<TermPredicate> createTermPredicate(const string& prefix, size_t varCount) {
+  auto_ptr<TermPredicate> pred = createWithPrefix(getPredFactory(), prefix);
   ASSERT(pred.get() != 0);
   pred->setVarCount(varCount);
   return pred;

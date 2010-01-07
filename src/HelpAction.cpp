@@ -44,12 +44,8 @@ void HelpAction::processNonParameter(const char* str) {
 
   _topic = str;
 
-  if (_topic != "io") {
-	vector<string> names;
-	Action::getNamesWithPrefix(str, names);
-	if (names.empty())
-	  reportError("Unknown help topic \"" + _topic + "\".");
-  }
+  if (_topic != "io")
+	Action::createActionWithPrefix(str);
 }
 
 namespace {
@@ -173,7 +169,7 @@ void HelpAction::perform() {
 	  constants::version);
 
   vector<string> names;
-  Action::getNamesWithPrefix("", names);
+  Action::getActionNames(names);
 
   // Compute maximum name length to make descriptions line up.
   size_t maxNameLength = 0;

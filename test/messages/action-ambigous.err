@@ -1,3 +1,2 @@
-ERROR: Prefix "a" is ambigous.
-Possibilities are: alexdual analyze assoprimes
-
+ERROR: More than one action has prefix "a":
+  alexdual analyze assoprimes

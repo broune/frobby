@@ -39,21 +39,16 @@ class BigattiPivotStrategy {
   /** Returns the name of the strategy. */
   virtual const char* getName() const = 0;
 
-  /** Returns a strategy with the given name. Throws a FrobbyException
-	  if no strategy has that name. This function is the only way to
-	  create a BigattiPivotStrategy.
+  /** Returns the strategy whose name has the given prefix. This
+	  function is the only way to create a BigattiPivotStrategy.
 
 	  A pivot p is widened by replacing it by
 	  \f$\gcd(\min(I)\cap\langle p\rangle/f$. This may be an
 	  improvement for the state with colon while being almost as good
 	  for the state with add.
-
-	  @param name The name of the pivot selection strategy to make.
-	  @param widen If true, widen the pivot that the pivot selection
-	    strategy selects.
   */
   static auto_ptr<BigattiPivotStrategy> createStrategy
-	(const string& name, bool widen);
+	(const string& prefix, bool widen);
 
  protected:
   BigattiPivotStrategy();

@@ -35,7 +35,7 @@ class NameFactory {
   /** @param abstractName The name for those things that are being
    generated in general. Used for error messages. */
   NameFactory(const char* abstractName): _abstractName(abstractName) {}
-  
+
   typedef auto_ptr<AbstractProduct> (*FactoryFunction)();
   void registerProduct(const string& name, FactoryFunction function);
 
@@ -43,16 +43,14 @@ class NameFactory {
    the result. Returns null if name has not been registered. */
   auto_ptr<AbstractProduct> createNoThrow(const string& name) const;
 
-  /** As createNoThrow(), but throws an UnknownNameException if name
-   has not been registered. */
-  auto_ptr<AbstractProduct> createNoNull(const string& name) const;
-
   /** Inserts into names all registered names that have the indicated
    prefix in lexicographic increasing order. */
   void getNamesWithPrefix(const string& prefix, vector<string>& names) const;
 
   /** Returns true if no names have been registered. */
   bool empty() const;
+
+  string getAbstractProductName() const;
 
  private:
   typedef pair<string, FactoryFunction> Pair;
@@ -66,15 +64,18 @@ class NameFactory {
 template<class ConcreteProduct, class AbstractProduct>
 void nameFactoryRegister(NameFactory<AbstractProduct>& factory);
 
-/** Creates the unique product that has the indicated prefix.
+/** Creates the unique product that has the indicated prefix, or
+ create the actual product that has name equal to the indicated
+ prefix.
 
  @exception UnknownNameException If no product has the indicated
  prefix.
 
  @exception AmbiguousNameException If more than one product has the
- indicated prefix. */
+ indicated prefix and the prefix is not the actual name of any
+ product. */
 template<class AbstractProduct>
-auto_ptr<AbstractProduct> createFromPrefix
+auto_ptr<AbstractProduct> createWithPrefix
 (const NameFactory<AbstractProduct>& factory, const string& prefix);
 
 
@@ -89,16 +90,6 @@ createNoThrow(const string& name) const {
 	if (it->first == name)
 	  return it->second();
   return auto_ptr<AbstractProduct>();
-}
-
-template<class AbstractProduct>
-auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
-createNoNull(const string& name) const {
-  auto_ptr<AbstractProduct> product = createNoThrow(name);
-  if (product.get() == 0)
-	throwError<UnknownNameException>
-	  ("Unknown " + _abstractName + " \"" + name + "\".");
-  return product;
 }
 
 template<class AbstractProduct>
@@ -121,6 +112,11 @@ bool NameFactory<AbstractProduct>::empty() const {
   return _pairs.empty();
 }
 
+template<class AbstractProduct>
+string NameFactory<AbstractProduct>::getAbstractProductName() const {
+  return _abstractName;
+}
+
 template<class ConcreteProduct, class AbstractProduct>
 void nameFactoryRegister(NameFactory<AbstractProduct>& factory) {
   struct HoldsFunction {
@@ -134,24 +130,34 @@ void nameFactoryRegister(NameFactory<AbstractProduct>& factory) {
 }
 
 template<class AbstractProduct>
-auto_ptr<AbstractProduct> createFromPrefix
+auto_ptr<AbstractProduct> createWithPrefix
 (const NameFactory<AbstractProduct>& factory, const string& prefix) {
   vector<string> names;
-  factory.getNamesWithPrefix(prefix);
+  factory.getNamesWithPrefix(prefix, names);
+
+  if (find(names.begin(), names.end(), prefix) != names.end()) {
+	names.clear();
+	names.push_back(prefix);
+  }
 
   if (names.empty()) {
 	throwError<UnknownNameException>
-	  ("No action has the prefix \"" + prefix + "\".");
+	  ("No " + factory.getAbstractProductName() +
+	   " has the prefix \"" + prefix + "\".");
   }
 
   if (names.size() >= 2) {
-	string errorMsg = "Prefix \"" + prefix + "\" is ambigous.\nPossibilities are:";
+	string errorMsg = "More than one " + factory.getAbstractProductName() +
+	  " has prefix \"" + prefix + "\":\n ";
 	for (size_t name = 0; name < names.size(); ++name)
 	  errorMsg += ' ' + names[name];
 	throwError<AmbiguousNameException>(errorMsg);
   }
 
-  return factory.createNoNull(names[0]);
+  ASSERT(names.size() == 1);
+  auto_ptr<AbstractProduct> product = factory.createNoThrow(names.back());
+  ASSERT(product.get() != 0);
+  return product;
 }
 
 #endif

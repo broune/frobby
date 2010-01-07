@@ -52,8 +52,7 @@ class Action {
 
   const Parameter& getParam(const string& name) const;
 
-  static void getNamesWithPrefix(const string& prefix,
-								 vector<string>& names);
+  static void getActionNames(vector<string>& names);
   static auto_ptr<Action> createActionWithPrefix(const string& prefix);
 
  protected:

@@ -70,10 +70,9 @@ class StlTermPredicate {
   const TermPredicate& _pred;
 };
 
-/** Returns a TermPredicate object with the given name. Reports an
- error if the name is unknown. */
-auto_ptr<TermPredicate> createTermPredicate(const string& name, size_t
-											varCount);
+/** Returns the predicate whose name has the given prefix. */
+auto_ptr<TermPredicate> createTermPredicate(const string& prefix,
+											size_t varCount = 0);
 
 
 /** Indicates how a relates to b according to the lexicographic term

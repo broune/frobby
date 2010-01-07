@@ -27,10 +27,15 @@
 ScarfFacade::ScarfFacade(const ScarfParams& params):
   Facade(params.getPrintActions()),
   _params(params)  {
-  _helper.readIdealAndSetPolyOutput(params);
+  // Create predicate before reading the input to display errors on
+  // options before potentially spending a long time reading the
+  // input.
   _enumerationOrder =
-	createTermPredicate(params.getEnumerationOrder(),
-						_helper.getIdeal().getVarCount());
+	createTermPredicate(params.getEnumerationOrder());
+
+  _helper.readIdealAndSetPolyOutput(params);
+
+  _enumerationOrder->setVarCount(_helper.getIdeal().getVarCount());
 }
 
 ScarfFacade::~ScarfFacade() {
