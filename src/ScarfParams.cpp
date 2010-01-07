@@ -15,34 +15,32 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef SCARF_FACADE_GUARD
-#define SCARF_FACADE_GUARD
-
-#include "Facade.h"
-#include "CommonParamsHelper.h"
+#include "stdinc.h"
 #include "ScarfParams.h"
 
-class TermPredicate;
+#include "CliParams.h"
+#include "StringParameter.h"
 
-class ScarfFacade : public Facade {
- public:
-  ScarfFacade(const ScarfParams& params);
-  ~ScarfFacade();
+ScarfParams::ScarfParams(CliParams& cli):
+  _enumerationOrder("revlex") {
+  extractCliValues(*this, cli);
+}
 
-  /** Computes the numerator of the multigraded Hilbert-Poincare
-   series with no cancellation of common terms in numerator and
-   denominator. */
-  void computeMultigradedHilbertSeries();
+namespace {
+  static const char* EnumerationOrder = "enum";
+}
 
-  /** Computes the numerator of the univariate Hilbert-Poincare series
-   with no cancellation of common terms in numerator and
-   denominator. */
-  void computeUnivariateHilbertSeries();
+void addScarfParams(CliParams& params) {
+  ASSERT(!params.hasParam(EnumerationOrder));
+  params.add
+	(auto_ptr<Parameter>
+	 (new StringParameter
+	  (EnumerationOrder,
+	   "The enumeration order used for the deformation algorithm.",
+	   "revlex")));
+}
 
- private:
-  ScarfParams _params;
-  CommonParamsHelper _helper;
-  auto_ptr<TermPredicate> _enumerationOrder;
-};
-
-#endif
+void extractCliValues(ScarfParams& scarf, const CliParams& cli) {
+  extractCliValues(static_cast<CommonParams&>(scarf), cli);
+  scarf.setEnumerationOrder(getString(cli, EnumerationOrder));
+}

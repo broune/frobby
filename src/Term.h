@@ -118,18 +118,9 @@ class Term {
     ASSERT(_varCount == term._varCount);
     return (*this) == term._exponents;
   }
-
-  bool operator==(const Exponent* term) const {
-	return equals(_exponents, term, _varCount);
-  }
-
-  bool operator!=(const Term& term) const {
-	return !(*this == term);
-  }
-
-  bool operator!=(const Exponent* term) const {
-	return !(*this == term);
-  }
+  bool operator==(const Exponent* term) const;
+  bool operator!=(const Term& term) const {return !(*this == term);}
+  bool operator!=(const Exponent* term) const {return !(*this == term);}
 
   Term& operator=(const Term& term) {
     if (_varCount != term._varCount) {
@@ -274,15 +265,6 @@ class Term {
 
   void gcd(const Exponent* a, const Exponent* b) {
     gcd(_exponents, a, b, _varCount);
-  }
-
-  bool operator<(const Term& term) const {
-    ASSERT(_varCount == term._varCount);
-    return lexCompare(_exponents, term._exponents, _varCount) < 0;
-  }
-
-  bool operator<(const Exponent* term) const {
-    return lexCompare(_exponents, term, _varCount) < 0;
   }
 
   /** Sets res equal to the product of a and b. */
@@ -588,168 +570,6 @@ class Term {
     print(out, _exponents, _varCount);
   }
 
-  /** Indicates how a relates to b according to the lexicographic term
-	  order where \f$x_1>\cdots>x_n\f$. Returns -1 if a < b, returns 0 if a
-	  = b and returns 1 if a > b. As an example \f$x^(0,0) < x^(0,1) <
-	  x^(1,0)\f$.
-  */
-  inline static int lexCompare(const Exponent* a, const Exponent* b,
-							   size_t varCount) {
-	ASSERT(a != 0 || varCount == 0);
-	ASSERT(b != 0 || varCount == 0);
-
-	for (size_t var = 0; var < varCount; ++var) {
-	  if (a[var] == b[var])
-		continue;
-
-	  if (a[var] < b[var])
-		return -1;
-	  else
-		return 1;
-	}
-	return 0;
-  }
-
-  // A predicate that sorts according to lexicographic order.
-  class LexComparator {
-  public:
-  LexComparator(size_t varCount): _varCount(varCount) {}
-
-    bool operator()(const Term& a, const Term& b) {
-      ASSERT(_varCount == a._varCount);
-      ASSERT(_varCount == b._varCount);
-      return a < b;
-    }
-
-    bool operator()(const Exponent* a, const Exponent* b) const {
-      return lexCompare(a, b, _varCount) < 0;
-    }
-
-  private:
-    size_t _varCount;
-  };
-
-  /** Indicates how a relates to b according to the reverse
-	  lexicographic term order where \f$x_1<\cdots<x_n\f$. Returns -1 if a
-	  < b, returns 0 if a = b and returns 1 if a > b. As an example
-	  \f$x^(0,0) < x^(1,0) < x^(0,1)\f$.
-  */
-  // Defines reverse lexicographic order on exponents.
-  inline static int reverseLexCompare(const Exponent* a, const Exponent* b,
-									  size_t varCount) {
-	ASSERT(a != 0 || varCount == 0);
-	ASSERT(b != 0 || varCount == 0);
-	for (size_t var = 0; var < varCount; ++var) {
-	  if (a[var] == b[var])
-		continue;
-
-	  if (a[var] > b[var])
-		return -1;
-	  else
-		return 1;
-	}
-	return 0;
-  }
-
-  inline int reverseLexCompare(const Term& a) const {
-	ASSERT(_varCount == a._varCount);
-	return reverseLexCompare(_exponents, a._exponents, _varCount);
-  }
-
-  // A predicate that sorts according to reverse lexicographic order.
-  class ReverseLexComparator {
-  public:
-  ReverseLexComparator(size_t varCount): _varCount(varCount) {}
-
-    bool operator()(const Exponent* a, const Exponent* b) const {
-      return reverseLexCompare(a, b, _varCount) < 0;
-    }
-
-  private:
-    size_t _varCount;
-  };
-
-  // A predicate that sorts terms in weakly ascending order according
-  // to degree of the specified variable. There is no tie-breaker for
-  // different terms with the same degree of that variable.
-  class AscendingSingleDegreeComparator {
-  public:
-  AscendingSingleDegreeComparator(size_t variable, size_t varCount):
-	_variable(variable),
-      _varCount(varCount) {
-		ASSERT(variable < varCount);
-	  }
-
-    bool operator()(const Term& a, const Term& b) {
-      ASSERT(_varCount == a._varCount);
-      ASSERT(_varCount == b._varCount);
-      return a[_variable] < b[_variable];
-    }
-
-    bool operator()(const Exponent* a, const Exponent* b) const {
-      return a[_variable] < b[_variable];
-    }
-
-  private:
-    size_t _variable;
-    size_t _varCount;
-  };
-
-  // Reverse sorted order of AscendingSingleDegreeComparator.
-  class DescendingSingleDegreeComparator {
-  public:
-  DescendingSingleDegreeComparator(size_t variable, size_t varCount):
-	_variable(variable),
-      _varCount(varCount) {
-		ASSERT(variable < varCount);
-	  }
-
-    bool operator()(const Term& a, const Term& b) {
-      ASSERT(_varCount == a._varCount);
-      ASSERT(_varCount == b._varCount);
-      return a[_variable] > b[_variable];
-    }
-
-    bool operator()(const Exponent* a, const Exponent* b) const {
-      return a[_variable] > b[_variable];
-    }
-
-  private:
-    size_t _variable;
-    size_t _varCount;
-  };
-
-  /** Returns whether the entries of a are equal to the entries of b. */
-  inline static bool equals(const Exponent* a, const Exponent* b, size_t varCount) {
-	ASSERT(a != 0 || varCount == 0);
-	ASSERT(b != 0 || varCount == 0);
-
-	for (size_t var = 0; var < varCount; ++var)
-	  if (a[var] != b[var])
-		return false;
-	return true;
-  }
-
-  class EqualsPredicate {
-  public:
-  EqualsPredicate(size_t varCount): _varCount(varCount) {}
-
-    bool operator()(const Term& a, const Term& b) {
-      ASSERT(_varCount == a._varCount);
-      ASSERT(_varCount == b._varCount);
-      return (*this)(a.begin(), b.begin());
-    }
-
-    bool operator()(const Exponent* a, const Exponent* b) const {
-      for (size_t var = 0; var < _varCount; ++var)
-		if (a[var] != b[var])
-		  return false;
-      return true;
-    }
-
-  private:
-    size_t _varCount;
-  };
 
  private:
   static Exponent* allocate(size_t size);

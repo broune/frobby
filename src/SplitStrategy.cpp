@@ -475,7 +475,7 @@ namespace {
   typedef NameFactory<SplitStrategy> SplitFactory;
 
   SplitFactory getSplitFactory() {
-	SplitFactory factory;
+	SplitFactory factory("Slice split strategy");
 
 	nameFactoryRegister<MaxLabelSplit>(factory);
 	nameFactoryRegister<MinLabelSplit>(factory);
@@ -494,7 +494,7 @@ namespace {
 }
 
 auto_ptr<SplitStrategy> SplitStrategy::createStrategy(const string& name) {
-  auto_ptr<SplitStrategy> split = getSplitFactory().create(name);
+  auto_ptr<SplitStrategy> split = getSplitFactory().createNoThrow(name);
   if (split.get() == 0)
 	reportError("Unknown Slice split strategy \"" + name + "\".");
 

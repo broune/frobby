@@ -17,6 +17,7 @@
 #include "stdinc.h"
 #include "Ideal.h"
 
+#include "TermPredicate.h"
 #include "Term.h"
 #include "Minimizer.h"
 
@@ -430,7 +431,7 @@ bool Ideal::operator==(const Ideal& ideal) const {
   const_iterator it = begin();
   const_iterator it2 = ideal.begin();
   for (; it != stop; ++it, ++it2)
-	if (!Term::equals(*it, *it2, getVarCount()))
+	if (!equals(*it, *it2, getVarCount()))
 	  return false;
 
   return true;
@@ -506,18 +507,18 @@ void Ideal::minimize() {
 }
 
 void Ideal::sortReverseLex() {
-  std::sort(_terms.begin(), _terms.end(),
-			Term::ReverseLexComparator(_varCount));
+  std::sort(_terms.begin(), _terms.end(), ReverseLexComparator(_varCount));
 }
 
 void Ideal::sortLex() {
-  std::sort(_terms.begin(), _terms.end(), Term::LexComparator(_varCount));
+  std::sort(_terms.begin(), _terms.end(), LexComparator(_varCount));
 }
 
 void Ideal::singleDegreeSort(size_t var) {
   ASSERT(var < _varCount);
-  std::sort(_terms.begin(), _terms.end(),
-	    Term::AscendingSingleDegreeComparator(var, _varCount));
+  std::sort(_terms.begin(),
+			_terms.end(),
+			SingleDegreeComparator(var, _varCount));
 }
 
 void Ideal::product(const Exponent* by) {
@@ -630,9 +631,9 @@ void Ideal::removeStrictMultiples(const Exponent* term) {
 }
 
 void Ideal::removeDuplicates() {
-  std::sort(_terms.begin(), _terms.end(), Term::LexComparator(_varCount));
+  std::sort(_terms.begin(), _terms.end(), LexComparator(_varCount));
   iterator newEnd =
-    unique(_terms.begin(), _terms.end(), Term::EqualsPredicate(_varCount));
+    unique(_terms.begin(), _terms.end(), EqualsPredicate(_varCount));
   _terms.erase(newEnd, _terms.end());
 }
 

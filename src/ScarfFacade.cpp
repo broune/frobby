@@ -19,21 +19,27 @@
 #include "ScarfFacade.h"
 
 #include "DataType.h"
-#include "CommonParams.h"
 #include "ScarfHilbertAlgorithm.h"
 #include "TranslatingCoefTermConsumer.h"
 #include "TotalDegreeCoefTermConsumer.h"
+#include "TermPredicate.h"
 
-ScarfFacade::ScarfFacade(const CommonParams& params):
+ScarfFacade::ScarfFacade(const ScarfParams& params):
   Facade(params.getPrintActions()),
-  _params(params) {
+  _params(params)  {
   _helper.readIdealAndSetPolyOutput(params);
+  _enumerationOrder =
+	createTermPredicate(params.getEnumerationOrder(),
+						_helper.getIdeal().getVarCount());
+}
+
+ScarfFacade::~ScarfFacade() {
 }
 
 void ScarfFacade::computeMultigradedHilbertSeries() {
   beginAction("Computing multigraded Hilbert-Poincare series.");
 
-  ScarfHilbertAlgorithm alg(_helper.getTranslator(), _params);
+  ScarfHilbertAlgorithm alg(_helper.getTranslator(), _params, _enumerationOrder);
 
   alg.runGeneric(_helper.getIdeal(),
 				 _helper.getPolyConsumer(),
@@ -46,7 +52,7 @@ void ScarfFacade::computeMultigradedHilbertSeries() {
 void ScarfFacade::computeUnivariateHilbertSeries() {
   beginAction("Computing univariate Hilbert-Poincare series.");
 
-  ScarfHilbertAlgorithm alg(_helper.getTranslator(), _params);
+  ScarfHilbertAlgorithm alg(_helper.getTranslator(), _params, _enumerationOrder);
 
   alg.runGeneric(_helper.getIdeal(),
 				 _helper.getPolyConsumer(),

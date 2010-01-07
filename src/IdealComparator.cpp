@@ -20,6 +20,7 @@
 #include "BigIdeal.h"
 #include "Ideal.h"
 #include "TermTranslator.h"
+#include "TermPredicate.h"
 #include "Term.h"
 
 TranslatedIdealComparator::
@@ -60,7 +61,7 @@ namespace IdealComparatorHelpers {
   bool idealLessThan(const Ideal& a, const Ideal& b) {
 	ASSERT(a.getVarCount() == b.getVarCount());
 
-	return idealLessThanImpl(a, b, Term::ReverseLexComparator(a.getVarCount()));
+	return idealLessThanImpl(a, b, ReverseLexComparator(a.getVarCount()));
   }
 
   bool idealLessThan(const Ideal& a, const Ideal& b,

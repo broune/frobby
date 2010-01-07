@@ -23,6 +23,7 @@
 #include "BigattiParams.h"
 #include "ScarfFacade.h"
 #include "DataType.h"
+#include "ScarfParams.h"
 #include "error.h"
 
 HilbertAction::HilbertAction():
@@ -56,6 +57,8 @@ HilbertAction::HilbertAction():
   _params.add(_sliceParams);
   _params.add(_univariate);
   _params.add(_algorithm);
+
+  addScarfParams(_params);
 }
 
 void HilbertAction::perform() {
@@ -75,8 +78,7 @@ void HilbertAction::perform() {
 	else
 	  sliceFacade.computeMultigradedHilbertSeries();
   } else if (_algorithm.getValue() == "deform") {
-	CommonParams params;
-	extractCliValues(params, _params);
+	ScarfParams params(_params);
 	ScarfFacade facade(params);
     if (_univariate)
 	  facade.computeUnivariateHilbertSeries();

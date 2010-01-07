@@ -22,7 +22,8 @@ class Consumer;
 class CoefTermConsumer;
 class TermTranslator;
 class CoefBigTermConsumer;
-class CommonParams;
+class ScarfParams;
+class TermPredicate;
 
 #include "Term.h"
 #include "Ideal.h"
@@ -32,7 +33,9 @@ class IdealTree;
 class ScarfHilbertAlgorithm {
  public:
   ScarfHilbertAlgorithm(const TermTranslator& translator,
-						const CommonParams& params);
+						const ScarfParams& params,
+						auto_ptr<TermPredicate> enumerationOrder);
+  ~ScarfHilbertAlgorithm();
 
   void runGeneric(const Ideal& ideal,
 				  CoefBigTermConsumer& consumer,
@@ -60,7 +63,8 @@ class ScarfHilbertAlgorithm {
 							 CoefTermConsumer& consumer);
 
   const TermTranslator& _translator;
-  const CommonParams& _params;
+  const ScarfParams& _params;
+  const auto_ptr<TermPredicate> _enumerationOrder;
 
   size_t _totalStates;
   size_t _totalFaces;

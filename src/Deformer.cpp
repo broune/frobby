@@ -19,6 +19,7 @@
 #include "Deformer.h"
 
 #include "Term.h"
+#include "TermPredicate.h"
 #include "Ideal.h"
 #include "error.h"
 #include <map>
@@ -87,14 +88,14 @@ mpz_class tdeg(const Exponent* term, size_t varCount) {
 		return true;
 	  if (da > db)
 		return false;
-		  return Term::reverseLexCompare(a,b, _varCount) < 0;
+		  return lexCompare(a, b, _varCount) > 0;
     }
 
   private:
     size_t _varCount;
   };
 
-Deformer::Deformer(Ideal& ideal):
+Deformer::Deformer(Ideal& ideal, bool stronglyGeneric):
   _undeform(ideal.getVarCount()) {
   //ideal.sortReverseLex();
   //random_shuffle(ideal.begin(), ideal.end());

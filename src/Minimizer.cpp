@@ -17,6 +17,7 @@
 #include "stdinc.h"
 #include "Minimizer.h"
 
+#include "TermPredicate.h"
 #include "Term.h"
 #include <algorithm>
 
@@ -32,7 +33,7 @@ TermIterator simpleMinimize(TermIterator begin, TermIterator end, size_t varCoun
   if (begin == end)
 	return end;
 
-  std::sort(begin, end, Term::LexComparator(varCount));
+  std::sort(begin, end, LexComparator(varCount));
 
   TermIterator newEnd = begin;
   ++newEnd; // The first one is always kept
@@ -58,7 +59,7 @@ TermIterator twoVarMinimize(TermIterator begin, TermIterator end) {
   if (begin == end)
 	return end;
 
-  std::sort(begin, end, Term::LexComparator(2));
+  std::sort(begin, end, LexComparator(2));
 
   TermIterator last = begin;
   TermIterator it = begin;
@@ -371,7 +372,7 @@ pair<Minimizer::iterator, bool> Minimizer::colonReminimize
 
   // Sort the part of the array that we have not handled yet.
   std::sort(begin, zeroBegin,
-			Term::DescendingSingleDegreeComparator(var, _varCount));
+			ReverseSingleDegreeComparator(var, _varCount));
 
   // We group terms into blocks according to term[var].
   iterator previousBlockEnd = begin;

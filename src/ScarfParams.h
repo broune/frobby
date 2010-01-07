@@ -15,35 +15,26 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef DEFORMER_GUARD
-#define DEFORMER_GUARD
+#ifndef SCARF_PARAMS_GUARD
+#define SCARF_PARAMS_GUARD
 
-#include <vector>
-#include <limits>
+#include "CommonParams.h"
 
-class Ideal;
-class Term;
+class CliParams;
 
-/** Objects of this class encapsulate the process of applying a
- generic deformation to a monomial ideal. */
-class Deformer {
+class ScarfParams : public CommonParams {
  public:
-  /** Apply a generic deformation to ideal such that it becomes
-   generic.
+  ScarfParams(CliParams& cli);
 
-   @param makeStronglyGeneric Deform to a strongly generic ideal if
-   true. Otherwise deform to a weakly generic ideal.
-   
-   @todo Implement makeStronglyGeneric == false. */
-  Deformer(Ideal& ideal, bool makeStronglyGeneric = true);
-
-  /** Apply the reverse transformation on term than that applied to
-	  the Ideal passed to the constructor. */
-  void undeform(Term& term) const;
+  /** Returns the name of the enumeration ordering. */
+  const string& getEnumerationOrder() const {return _enumerationOrder;}
+  void setEnumerationOrder(const string& name) {_enumerationOrder = name;}
 
  private:
-  /** var^e undeforms to var^(_undeform[var][e]). */
-  vector<vector<Exponent> > _undeform;
+  string _enumerationOrder;
 };
+
+void addScarfParams(CliParams& params);
+void extractCliValues(ScarfParams& scarf, const CliParams& cli);
 
 #endif

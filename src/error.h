@@ -74,7 +74,8 @@ void reportErrorNoThrow(const InternalFrobbyException& e);
     NAME##Exception(const string& str): FrobbyException(str) {} \
   }
 
-DEFINE_EXCEPTION(UnknownFormat);
+DEFINE_EXCEPTION(UnknownName);
+DEFINE_EXCEPTION(AmbiguousName);
 DEFINE_EXCEPTION(Unsupported);
 
 #endif
