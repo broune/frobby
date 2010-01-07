@@ -61,11 +61,17 @@ class CommonParams {
   bool getPrintDebug() const {return _printDebug;}
   void printDebug(bool value) {_printDebug = value;}
 
+  /** Returns whether to print statistics on what the algorithm did
+	  to standard error after it has run. */
+  bool getPrintStatistics() const {return _printStatistics;}
+  void printStatistics(bool value) {_printStatistics = value;}
+
  private:
   bool _idealIsMinimal;
   bool _printActions;
   bool _produceCanonicalOutput;
   bool _printDebug;
+  bool _printStatistics;
 
   string _inputFormat;
   string _outputFormat;

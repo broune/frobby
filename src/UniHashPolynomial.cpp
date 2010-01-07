@@ -87,8 +87,8 @@ void UniHashPolynomial::feedTo(CoefBigTermConsumer& consumer, bool inCanonicalOr
 	refs.reserve(_terms.size());
 
 	TermMap::const_iterator termsEnd = _terms.end();
-	TermMap::const_iterator it = _terms.begin();
-	for (; it != termsEnd; ++it)
+	for (TermMap::const_iterator it = _terms.begin();
+		 it != termsEnd; ++it)
 	  refs.push_back(it);
 
 	sort(refs.begin(), refs.end(), RefCompare());

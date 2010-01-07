@@ -21,12 +21,10 @@
 #include "CliParams.h"
 
 SliceLikeParams::SliceLikeParams():
-  _printStatistics(false),
   _useSimplification(true) {
 }
 
 namespace {
-  static const char* PrintStatisticsName = "stats";
   static const char* UseSimplificationName = "simplify";
 }
 
@@ -35,6 +33,5 @@ void addSliceLikeParams(CliParams& params) {
 
 void extractCliValues(SliceLikeParams& slice, const CliParams& cli) {
   extractCliValues(static_cast<CommonParams&>(slice), cli);
-  slice.printStatistics(getBool(cli, PrintStatisticsName));
   slice.useSimplification(getBool(cli, UseSimplificationName));
 }
