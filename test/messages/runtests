@@ -44,6 +44,9 @@ if [ $? != 0 ]; then exit 1; fi
 $t alexdual "$noInput" option-unknownSplit $* -split unknownSplit
 if [ $? != 0 ]; then exit 1; fi
 
+$t alexdual "$noInput" option-ambiguousSplitSplit $* -split m
+if [ $? != 0 ]; then exit 1; fi
+
 $t alexdual "$noInput" option-frobNotHere $* -split frob
 if [ $? != 0 ]; then exit 1; fi
 
@@ -94,6 +97,8 @@ if [ $? != 0 ]; then exit 1; fi
 $t hilbert "$noInput" option-unknownBigattiSplit $* -algorithm bigatti -split unknownSplit
 if [ $? != 0 ]; then exit 1; fi
 
+$t hilbert "$noInput" option-unknownEnumerationOrder $* -algorithm deform -enum unknownOrder
+if [ $? != 0 ]; then exit 1; fi
 
 #######################################
 # action prefixes

@@ -437,16 +437,13 @@ namespace {
 }
 
 auto_ptr<BigattiPivotStrategy> BigattiPivotStrategy::
-createStrategy(const string& name, bool widen) {
-  auto_ptr<BigattiPivotStrategy> strategy = makeStrategyFactory().createNoThrow(name);
-  if (strategy.get() == 0) {
-	reportError("Unknown Bigatti et.al. pivot strategy \"" + name + "\".");
-	ASSERT(false); // Should not reach here due to exception.
-  }
+createStrategy(const string& prefix, bool widen) {
+  auto_ptr<BigattiPivotStrategy> strategy =
+	createWithPrefix(makeStrategyFactory(), prefix);
+  ASSERT(strategy.get() != 0);
 
   if (widen)
 	strategy = auto_ptr<BigattiPivotStrategy>(new WidenPivot(strategy));
 
-  ASSERT(strategy.get() != 0);
   return strategy;
 }

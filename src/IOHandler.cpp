@@ -132,8 +132,8 @@ namespace {
   }
 }
 
-auto_ptr<IOHandler> createIOHandler(const string& name) {
-  return getIOHandlerFactory().createNoNull(name);
+auto_ptr<IOHandler> createIOHandler(const string& prefix) {
+  return createWithPrefix(getIOHandlerFactory(), prefix);
 }
 
 auto_ptr<IOHandler> createOHandler(const string& input, const string& output) {

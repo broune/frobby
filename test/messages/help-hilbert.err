@@ -25,6 +25,9 @@ The parameters accepted by hilbert are as follows.
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step. Slice algorithm only.
 
+ -enum STRING   (default is revlex)
+   The enumeration order used for the deformation algorithm.
+
  -genericBase [BOOL]   (default is on)
    Detect generic ideals as a base case of the Bigatti algorithm.
 

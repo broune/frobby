@@ -93,9 +93,9 @@ class IOHandler {
   virtual bool doSupportsOutput(const DataType& type) const = 0;
 };
 
-/** Returns an IOHandler for the format with the passed in
- name. Throws an UnknownFormatException for unknown formats. */
-auto_ptr<IOHandler> createIOHandler(const string& name);
+/** Returns an IOHandler for the format whose name has the given
+ prefix. */
+auto_ptr<IOHandler> createIOHandler(const string& prefix);
 
 /** Returns an IOHandler for the output format. This can depend on the
  input format since the output name can specify to let the output

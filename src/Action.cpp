@@ -100,31 +100,12 @@ const Parameter& Action::getParam(const string& name) const {
   return _params.getParam(name);
 }
 
-void Action::getNamesWithPrefix(const string& prefix, vector<string>& names) {
-  getActionFactory().getNamesWithPrefix(prefix, names);
+void Action::getActionNames(vector<string>& names) {
+  getActionFactory().getNamesWithPrefix("", names);
 }
 
 auto_ptr<Action> Action::createActionWithPrefix(const string& prefix) {
-  vector<string> names;
-  getNamesWithPrefix(prefix, names);
-
-  if (names.empty())
-	reportError("No action has the prefix \"" + prefix + "\".\n");
-
-  if (names.size() >= 2) {
-	string err = "Prefix \"" + prefix + "\" is ambigous.\nPossibilities are:";
-	for (vector<string>::const_iterator name = names.begin();
-		 name != names.end(); ++name) {
-	  err += ' ';
-	  err += *name;
-	}
-	err += '\n';
-	reportError(err);
-  }
-
-  ASSERT(names.size() == 1);
-
-  return getActionFactory().createNoNull(names.back());
+  return createWithPrefix(getActionFactory(), prefix);
 }
 
 const char* Action::getName() const {
