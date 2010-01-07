@@ -26,11 +26,6 @@ class SliceLikeParams : public CommonParams {
  public:
   SliceLikeParams();
 
-  /** Returns whether to print statistics on what the algorithm did
-	  to standard error after it has run. */
-  bool getPrintStatistics() const {return _printStatistics;}
-  void printStatistics(bool value) {_printStatistics = value;}
-
   /** Apply simplification to the state of the algorithm when
 	  possible. E.g. slices have a notion of simplification, as does
 	  the Bigatti algorithm. */
@@ -38,8 +33,6 @@ class SliceLikeParams : public CommonParams {
   void useSimplification(bool value) {_useSimplification = value;}
 
  private:
-  bool _printDebug;
-  bool _printStatistics;
   bool _useSimplification;
 };
 

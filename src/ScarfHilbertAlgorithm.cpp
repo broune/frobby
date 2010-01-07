@@ -91,7 +91,9 @@ ScarfHilbertAlgorithm::ScarfHilbertAlgorithm
 (const TermTranslator& translator,
  const CommonParams& params):
   _translator(translator),
-  _params(params) {
+  _params(params),
+  _totalStates(0),
+  _totalFaces(0) {
 }
 
 void ScarfHilbertAlgorithm::runGeneric(const Ideal& ideal,
@@ -106,6 +108,14 @@ void ScarfHilbertAlgorithm::runGeneric(const Ideal& ideal,
   undeformer.beginConsuming();
   enumerateScarfComplex(deformed, undeformer, false);
   undeformer.doneConsuming();
+
+  if (_params.getPrintStatistics()) {
+	fputs("*** Statistics ***\n", stderr);
+	fprintf(stderr, "Total states considered: %u\n", 
+			static_cast<unsigned int>(_totalStates));
+	fprintf(stderr, "Total faces accepted: %u\n", 
+			static_cast<unsigned int>(_totalFaces));
+  }
 }
 
 struct State {
@@ -137,6 +147,7 @@ void ScarfHilbertAlgorithm::enumerateScarfComplex(const Ideal& ideal,
   _states[0].plus = true;
   _states[0].pos = ideal.begin();
   ASSERT(_states[0].term.isIdentity());
+  ++_totalFaces;
 
   // Cache this to avoid repeated calls to end().
   Ideal::const_iterator idealEnd = ideal.end();
@@ -147,6 +158,7 @@ void ScarfHilbertAlgorithm::enumerateScarfComplex(const Ideal& ideal,
   while (true) {
 	ASSERT(current < _states.size());
 	State& currentState = _states[current];
+	++_totalStates;
 
 	if (_params.getPrintDebug()) {
 	  fprintf(stderr,
@@ -184,6 +196,8 @@ void ScarfHilbertAlgorithm::enumerateScarfComplex(const Ideal& ideal,
 	  next.term.lcm(currentState.term, *currentState.pos); // for Case 2
 	  ++currentState.pos; // for Case 1, but used above so can't do it before
 	  if (everythingIsAFace || !ideal.strictlyContains(next.term)) {
+		++_totalFaces;
+
 		ASSERT(!ideal.strictlyContains(next.term));
 		// Case 2
 		next.plus = !currentState.plus;

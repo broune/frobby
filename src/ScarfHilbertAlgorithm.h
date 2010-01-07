@@ -41,6 +41,9 @@ class ScarfHilbertAlgorithm {
  private:
   const TermTranslator& _translator;
   const CommonParams& _params;
+
+  size_t _totalStates;
+  size_t _totalFaces;
 };
 
 #endif

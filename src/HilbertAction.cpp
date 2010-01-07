@@ -59,14 +59,14 @@ HilbertAction::HilbertAction():
 }
 
 void HilbertAction::perform() {
-  if (_algorithm.getValue() == "slice") {
+  if (_algorithm.getValue() == "bigatti") {
 	BigattiParams params(_params);
 	BigattiFacade facade(params);
     if (_univariate)
 	  facade.computeUnivariateHilbertSeries();
     else
 	  facade.computeMultigradedHilbertSeries();
-  } else if (_algorithm.getValue() == "bigatti") {
+  } else if (_algorithm.getValue() == "slice") {
 	SliceParams params(_params);
 	validateSplit(params, false, false);
 	SliceFacade sliceFacade(params, DataType::getPolynomialType()); 

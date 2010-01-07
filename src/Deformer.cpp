@@ -69,11 +69,40 @@ namespace {
   }
 }
 
+mpz_class tdeg(const Exponent* term, size_t varCount) {
+  mpz_class deg = 0;
+  for (size_t var = 0; var < varCount; ++var)
+	deg += term[var];
+  return deg;
+}
+
+  class C {
+  public:
+  C(size_t varCount): _varCount(varCount) {}
+
+    bool operator()(const Exponent* a, const Exponent* b) const {
+	  mpz_class da = tdeg(a, _varCount);
+	  mpz_class db = tdeg(b, _varCount);
+	  if (da < db)
+		return true;
+	  if (da > db)
+		return false;
+		  return Term::reverseLexCompare(a,b, _varCount) < 0;
+    }
+
+  private:
+    size_t _varCount;
+  };
+
 Deformer::Deformer(Ideal& ideal):
   _undeform(ideal.getVarCount()) {
-  ideal.sortReverseLex();
+  //ideal.sortReverseLex();
+  //random_shuffle(ideal.begin(), ideal.end());
+  //sort(ideal.begin(), ideal.end(), C(ideal.getVarCount()));
+  
   for (size_t var = 0; var < ideal.getVarCount(); ++var)
 	deformSort(ideal, _undeform[var], var);
+  ideal.sortReverseLex();
 }
 
 void Deformer::undeform(Term& term) const {

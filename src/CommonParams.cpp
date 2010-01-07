@@ -27,6 +27,7 @@ CommonParams::CommonParams():
   _printActions(false),
   _produceCanonicalOutput(false),
   _printDebug(false),
+  _printStatistics(false),
   _inputFormat(getFormatNameIndicatingToGuessTheInputFormat()), 
   _outputFormat(getFormatNameIndicatingToUseInputFormatAsOutputFormat()) {
 }
@@ -38,6 +39,7 @@ namespace {
   static const char* InputFormatParamName = "iformat";
   static const char* OutputFormatParamName = "oformat";
   static const char* PrintDebugName = "debug";
+  static const char* PrintStatisticsName = "stats";
 }
 
 void addDebugParam(CliParams& params) {
@@ -65,4 +67,6 @@ void extractCliValues(CommonParams& common, const CliParams& cli) {
 	common.setOutputFormat(getString(cli, OutputFormatParamName));
   if (cli.hasParam(PrintDebugName))
 	common.printDebug(getBool(cli, PrintDebugName));
+  if (cli.hasParam(PrintStatisticsName))
+	common.printStatistics(getBool(cli, PrintStatisticsName));
 }
