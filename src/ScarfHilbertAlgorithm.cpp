@@ -18,8 +18,6 @@
 #include "stdinc.h"
 #include "ScarfHilbertAlgorithm.h"
 
-#include "Ideal.h"
-#include "Term.h"
 #include "CoefTermConsumer.h"
 #include "TermTranslator.h"
 #include "Deformer.h"
@@ -106,7 +104,7 @@ void ScarfHilbertAlgorithm::runGeneric(const Ideal& ideal,
 
   undeformer.consumeRing(_translator.getNames());
   undeformer.beginConsuming();
-  enumerateScarfComplex(deformed, undeformer, false);
+  enumerateScarfComplex(deformed, undeformer);
   undeformer.doneConsuming();
 
   if (_params.getPrintStatistics()) {
@@ -118,92 +116,132 @@ void ScarfHilbertAlgorithm::runGeneric(const Ideal& ideal,
   }
 }
 
-struct State {
-  Term term;
-  Ideal::const_iterator pos;
-  bool plus;
-};
+void ScarfHilbertAlgorithm::initializeEnumeration(const Ideal& ideal,
+												  size_t& activeStateCount) {
+  ASSERT(ideal.getVarCount() == _translator.getVarCount());
 
-// TODO: _state should be member.
-void ScarfHilbertAlgorithm::enumerateScarfComplex(const Ideal& ideal,
-												  CoefTermConsumer& consumer,
-												  bool everythingIsAFace) {
-  ASSERT(Ideal(ideal).isStronglyGeneric());
   if (_params.getPrintDebug()) {
 	fputs("Enumerating faces of Scarf complex of:\n", stderr);
 	ideal.print(stderr);
   }
 
-  vector<State> _states; // make member
-
-  // Set up _states with enough entries of the right size.
-  size_t needed = ideal.getGeneratorCount() + 1; 
-  if (_states.size() < needed)
-	_states.resize(needed);
-  for (size_t i = 0; i < _states.size(); ++i)
-	_states[i].term.reset(ideal.getVarCount());
+  // Set up _states with enough entries. The maximal number of active
+  // entries at any time is one for each generator plus one for the
+  // empty face. We need one more than this because we take a
+  // reference to the next state even when there is no next state.
+  size_t statesNeeded = ideal.getGeneratorCount() + 2; 
+  if (_states.size() < statesNeeded) {
+	_states.resize(statesNeeded);
+	for (size_t i = 0; i < _states.size(); ++i) {
+	  _states[i].term.reset(ideal.getVarCount());
+	  _states[i].face.reserve(ideal.getVarCount());
+	}
+  }
 
   // Set up the initial state
+  activeStateCount = 0;
+  if (ideal.containsIdentity())
+	return;
+
+  ++activeStateCount;
   _states[0].plus = true;
   _states[0].pos = ideal.begin();
   ASSERT(_states[0].term.isIdentity());
-  ++_totalFaces;
+}
 
-  // Cache this to avoid repeated calls to end().
-  Ideal::const_iterator idealEnd = ideal.end();
-
-  // Iterate until all states are done. The active entries of _states
-  // are those from index 0 up to and including index current.
-  size_t current = 0;
-  while (true) {
-	ASSERT(current < _states.size());
-	State& currentState = _states[current];
-	++_totalStates;
-
-	if (_params.getPrintDebug()) {
-	  fprintf(stderr,
-			  "DEBUG: Looking at ideal index %u/%u, "
-			  "%u jobs to go, and lcm(face)=",
-			  static_cast<unsigned int>(currentState.pos - ideal.begin()),
-			  static_cast<unsigned int>(ideal.getGeneratorCount()),
-			  static_cast<unsigned int>(current));
-	  currentState.term.print(stderr);
-	  fputc('\n', stderr);
-	  fflush(stderr);
+bool ScarfHilbertAlgorithm::doEnumerationStep(const Ideal& ideal,
+											  State& state,
+											  State& nextState) {
+  if (_params.getPrintDebug()) {
+	fputs("DEBUG:*Looking at element ", stderr);
+	if (state.pos == ideal.end())
+	  fputs("end", stderr);
+	else	
+	  Term::print(stderr, *state.pos, ideal.getVarCount());
+	fputs(" with lcm(face)=", stderr);
+	state.term.print(stderr);
+	fputs(" and face=", stderr);
+	if (state.face.empty())
+	  fputs("empty", stderr);
+	for (size_t i = 0; i < state.face.size(); ++i) {
+	  fputs("\nDEBUG:   ", stderr);
+	  Term::print(stderr, state.face[i], ideal.getVarCount());
 	}
+	fputc('\n', stderr);
+	fflush(stderr);
+  }
 
-	if (currentState.pos == idealEnd) {
-	  // We have considered all minimal generators so there are no
-	  // more possibilities for extending this face to consider. It
-	  // only remains to output the lcm of the face.
-	  consumer.consume(currentState.plus ? 1 : -1, currentState.term);
+  Exponent* termToAdd;
+  while (true) {
+	++_totalStates;
+	if (state.face.size() == ideal.getVarCount() || state.pos == ideal.end())
+	  return false; // A base case
 
-	  // Go to the next entry at index current - 1.
-	  if (current == 0)
-		break; // Nothing remains to be done.
-	  --current;
-	} else {
-	  ASSERT(current + 1 < _states.size());
-	  State& next = _states[current + 1];
+	termToAdd = *state.pos;
 
-	  // We consider two cases:
-	  // Case 1: Do not add the minimal generator at pos to the
-	  // face. We do this in-place at currentPos.
-	  //
-	  // Case 2: Add the minimal generator at pos to the face. Record
-	  // this possibility only if that is still a face.
+	// This accounts for the possibility of not adding termToAdd to the
+	// face. We do that in-place on state.
+	++state.pos;
 
-	  next.term.lcm(currentState.term, *currentState.pos); // for Case 2
-	  ++currentState.pos; // for Case 1, but used above so can't do it before
-	  if (everythingIsAFace || !ideal.strictlyContains(next.term)) {
-		++_totalFaces;
-
-		ASSERT(!ideal.strictlyContains(next.term));
-		// Case 2
-		next.plus = !currentState.plus;
-		next.pos = currentState.pos;
-		++current;
+	// The other possibility is to add termToAdd to the face. We record
+	// this only if that is still a face of the complex, i.e. if no
+	// generator strictly divides the lcm of the set.
+	nextState.term.lcm(state.term, termToAdd);
+	// The elements of face are more likely to become strict divisors
+	// than a random generator, so check those first.
+	for (size_t i = 0; i < state.face.size(); ++i) {
+	  if (Term::strictlyDivides(state.face[i],
+								nextState.term,
+								ideal.getVarCount())) {
+		ASSERT(ideal.strictlyContains(nextState.term));
+		goto doNext;
 	  }
+	}
+	if (ideal.strictlyContains(nextState.term))
+	  goto doNext;
+	break;
+  doNext:;
+  }
+
+  nextState.plus = !state.plus;
+  nextState.pos = state.pos;
+  nextState.face = state.face;
+  nextState.face.push_back(termToAdd);
+
+  return true;
+}
+
+void ScarfHilbertAlgorithm::doEnumerationBaseCase(const State& state,
+												  CoefTermConsumer& consumer) {
+  if (_params.getPrintDebug()) {
+	fputs("DEBUG: Found base case with lcm(face)=", stderr);
+	state.term.print(stderr);
+	fputc('\n', stderr);
+	fflush(stderr);
+  }
+
+  consumer.consume(state.plus ? 1 : -1, state.term);
+
+  // Every face ends up as a base case exactly once, so this is a
+  // convenient place to count them.
+  ++_totalFaces;
+}
+
+void ScarfHilbertAlgorithm::enumerateScarfComplex(const Ideal& ideal,
+												  CoefTermConsumer& consumer) {
+  ASSERT(Ideal(ideal).isStronglyGeneric());
+
+  size_t activeStateCount = 0;
+  initializeEnumeration(ideal, activeStateCount);
+  while (activeStateCount > 0) {
+	ASSERT(activeStateCount < _states.size());
+	State& currentState = _states[activeStateCount - 1];
+	State& nextState = _states[activeStateCount];
+	if (doEnumerationStep(ideal, currentState, nextState))
+	  ++activeStateCount;
+	else {
+	  doEnumerationBaseCase(currentState, consumer);
+	  --activeStateCount;
 	}
   }
 }
