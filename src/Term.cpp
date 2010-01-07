@@ -17,6 +17,7 @@
 #include "stdinc.h"
 #include "Term.h"
 
+#include "TermPredicate.h"
 #include <sstream>
 #include <vector>
 
@@ -113,13 +114,17 @@ void Term::print(FILE* file, const Exponent* e, size_t varCount) {
 }
 
 void Term::print(ostream& out, const Exponent* e, size_t varCount) {
-	ASSERT(e != 0 || varCount == 0);
+  ASSERT(e != 0 || varCount == 0);
 
-	out << '(';
-	for (size_t var = 0; var < varCount; ++var) {
-	  if (var != 0)
-		out << ", ";
-	  out << e[var];
-	}
-	out << ')';
+  out << '(';
+  for (size_t var = 0; var < varCount; ++var) {
+	if (var != 0)
+	  out << ", ";
+	out << e[var];
   }
+  out << ')';
+}
+
+bool Term::operator==(const Exponent* term) const {
+  return equals(begin(), term, getVarCount());
+}

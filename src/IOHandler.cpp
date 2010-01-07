@@ -117,7 +117,7 @@ bool IOHandler::supportsOutput(const DataType& type) const {
 namespace {
   typedef NameFactory<IOHandler> IOHandlerFactory;
   IOHandlerFactory getIOHandlerFactory() {
-	IOHandlerFactory factory;
+	IOHandlerFactory factory("format");
 
 	nameFactoryRegister<IO::Macaulay2IOHandler>(factory);
 	nameFactoryRegister<IO::CoCoA4IOHandler>(factory);
@@ -133,10 +133,7 @@ namespace {
 }
 
 auto_ptr<IOHandler> createIOHandler(const string& name) {
-  auto_ptr<IOHandler> handler = getIOHandlerFactory().create(name);
-  if (handler.get() == 0)
-	throwError<UnknownFormatException>("Unknown format \"" + name + "\".");	
-  return handler;
+  return getIOHandlerFactory().createNoNull(name);
 }
 
 auto_ptr<IOHandler> createOHandler(const string& input, const string& output) {

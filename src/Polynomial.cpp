@@ -17,6 +17,7 @@
 #include "stdinc.h"
 #include "Polynomial.h"
 
+#include "TermPredicate.h"
 #include <algorithm>
 #include <sstream>
 
@@ -99,7 +100,7 @@ void Polynomial::sortTermsReverseLex(bool collect) {
 
 bool Polynomial::CoefTerm::operator<(const CoefTerm& coefTerm) const {
   ASSERT(term.getVarCount() == coefTerm.term.getVarCount());
-  return Term::reverseLexCompare(term, coefTerm.term, term.getVarCount()) < 0;
+  return reverseLexCompare(term, coefTerm.term, term.getVarCount()) < 0;
 }
 
 void Polynomial::clear() {

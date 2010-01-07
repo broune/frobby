@@ -413,7 +413,7 @@ namespace {
   typedef NameFactory<BigattiPivotStrategy> StrategyFactory;
 
   StrategyFactory makeStrategyFactory() {
-	StrategyFactory factory;
+	StrategyFactory factory("Bigatti et.al. pivot strategy");
 
 	nameFactoryRegister<MedianPivot>(factory);
 
@@ -438,7 +438,7 @@ namespace {
 
 auto_ptr<BigattiPivotStrategy> BigattiPivotStrategy::
 createStrategy(const string& name, bool widen) {
-  auto_ptr<BigattiPivotStrategy> strategy = makeStrategyFactory().create(name);
+  auto_ptr<BigattiPivotStrategy> strategy = makeStrategyFactory().createNoThrow(name);
   if (strategy.get() == 0) {
 	reportError("Unknown Bigatti et.al. pivot strategy \"" + name + "\".");
 	ASSERT(false); // Should not reach here due to exception.

@@ -20,7 +20,7 @@
 
 #include "CoefBigTermConsumer.h"
 #include "TermTranslator.h"
-
+#include "TermPredicate.h"
 #include <vector>
 #include <algorithm>
 
@@ -68,7 +68,7 @@ namespace {
   public:
     typedef HashMap<Term, mpz_class> TermMap;
 	bool operator()(TermMap::const_iterator a, TermMap::const_iterator b) {
-	  return a->first.reverseLexCompare(b->first) < 0;
+	  return lexCompare(a->first, b->first) > 0;
 	}
   };
 }

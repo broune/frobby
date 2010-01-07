@@ -18,7 +18,6 @@
 #include "stdinc.h"
 #include "BigattiParams.h"
 
-#include "error.h"
 #include "CliParams.h"
 
 BigattiParams::BigattiParams(const CliParams& cli):

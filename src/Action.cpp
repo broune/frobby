@@ -62,7 +62,7 @@ namespace {
   typedef NameFactory<Action> ActionFactory;
 
   ActionFactory getActionFactory() {
-	ActionFactory factory;
+	ActionFactory factory("action");
 
 	nameFactoryRegister<HilbertAction>(factory);
 	nameFactoryRegister<IrreducibleDecomAction>(factory);
@@ -124,7 +124,7 @@ auto_ptr<Action> Action::createActionWithPrefix(const string& prefix) {
 
   ASSERT(names.size() == 1);
 
-  return getActionFactory().create(names.back());
+  return getActionFactory().createNoNull(names.back());
 }
 
 const char* Action::getName() const {
