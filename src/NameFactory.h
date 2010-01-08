@@ -66,7 +66,13 @@ void nameFactoryRegister(NameFactory<AbstractProduct>& factory);
 
 /** Creates the unique product that has the indicated prefix, or
  create the actual product that has name equal to the indicated
- prefix.
+ prefix. Exceptions thrown are as for getUniqueNamesWithPrefix(). */
+template<class AbstractProduct>
+auto_ptr<AbstractProduct> createWithPrefix
+(const NameFactory<AbstractProduct>& factory, const string& prefix);
+
+/** Returns the unique product name that has the indicated prefix, or
+ return prefix itself if it is the actual name of a product.
 
  @exception UnknownNameException If no product has the indicated
  prefix.
@@ -75,11 +81,11 @@ void nameFactoryRegister(NameFactory<AbstractProduct>& factory);
  indicated prefix and the prefix is not the actual name of any
  product. */
 template<class AbstractProduct>
-auto_ptr<AbstractProduct> createWithPrefix
+string getUniqueNameWithPrefix
 (const NameFactory<AbstractProduct>& factory, const string& prefix);
 
 
-
+// **************************************************************
 // These are implementations that have to be included here due
 // to being templates.
 
@@ -124,13 +130,18 @@ void nameFactoryRegister(NameFactory<AbstractProduct>& factory) {
 	  return auto_ptr<AbstractProduct>(new ConcreteProduct());
 	}
   };
-
   factory.registerProduct(ConcreteProduct::staticGetName(),
 						  HoldsFunction::createConcreteProduct);
 }
 
 template<class AbstractProduct>
 auto_ptr<AbstractProduct> createWithPrefix
+(const NameFactory<AbstractProduct>& factory, const string& prefix) {
+  return factory.createNoThrow(getUniqueNameWithPrefix(factory, prefix));
+}
+
+template<class AbstractProduct>
+string getUniqueNameWithPrefix
 (const NameFactory<AbstractProduct>& factory, const string& prefix) {
   vector<string> names;
   factory.getNamesWithPrefix(prefix, names);
@@ -155,9 +166,7 @@ auto_ptr<AbstractProduct> createWithPrefix
   }
 
   ASSERT(names.size() == 1);
-  auto_ptr<AbstractProduct> product = factory.createNoThrow(names.back());
-  ASSERT(product.get() != 0);
-  return product;
+  return names.back();
 }
 
 #endif

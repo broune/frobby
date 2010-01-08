@@ -41,6 +41,9 @@ if [ $? != 0 ]; then exit 1; fi
 $t alexdual "$noInput" option-unknown $* -unknownOption
 if [ $? != 0 ]; then exit 1; fi
 
+$t hilb "$noInput" option-ambiguous $* -s #ambigous prefix
+if [ $? != 0 ]; then exit 1; fi
+
 $t alexdual "$noInput" option-unknownSplit $* -split unknownSplit
 if [ $? != 0 ]; then exit 1; fi
 

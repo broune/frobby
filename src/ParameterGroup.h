@@ -20,7 +20,7 @@
 #include "Parameter.h"
 #include <vector>
 
-class ParameterGroup : public Parameter {
+class ParameterGroup {
  public:
   typedef vector<Parameter*>::iterator iterator;
 
@@ -29,9 +29,6 @@ class ParameterGroup : public Parameter {
 
   ParameterGroup();
   virtual ~ParameterGroup();
-
-  virtual bool process(const char** params, unsigned int paramCount);
-  virtual void processParameters(const char** params, unsigned int paramCount);
 
   void addParameter(Parameter* parameter);
 

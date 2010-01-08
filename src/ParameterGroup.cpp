@@ -18,8 +18,7 @@
 #include "ParameterGroup.h"
 #include "error.h"
 
-ParameterGroup::ParameterGroup():
-  Parameter("", "") {
+ParameterGroup::ParameterGroup() {
 }
 
 ParameterGroup::~ParameterGroup() {
@@ -27,21 +26,6 @@ ParameterGroup::~ParameterGroup() {
 
 void ParameterGroup::getValue(string& str) const {
   str = "...";
-}
-
-bool ParameterGroup::process(const char** params, unsigned int paramCount) {
-  for (vector<Parameter*>::const_iterator it = _parameters.begin();
-       it != _parameters.end(); ++it)
-    if ((*it)->process(params, paramCount))
-      return true;
-
-  return false;
-}
-
-void ParameterGroup::processParameters(const char** params,
-									   unsigned int paramCount) {
-  ASSERT(false);
-  reportInternalError("Called ParameterGroup::processParameters.");
 }
 
 void ParameterGroup::addParameter(Parameter* parameter) {

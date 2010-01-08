@@ -18,6 +18,8 @@
 #define BOOL_PARAMETER_GUARD
 
 #include "Parameter.h"
+#include <utility>
+#include <string>
 
 class BoolParameter : public Parameter {
 public:
@@ -25,14 +27,18 @@ public:
 				const string& description,
 				bool defaultValue);
 
-  virtual const char* getParameterName() const;
-  virtual void getValue(string& str) const;
-  virtual void processParameters(const char** params, unsigned int paramCount);
+  bool getValue() const {return _value;}
+  void setValue(bool value) {_value = value;}
 
-  operator bool() const;
-  BoolParameter& operator=(bool value);
+  operator bool() const {return getValue();}
+  void operator=(bool value) {return setValue(value);}
 
 private:
+  virtual string doGetArgumentType() const;
+  virtual string doGetValueAsString() const;
+  virtual pair<size_t, size_t> doGetArgumentCountRange() const;
+  virtual void doProcessArguments(const char** args, size_t argCount);
+
   bool _value;
 };
 

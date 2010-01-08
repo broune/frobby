@@ -27,48 +27,40 @@ BoolParameter::BoolParameter(const string& name,
   _value(defaultValue) {
 }
 
-const char* BoolParameter::getParameterName() const {
+string BoolParameter::doGetArgumentType() const {
   return "[BOOL]";
 }
 
-void BoolParameter::getValue(string& str) const {
+string BoolParameter::doGetValueAsString() const {
   if (_value)
-    str = "on";
+    return "on";
   else
-    str = "off";
+    return "off";
 }
 
-BoolParameter::operator bool() const {
-  return _value;
+pair<size_t, size_t> BoolParameter::doGetArgumentCountRange() const {
+  return make_pair(0, 1);
 }
 
-BoolParameter& BoolParameter::operator=(bool value) {
-  _value = value;
-  return *this;
-}
-
-void BoolParameter::
-processParameters(const char** params, unsigned int paramCount) {
-  checkCorrectParameterCount(0, 1, params, paramCount);
-  
-  if (paramCount == 0) {
+void BoolParameter::doProcessArguments(const char** args, size_t argCount) {
+  if (argCount == 0) {
     _value = true;
     return;
   }
-  ASSERT(paramCount == 1);
+  ASSERT(argCount == 1);
 
-  string param(params[0]);
-  if (param == "off")
+  string arg(args[0]);
+  if (arg == "off")
     _value = false;
-  else if (param == "on")
+  else if (arg == "on")
     _value = true;
   else {
 	FrobbyStringStream errorMsg;
 	errorMsg << "Option -"
 			 << getName()
-			 << " was given the parameter \""
-			 << param
-			 << "\". The only valid parameters are \"on\" and \"off\".";
+			 << " was given the argument \""
+			 << arg
+			 << "\". The only valid arguments are \"on\" and \"off\".";
 	reportError(errorMsg);
   }
 }

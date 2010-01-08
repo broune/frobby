@@ -72,20 +72,21 @@ void HelpAction::displayActionHelp(Action* action) {
     for (vector<Parameter*>::const_iterator it = parameters.begin();
 		 it != parameters.end(); ++it) {
 
-      string defaultValue;
-      (*it)->getValue(defaultValue);
+      string defaultValue = (*it)->getValueAsString();
 
 	  string rawDesc((*it)->getDescription());
 	  string desc;
 	  for (size_t i = 0; i < rawDesc.size(); ++i) {
 		desc += rawDesc[i];
 		if (rawDesc[i] == '\n' && i + 1 != rawDesc.size())
-		  desc += "   "; // do proper indentation.";
+		  desc += "   "; // do proper indentation.
 	  }
 
       fprintf(stderr, "\n -%s %s   (default is %s)\n   %s\n",
-			  (*it)->getName(), (*it)->getParameterName(),
-			  defaultValue.c_str(), desc.c_str());
+			  (*it)->getName().c_str(),
+			  (*it)->getArgumentType().c_str(),
+			  defaultValue.c_str(),
+			  desc.c_str());
     }
   }
 }

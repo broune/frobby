@@ -28,28 +28,16 @@ Parameter::Parameter(const string& name,
 Parameter::~Parameter() {
 }
 
-const char* Parameter::getName() const {
-  return _name.c_str();
-}
-
-const char* Parameter::getDescription() const {
-  return _description.c_str();
-}
-
-const char* Parameter::getParameterName() const {
-  return "";
-}
-
 void Parameter::appendToDescription(const char* str) {
   _description += str;
 }
 
-bool Parameter::process(const char** params, unsigned int paramCount) {
-  if ('-' + string(_name) != params[0])
-    return false;
+void Parameter::processArguments(const char** args, size_t argCount) {
+  ASSERT(args != 0);
+  pair<size_t, size_t> range = doGetArgumentCountRange();
+  checkCorrectParameterCount(range.first, range.second, args, argCount);
 
-  processParameters(params + 1, paramCount - 1);
-  return true;
+  doProcessArguments(args, argCount);
 }
 
 void Parameter::checkCorrectParameterCount(unsigned int from,

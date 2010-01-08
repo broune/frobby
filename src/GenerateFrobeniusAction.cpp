@@ -57,11 +57,11 @@ void GenerateFrobeniusAction::perform() {
 	reportError("The largest allowed number of digits must be at least 1.");
 
   mpz_class maxEntry;
-  mpz_ui_pow_ui(maxEntry.get_mpz_t(), 10, _maxEntryDigits.getIntegerValue());
+  mpz_ui_pow_ui(maxEntry.get_mpz_t(), 10, _maxEntryDigits.getValue());
 
   GenerateDataFacade generator(_printActions);
   generator.generateFrobeniusInstance
-	(instance, _entryCount.getIntegerValue(), maxEntry);
+	(instance, _entryCount.getValue(), maxEntry);
 
   IOFacade ioFacade(_printActions);
   ioFacade.writeFrobeniusInstance(stdout, instance);
