@@ -18,31 +18,34 @@
 #define PARAMETER_GUARD
 
 #include <string>
+#include <utility>
 
-// TODO: rename to CliParam
+/** @todo: rename to CliParam */
 class Parameter {
  public:
   Parameter(const string& name, const string& description);
   virtual ~Parameter();
 
-  const char* getName() const;
-  const char* getDescription() const;
-  virtual const char* getParameterName() const;
+  const string& getName() const {return _name;}
+  const string& getDescription() const {return _description;}
+  string getArgumentType() const {return doGetArgumentType();}
+  string getValueAsString() const {return doGetValueAsString();}
 
   void appendToDescription(const char* str);
 
-  virtual void getValue(string& str) const = 0;
-
-  virtual bool process(const char** params, unsigned int paramCount);
-  virtual void processParameters(const char** params, unsigned int paramCount) = 0;
-
- protected:
-  void checkCorrectParameterCount(unsigned int from,
-				  unsigned int to,
-				  const char** params,
-				  unsigned int paramCount);
+  void processArguments(const char** args, size_t argCount);
 
  private:
+  virtual string doGetArgumentType() const = 0;
+  virtual string doGetValueAsString() const = 0;
+  virtual pair<size_t, size_t> doGetArgumentCountRange() const = 0;
+  virtual void doProcessArguments(const char** args, size_t argCount) = 0;
+
+  void checkCorrectParameterCount(unsigned int from,
+								  unsigned int to,
+								  const char** params,
+								  unsigned int paramCount);
+
   string _name;
   string _description;
 };

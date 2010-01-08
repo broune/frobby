@@ -1,1 +1,1 @@
-ERROR: Unknown option "-unknownOption".
+ERROR: No option has the prefix "unknownOption".

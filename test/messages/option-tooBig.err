@@ -1,1 +1,1 @@
-ERROR: Option -varCount was given the parameter 4294967296, and this is outside the allowed range [0, 2^32-1].
+ERROR: Option -varCount was given the parameter "4294967296", which is not an integer in the range [0, 2^31-1].

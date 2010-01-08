@@ -24,31 +24,19 @@ StringParameter::StringParameter(const string& name,
   _value(defaultValue) {
 }
 
-const char* StringParameter::getParameterName() const {
+string StringParameter::doGetArgumentType() const {
   return "STRING";
 }
 
-void StringParameter::getValue(string& str) const {
-  str = _value;
-}
-
-const string& StringParameter::getValue() const {
+string StringParameter::doGetValueAsString() const {
   return _value;
 }
 
-StringParameter::operator const string&() const {
-  return _value;
+pair<size_t, size_t> StringParameter::doGetArgumentCountRange() const {
+  return make_pair(1, 1);
 }
 
-StringParameter& StringParameter::operator=(const string& value) {
-  _value = value;
-  return *this;
-}
-
-void StringParameter::processParameters(const char** params,
-					unsigned int paramCount) {
-  checkCorrectParameterCount(1, 1, params, paramCount);
-  ASSERT(paramCount == 1);
-  
-  _value = params[0];
+void StringParameter::doProcessArguments(const char** args, size_t argCount) {
+  ASSERT(argCount == 1);
+  _value = args[0];
 }

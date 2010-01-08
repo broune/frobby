@@ -18,6 +18,8 @@
 #define INTEGER_PARAMETER_GUARD
 
 #include "Parameter.h"
+#include <utility>
+#include <string>
 
 class IntegerParameter : public Parameter {
 public:
@@ -25,18 +27,18 @@ public:
 				   const string& description,
 				   unsigned int defaultValue);
 
-  virtual const char* getParameterName() const;
+  unsigned int getValue() const {return _value;}
+  void setValue(unsigned int value) {_value = value;}
 
-  virtual void getValue(string& str) const;
-  unsigned int getIntegerValue() const;
-
-  operator unsigned int() const;
-
-  IntegerParameter& operator=(unsigned int value);
-
-  void processParameters(const char** params, unsigned int paramCount);
+  operator unsigned int() const {return getValue();}
+  void operator=(unsigned int value) {setValue(value);}
 
 private:
+  virtual string doGetArgumentType() const;
+  virtual string doGetValueAsString() const;
+  virtual pair<size_t, size_t> doGetArgumentCountRange() const;
+  virtual void doProcessArguments(const char** args, size_t argCount);
+
   unsigned int _value;
 };
 

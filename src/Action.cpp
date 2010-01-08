@@ -125,7 +125,6 @@ bool Action::acceptsNonParameter() const {
 }
 
 void Action::processNonParameter(const char*) {
-  ASSERT(false);
   reportInternalError("Action::processNonParameter called.");
 }
 
@@ -137,7 +136,8 @@ void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
   vector<Parameter*> tmp;
   obtainParameters(tmp);
   for (size_t i = 0; i < tmp.size(); ++i)
-	_params.add(*tmp[i]);
+	if (!_params.hasParam(tmp[i]->getName()))
+	  _params.add(*tmp[i]);
 
   if (acceptsNonParameter() && tokenCount > 0 && tokens[0][0] != '-') {
     processNonParameter(tokens[0]);

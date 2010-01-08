@@ -27,54 +27,38 @@ IntegerParameter::IntegerParameter(const string& name,
   _value(defaultValue) {
 }
 
-const char* IntegerParameter::getParameterName() const {
+string IntegerParameter::doGetArgumentType() const {
   return "INTEGER";
 }
 
-void IntegerParameter::getValue(string& str) const {
-  str.clear();
-  FrobbyStringStream::appendIntegerToString(str, _value);
+string IntegerParameter::doGetValueAsString() const {
+  FrobbyStringStream str;
+  str << getValue();
+  return str.str();
 }
 
-unsigned int IntegerParameter::getIntegerValue() const {
-  return _value;
+pair<size_t, size_t> IntegerParameter::doGetArgumentCountRange() const {
+  return make_pair(1, 1);
 }
 
-IntegerParameter::operator unsigned int() const {
-  return _value;
-}
+void IntegerParameter::doProcessArguments(const char** args, size_t argCount) {
+  ASSERT(argCount == 1);
 
-IntegerParameter& IntegerParameter::operator=(unsigned int value) {
-  _value = value;
-  return *this;
-}
-
-void IntegerParameter::processParameters
-(const char** params, unsigned int paramCount) {
-  checkCorrectParameterCount(1, 1, params, paramCount);
-  ASSERT(paramCount == 1);
-
+  bool ok = true;
   mpz_class integer;
   try {
-	FrobbyStringStream::parseInteger(integer, params[0]);
+	FrobbyStringStream::parseInteger(integer, args[0]);
   } catch (const FrobbyStringStream::NotAnIntegerException&) {
+	ok = false;
+  }
+
+  if (!ok || !integer.fits_uint_p()) {
 	FrobbyStringStream errorMsg;
 	errorMsg << "Option -"
 			 << getName()
 			 << " was given the parameter \""
-			 << params[0]
-			 << "\", and the only valid parameters are integers "
-			 << "between 0 and 2^32-1.";
-	reportError(errorMsg);
-  }
-
-  if (!integer.fits_uint_p()) {
-	FrobbyStringStream errorMsg;
-	errorMsg << "Option -"
-			 << getName()
-			 << " was given the parameter "
-			 << params[0]
-			 << ", and this is outside the allowed range [0, 2^32-1].";
+			 << args[0]
+			 << "\", which is not an integer in the range [0, 2^31-1].";
 	reportError(errorMsg);
   }
 

@@ -47,12 +47,12 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   SizeMaxIndepSetAlg.cpp IdealTest.cpp TaskEngine.cpp Task.cpp			\
   BigattiHilbertAlgorithm.cpp BigattiState.cpp ObjectCache.cpp			\
   HashPolynomial.cpp BigattiBaseCase.cpp BigattiPivotStrategy.cpp		\
-  BigattiFacade.cpp UniHashPolynomial.cpp IdealFacadeCommon.cpp			\
-  CommonParams.cpp CliParams.cpp SliceParams.cpp SliceLikeParams.cpp	\
-  BigattiParams.cpp IOHandlerImpl.cpp IdealWriter.cpp PolyWriter.cpp	\
-  IOHandlerCommon.cpp CommonParamsHelper.cpp ActionPrinter.cpp			\
-  ScarfHilbertAlgorithm.cpp ScarfFacade.cpp Deformer.cpp IdealTree.cpp	\
-  TermPredicate.cpp ScarfParams.cpp
+  BigattiFacade.cpp UniHashPolynomial.cpp CommonParams.cpp				\
+  CliParams.cpp SliceParams.cpp SliceLikeParams.cpp BigattiParams.cpp	\
+  IOHandlerImpl.cpp IdealWriter.cpp PolyWriter.cpp IOHandlerCommon.cpp	\
+  CommonParamsHelper.cpp ActionPrinter.cpp ScarfHilbertAlgorithm.cpp	\
+  ScarfFacade.cpp Deformer.cpp IdealTree.cpp TermPredicate.cpp			\
+  ScarfParams.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
