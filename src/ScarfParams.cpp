@@ -22,12 +22,14 @@
 #include "StringParameter.h"
 
 ScarfParams::ScarfParams(CliParams& cli):
-  _enumerationOrder("revlex") {
+  _enumerationOrder("revlex"),
+  _deformationOrder("revlex") {
   extractCliValues(*this, cli);
 }
 
 namespace {
   static const char* EnumerationOrder = "enum";
+  static const char* DeformationOrder = "deformationOrder";
 }
 
 void addScarfParams(CliParams& params) {
@@ -38,9 +40,18 @@ void addScarfParams(CliParams& params) {
 	  (EnumerationOrder,
 	   "The enumeration order used for the deformation algorithm.",
 	   "revlex")));
+
+  ASSERT(!params.hasParam(DeformationOrder));
+  params.add
+	(auto_ptr<Parameter>
+	 (new StringParameter
+	  (DeformationOrder,
+	   "The deformation order used for the deformation algorithm.",
+	   "revlex")));
 }
 
 void extractCliValues(ScarfParams& scarf, const CliParams& cli) {
   extractCliValues(static_cast<CommonParams&>(scarf), cli);
   scarf.setEnumerationOrder(getString(cli, EnumerationOrder));
+  scarf.setDeformationOrder(getString(cli, DeformationOrder));
 }

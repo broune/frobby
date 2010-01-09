@@ -21,31 +21,13 @@
 #include "Term.h"
 #include "TermPredicate.h"
 #include "Ideal.h"
+#include "TermPredicate.h"
 #include "error.h"
+#include "IdealOrderer.h"
 #include <map>
 
 namespace {
   void deform(Ideal& ideal, vector<Exponent>& undeform, size_t var) {
-	ASSERT(undeform.empty());
-
-	ideal.singleDegreeSort(var);
-	undeform.push_back(0); // zero always maps to zero
-	
-	Ideal::const_iterator end = ideal.end();
-	for (Ideal::const_iterator it = ideal.begin(); it != end; ++it) {
-	  Exponent& e = (*it)[var];
-	  if (e == 0)
-		continue;
-	  if (numeric_limits<Exponent>::max() < numeric_limits<size_t>::max() &&
-		  undeform.size() > numeric_limits<Exponent>::max())
-	    reportError("Cannot deform ideal due to exponent overflow.");
-	  
-	  undeform.push_back(e);
-	  e = undeform.size() - 1;
-    }
-  }
-
-  void deformSort(Ideal& ideal, vector<Exponent>& undeform, size_t var) {
 	ASSERT(undeform.empty());
 
 	map<Exponent, vector<Exponent*> > exps;
@@ -70,39 +52,15 @@ namespace {
   }
 }
 
-mpz_class tdeg(const Exponent* term, size_t varCount) {
-  mpz_class deg = 0;
-  for (size_t var = 0; var < varCount; ++var)
-	deg += term[var];
-  return deg;
-}
-
-  class C {
-  public:
-  C(size_t varCount): _varCount(varCount) {}
-
-    bool operator()(const Exponent* a, const Exponent* b) const {
-	  mpz_class da = tdeg(a, _varCount);
-	  mpz_class db = tdeg(b, _varCount);
-	  if (da < db)
-		return true;
-	  if (da > db)
-		return false;
-		  return lexCompare(a, b, _varCount) > 0;
-    }
-
-  private:
-    size_t _varCount;
-  };
-
-Deformer::Deformer(Ideal& ideal, bool stronglyGeneric):
+Deformer::Deformer(Ideal& ideal,
+				   const IdealOrderer& orderer,
+				   bool stronglyGeneric):
   _undeform(ideal.getVarCount()) {
-  //ideal.sortReverseLex();
-  //random_shuffle(ideal.begin(), ideal.end());
-  //sort(ideal.begin(), ideal.end(), C(ideal.getVarCount()));
-  
+
+  orderer.order(ideal);
+
   for (size_t var = 0; var < ideal.getVarCount(); ++var)
-	deformSort(ideal, _undeform[var], var);
+	deform(ideal, _undeform[var], var);
   ideal.sortReverseLex();
 }
 

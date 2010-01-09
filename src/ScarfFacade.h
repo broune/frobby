@@ -22,7 +22,7 @@
 #include "CommonParamsHelper.h"
 #include "ScarfParams.h"
 
-class TermPredicate;
+class IdealOrderer;
 
 class ScarfFacade : public Facade {
  public:
@@ -42,7 +42,8 @@ class ScarfFacade : public Facade {
  private:
   ScarfParams _params;
   CommonParamsHelper _helper;
-  auto_ptr<TermPredicate> _enumerationOrder;
+  auto_ptr<IdealOrderer> _enumerationOrder;
+  auto_ptr<IdealOrderer> _deformationOrder;
 };
 
 #endif

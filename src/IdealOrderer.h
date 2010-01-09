@@ -15,33 +15,21 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see http://www.gnu.org/licenses/.
 */
-#ifndef SCARF_PARAMS_GUARD
-#define SCARF_PARAMS_GUARD
+#ifndef IDEAL_ORDERER_GUARD
+#define IDEAL_ORDERER_GUARD
 
-#include "CommonParams.h"
+class Ideal;
 
-#include <string>
-
-class CliParams;
-
-class ScarfParams : public CommonParams {
+class IdealOrderer {
  public:
-  ScarfParams(CliParams& cli);
+  virtual ~IdealOrderer();
 
-  /** Returns the name of the enumeration ordering. */
-  const string& getEnumerationOrder() const {return _enumerationOrder;}
-  void setEnumerationOrder(const string& name) {_enumerationOrder = name;}
-
-  /** Returns the name of the deformation ordering. */
-  const string& getDeformationOrder() const {return _deformationOrder;}
-  void setDeformationOrder(const string& name) {_deformationOrder = name;}
+  void order(Ideal& ideal) const {doOrder(ideal);}
 
  private:
-  string _enumerationOrder;
-  string _deformationOrder;
+  virtual void doOrder(Ideal& ideal) const = 0;
 };
 
-void addScarfParams(CliParams& params);
-void extractCliValues(ScarfParams& scarf, const CliParams& cli);
+auto_ptr<IdealOrderer> createIdealOrderer(const string& name);
 
 #endif
