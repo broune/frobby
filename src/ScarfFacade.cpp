@@ -22,7 +22,7 @@
 #include "ScarfHilbertAlgorithm.h"
 #include "TranslatingCoefTermConsumer.h"
 #include "TotalDegreeCoefTermConsumer.h"
-#include "TermPredicate.h"
+#include "IdealOrderer.h"
 
 ScarfFacade::ScarfFacade(const ScarfParams& params):
   Facade(params.getPrintActions()),
@@ -31,11 +31,11 @@ ScarfFacade::ScarfFacade(const ScarfParams& params):
   // options before potentially spending a long time reading the
   // input.
   _enumerationOrder =
-	createTermPredicate(params.getEnumerationOrder());
+	createIdealOrderer(params.getEnumerationOrder());
+  _deformationOrder =
+	createIdealOrderer(params.getDeformationOrder());
 
   _helper.readIdealAndSetPolyOutput(params);
-
-  _enumerationOrder->setVarCount(_helper.getIdeal().getVarCount());
 }
 
 ScarfFacade::~ScarfFacade() {
@@ -44,7 +44,10 @@ ScarfFacade::~ScarfFacade() {
 void ScarfFacade::computeMultigradedHilbertSeries() {
   beginAction("Computing multigraded Hilbert-Poincare series.");
 
-  ScarfHilbertAlgorithm alg(_helper.getTranslator(), _params, _enumerationOrder);
+  ScarfHilbertAlgorithm alg(_helper.getTranslator(),
+							_params,
+							_enumerationOrder,
+							_deformationOrder);
 
   alg.runGeneric(_helper.getIdeal(),
 				 _helper.getPolyConsumer(),
@@ -57,7 +60,10 @@ void ScarfFacade::computeMultigradedHilbertSeries() {
 void ScarfFacade::computeUnivariateHilbertSeries() {
   beginAction("Computing univariate Hilbert-Poincare series.");
 
-  ScarfHilbertAlgorithm alg(_helper.getTranslator(), _params, _enumerationOrder);
+  ScarfHilbertAlgorithm alg(_helper.getTranslator(),
+							_params,
+							_enumerationOrder,
+							_deformationOrder);
 
   alg.runGeneric(_helper.getIdeal(),
 				 _helper.getPolyConsumer(),

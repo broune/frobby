@@ -59,7 +59,7 @@ class TermPredicate {
   size_t _varCount;
 };
 
-/** Adapter for TermPredicate which allows it to be used as an
+/** Adapter for TermPredicate which allows it to be used as a
  predicate in STL. */
 class StlTermPredicate {
  public:

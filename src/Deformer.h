@@ -23,6 +23,8 @@
 
 class Ideal;
 class Term;
+class TermPredicate;
+class IdealOrderer;
 
 /** Objects of this class encapsulate the process of applying a
  generic deformation to a monomial ideal. */
@@ -31,14 +33,19 @@ class Deformer {
   /** Apply a generic deformation to ideal such that it becomes
    generic.
 
+   @param deformationOrder The ordering to decide how to deform like
+   exponents.
+
    @param makeStronglyGeneric Deform to a strongly generic ideal if
    true. Otherwise deform to a weakly generic ideal.
-   
+
    @todo Implement makeStronglyGeneric == false. */
-  Deformer(Ideal& ideal, bool makeStronglyGeneric = true);
+  Deformer(Ideal& ideal,
+		   const IdealOrderer& deformationOrder,
+		   bool makeStronglyGeneric = true);
 
   /** Apply the reverse transformation on term than that applied to
-	  the Ideal passed to the constructor. */
+   the Ideal passed to the constructor. */
   void undeform(Term& term) const;
 
  private:

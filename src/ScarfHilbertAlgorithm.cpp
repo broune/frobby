@@ -26,18 +26,19 @@
 #include "UniHashPolynomial.h"
 #include "ScarfParams.h"
 #include "IdealTree.h"
-#include "TermPredicate.h"
+#include "IdealOrderer.h"
 
 class UndeformConsumer : public CoefTermConsumer {
 public:
   UndeformConsumer(Ideal& toDeform,
 				   const TermTranslator& translator,
 				   CoefBigTermConsumer& consumer,
+				   const IdealOrderer& order,
 				   bool univar,
 				   bool canonical):
 	_univar(univar),
 	_tmp(toDeform.getVarCount()),
-	_deformer(toDeform),
+	_deformer(toDeform, order),
 	_translator(translator),
 	_canonical(canonical),
 	_consumer(consumer),
@@ -90,13 +91,16 @@ private:
 ScarfHilbertAlgorithm::ScarfHilbertAlgorithm
 (const TermTranslator& translator,
  const ScarfParams& params,
- auto_ptr<TermPredicate> enumerationOrder):
+ auto_ptr<IdealOrderer> enumerationOrder,
+ auto_ptr<IdealOrderer> deformationOrder):
   _translator(translator),
   _params(params),
   _enumerationOrder(enumerationOrder),
+  _deformationOrder(deformationOrder),
   _totalStates(0),
   _totalFaces(0) {
   ASSERT(_enumerationOrder.get() != 0);
+  ASSERT(_deformationOrder.get() != 0);
 }
 
 ScarfHilbertAlgorithm::~ScarfHilbertAlgorithm() {
@@ -109,13 +113,17 @@ void ScarfHilbertAlgorithm::runGeneric(const Ideal& ideal,
 									   bool univariate,
 									   bool canonical) {
   Ideal deformed(ideal);
-  UndeformConsumer undeformer
-	(deformed, _translator, consumer, univariate, canonical);
-
-  sort(deformed.begin(), deformed.end(), StlTermPredicate(*_enumerationOrder));
+  UndeformConsumer undeformer(deformed,
+							  _translator,
+							  consumer,
+							  *_deformationOrder,
+							  univariate,
+							  canonical);
 
   undeformer.consumeRing(_translator.getNames());
   undeformer.beginConsuming();
+  ASSERT(_enumerationOrder.get() != 0);
+  _enumerationOrder->order(deformed);
   enumerateScarfComplex(deformed, undeformer);
   undeformer.doneConsuming();
 

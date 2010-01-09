@@ -42,14 +42,16 @@ class Ideal {
 
   typedef Cont::const_iterator const_iterator;
   typedef Cont::iterator iterator;
+  typedef Cont::const_reverse_iterator const_reverse_iterator;
+  typedef Cont::reverse_iterator reverse_iterator;
 
   const_iterator begin() const {return _terms.begin();}
   const_iterator end() const {return _terms.end();}
-  Exponent* operator[](size_t index) {return _terms[index];}
+  const Exponent* operator[](size_t index) const {return _terms[index];}  
 
   iterator begin() {return _terms.begin();}
   iterator end() {return _terms.end();}
-  const Exponent* operator[](size_t index) const {return _terms[index];}  
+  Exponent*& operator[](size_t index) {return _terms[index];}
 
   size_t getVarCount() const {return _varCount;}
   size_t getGeneratorCount() const {return _terms.size();}
