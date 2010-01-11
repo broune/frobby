@@ -89,7 +89,6 @@ Deformer::Deformer(Ideal& ideal,
 
   for (size_t var = 0; var < ideal.getVarCount(); ++var)
 	deform(ideal, _undeform[var], var, stronglyGeneric);
-  ideal.sortReverseLex();
 
   ASSERT(!stronglyGeneric || ideal.isStronglyGeneric());
   ASSERT(ideal.isWeaklyGeneric());
