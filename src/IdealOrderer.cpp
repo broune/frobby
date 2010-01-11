@@ -65,7 +65,7 @@ namespace {
 							 const Exponent* b) const {
 	  totalDegree(_degA, a, getVarCount());
 	  totalDegree(_degB, b, getVarCount());
-	  return a < b;
+	  return _degA < _degB;
 	}
 	mutable mpz_class _degA; // member to avoid repeated allocation
 	mutable mpz_class _degB;
@@ -134,9 +134,9 @@ namespace {
 	  // alternaties. Only trade more ugly for efficiency if this
 	  // method turns up as a significant consumer of time in a
 	  // profiler.
-	  UnGenMap ungenericity;
+	  UnGenMap degeneracy;
 
-	  // Make ungenericity[gen] be the number of other generators that
+	  // Make degeneracy[gen] be the number of other generators that
 	  // shares a positive exponent with gen.
 	  Term tmp(ideal.getVarCount());
 	  for (cit a = ideal.begin(); a != ideal.end(); ++a) {
@@ -147,13 +147,13 @@ namespace {
 			  if (ideal.strictlyContains(tmp))
 				continue;
 			}
-			++ungenericity[*a];
-			++ungenericity[*b];
+			++degeneracy[*a];
+			++degeneracy[*b];
 		  }
 		}
 	  }
 
-	  Pred pred(ungenericity);
+	  Pred pred(degeneracy);
 	  stable_sort(ideal.begin(), ideal.end(), pred);
 	}
 
@@ -167,14 +167,14 @@ namespace {
 
 	class Pred {
 	public:
-	  Pred(UnGenMap& ungenericity): _ungenericity(ungenericity) {}
+	  Pred(UnGenMap& degeneracy): _degeneracy(degeneracy) {}
 
 	  bool operator()(const Exponent* a, const Exponent* b) const {
-		return _ungenericity[a] < _ungenericity[b];
+		return _degeneracy[a] < _degeneracy[b];
 	  }
 
 	private:
-	  UnGenMap& _ungenericity;
+	  UnGenMap& _degeneracy;
 	};
   };
 
@@ -195,6 +195,24 @@ namespace {
 	}
   };
 
+  /** Sorts in the reverse order of the orderer passed to the
+   constructor. */
+  class ReverseOrderer : public IdealOrderer {
+  public:
+	ReverseOrderer(auto_ptr<IdealOrderer> orderer): _orderer(orderer) {}
+
+  private:
+	virtual void doOrder(Ideal& ideal) const {
+	  // Could probably be done more efficiently by trying to interact
+	  // with the orderer, but that would be so much more trouble. The
+	  // first reverse is necessary to ensure the ordering is stable.
+	  reverse(ideal.begin(), ideal.end());
+	  _orderer->order(ideal);
+	  reverse(ideal.begin(), ideal.end());
+	}
+	auto_ptr<IdealOrderer> _orderer;
+  };
+
   class CompositeOrderer : public IdealOrderer {
   public:
 	CompositeOrderer(): _orderersDeleter(_orderers) {}
@@ -208,8 +226,8 @@ namespace {
 	typedef Container::const_reverse_iterator rev_cit;
 
 	virtual void doOrder(Ideal& ideal) const {
-	  // This works because orderes that do not define a total order
-	  // such that they can be meaningfully refined use a stable
+	  // This works because orderes that define a non-total order
+	  // (i.e. those that can be interestingly refined) use a stable
 	  // sorting algorithm.
 	  rev_cit rbegin(_orderers.end());
 	  rev_cit rend(_orderers.begin());
@@ -240,19 +258,27 @@ namespace {
 
 	return factory;
   }
+
+  auto_ptr<IdealOrderer> createNonCompositeOrderer(const string& prefix) {
+	if (prefix.substr(0, 3) == "rev") {
+	  auto_ptr<IdealOrderer> orderer =
+		createWithPrefix(getOrdererFactory(), prefix.substr(3));
+	  return auto_ptr<IdealOrderer>(new ReverseOrderer(orderer));
+	} else
+	  return createWithPrefix(getOrdererFactory(), prefix);
+  }
 }
 
 auto_ptr<IdealOrderer> createIdealOrderer(const string& prefix) {
-  OrdererFactory factory = getOrdererFactory();
   if (prefix.find('_') == string::npos)
-	return createWithPrefix(factory, prefix);
+	return createNonCompositeOrderer(prefix);
 
   auto_ptr<CompositeOrderer> composite(new CompositeOrderer());
   size_t pos = 0;
   while (true) {
 	size_t nextUnderscore = prefix.find('_', pos);
 	string subPrefix = prefix.substr(pos, nextUnderscore - pos);
-	composite->refineOrderingWith(createWithPrefix(factory, subPrefix));
+	composite->refineOrderingWith(createNonCompositeOrderer(subPrefix));
 
 	if (nextUnderscore == string::npos)
 	  break;

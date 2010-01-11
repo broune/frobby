@@ -35,7 +35,7 @@ Exponent median(const Exponent* a, size_t varCount) {
 Exponent medianPositive(const Exponent* a, size_t varCount) {
   vector<Exponent> exps;
   exps.reserve(varCount);
-  for (size_t var; var < varCount; ++var)
+  for (size_t var = 0; var < varCount; ++var)
 	if (a[var] > 0)
 	  exps.push_back(a[var]);
   if (exps.empty())
