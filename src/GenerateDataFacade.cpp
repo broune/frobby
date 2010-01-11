@@ -18,7 +18,7 @@
 #include "GenerateDataFacade.h"
 
 #include "randomDataGenerators.h"
-#include "error.h"
+#include "display.h"
 
 GenerateDataFacade::GenerateDataFacade(bool printActions):
   Facade(printActions) {

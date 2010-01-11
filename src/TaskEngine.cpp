@@ -19,7 +19,7 @@
 #include "TaskEngine.h"
 
 #include "Task.h"
-#include "error.h"
+#include "display.h"
 
 TaskEngine::TaskEngine():
   _totalTasksEver(0) {
@@ -73,7 +73,7 @@ void TaskEngine::dispose(Task* task) {
   try {
 	task->dispose();
   } catch (...) {
-	reportInternalErrorNoThrow("Task::dispose() threw an exception.");
+	displayInternalError("Task::dispose() threw an exception.");
 	ASSERT(false);
 	throw; // Lesser evil compared to ignoring the exception.
   }

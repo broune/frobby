@@ -20,8 +20,9 @@
 #include <string>
 #include <stdexcept>
 
-// A replacement for stringstream. See the .cpp file for a motivation
-// to use this instead of the regular stringstream.
+/** A replacement for stringstream. See the .cpp file for a motivation
+ to use this instead of the regular stringstream. It should not be
+ used for operations that need to be efficient. */
 class FrobbyStringStream {
  public:
   FrobbyStringStream& operator<<(unsigned long integer);
@@ -30,20 +31,22 @@ class FrobbyStringStream {
   FrobbyStringStream& operator<<(const string& text);
   FrobbyStringStream& operator<<(const char* text);
 
-  // This overload actually appends the character to the stream
-  // instead of appending a string representation of the number. This
-  // is different from stringstream.
+  /** This overload actually appends the character to the stream
+   instead of appending a string representation of the number. This
+   is different from stringstream. */
   FrobbyStringStream& operator<<(char character);
 
   string& str();
   const string& str() const;
   operator const string&() const;
 
+  void clear() {_str.clear();}
+
   static void appendIntegerToString(string& str, unsigned long integer);
   static void appendIntegerToString(string& str, const mpz_class& integer);
 
-  // Throws NotAnIntegerException if str is not the string
-  // representation of an integer.
+  /** Throws NotAnIntegerException if str is not the string
+   representation of an integer. */
   static void parseInteger(mpz_class& integer, const string& str);
   class NotAnIntegerException : public runtime_error {
   public:

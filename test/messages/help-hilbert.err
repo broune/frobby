@@ -25,7 +25,11 @@ The parameters accepted by hilbert are as follows.
  -debug [BOOL]   (default is off)
    Print what the algorithm does at each step. Slice algorithm only.
 
- -deformationOrder STRING   (default is revlex)
+ -deformStrong [BOOL]   (default is off)
+   Deform to a strongly generic ideal if true. Otherwise deform to a weakly 
+   generic ideal.
+
+ -deformationOrder STRING   (default is tdeg_lex)
    The deformation order used for the deformation algorithm.
 
  -enum STRING   (default is revlex)

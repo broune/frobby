@@ -43,6 +43,7 @@
 #include "SizeMaxIndepSetAlg.h"
 #include "SliceParams.h"
 #include "error.h"
+#include "display.h"
 
 SliceFacade::SliceFacade(const SliceParams& params, const DataType& output):
   Facade(params.getPrintActions()),

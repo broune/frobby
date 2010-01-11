@@ -56,31 +56,3 @@ void reportSyntaxError(const Scanner& scanner, const string& errorMsg) {
 
   throw FrobbyException(err);
 }
-
-void displayNote(const string& msg) {
-  fprintf(stderr, "NOTE: %s\n", msg.c_str());
-}
-
-void displayDebugNote(const string& msg) {
-  fprintf(stderr, "DEBUG: %s\n", msg.c_str());
-}
-
-void reportErrorNoThrow(const string& errorMsg) {
-  reportErrorNoThrow(errorMsg.c_str());
-}
-
-void reportErrorNoThrow(const char* errorMsg) {
-  fprintf(stderr, "ERROR: %s\n", errorMsg);
-}
-
-void reportInternalErrorNoThrow(const string& errorMsg) {
-  fprintf(stderr, "INTERNAL ERROR: %s\n", errorMsg.c_str());
-}
-
-void reportErrorNoThrow(const FrobbyException& e) {
-  fputs(e.what(), stderr);
-}
-
-void reportErrorNoThrow(const InternalFrobbyException& e) {
-  fputs(e.what(), stderr);
-}

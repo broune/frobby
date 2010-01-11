@@ -3,7 +3,8 @@ Displaying information on action: alexdual
 Compute the alexander dual of the input monomial ideal.
 
 The computation is done using irreducible decomposition, which is why there are
-a number of options related to that. See the help topic on irrdecom for details.
+a number of options related to that. See the help topic on irrdecom for 
+details.
 
 The parameters accepted by alexdual are as follows.
 

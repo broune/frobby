@@ -1,6 +1,6 @@
 Frobby version 0.8.2 Copyright (C) 2007 Bjarke Hammersholt Roune
-Frobby performs a number of computations related to monomial ideals. You
-run it by typing `frobby ACTION', where ACTION is one of the following.
+Frobby performs a number of computations related to monomial ideals.
+You run it by typing `frobby ACTION', where ACTION is one of the following. 
 
  alexdual     - Compute the Alexander dual of the input ideal.
  analyze      - Display information about the input ideal.
@@ -24,6 +24,6 @@ Note that all input and output is done via the standard streams.
 Type 'frobby help io' for more information on input and output formats.
 See www.broune.com for further information and new versions of Frobby.
 
-Frobby is free software and you are welcome to redistribute it under certain
-conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General
+Frobby is free software and you are welcome to redistribute it under certain 
+conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General 
 Public License version 2.0 in the file COPYING for details.

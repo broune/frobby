@@ -41,7 +41,7 @@ ScarfParams::ScarfParams(CliParams& cli):
 }
 
 void addScarfParams(CliParams& params) {
-  ASSERT(!params.hasParam(DeformToStrong));
+  ASSERT(!params.hasParam(DeformToStrongName));
   params.add
 	(auto_ptr<Parameter>
 	 (new BoolParameter
@@ -50,7 +50,7 @@ void addScarfParams(CliParams& params) {
 	   "Otherwise deform to a weakly generic ideal.",
 	   DeformToStrongDefault)));
 
-  ASSERT(!params.hasParam(EnumerationOrder));
+  ASSERT(!params.hasParam(EnumerationOrderName));
   params.add
 	(auto_ptr<Parameter>
 	 (new StringParameter
@@ -58,7 +58,7 @@ void addScarfParams(CliParams& params) {
 	   "The enumeration order used for the deformation algorithm.",
 	   EnumerationOrderDefault)));
 
-  ASSERT(!params.hasParam(DeformationOrder));
+  ASSERT(!params.hasParam(DeformationOrderName));
   params.add
 	(auto_ptr<Parameter>
 	 (new StringParameter

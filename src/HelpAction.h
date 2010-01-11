@@ -34,7 +34,7 @@ class HelpAction : public Action {
   virtual bool displayAction() const;
 
  private:
-  void displayActionHelp(Action* action);
+  void displayActionHelp(Action& action);
   void displayIOHelp();
 
   string _topic;
