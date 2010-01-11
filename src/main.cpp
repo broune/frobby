@@ -20,6 +20,7 @@
 #include "Action.h"
 #include "DebugAllocator.h"
 #include "error.h"
+#include "display.h"
 
 #include <ctime>
 #include <cstdlib>
@@ -98,30 +99,20 @@ int main(int argc, const char** argv) {
 	return frobbyMain(argc, argv);
 #endif
   } catch (const bad_alloc&) {
-	reportErrorNoThrow("Ran out of memory.");
+	displayError("Ran out of memory.");
 	return ExitCodeOutOfMemory;
   } catch (const InternalFrobbyException& e) {
-	reportErrorNoThrow(e);
+	displayException(e);
 	return ExitCodeInternalError;
   } catch (const FrobbyException& e) {
-	reportErrorNoThrow(e);
+	displayException(e);
 	return ExitCodeError;
   } catch (...) {
-	try {
-	  reportErrorNoThrow("An unexpected error occured (uncaught exception.)");
-	} catch(...) {
-	  try {
-		// If we are lucky a direct call to fputs might succeed.
-		fputs("Unable to report unexpected error!\n", stderr);
-	  } catch (...) {
-		// At this point there is nothing that can be done.
-	  }
-	}
 	try {
 	  throw;
 	} catch (const exception& e) {
 	  try {
-		reportErrorNoThrow(e.what());
+		displayError(e.what());
 	  } catch (...) {
 	  }
 	} catch (...) {

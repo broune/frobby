@@ -21,8 +21,9 @@
 #include "Term.h"
 #include "Ideal.h"
 #include "NameFactory.h"
-#include "error.h"
 #include "TermGrader.h"
+#include "error.h"
+#include "display.h"
 
 SplitStrategy::SplitStrategy() {
 }

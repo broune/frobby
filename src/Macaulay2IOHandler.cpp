@@ -25,6 +25,7 @@
 #include "IdealWriter.h"
 #include "PolyWriter.h"
 #include "error.h"
+#include "display.h"
 
 #include <cstdio>
 

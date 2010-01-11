@@ -19,8 +19,11 @@
 
 #include "Parameter.h"
 #include "IOHandler.h"
-#include "error.h"
 #include "DataType.h"
+#include "error.h"
+#include "display.h"
+#include "FrobbyStringStream.h"
+
 #include <algorithm>
 
 HelpAction::HelpAction():
@@ -40,12 +43,7 @@ void HelpAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void HelpAction::processNonParameter(const char* str) {
-  ASSERT(_topic == "");
-
   _topic = str;
-
-  if (_topic != "io")
-	Action::createActionWithPrefix(str);
 }
 
 namespace {
@@ -57,64 +55,59 @@ namespace {
   }
 }
 
-void HelpAction::displayActionHelp(Action* action) {
-  fprintf(stderr, "Displaying information on action: %s\n\n%s\n",
-		  action->getName(), action->getDescription());
+void HelpAction::displayActionHelp(Action& action) {
+  FrobbyStringStream out;
+  out << "Displaying information on action: " << action.getName() << "\n\n";
+  out << action.getDescription() << "\n";
 
   vector<Parameter*> parameters;
-  action->obtainParameters(parameters);
+  action.obtainParameters(parameters);
   sort(parameters.begin(), parameters.end(), paramCmp);
 
+  display(out);
+
   if (!parameters.empty()) {
-    fprintf(stderr, "\nThe parameters accepted by %s are as follows.\n",
-			action->getName());
+	fprintf(stderr, "\nThe parameters accepted by %s are as follows.\n",
+			action.getName());
 
-    for (vector<Parameter*>::const_iterator it = parameters.begin();
-		 it != parameters.end(); ++it) {
-
+	typedef vector<Parameter*>::const_iterator cit;
+    for (cit it = parameters.begin(); it != parameters.end(); ++it) {
       string defaultValue = (*it)->getValueAsString();
-
-	  string rawDesc((*it)->getDescription());
-	  string desc;
-	  for (size_t i = 0; i < rawDesc.size(); ++i) {
-		desc += rawDesc[i];
-		if (rawDesc[i] == '\n' && i + 1 != rawDesc.size())
-		  desc += "   "; // do proper indentation.
-	  }
-
-      fprintf(stderr, "\n -%s %s   (default is %s)\n   %s\n",
+	  fprintf(stderr, "\n -%s %s   (default is %s)\n",
 			  (*it)->getName().c_str(),
 			  (*it)->getArgumentType().c_str(),
-			  defaultValue.c_str(),
-			  desc.c_str());
+			  (*it)->getValueAsString().c_str());
+	  display((*it)->getDescription(), "   ");
     }
   }
 }
 
 void HelpAction::displayIOHelp() {
-  fputs("Displaying information on topic: io\n"
-		"\n"
-		"Frobby understands several file formats. These are not documented,\n"
-		"but they are simple enough that seeing an example should be enough\n"
-		"to figure them out. Getting an example is as simple as making\n"
-		"Frobby produce output in that format.\n"
-		"\n"
-		"It is true of all the formats that white-space is insignificant,\n"
-		"but other than that Frobby is quite fuzzy about how the input\n"
-		"must look. E.g. a Macaulay 2 file containing a monomial ideal\n"
-		"must start with \"R = \", so writing \"r = \" with a lower-case r\n"
-		"is an error. To help with this, Frobby tries to say what is wrong\n"
-		"if there is an error.\n"
-		"\n"
-		"If no input format is specified, Frobby will guess at the format,\n"
-		"and it will guess correctly if there are no errors in the input.\n"
-		"If no output format is specified, Frobby will use the same format\n"
-		"for output as for input. If you want to force Frobby to use a\n"
-		"specific format, use the -iformat and -oformat options. Using\n"
-		"these with the transform action allows translation between formats.\n"
-		"\n"
-		"The formats available in Frobby and the types of data they\n"
-		"support are as follows.\n\n", stderr);
+  display
+	("Displaying information on topic: io\n"
+	 "\n"
+	 "Frobby understands several file formats. These are not documented, "
+	 "but they are simple enough that seeing an example should be enough "
+	 "to figure them out. Getting an example is as simple as making "
+	 "Frobby produce output in that format. "
+	 "\n\n"
+	 "It is true of all the formats that white-space is insignificant, "
+	 "but other than that Frobby is quite fuzzy about how the input "
+	 "must look. E.g. a Macaulay 2 file containing a monomial ideal "
+	 "must start with \"R = \", so writing \"r = \" with a lower-case r "
+	 "is an error. To help with this, Frobby tries to say what is wrong "
+	 "if there is an error."
+	 "\n\n"
+	 "If no input format is specified, Frobby will guess at the format, "
+	 "and it will guess correctly if there are no errors in the input. "
+	 "If no output format is specified, Frobby will use the same format "
+	 "for output as for input. If you want to force Frobby to use a "
+	 "specific format, use the -iformat and -oformat options. Using "
+	 "these with the transform action allows translation between formats. "
+	 "\n\n"
+	 "The formats available in Frobby and the types of data they "
+	 "support are as follows. "
+	 "\n\n");
 
   vector<string> names;
   getIOHandlerNames(names);
@@ -155,19 +148,21 @@ void HelpAction::perform() {
   if (_topic != "") {
 	if (_topic == "io")
 	  displayIOHelp();
-	else {
-	  auto_ptr<Action> action(Action::createActionWithPrefix(_topic));
-	  displayActionHelp(action.get());
-	}
-
+	else
+	  displayActionHelp(*Action::createActionWithPrefix(_topic));
+	
     return;
   }
 
-  fprintf(stderr,
-"Frobby version %s Copyright (C) 2007 Bjarke Hammersholt Roune\n"
-"Frobby performs a number of computations related to monomial ideals. You\n"
-"run it by typing `frobby ACTION', where ACTION is one of the following.\n\n",
-	  constants::version);
+  FrobbyStringStream out;
+
+  out << "Frobby version " << constants::version
+	  << " Copyright (C) 2007 Bjarke Hammersholt Roune\n";
+  out <<
+	"Frobby performs a number of computations related to monomial "
+	"ideals.\nYou run it by typing `frobby ACTION', where ACTION is "
+	"one of the following. "
+	"\n\n";
 
   vector<string> names;
   Action::getActionNames(names);
@@ -186,23 +181,22 @@ void HelpAction::perform() {
       continue;
 
     size_t length = (string(action->getName())).size();
-    fputc(' ', stderr);
-    fputs(action->getName(), stderr);
+	out << ' ' << action->getName();
     for (size_t i = length; i < maxNameLength; ++i)
-      fputc(' ', stderr);
-    fprintf(stderr, " - %s\n", action->getShortDescription());
+	  out << ' ';
+	out << " - " << action->getShortDescription() << '\n';
   }
 
-  fputs(
-"\n"
-"Type 'frobby help ACTION' to get more details on a specific action.\n"
-"Note that all input and output is done via the standard streams.\n"
-"Type 'frobby help io' for more information on input and output formats.\n"
-"See www.broune.com for further information and new versions of Frobby.\n"
-"\n"
-"Frobby is free software and you are welcome to redistribute it under certain\n"
-"conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General\n"
-"Public License version 2.0 in the file COPYING for details.\n", stderr);
+  out <<
+	"\nType 'frobby help ACTION' to get more details on a specific action.\n"
+	"Note that all input and output is done via the standard streams.\n"
+	"Type 'frobby help io' for more information on input and output formats.\n"
+	"See www.broune.com for further information and new versions of Frobby.\n"
+	"\n"
+	"Frobby is free software and you are welcome to redistribute it under certain "
+	"conditions. Frobby comes with ABSOLUTELY NO WARRANTY. See the GNU General "
+	"Public License version 2.0 in the file COPYING for details.\n";
+  display(out);
 }
 
 const char* HelpAction::staticGetName() {

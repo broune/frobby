@@ -23,7 +23,7 @@
 #include "SliceParams.h"
 #include "BigTermRecorder.h"
 #include "Scanner.h"
-#include "error.h"
+#include "display.h"
 
 FrobeniusAction::FrobeniusAction():
   Action
