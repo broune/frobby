@@ -119,6 +119,53 @@ void generateKnightChessIdeal(BigIdeal& ideal, size_t rowsAndColumns) {
 					 deltaRow, deltaColumn, deltaCount);
 }
 
+namespace {
+  /** Consider the entries of pattern as the bits in a binary
+   number. This method adds 1 and returns true if the resulting
+   pattern is all zeroes. */
+  bool nextBitPattern(vector<char>& pattern) {
+	typedef vector<char>::iterator iterator;
+	for (iterator it = pattern.begin(); it != pattern.end(); ++it) {
+	  if (*it)
+		*it = 0;
+	  else {
+		*it = 1;
+		ASSERT(pattern != vector<char>(pattern.size()));
+		return true;
+	  }
+	}
+
+	ASSERT(pattern == vector<char>(pattern.size()));
+	return false;
+  }
+}
+
+void generateTreeIdeal(BigIdeal& ideal, size_t varCount) {
+  ideal.clearAndSetNames(VarNames(varCount));
+
+  // Declare outside of loop to avoid repeated initialization.
+  mpz_class exponent;
+
+  // Using vector<char> to avoid vector<bool> which has special
+  // properties. Going through all "bit" patterns by simulating adding
+  // one at each step. pattern starts at all zero, which represents
+  // the identity, so we take the next bit pattern even in the first
+  // iteration to go past that.
+  vector<char> pattern(varCount);
+  while (nextBitPattern(pattern)) {
+	size_t setSize = 0;
+	typedef vector<char>::iterator iterator;
+	for (iterator it = pattern.begin(); it != pattern.end(); ++it)
+	  setSize += (size_t)*it;
+
+	exponent = varCount - setSize + 1;
+	ideal.newLastTerm();
+	for (size_t var = 0; var < varCount; ++var)
+	  if (pattern[var])
+		ideal.getLastTermExponentRef(var) = exponent;
+  }
+}
+
 bool generateRandomEdgeIdeal
 (BigIdeal& bigIdeal, size_t variableCount, size_t generatorCount) {
   Ideal ideal(variableCount);

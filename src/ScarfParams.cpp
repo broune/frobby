@@ -20,19 +20,31 @@
 
 #include "CliParams.h"
 #include "StringParameter.h"
+#include "BoolParameter.h"
 
 ScarfParams::ScarfParams(CliParams& cli):
+  _deformStrong(false),
   _enumerationOrder("revlex"),
-  _deformationOrder("revlex") {
+  _deformationOrder("tdeg_revlex") {
   extractCliValues(*this, cli);
 }
 
 namespace {
+  static const char* DeformToStrong = "deformStrong";
   static const char* EnumerationOrder = "enum";
   static const char* DeformationOrder = "deformationOrder";
 }
 
 void addScarfParams(CliParams& params) {
+  ASSERT(!params.hasParam(DeformToStrong));
+  params.add
+	(auto_ptr<Parameter>
+	 (new BoolParameter
+	  (DeformToStrong,
+	   "Deform to a strongly generic ideal if true. "
+	   "Otherwise deform to a weakly generic ideal.",
+	   false)));
+
   ASSERT(!params.hasParam(EnumerationOrder));
   params.add
 	(auto_ptr<Parameter>
@@ -47,11 +59,12 @@ void addScarfParams(CliParams& params) {
 	 (new StringParameter
 	  (DeformationOrder,
 	   "The deformation order used for the deformation algorithm.",
-	   "revlex")));
+	   "tdeg_revlex")));
 }
 
 void extractCliValues(ScarfParams& scarf, const CliParams& cli) {
   extractCliValues(static_cast<CommonParams&>(scarf), cli);
+  scarf.setDeformToStronglyGeneric(getBool(cli, DeformToStrong));
   scarf.setEnumerationOrder(getString(cli, EnumerationOrder));
   scarf.setDeformationOrder(getString(cli, DeformationOrder));
 }

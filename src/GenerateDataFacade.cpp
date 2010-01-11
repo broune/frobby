@@ -25,10 +25,10 @@ GenerateDataFacade::GenerateDataFacade(bool printActions):
 }
 
 void GenerateDataFacade::generateListIdeal(BigIdeal& ideal,
-										   size_t variableCount) {
+										   size_t varCount) {
   beginAction("Generating list ideal.");
 
-  ::generateLinkedListIdeal(ideal, variableCount);
+  ::generateLinkedListIdeal(ideal, varCount);
 
   endAction();
 }
@@ -52,12 +52,22 @@ void GenerateDataFacade::generateKnightChessIdeal
   endAction();
 }
 
+void GenerateDataFacade::generateTreeIdeal
+(BigIdeal& ideal,
+ unsigned int varCount) {
+  beginAction("Generating tree ideal.");
+
+  ::generateTreeIdeal(ideal, varCount);
+
+  endAction();
+}
+
 void GenerateDataFacade::generateEdgeIdeal
-(BigIdeal& ideal, size_t variableCount, size_t generatorCount) {
+(BigIdeal& ideal, size_t varCount, size_t generatorCount) {
   beginAction("Generating random edge ideal.");
 
   bool fullSize =
-    ::generateRandomEdgeIdeal(ideal, variableCount, generatorCount);
+    ::generateRandomEdgeIdeal(ideal, varCount, generatorCount);
 
   if (!fullSize)
 	displayNote("Generated ideal has fewer minimal "
@@ -68,12 +78,12 @@ void GenerateDataFacade::generateEdgeIdeal
 
 void GenerateDataFacade::generateIdeal(BigIdeal& ideal,
 									   size_t exponentRange,
-									   size_t variableCount,
+									   size_t varCount,
 									   size_t generatorCount) {
   beginAction("Generating random monomial ideal.");
 
   bool fullSize =
-    ::generateRandomIdeal(ideal, exponentRange, variableCount, generatorCount);
+    ::generateRandomIdeal(ideal, exponentRange, varCount, generatorCount);
 
   if (!fullSize)
 	displayNote("Generated ideal has fewer minimal "

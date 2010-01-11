@@ -28,6 +28,11 @@ class ScarfParams : public CommonParams {
  public:
   ScarfParams(CliParams& cli);
 
+  /** Returns true if deforming to a strongly generic ideal. Returns
+   false otherwise. */
+  const bool getDeformToStronglyGeneric() const {return _deformStrong;}
+  void setDeformToStronglyGeneric(bool value) {_deformStrong = value;}
+
   /** Returns the name of the enumeration ordering. */
   const string& getEnumerationOrder() const {return _enumerationOrder;}
   void setEnumerationOrder(const string& name) {_enumerationOrder = name;}
@@ -37,6 +42,7 @@ class ScarfParams : public CommonParams {
   void setDeformationOrder(const string& name) {_deformationOrder = name;}
 
  private:
+  bool _deformStrong;
   string _enumerationOrder;
   string _deformationOrder;
 };

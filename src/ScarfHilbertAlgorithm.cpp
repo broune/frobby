@@ -35,10 +35,11 @@ public:
 				   CoefBigTermConsumer& consumer,
 				   const IdealOrderer& order,
 				   bool univar,
-				   bool canonical):
+				   bool canonical,
+				   bool doStrongDeformation):
 	_univar(univar),
 	_tmp(toDeform.getVarCount()),
-	_deformer(toDeform, order),
+	_deformer(toDeform, order, doStrongDeformation),
 	_translator(translator),
 	_canonical(canonical),
 	_consumer(consumer),
@@ -118,7 +119,8 @@ void ScarfHilbertAlgorithm::runGeneric(const Ideal& ideal,
 							  consumer,
 							  *_deformationOrder,
 							  univariate,
-							  canonical);
+							  canonical,
+							  _params.getDeformToStronglyGeneric());
 
   undeformer.consumeRing(_translator.getNames());
   undeformer.beginConsuming();
@@ -251,7 +253,7 @@ void ScarfHilbertAlgorithm::doEnumerationBaseCase(const State& state,
 
 void ScarfHilbertAlgorithm::enumerateScarfComplex(const Ideal& ideal,
 												  CoefTermConsumer& consumer) {
-  ASSERT(Ideal(ideal).isStronglyGeneric());
+  ASSERT(Ideal(ideal).isWeaklyGeneric());
 
   IdealTree tree(ideal);
 

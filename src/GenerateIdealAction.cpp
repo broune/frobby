@@ -39,7 +39,7 @@ GenerateIdealAction::GenerateIdealAction():
 
   _type
 ("type",
- "The supported types of ideals are random, edge, list, king and knight.",
+ "The supported types of ideals are random, edge, list, king, knight and tree.",
  "random"),
   _variableCount("varCount", "The number of variables.", 3),
   _generatorCount("genCount", "The number of minimal generators.", 5),
@@ -80,6 +80,8 @@ void GenerateIdealAction::perform() {
 	generator.generateKingChessIdeal(ideal, _variableCount);
   else if (type == "knight")
 	generator.generateKnightChessIdeal(ideal, _variableCount);
+  else if (type == "tree")
+	generator.generateTreeIdeal(ideal, _variableCount);
   else
 	reportError("Unknown ideal type \"" + type + "\".");
 

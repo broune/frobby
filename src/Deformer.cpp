@@ -27,7 +27,10 @@
 #include <map>
 
 namespace {
-  void deform(Ideal& ideal, vector<Exponent>& undeform, size_t var) {
+  void deform(Ideal& ideal,
+			  vector<Exponent>& undeform,
+			  size_t var,
+			  bool stronglyGeneric) {
 	ASSERT(undeform.empty());
 
 	map<Exponent, vector<Exponent*> > exps;
@@ -40,13 +43,38 @@ namespace {
 	  exps[e].push_back(*it);
 	}
 
+	Term tmp(ideal.getVarCount());
 	undeform.push_back(0); // zero always maps to zero
 	for (map<Exponent, vector<Exponent*> >::iterator it = exps.begin();
 		 it != exps.end(); ++it) {
-	  for (size_t i = 0; i < it->second.size(); ++i) {
-		Exponent& e = (it->second[i])[var];
-		undeform.push_back(e);
-		e = undeform.size() - 1;
+	  vector<Exponent*>& block = it->second;
+
+	  typedef vector<Exponent*>::iterator blockIt;
+	  if (stronglyGeneric) {
+		for (blockIt it = block.begin(); it != block.end(); ++it) {
+		  undeform.push_back((*it)[var]);
+		  (*it)[var] = undeform.size() - 1;
+		}
+	  } else {
+		undeform.push_back(block.front()[var]);
+		Exponent sharedDeformedExponent = undeform.size() - 1;
+
+		for (blockIt it = block.begin(); it != block.end(); ++it) {
+		  bool canUseShared = true;
+		  for (blockIt other = it + 1; other != block.end(); ++other) {
+			tmp.lcm(*it, *other);
+			if (!ideal.strictlyContains(tmp)) {
+			  canUseShared = false;
+			  break;
+			}
+		  }
+		  if (canUseShared)
+			(*it)[var] = sharedDeformedExponent;
+		  else {
+			undeform.push_back((*it)[var]);
+			(*it)[var] = undeform.size() - 1;
+		  }
+		}
 	  }
 	}
   }
@@ -60,8 +88,11 @@ Deformer::Deformer(Ideal& ideal,
   orderer.order(ideal);
 
   for (size_t var = 0; var < ideal.getVarCount(); ++var)
-	deform(ideal, _undeform[var], var);
+	deform(ideal, _undeform[var], var, stronglyGeneric);
   ideal.sortReverseLex();
+
+  ASSERT(!stronglyGeneric || ideal.isStronglyGeneric());
+  ASSERT(ideal.isWeaklyGeneric());
 }
 
 void Deformer::undeform(Term& term) const {
