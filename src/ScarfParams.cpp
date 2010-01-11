@@ -22,17 +22,22 @@
 #include "StringParameter.h"
 #include "BoolParameter.h"
 
-ScarfParams::ScarfParams(CliParams& cli):
-  _deformStrong(false),
-  _enumerationOrder("revlex"),
-  _deformationOrder("tdeg_revlex") {
-  extractCliValues(*this, cli);
+namespace {
+  static const char* DeformToStrongName = "deformStrong";
+  static const bool DeformToStrongDefault = false;
+
+  static const char* EnumerationOrderName = "enum";
+  static const char* EnumerationOrderDefault = "revlex";
+
+  static const char* DeformationOrderName = "deformationOrder";
+  static const char* DeformationOrderDefault = "tdeg_lex";
 }
 
-namespace {
-  static const char* DeformToStrong = "deformStrong";
-  static const char* EnumerationOrder = "enum";
-  static const char* DeformationOrder = "deformationOrder";
+ScarfParams::ScarfParams(CliParams& cli):
+  _deformStrong(DeformToStrongDefault),
+  _enumerationOrder(EnumerationOrderDefault),
+  _deformationOrder(DeformationOrderDefault) {
+  extractCliValues(*this, cli);
 }
 
 void addScarfParams(CliParams& params) {
@@ -40,31 +45,31 @@ void addScarfParams(CliParams& params) {
   params.add
 	(auto_ptr<Parameter>
 	 (new BoolParameter
-	  (DeformToStrong,
+	  (DeformToStrongName,
 	   "Deform to a strongly generic ideal if true. "
 	   "Otherwise deform to a weakly generic ideal.",
-	   false)));
+	   DeformToStrongDefault)));
 
   ASSERT(!params.hasParam(EnumerationOrder));
   params.add
 	(auto_ptr<Parameter>
 	 (new StringParameter
-	  (EnumerationOrder,
+	  (EnumerationOrderName,
 	   "The enumeration order used for the deformation algorithm.",
-	   "revlex")));
+	   EnumerationOrderDefault)));
 
   ASSERT(!params.hasParam(DeformationOrder));
   params.add
 	(auto_ptr<Parameter>
 	 (new StringParameter
-	  (DeformationOrder,
+	  (DeformationOrderName,
 	   "The deformation order used for the deformation algorithm.",
-	   "tdeg_revlex")));
+	   DeformationOrderDefault)));
 }
 
 void extractCliValues(ScarfParams& scarf, const CliParams& cli) {
   extractCliValues(static_cast<CommonParams&>(scarf), cli);
-  scarf.setDeformToStronglyGeneric(getBool(cli, DeformToStrong));
-  scarf.setEnumerationOrder(getString(cli, EnumerationOrder));
-  scarf.setDeformationOrder(getString(cli, DeformationOrder));
+  scarf.setDeformToStronglyGeneric(getBool(cli, DeformToStrongName));
+  scarf.setEnumerationOrder(getString(cli, EnumerationOrderName));
+  scarf.setDeformationOrder(getString(cli, DeformationOrderName));
 }
