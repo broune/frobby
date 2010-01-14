@@ -67,14 +67,14 @@ void LatticeAnalyzeAction::perform() {
   gmp_fprintf(stdout, "%Zd double triangles, ", triCount.get_mpz_t());
 
   if (!generic)
-	fputs("generic.\n", stdout);
+    fputs("generic.\n", stdout);
   else
-	fputs("not generic.\n", stdout);
+    fputs("not generic.\n", stdout);
 
   if (triCount == 0)
-	exit(1);
+    exit(1);
   if (generic)
-	exit(2);
+    exit(2);
 }
 
 const char* LatticeAnalyzeAction::staticGetName() {

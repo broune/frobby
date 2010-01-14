@@ -25,6 +25,6 @@ CoefTermConsumer::~CoefTermConsumer() {
 void CoefTermConsumer::consume(const Polynomial& poly) {
   beginConsuming();
   for (size_t index = 0; index < poly.getTermCount(); ++index)
-	consume(poly.getCoef(index), poly.getTerm(index));
+    consume(poly.getCoef(index), poly.getTerm(index));
   doneConsuming();
 }

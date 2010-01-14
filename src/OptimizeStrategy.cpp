@@ -21,9 +21,9 @@
 #include "Slice.h"
 
 OptimizeStrategy::OptimizeStrategy(TermGrader& grader,
-								   const SplitStrategy* splitStrategy,
-								   bool reportAllSolutions,
-								   BoundSetting boundSetting):
+                                   const SplitStrategy* splitStrategy,
+                                   bool reportAllSolutions,
+                                   BoundSetting boundSetting):
   MsmStrategy(this, splitStrategy),
   _grader(grader),
   _maxSolutions(grader.getVarCount()),
@@ -60,14 +60,14 @@ void OptimizeStrategy::consume(const Term& term) {
 
   _grader.getDegree(term, degree);
   if (_maxSolutions.isZeroIdeal() || degree > _maxValueToBeat) {
-	if (_reportAllSolutions && degree == _maxValue)
-	  _maxSolutions.insert(term);
-	else {
-	  _maxValue = degree;
-	  _maxValueToBeat = degree - _reportAllSolutions;
-	  _maxSolutions.clear();
-	  _maxSolutions.insert(term);
-	}
+    if (_reportAllSolutions && degree == _maxValue)
+      _maxSolutions.insert(term);
+    else {
+      _maxValue = degree;
+      _maxValueToBeat = degree - _reportAllSolutions;
+      _maxSolutions.clear();
+      _maxSolutions.insert(term);
+    }
   }
 }
 
@@ -81,10 +81,10 @@ void OptimizeStrategy::getPivot(Term& pivot, Slice& slice) {
 bool OptimizeStrategy::simplify(Slice& slice) {
   ASSERT(slice.getVarCount() == getVarCount());
   if (slice.getIdeal().getGeneratorCount() == 0)
-	return false;
+    return false;
 
   if (_boundSetting == DoNotUseBound || _maxSolutions.isZeroIdeal())
-	return MsmStrategy::simplify(slice);
+    return MsmStrategy::simplify(slice);
 
   Term& dominator = _simplify_tmpDominator;
   Term& oldDominator = _simplify_tmpOldDominator;
@@ -94,63 +94,63 @@ bool OptimizeStrategy::simplify(Slice& slice) {
   ASSERT(oldDominator.getVarCount() == getVarCount());
 
   if (!getDominator(slice, dominator))
-	return true; // Slice is now a base case.
+    return true; // Slice is now a base case.
 
   bool changedSlice = false;
   for (bool firstLoop = true; true ; firstLoop = false) {
-	// It is an invariant at this point that dominator is what is
-	// gotten by calling getDominator(slice, dominator).
+    // It is an invariant at this point that dominator is what is
+    // gotten by calling getDominator(slice, dominator).
 
-	// Obtain upper bound on the degree of elements of msm(I).
-	mpz_class& upperBound = _simplify_tmpUpperBound;
-	_grader.getUpperBound(slice.getMultiply(), dominator, upperBound);
+    // Obtain upper bound on the degree of elements of msm(I).
+    mpz_class& upperBound = _simplify_tmpUpperBound;
+    _grader.getUpperBound(slice.getMultiply(), dominator, upperBound);
 
-	// Check if improvement on the best value found so far is possible
-	// from this slice according to the bound. If it is not, then
-	// there is no point in looking further at this slice.
-	if (upperBound <= _maxValueToBeat) {
-	  slice.clearIdealAndSubtract();
-	  return true;
-	}
+    // Check if improvement on the best value found so far is possible
+    // from this slice according to the bound. If it is not, then
+    // there is no point in looking further at this slice.
+    if (upperBound <= _maxValueToBeat) {
+      slice.clearIdealAndSubtract();
+      return true;
+    }
 
-	if (_boundSetting == UseBoundToEliminate) {
-	  // This achieves the sequence 1) check bound, 2) simplify and
-	  // then 3) check bound again if changed. As checking the bound
-	  // takes much less time than simplifying, this is the best way
-	  // to do it. I haven't actually benchmarked that claim, though.
-	  bool changed = MsmStrategy::simplify(slice);
-	  if (firstLoop && changed) {
-		changedSlice = true;
-		continue;
-	  }
-	  return changedSlice || changed;
-	}
-	ASSERT(_boundSetting == UseBoundToEliminateAndSimplify);
+    if (_boundSetting == UseBoundToEliminate) {
+      // This achieves the sequence 1) check bound, 2) simplify and
+      // then 3) check bound again if changed. As checking the bound
+      // takes much less time than simplifying, this is the best way
+      // to do it. I haven't actually benchmarked that claim, though.
+      bool changed = MsmStrategy::simplify(slice);
+      if (firstLoop && changed) {
+        changedSlice = true;
+        continue;
+      }
+      return changedSlice || changed;
+    }
+    ASSERT(_boundSetting == UseBoundToEliminateAndSimplify);
 
-	oldDivisor = slice.getMultiply();
-	oldDominator = dominator;
+    oldDivisor = slice.getMultiply();
+    oldDominator = dominator;
 
-	if (boundSimplify(slice, dominator, upperBound)) {
-	  changedSlice = true;
-	  if (!getDominator(slice, dominator))
-		return true; // Slice is now a base case.
-	  if (changedInWayRelevantToBound
-		  (oldDivisor, oldDominator, slice.getMultiply(), dominator))
-		continue; // Iterate using new divisor/dominator.
-	}
+    if (boundSimplify(slice, dominator, upperBound)) {
+      changedSlice = true;
+      if (!getDominator(slice, dominator))
+        return true; // Slice is now a base case.
+      if (changedInWayRelevantToBound
+          (oldDivisor, oldDominator, slice.getMultiply(), dominator))
+        continue; // Iterate using new divisor/dominator.
+    }
 
-	// Simplify the slice in the usual non-bound way.
-	if (MsmStrategy::simplify(slice)) {
-	  changedSlice = true;
-	  if (!getDominator(slice, dominator))
-		return true; // Slice is now a base case.
-	  if (changedInWayRelevantToBound
-		  (oldDivisor, oldDominator, slice.getMultiply(), dominator))
-		continue; // Iterate using new divisor/dominator.
-	}
+    // Simplify the slice in the usual non-bound way.
+    if (MsmStrategy::simplify(slice)) {
+      changedSlice = true;
+      if (!getDominator(slice, dominator))
+        return true; // Slice is now a base case.
+      if (changedInWayRelevantToBound
+          (oldDivisor, oldDominator, slice.getMultiply(), dominator))
+        continue; // Iterate using new divisor/dominator.
+    }
 
-	// Slice is now a fixed point of the operations above.
-	break;
+    // Slice is now a fixed point of the operations above.
+    break;
   }
 
   return changedSlice;
@@ -169,32 +169,32 @@ bool OptimizeStrategy::changedInWayRelevantToBound
   ASSERT(newDominator.divides(oldDominator));
 
   for (size_t var = 0; var < getVarCount(); ++var) {
-	if (oldDivisor[var] == newDivisor[var] &&
-		oldDominator[var] == newDominator[var])
-	  continue;
+    if (oldDivisor[var] == newDivisor[var] &&
+        oldDominator[var] == newDominator[var])
+      continue;
 
-	int sign = _grader.getGradeSign(var);
-	if (sign < 0) {
-	  if (newDivisor[var] > oldDivisor[var])
-		return true; // Case 1 from the documentation.
+    int sign = _grader.getGradeSign(var);
+    if (sign < 0) {
+      if (newDivisor[var] > oldDivisor[var])
+        return true; // Case 1 from the documentation.
 
-	  ASSERT(newDivisor[var] == oldDivisor[var]);
-	  ASSERT(newDominator[var] < oldDominator[var]);
-	  if (oldDominator[var] == _grader.getMaxExponent(var))
+      ASSERT(newDivisor[var] == oldDivisor[var]);
+      ASSERT(newDominator[var] < oldDominator[var]);
+      if (oldDominator[var] == _grader.getMaxExponent(var))
 
-		return true;  // Case 2 from the documentation.
-	} else if (sign > 0) {
-	  if (newDominator[var] < oldDominator[var]) {
-		// Case 3 from the documentation.
-		return newDominator[var] < _grader.getMaxExponent(var) - 1;
-	  } else {
-		ASSERT(newDominator[var] == oldDominator[var]);
-		ASSERT(newDivisor[var] > oldDivisor[var]);
-		if (newDivisor[var] == newDominator[var] &&
-			newDominator[var] == _grader.getMaxExponent(var))
-		  return true; // Case 4 from the documentation.
-	  }
-	}
+        return true;  // Case 2 from the documentation.
+    } else if (sign > 0) {
+      if (newDominator[var] < oldDominator[var]) {
+        // Case 3 from the documentation.
+        return newDominator[var] < _grader.getMaxExponent(var) - 1;
+      } else {
+        ASSERT(newDominator[var] == oldDominator[var]);
+        ASSERT(newDivisor[var] > oldDivisor[var]);
+        if (newDivisor[var] == newDominator[var] &&
+            newDominator[var] == _grader.getMaxExponent(var))
+          return true; // Case 4 from the documentation.
+      }
+    }
   }
 
   return false;
@@ -208,11 +208,11 @@ bool OptimizeStrategy::boundSimplify
   Term& pivot = _boundSimplify_tmpPivot;
 
   if (getInnerSimplify(slice.getMultiply(), dominator, upperBound, pivot))
-	slice.innerSlice(pivot);
+    slice.innerSlice(pivot);
   else if (getOuterSimplify(slice.getMultiply(), dominator, upperBound, pivot))
-	slice.outerSlice(pivot);
+    slice.outerSlice(pivot);
   else
-	return false;
+    return false;
 
   return true;
 }
@@ -225,49 +225,49 @@ bool OptimizeStrategy::getInnerSimplify
 
   bool simplifiedAny = false;
   for (size_t var = 0; var < getVarCount(); ++var) {
-	ASSERT(_grader.getGrade(var, 0) ==
-		   _grader.getGrade(var, _grader.getMaxExponent(var)));
-	ASSERT(divisor[var] <= dominator[var]);
-	pivot[var] = 0;
+    ASSERT(_grader.getGrade(var, 0) ==
+           _grader.getGrade(var, _grader.getMaxExponent(var)));
+    ASSERT(divisor[var] <= dominator[var]);
+    pivot[var] = 0;
 
-	if (divisor[var] == dominator[var])
-	  continue;
+    if (divisor[var] == dominator[var])
+      continue;
 
-	int sign = _grader.getGradeSign(var);
-	if (sign > 0) {
-	  Exponent B;
-	  if (dominator[var] != _grader.getMaxExponent(var))
-		B = dominator[var];
-	  else {
-		B = dominator[var] - 1;
-		if (divisor[var] == B)
-		  continue;
-	  }
+    int sign = _grader.getGradeSign(var);
+    if (sign > 0) {
+      Exponent B;
+      if (dominator[var] != _grader.getMaxExponent(var))
+        B = dominator[var];
+      else {
+        B = dominator[var] - 1;
+        if (divisor[var] == B)
+          continue;
+      }
 
-	  _tmpC = _maxValueToBeat - upperBound;
-	  _tmpC += _grader.getGrade(var, B);
-		
-	  Exponent tPrime;
-	  bool foundNonImproving = _grader.getMaxIndexLessThan
-		(var, divisor[var], B - 1, tPrime, _tmpC);
-	  
-	  if (foundNonImproving) {
-		simplifiedAny = true;
-		pivot[var] = tPrime - divisor[var] + 1;
-		ASSERT(pivot[var] > 0);
-	  }
-	} else if (sign < 0) {
-	  if (dominator[var] != _grader.getMaxExponent(var))
-		continue;
-	  _tmpC = upperBound - _grader.getGrade(var, dominator[var]);
-	  _tmpC += _grader.getGrade(var, divisor[var]);
+      _tmpC = _maxValueToBeat - upperBound;
+      _tmpC += _grader.getGrade(var, B);
 
-	  if (_tmpC <= _maxValueToBeat) {
-		simplifiedAny = true;
-		pivot[var] = dominator[var] - divisor[var];
-		ASSERT(pivot[var] > 0);
-	  }
-	}
+      Exponent tPrime;
+      bool foundNonImproving = _grader.getMaxIndexLessThan
+        (var, divisor[var], B - 1, tPrime, _tmpC);
+
+      if (foundNonImproving) {
+        simplifiedAny = true;
+        pivot[var] = tPrime - divisor[var] + 1;
+        ASSERT(pivot[var] > 0);
+      }
+    } else if (sign < 0) {
+      if (dominator[var] != _grader.getMaxExponent(var))
+        continue;
+      _tmpC = upperBound - _grader.getGrade(var, dominator[var]);
+      _tmpC += _grader.getGrade(var, divisor[var]);
+
+      if (_tmpC <= _maxValueToBeat) {
+        simplifiedAny = true;
+        pivot[var] = dominator[var] - divisor[var];
+        ASSERT(pivot[var] > 0);
+      }
+    }
   }
 
   ASSERT(simplifiedAny == !pivot.isIdentity());
@@ -281,46 +281,46 @@ bool OptimizeStrategy::getOuterSimplify
  Term& pivot) {
 
   for (size_t var = 0; var < getVarCount(); ++var) {
-	ASSERT(_grader.getGrade(var, 0) ==
-		   _grader.getGrade(var, _grader.getMaxExponent(var)));
-	ASSERT(divisor[var] <= dominator[var]);
-	if (divisor[var] == dominator[var])
-	  continue;
+    ASSERT(_grader.getGrade(var, 0) ==
+           _grader.getGrade(var, _grader.getMaxExponent(var)));
+    ASSERT(divisor[var] <= dominator[var]);
+    if (divisor[var] == dominator[var])
+      continue;
 
-	int sign = _grader.getGradeSign(var);
-	if (sign < 0) {
-	  if (dominator[var] == _grader.getMaxExponent(var))
-		continue;
+    int sign = _grader.getGradeSign(var);
+    if (sign < 0) {
+      if (dominator[var] == _grader.getMaxExponent(var))
+        continue;
 
-	  _tmpC = _maxValueToBeat - upperBound;
-	  _tmpC += _grader.getGrade(var, divisor[var]);
-	  
-	  Exponent tPrime;
-	  bool foundNonImproving = _grader.getMinIndexLessThan
-		(var, divisor[var] + 1, dominator[var], tPrime, _tmpC);
+      _tmpC = _maxValueToBeat - upperBound;
+      _tmpC += _grader.getGrade(var, divisor[var]);
 
-	  if (foundNonImproving) {
-		pivot.setToIdentity();
-		pivot[var] = tPrime - divisor[var];
-		ASSERT(pivot[var] > 0);
-		
-		return true;
-	  }
-	} else if (sign > 0) {
-	  if (dominator[var] != _grader.getMaxExponent(var))
-		continue;
+      Exponent tPrime;
+      bool foundNonImproving = _grader.getMinIndexLessThan
+        (var, divisor[var] + 1, dominator[var], tPrime, _tmpC);
 
-	  _tmpC = upperBound - _grader.getGrade(var, dominator[var] - 1);
-	  _tmpC += _grader.getGrade(var, dominator[var]);
+      if (foundNonImproving) {
+        pivot.setToIdentity();
+        pivot[var] = tPrime - divisor[var];
+        ASSERT(pivot[var] > 0);
 
-	  if (_tmpC <= _maxValueToBeat) {
-		pivot.setToIdentity();
-		pivot[var] = dominator[var] - divisor[var];
-		ASSERT(pivot[var] > 0);
+        return true;
+      }
+    } else if (sign > 0) {
+      if (dominator[var] != _grader.getMaxExponent(var))
+        continue;
 
-		return true;
-	  }
-	}
+      _tmpC = upperBound - _grader.getGrade(var, dominator[var] - 1);
+      _tmpC += _grader.getGrade(var, dominator[var]);
+
+      if (_tmpC <= _maxValueToBeat) {
+        pivot.setToIdentity();
+        pivot[var] = dominator[var] - divisor[var];
+        ASSERT(pivot[var] > 0);
+
+        return true;
+      }
+    }
   }
 
   return false;
@@ -336,12 +336,12 @@ bool OptimizeStrategy::getDominator(Slice& slice, Term& dominator) {
   const Term& lcm = slice.getLcm();
 
   for (size_t var = 0; var < dominator.getVarCount(); ++var) {
-	if (lcm[var] == 0) {
-	  slice.clearIdealAndSubtract();
-	  return false;
-	}
+    if (lcm[var] == 0) {
+      slice.clearIdealAndSubtract();
+      return false;
+    }
 
-	dominator[var] = multiply[var] + lcm[var] - 1;
+    dominator[var] = multiply[var] + lcm[var] - 1;
   }
 
   return true;

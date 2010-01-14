@@ -42,23 +42,23 @@ class CommonParamsHelper {
 
   /** Read input ideal and support specified kind of output. */
   void readIdealAndSetOutput(const CommonParams& params,
-							 const DataType& output);
+                             const DataType& output);
 
   /** Read input and support polynomial output. */
   void readIdealAndSetPolyOutput(const CommonParams& params);
- 
+
   /** Read input and support ideal output. */
   void readIdealAndSetIdealOutput(const CommonParams& params);
 
   /** Use given ideal and support ideal output. */
   void setIdealAndIdealOutput(const CommonParams& params,
-							 const BigIdeal& input,
-							 BigTermConsumer& output);
+                             const BigIdeal& input,
+                             BigTermConsumer& output);
 
   /** Use given ideal and support polynomial output. */
   void setIdealAndPolyOutput(const CommonParams& params,
-							 const BigIdeal& input,
-							 CoefBigTermConsumer& output);
+                             const BigIdeal& input,
+                             CoefBigTermConsumer& output);
 
   const VarNames& getNames() {return _translator->getNames();}
 

@@ -20,9 +20,9 @@
 #include "BigIdeal.h"
 
 void addMultiple(BigIdeal& basis,
-		 unsigned int add,
-		 unsigned int addTo,
-		 const mpz_class& mult) {
+         unsigned int add,
+         unsigned int addTo,
+         const mpz_class& mult) {
   if (mult == 0)
     return;
 
@@ -39,16 +39,16 @@ void makeZeroesInLatticeBasis(BigIdeal& basis) {
     for (unsigned int i = 0; i < rowCount; ++i) {
       mpz_class sign;
       if (basis[i][col] == 1)
-	sign = 1;
+    sign = 1;
       else if (basis[i][col] == -1)
-	sign = -1;
+    sign = -1;
       else
-	continue;
+    continue;
 
       for (unsigned int j = 0; j < rowCount; ++j) {
-	if (j == i)
-	  continue;
-	addMultiple(basis, i, j, -1 * sign * basis[j][col]);
+    if (j == i)
+      continue;
+    addMultiple(basis, i, j, -1 * sign * basis[j][col]);
       }
 
       break;

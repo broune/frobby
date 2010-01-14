@@ -36,253 +36,253 @@ namespace {
   template<class Pred>
   class IdealSorter : public IdealOrderer {
   public:
-	static const char* staticGetName() {
-	  return Pred::staticGetName();
-	}
+    static const char* staticGetName() {
+      return Pred::staticGetName();
+    }
 
   private:
-	virtual void doOrder(Ideal& ideal) const {
-	  Pred pred;
-	  pred.setVarCount(ideal.getVarCount());
-	  stable_sort(ideal.begin(), ideal.end(), pred);
-	}
+    virtual void doOrder(Ideal& ideal) const {
+      Pred pred;
+      pred.setVarCount(ideal.getVarCount());
+      stable_sort(ideal.begin(), ideal.end(), pred);
+    }
   };
 
   class RandomOrderer : public IdealOrderer {
   public:
-	static const char* staticGetName() {return "random";}
+    static const char* staticGetName() {return "random";}
   private:
-	void doOrder(Ideal& ideal) const {
-	  random_shuffle(ideal.begin(), ideal.end());
-	}
+    void doOrder(Ideal& ideal) const {
+      random_shuffle(ideal.begin(), ideal.end());
+    }
   };
 
   class TotalDegreeComparator : public TermPredicate {
   public:
-	static const char* staticGetName() {return "tdeg";}
+    static const char* staticGetName() {return "tdeg";}
   private:
-	virtual bool doPredicate(const Exponent* a,
-							 const Exponent* b) const {
-	  totalDegree(_degA, a, getVarCount());
-	  totalDegree(_degB, b, getVarCount());
-	  return _degA < _degB;
-	}
-	mutable mpz_class _degA; // member to avoid repeated allocation
-	mutable mpz_class _degB;
+    virtual bool doPredicate(const Exponent* a,
+                             const Exponent* b) const {
+      totalDegree(_degA, a, getVarCount());
+      totalDegree(_degB, b, getVarCount());
+      return _degA < _degB;
+    }
+    mutable mpz_class _degA; // member to avoid repeated allocation
+    mutable mpz_class _degB;
   };
 
   class MedianComparator : public TermPredicate {
   public:
-	static const char* staticGetName() {return "median";}
+    static const char* staticGetName() {return "median";}
   private:
-	virtual bool doPredicate(const Exponent* a,
-							 const Exponent* b) const {
-	  return median(a, getVarCount()) < median(b, getVarCount());
-	}
+    virtual bool doPredicate(const Exponent* a,
+                             const Exponent* b) const {
+      return median(a, getVarCount()) < median(b, getVarCount());
+    }
   };
 
   class MedianPositiveComparator : public TermPredicate {
   public:
-	static const char* staticGetName() {return "posMedian";}
+    static const char* staticGetName() {return "posMedian";}
   private:
-	virtual bool doPredicate(const Exponent* a,
-							 const Exponent* b) const {
-	  return medianPositive(a, getVarCount()) <
-		medianPositive(b, getVarCount());
-	}
+    virtual bool doPredicate(const Exponent* a,
+                             const Exponent* b) const {
+      return medianPositive(a, getVarCount()) <
+        medianPositive(b, getVarCount());
+    }
   };
 
   class MinimumPositiveComparator : public TermPredicate {
   public:
-	static const char* staticGetName() {return "minPos";}
+    static const char* staticGetName() {return "minPos";}
   private:
-	virtual bool doPredicate(const Exponent* a,
-							 const Exponent* b) const {
-	  return minimumPositive(a, getVarCount()) <
-		minimumPositive(b, getVarCount());
-	}
+    virtual bool doPredicate(const Exponent* a,
+                             const Exponent* b) const {
+      return minimumPositive(a, getVarCount()) <
+        minimumPositive(b, getVarCount());
+    }
   };
 
   class MaximumComparator : public TermPredicate {
   public:
-	static const char* staticGetName() {return "max";}
+    static const char* staticGetName() {return "max";}
   private:
-	virtual bool doPredicate(const Exponent* a,
-							 const Exponent* b) const {
-	  return maximum(a, getVarCount()) < maximum(b, getVarCount());
-	}
+    virtual bool doPredicate(const Exponent* a,
+                             const Exponent* b) const {
+      return maximum(a, getVarCount()) < maximum(b, getVarCount());
+    }
   };
 
   class SupportComparator : public TermPredicate {
   public:
-	static const char* staticGetName() {return "support";}
+    static const char* staticGetName() {return "support";}
   private:
-	virtual bool doPredicate(const Exponent* a,
-							 const Exponent* b) const {
-	  return Term::getSizeOfSupport(a, getVarCount()) <
-		Term::getSizeOfSupport(b, getVarCount());
-	}
+    virtual bool doPredicate(const Exponent* a,
+                             const Exponent* b) const {
+      return Term::getSizeOfSupport(a, getVarCount()) <
+        Term::getSizeOfSupport(b, getVarCount());
+    }
   };
 
   class StrongGenericityOrderer : public IdealOrderer {
   public:
-	static const char* staticGetName() {return "strongGenericity";}
+    static const char* staticGetName() {return "strongGenericity";}
 
   protected:
-	void orderGenericity(Ideal& ideal, bool strong) const {
-	  // Using a map here is the prettier of several ugly
-	  // alternaties. Only trade more ugly for efficiency if this
-	  // method turns up as a significant consumer of time in a
-	  // profiler.
-	  UnGenMap degeneracy;
+    void orderGenericity(Ideal& ideal, bool strong) const {
+      // Using a map here is the prettier of several ugly
+      // alternaties. Only trade more ugly for efficiency if this
+      // method turns up as a significant consumer of time in a
+      // profiler.
+      UnGenMap degeneracy;
 
-	  // Make degeneracy[gen] be the number of other generators that
-	  // shares a positive exponent with gen.
-	  Term tmp(ideal.getVarCount());
-	  for (cit a = ideal.begin(); a != ideal.end(); ++a) {
-		for (cit b = a + 1; b != ideal.end(); ++b) {
-		  if (Term::sharesNonZeroExponent(*a, *b, ideal.getVarCount())) {
-			if (!strong) {
-			  tmp.lcm(*a, *b);
-			  if (ideal.strictlyContains(tmp))
-				continue;
-			}
-			++degeneracy[*a];
-			++degeneracy[*b];
-		  }
-		}
-	  }
+      // Make degeneracy[gen] be the number of other generators that
+      // shares a positive exponent with gen.
+      Term tmp(ideal.getVarCount());
+      for (cit a = ideal.begin(); a != ideal.end(); ++a) {
+        for (cit b = a + 1; b != ideal.end(); ++b) {
+          if (Term::sharesNonZeroExponent(*a, *b, ideal.getVarCount())) {
+            if (!strong) {
+              tmp.lcm(*a, *b);
+              if (ideal.strictlyContains(tmp))
+                continue;
+            }
+            ++degeneracy[*a];
+            ++degeneracy[*b];
+          }
+        }
+      }
 
-	  Pred pred(degeneracy);
-	  stable_sort(ideal.begin(), ideal.end(), pred);
-	}
+      Pred pred(degeneracy);
+      stable_sort(ideal.begin(), ideal.end(), pred);
+    }
 
   private:
-	typedef Ideal::const_iterator cit;
-	typedef map<const Exponent*, size_t> UnGenMap;
+    typedef Ideal::const_iterator cit;
+    typedef map<const Exponent*, size_t> UnGenMap;
 
-	virtual void doOrder(Ideal& ideal) const {
-	  orderGenericity(ideal, true);
-	}
+    virtual void doOrder(Ideal& ideal) const {
+      orderGenericity(ideal, true);
+    }
 
-	class Pred {
-	public:
-	  Pred(UnGenMap& degeneracy): _degeneracy(degeneracy) {}
+    class Pred {
+    public:
+      Pred(UnGenMap& degeneracy): _degeneracy(degeneracy) {}
 
-	  bool operator()(const Exponent* a, const Exponent* b) const {
-		return _degeneracy[a] < _degeneracy[b];
-	  }
+      bool operator()(const Exponent* a, const Exponent* b) const {
+        return _degeneracy[a] < _degeneracy[b];
+      }
 
-	private:
-	  UnGenMap& _degeneracy;
-	};
+    private:
+      UnGenMap& _degeneracy;
+    };
   };
 
   class NullOrderer : public IdealOrderer {
   public:
-	static const char* staticGetName() {return "null";}
+    static const char* staticGetName() {return "null";}
   private:
-	virtual void doOrder(Ideal& ideal) const {}
+    virtual void doOrder(Ideal& ideal) const {}
   };
 
   /** @todo: do this more elegantly than with inheritance. */
   class WeakGenericityOrderer : public StrongGenericityOrderer {
   public:
-	static const char* staticGetName() {return "weakGenericity";}
+    static const char* staticGetName() {return "weakGenericity";}
   private:
-	virtual void doOrder(Ideal& ideal) const {
-	  orderGenericity(ideal, false);
-	}
+    virtual void doOrder(Ideal& ideal) const {
+      orderGenericity(ideal, false);
+    }
   };
 
   /** Sorts in the reverse order of the orderer passed to the
    constructor. */
   class ReverseOrderer : public IdealOrderer {
   public:
-	ReverseOrderer(auto_ptr<IdealOrderer> orderer): _orderer(orderer) {}
+    ReverseOrderer(auto_ptr<IdealOrderer> orderer): _orderer(orderer) {}
 
   private:
-	virtual void doOrder(Ideal& ideal) const {
-	  // Could probably be done more efficiently by trying to interact
-	  // with the orderer, but that would be so much more trouble. The
-	  // first reverse is necessary to ensure the ordering is stable.
-	  reverse(ideal.begin(), ideal.end());
-	  _orderer->order(ideal);
-	  reverse(ideal.begin(), ideal.end());
-	}
-	auto_ptr<IdealOrderer> _orderer;
+    virtual void doOrder(Ideal& ideal) const {
+      // Could probably be done more efficiently by trying to interact
+      // with the orderer, but that would be so much more trouble. The
+      // first reverse is necessary to ensure the ordering is stable.
+      reverse(ideal.begin(), ideal.end());
+      _orderer->order(ideal);
+      reverse(ideal.begin(), ideal.end());
+    }
+    auto_ptr<IdealOrderer> _orderer;
   };
 
   class CompositeOrderer : public IdealOrderer {
   public:
-	CompositeOrderer(): _orderersDeleter(_orderers) {}
+    CompositeOrderer(): _orderersDeleter(_orderers) {}
 
-	void refineOrderingWith(auto_ptr<IdealOrderer> orderer) {
-	  exceptionSafePushBack(_orderers, orderer);
-	}
+    void refineOrderingWith(auto_ptr<IdealOrderer> orderer) {
+      exceptionSafePushBack(_orderers, orderer);
+    }
 
   private:
-	typedef vector<IdealOrderer*> Container;
-	typedef Container::const_reverse_iterator rev_cit;
+    typedef vector<IdealOrderer*> Container;
+    typedef Container::const_reverse_iterator rev_cit;
 
-	virtual void doOrder(Ideal& ideal) const {
-	  // This works because orderes that define a non-total order
-	  // (i.e. those that can be interestingly refined) use a stable
-	  // sorting algorithm.
-	  rev_cit rbegin(_orderers.end());
-	  rev_cit rend(_orderers.begin());
-	  for (rev_cit it = rbegin; it != rend; ++it)
-		(*it)->order(ideal);
-	}
+    virtual void doOrder(Ideal& ideal) const {
+      // This works because orderes that define a non-total order
+      // (i.e. those that can be interestingly refined) use a stable
+      // sorting algorithm.
+      rev_cit rbegin(_orderers.end());
+      rev_cit rend(_orderers.begin());
+      for (rev_cit it = rbegin; it != rend; ++it)
+        (*it)->order(ideal);
+    }
 
-	Container _orderers;
-	ElementDeleter<Container> _orderersDeleter;
+    Container _orderers;
+    ElementDeleter<Container> _orderersDeleter;
   };
 
   typedef NameFactory<IdealOrderer> OrdererFactory;
   OrdererFactory getOrdererFactory() {
-	OrdererFactory factory("ordering of terms");
+    OrdererFactory factory("ordering of terms");
 
-	nameFactoryRegister<RandomOrderer>(factory);
-	nameFactoryRegister<NullOrderer>(factory);
-	nameFactoryRegister<IdealSorter<LexComparator> >(factory);
-	nameFactoryRegister<IdealSorter<ReverseLexComparator> >(factory);
-	nameFactoryRegister<IdealSorter<TotalDegreeComparator> >(factory);
-	nameFactoryRegister<IdealSorter<MedianComparator> >(factory);
-	nameFactoryRegister<IdealSorter<MedianPositiveComparator> >(factory);
-	nameFactoryRegister<IdealSorter<MinimumPositiveComparator> >(factory);
-	nameFactoryRegister<IdealSorter<MaximumComparator> >(factory);
-	nameFactoryRegister<IdealSorter<SupportComparator> >(factory);
-	nameFactoryRegister<StrongGenericityOrderer>(factory);
-	nameFactoryRegister<WeakGenericityOrderer>(factory);
+    nameFactoryRegister<RandomOrderer>(factory);
+    nameFactoryRegister<NullOrderer>(factory);
+    nameFactoryRegister<IdealSorter<LexComparator> >(factory);
+    nameFactoryRegister<IdealSorter<ReverseLexComparator> >(factory);
+    nameFactoryRegister<IdealSorter<TotalDegreeComparator> >(factory);
+    nameFactoryRegister<IdealSorter<MedianComparator> >(factory);
+    nameFactoryRegister<IdealSorter<MedianPositiveComparator> >(factory);
+    nameFactoryRegister<IdealSorter<MinimumPositiveComparator> >(factory);
+    nameFactoryRegister<IdealSorter<MaximumComparator> >(factory);
+    nameFactoryRegister<IdealSorter<SupportComparator> >(factory);
+    nameFactoryRegister<StrongGenericityOrderer>(factory);
+    nameFactoryRegister<WeakGenericityOrderer>(factory);
 
-	return factory;
+    return factory;
   }
 
   auto_ptr<IdealOrderer> createNonCompositeOrderer(const string& prefix) {
-	if (prefix.substr(0, 3) == "rev") {
-	  auto_ptr<IdealOrderer> orderer =
-		createWithPrefix(getOrdererFactory(), prefix.substr(3));
-	  return auto_ptr<IdealOrderer>(new ReverseOrderer(orderer));
-	} else
-	  return createWithPrefix(getOrdererFactory(), prefix);
+    if (prefix.substr(0, 3) == "rev") {
+      auto_ptr<IdealOrderer> orderer =
+        createWithPrefix(getOrdererFactory(), prefix.substr(3));
+      return auto_ptr<IdealOrderer>(new ReverseOrderer(orderer));
+    } else
+      return createWithPrefix(getOrdererFactory(), prefix);
   }
 }
 
 auto_ptr<IdealOrderer> createIdealOrderer(const string& prefix) {
   if (prefix.find('_') == string::npos)
-	return createNonCompositeOrderer(prefix);
+    return createNonCompositeOrderer(prefix);
 
   auto_ptr<CompositeOrderer> composite(new CompositeOrderer());
   size_t pos = 0;
   while (true) {
-	size_t nextUnderscore = prefix.find('_', pos);
-	string subPrefix = prefix.substr(pos, nextUnderscore - pos);
-	composite->refineOrderingWith(createNonCompositeOrderer(subPrefix));
+    size_t nextUnderscore = prefix.find('_', pos);
+    string subPrefix = prefix.substr(pos, nextUnderscore - pos);
+    composite->refineOrderingWith(createNonCompositeOrderer(subPrefix));
 
-	if (nextUnderscore == string::npos)
-	  break;
-	pos = nextUnderscore + 1;
+    if (nextUnderscore == string::npos)
+      break;
+    pos = nextUnderscore + 1;
   }
   return auto_ptr<IdealOrderer>(composite.release());
 }

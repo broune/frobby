@@ -52,31 +52,31 @@ CommonParamsHelper::~CommonParamsHelper() {
 }
 
 void CommonParamsHelper::readIdealAndSetOutput(const CommonParams& params,
-											   const DataType& output) {
+                                               const DataType& output) {
   _produceCanonicalOutput = params.getProduceCanonicalOutput();
 
   Scanner in(params.getInputFormat(), stdin);
   auto_ptr<IOHandler> outputHandler =
-	createOHandler(in.getFormat(), params.getOutputFormat());
+    createOHandler(in.getFormat(), params.getOutputFormat());
   if (output == DataType::getPolynomialType()) {
-	_polyConsumerDeleter = outputHandler->createPolynomialWriter(stdout);
-	_polyConsumer = _polyConsumerDeleter.get();
+    _polyConsumerDeleter = outputHandler->createPolynomialWriter(stdout);
+    _polyConsumer = _polyConsumerDeleter.get();
   } else if (output == DataType::getMonomialIdealType()) {
-	_idealConsumerDeleter = outputHandler->createIdealWriter(stdout);
-	_idealConsumer = _idealConsumerDeleter.get();
+    _idealConsumerDeleter = outputHandler->createIdealWriter(stdout);
+    _idealConsumer = _idealConsumerDeleter.get();
   } else if (output == DataType::getMonomialIdealListType()) {
-	_idealConsumerDeleter = outputHandler->createIdealListWriter(stdout);
-	_idealConsumer = _idealConsumerDeleter.get();
+    _idealConsumerDeleter = outputHandler->createIdealListWriter(stdout);
+    _idealConsumer = _idealConsumerDeleter.get();
   } else if (output == DataType::getNullType()) {
-	_idealConsumerDeleter.reset(new NullTermConsumer());
-	_idealConsumer = _idealConsumerDeleter.get();
-	_polyConsumerDeleter.reset(new NullCoefTermConsumer());
-	_polyConsumer = _polyConsumerDeleter.get();
+    _idealConsumerDeleter.reset(new NullTermConsumer());
+    _idealConsumer = _idealConsumerDeleter.get();
+    _polyConsumerDeleter.reset(new NullCoefTermConsumer());
+    _polyConsumer = _polyConsumerDeleter.get();
   } else {
-	string msg = "Unsupported output type of ";
-	msg += output.getName();
-	msg += '.';
-	INTERNAL_ERROR(msg);
+    string msg = "Unsupported output type of ";
+    msg += output.getName();
+    msg += '.';
+    INTERNAL_ERROR(msg);
   }
 
   readIdeal(params, in);
@@ -87,7 +87,7 @@ void CommonParamsHelper::readIdealAndSetPolyOutput(const CommonParams& params) {
 
   Scanner in(params.getInputFormat(), stdin);
   auto_ptr<IOHandler> outputHandler =
-	createOHandler(in.getFormat(), params.getOutputFormat());
+    createOHandler(in.getFormat(), params.getOutputFormat());
   _polyConsumerDeleter = outputHandler->createPolynomialWriter(stdout);
   _polyConsumer = _polyConsumerDeleter.get();
 
@@ -100,7 +100,7 @@ void CommonParamsHelper::readIdealAndSetIdealOutput
 
   Scanner in(params.getInputFormat(), stdin);
   auto_ptr<IOHandler> outputHandler =
-	createOHandler(in.getFormat(), params.getOutputFormat());
+    createOHandler(in.getFormat(), params.getOutputFormat());
   _idealConsumerDeleter = outputHandler->createIdealWriter(stdout);
   _idealConsumer = _idealConsumerDeleter.get();
 
@@ -108,8 +108,8 @@ void CommonParamsHelper::readIdealAndSetIdealOutput
 }
 
 void CommonParamsHelper::setIdealAndIdealOutput(const CommonParams& params,
-												const BigIdeal& input,
-												BigTermConsumer& output) {
+                                                const BigIdeal& input,
+                                                BigTermConsumer& output) {
   _produceCanonicalOutput = params.getProduceCanonicalOutput();
 
   _idealConsumer = &output;
@@ -117,8 +117,8 @@ void CommonParamsHelper::setIdealAndIdealOutput(const CommonParams& params,
 }
 
 void CommonParamsHelper::setIdealAndPolyOutput(const CommonParams& params,
-											   const BigIdeal& input,
-											   CoefBigTermConsumer& output) {
+                                               const BigIdeal& input,
+                                               CoefBigTermConsumer& output) {
   _produceCanonicalOutput = params.getProduceCanonicalOutput();
 
   _polyConsumer = &output;
@@ -129,36 +129,36 @@ auto_ptr<TermConsumer> CommonParamsHelper::
 makeTranslatedIdealConsumer(bool split) {
   auto_ptr<TermConsumer> translated;
   if (split) {
-	auto_ptr<BigTermConsumer> splitter
-	  (new IrreducibleIdealSplitter(*_idealConsumer));
-	translated.reset
-	  (new TranslatingTermConsumer(splitter, getTranslator()));
+    auto_ptr<BigTermConsumer> splitter
+      (new IrreducibleIdealSplitter(*_idealConsumer));
+    translated.reset
+      (new TranslatingTermConsumer(splitter, getTranslator()));
   } else
-	translated.reset
-	  (new TranslatingTermConsumer(*_idealConsumer, getTranslator()));
+    translated.reset
+      (new TranslatingTermConsumer(*_idealConsumer, getTranslator()));
 
   if (_produceCanonicalOutput) {
-	return auto_ptr<TermConsumer>
-	  (new CanonicalTermConsumer(translated,
-								 getIdeal().getVarCount(),
-								 &getTranslator()));
+    return auto_ptr<TermConsumer>
+      (new CanonicalTermConsumer(translated,
+                                 getIdeal().getVarCount(),
+                                 &getTranslator()));
   } else
-	return translated;
+    return translated;
 }
 
 auto_ptr<CoefTermConsumer> CommonParamsHelper::makeTranslatedPolyConsumer() {
   auto_ptr<CoefTermConsumer> translated
-	(new TranslatingCoefTermConsumer(*_polyConsumer, getTranslator()));
+    (new TranslatingCoefTermConsumer(*_polyConsumer, getTranslator()));
   if (_produceCanonicalOutput)
-	return auto_ptr<CoefTermConsumer>
-	  (new CanonicalCoefTermConsumer(translated));
+    return auto_ptr<CoefTermConsumer>
+      (new CanonicalCoefTermConsumer(translated));
   else
-	return translated;
+    return translated;
 }
 
 auto_ptr<CoefTermConsumer> CommonParamsHelper::makeToUnivariatePolyConsumer() {
   return auto_ptr<CoefTermConsumer>
-	(new TotalDegreeCoefTermConsumer(*_polyConsumer, getTranslator()));
+    (new TotalDegreeCoefTermConsumer(*_polyConsumer, getTranslator()));
 }
 
 void CommonParamsHelper::addPurePowersAtInfinity() {
@@ -174,7 +174,7 @@ void CommonParamsHelper::readIdeal(const CommonParams& params, Scanner& in) {
 }
 
 void CommonParamsHelper::setIdeal(const CommonParams& params,
-								  const BigIdeal& bigIdeal) {
+                                  const BigIdeal& bigIdeal) {
   ActionPrinter printer(params.getPrintActions());
 
   printer.beginAction("Translating ideal to internal data structure.");
@@ -183,21 +183,21 @@ void CommonParamsHelper::setIdeal(const CommonParams& params,
   printer.endAction();
 
   if (!params.getIdealIsMinimal()) {
-	printer.beginAction("Minimizing ideal.");
-	_ideal->minimize();
-	printer.endAction();
+    printer.beginAction("Minimizing ideal.");
+    _ideal->minimize();
+    printer.endAction();
   }
 
   if (params.getProduceCanonicalOutput()) {
-	printer.beginAction("Sorting variables for canonical representation.");
+    printer.beginAction("Sorting variables for canonical representation.");
 
-	VarSorter sorter(_translator->getNames());
-	sorter.permute(_translator.get());
+    VarSorter sorter(_translator->getNames());
+    sorter.permute(_translator.get());
 
-	Ideal::iterator stop = _ideal->end();
-	for (Ideal::iterator it = _ideal->begin(); it != stop; ++it)
-	  sorter.permute(*it);
+    Ideal::iterator stop = _ideal->end();
+    for (Ideal::iterator it = _ideal->begin(); it != stop; ++it)
+      sorter.permute(*it);
 
-	printer.endAction();
+    printer.endAction();
   }
 }

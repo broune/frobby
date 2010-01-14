@@ -30,13 +30,13 @@
 class AnalyzeConsumer : public BigTermConsumer {
 public:
   AnalyzeConsumer():
-	_generatorCount(0) {
+    _generatorCount(0) {
   }
 
   virtual void consumeRing(const VarNames& names) {
-	_names = names;
-	_lcm.clear();
-	_lcm.resize(_names.getVarCount());
+    _names = names;
+    _lcm.clear();
+    _lcm.resize(_names.getVarCount());
   }
 
   virtual void beginConsuming() {
@@ -45,36 +45,36 @@ public:
   using BigTermConsumer::consume;
 
   virtual void consume(const Term& term, const TermTranslator& translator) {
-	BigTermConsumer::consume(term, translator);
+    BigTermConsumer::consume(term, translator);
   }
 
   virtual void consume(const vector<mpz_class>& term) {
-	ASSERT(term.size() == _names.getVarCount());
+    ASSERT(term.size() == _names.getVarCount());
 
-	++_generatorCount;
-	for (size_t var = 0; var < term.size(); ++var)
-	  if (_lcm[var] < term[var])
-		_lcm[var] = term[var];
+    ++_generatorCount;
+    for (size_t var = 0; var < term.size(); ++var)
+      if (_lcm[var] < term[var])
+        _lcm[var] = term[var];
   }
 
   virtual void doneConsuming() {
   }
 
   size_t getGeneratorCount() const {
-	return _generatorCount;
+    return _generatorCount;
   }
 
   const VarNames& getNames() const {
-	return _names;
+    return _names;
   }
 
   const vector<mpz_class>& getLcm() const {
-	return _lcm;
+    return _lcm;
   }
 
   const mpz_class& getMaximumExponent() const {
-	ASSERT(_lcm.size() > 0);
-	return *max_element(_lcm.begin(), _lcm.end());
+    ASSERT(_lcm.size() > 0);
+    return *max_element(_lcm.begin(), _lcm.end());
   }
 
 private:
@@ -106,7 +106,7 @@ AnalyzeAction::AnalyzeAction():
   ("lcm",
    "Print the least common multiple of the generators.",
    false),
-  
+
   _printVarCount
   ("varCount",
    "Print the number of variables.",
@@ -150,19 +150,19 @@ void AnalyzeAction::perform() {
   // We only read the entire ideal into memory at once if we have to.
   IOFacade ioFacade(_printActions);
   if (!requiresWholeIdeal()) {
-	ioFacade.readIdeal(in, consumer);
-	in.expectEOF();
+    ioFacade.readIdeal(in, consumer);
+    in.expectEOF();
 
-	analyzeStreaming(consumer);
+    analyzeStreaming(consumer);
   } else {
-	BigIdeal ideal;
-	ioFacade.readIdeal(in, ideal);
-	in.expectEOF();
+    BigIdeal ideal;
+    ioFacade.readIdeal(in, ideal);
+    in.expectEOF();
 
-	consumer.consume(ideal);
+    consumer.consume(ideal);
 
-	analyzeStreaming(consumer);
-	analyzeIdeal(ideal);
+    analyzeStreaming(consumer);
+    analyzeIdeal(ideal);
   }
 }
 
@@ -174,16 +174,16 @@ void AnalyzeAction::analyzeIdeal(BigIdeal& ideal) const {
   IdealFacade idealFacade(_printActions);
 
   if (_printMinimal) {
-	size_t generatorCount = ideal.getGeneratorCount();
-	idealFacade.sortAllAndMinimize(ideal);
-	if (generatorCount == ideal.getGeneratorCount())
-	  fputs("1\n", stdout);
-	else
-	  fputs("0\n", stdout);
+    size_t generatorCount = ideal.getGeneratorCount();
+    idealFacade.sortAllAndMinimize(ideal);
+    if (generatorCount == ideal.getGeneratorCount())
+      fputs("1\n", stdout);
+    else
+      fputs("0\n", stdout);
   }
 
   if (_summaryLevel >= 2) {
-	idealFacade.printAnalysis(stdout, ideal);
+    idealFacade.printAnalysis(stdout, ideal);
   }
 }
 
@@ -191,29 +191,29 @@ void AnalyzeAction::analyzeStreaming(AnalyzeConsumer& consumer) const {
   IOFacade ioFacade(_printActions);
 
   if (_printLcm) {
-	auto_ptr<IOHandler> output = _io.createOutputHandler();
-	ioFacade.writeTerm(consumer.getLcm(), consumer.getNames(),
-					   output.get(), stdout);
-	fputc('\n', stdout);
+    auto_ptr<IOHandler> output = _io.createOutputHandler();
+    ioFacade.writeTerm(consumer.getLcm(), consumer.getNames(),
+                       output.get(), stdout);
+    fputc('\n', stdout);
   }
 
   if (_printVarCount)
-	fprintf(stdout, "%lu\n", (unsigned long)consumer.getNames().getVarCount());
+    fprintf(stdout, "%lu\n", (unsigned long)consumer.getNames().getVarCount());
   if (_printGeneratorCount)
-	fprintf(stdout, "%lu\n", (unsigned long)consumer.getGeneratorCount());	
+    fprintf(stdout, "%lu\n", (unsigned long)consumer.getGeneratorCount());
 
   if (_printMaximumExponent) {
-	if (consumer.getNames().getVarCount() == 0)
-	  fputs("0\n", stdout);
-	else
-	  gmp_fprintf(stdout, "%Zd\n", consumer.getMaximumExponent().get_mpz_t());
+    if (consumer.getNames().getVarCount() == 0)
+      fputs("0\n", stdout);
+    else
+      gmp_fprintf(stdout, "%Zd\n", consumer.getMaximumExponent().get_mpz_t());
   }
 
   if (_summaryLevel.getValue() == 1) {
-	fprintf(stdout, "%lu generators\n",
-			(unsigned long)consumer.getGeneratorCount());
-	fprintf(stdout, "%lu variables\n",
-			(unsigned long)consumer.getNames().getVarCount());	
+    fprintf(stdout, "%lu generators\n",
+            (unsigned long)consumer.getGeneratorCount());
+    fprintf(stdout, "%lu variables\n",
+            (unsigned long)consumer.getNames().getVarCount());
   }
 }
 

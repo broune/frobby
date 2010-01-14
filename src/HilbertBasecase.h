@@ -36,9 +36,9 @@ class HilbertBasecase {
 
  private:
   struct Entry {
-	bool negate;
-	size_t extraSupport;
-	Ideal* ideal;
+    bool negate;
+    size_t extraSupport;
+    Ideal* ideal;
   };
   vector<Entry> _todo;
   void clearTodo();

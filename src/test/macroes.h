@@ -34,7 +34,7 @@ TestSuite& GET_TEST_SUITE(root);
   class _Helper_Suite_##SUITE { \
    public: \
     _Helper_Suite_##SUITE() { \
-      GET_TEST_SUITE(PARENT).add(&GET_TEST_SUITE(SUITE));	\
+      GET_TEST_SUITE(PARENT).add(&GET_TEST_SUITE(SUITE));   \
     } \
   } _Helper_Suite_##SUITE;
 
@@ -50,7 +50,7 @@ TestSuite& GET_TEST_SUITE(root);
    public: \
     _Helper_testCase_##SUITE##_##TEST_NAME() { \
       static _testCase_##SUITE##_##TEST_NAME test; \
-	  GET_TEST_SUITE(SUITE).add(&test); \
+      GET_TEST_SUITE(SUITE).add(&test); \
     } \
   } static _helper_testCase_##SUITE##_##TEST_NAME; \
   void _testCase_##SUITE##_##TEST_NAME::run \

@@ -40,7 +40,7 @@ static const int ExitCodeError = 1;
 static const int ExitCodeInternalError = 2;
 
 // Frobby ran out of memory.
-static const int ExitCodeOutOfMemory = 3; 
+static const int ExitCodeOutOfMemory = 3;
 
 // Frobby encountered an exception that it does not know about.
 static const int ExitCodeUnknownError = 4;

@@ -36,83 +36,83 @@ namespace IO {
    it more convenient to derive from than IOHandler. */
   class IOHandlerImpl : public IOHandler {
   protected:
-	IOHandlerImpl(const char* formatName,
-				  const char* formatDescription);
+    IOHandlerImpl(const char* formatName,
+                  const char* formatDescription);
 
-	/** Specify that input of the argument type is supported. */
-	void registerInput(const DataType& type);
+    /** Specify that input of the argument type is supported. */
+    void registerInput(const DataType& type);
 
-	/** Specify that output of the argument type is supported. */
-	void registerOutput(const DataType& type);
+    /** Specify that output of the argument type is supported. */
+    void registerOutput(const DataType& type);
 
   private:
-	// The following methods have implementations that merely report
-	// an internal error. Make sure to override those you register
-	// support for.
-	virtual BigTermConsumer* doCreateIdealWriter(FILE* out) = 0;
-	virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
+    // The following methods have implementations that merely report
+    // an internal error. Make sure to override those you register
+    // support for.
+    virtual BigTermConsumer* doCreateIdealWriter(FILE* out) = 0;
+    virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-	virtual void doReadTerm(Scanner& in,
-							const VarNames& names,
-							vector<mpz_class>& term);
-	virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
-	virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+    virtual void doReadTerm(Scanner& in,
+                            const VarNames& names,
+                            vector<mpz_class>& term);
+    virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+    virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
-	// The following methods are implemented with the suggested
-	// behavior
-	virtual const char* doGetName() const;
-	virtual const char* doGetDescription() const;
-	virtual bool doSupportsInput(const DataType& type) const;
-	virtual bool doSupportsOutput(const DataType& type) const;
-	virtual bool doHasMoreInput(Scanner& in) const;
+    // The following methods are implemented with the suggested
+    // behavior
+    virtual const char* doGetName() const;
+    virtual const char* doGetDescription() const;
+    virtual bool doSupportsInput(const DataType& type) const;
+    virtual bool doSupportsOutput(const DataType& type) const;
+    virtual bool doHasMoreInput(Scanner& in) const;
 
-	vector<const DataType*> _supportedInputs;
-	vector<const DataType*> _supportedOutputs;
+    vector<const DataType*> _supportedInputs;
+    vector<const DataType*> _supportedOutputs;
 
-	const char* _formatName;
-	const char* _formatDescription;
+    const char* _formatName;
+    const char* _formatDescription;
   };
 
   void writeCoefTermProduct(const mpz_class& coef,
-							const Term& term,
-							const TermTranslator& translator,
-							bool hidePlus,
-							FILE* out);
+                            const Term& term,
+                            const TermTranslator& translator,
+                            bool hidePlus,
+                            FILE* out);
 
   void writeCoefTermProduct(const mpz_class& coef,
-							const vector<mpz_class>& term,
-							const VarNames& names,
-							bool hidePlus,
-							FILE* out);
+                            const vector<mpz_class>& term,
+                            const VarNames& names,
+                            bool hidePlus,
+                            FILE* out);
 
   void writeTermProduct(const Term& term,
-						const TermTranslator& translator,
-						FILE* out);
+                        const TermTranslator& translator,
+                        FILE* out);
 
   void writeTermProduct(const vector<mpz_class>& term,
-						const VarNames& names,
-						FILE* out);
+                        const VarNames& names,
+                        FILE* out);
 
   void readTermProduct(Scanner& in,
-					   const VarNames& names,
-					   vector<mpz_class>& term);
+                       const VarNames& names,
+                       vector<mpz_class>& term);
   void readTermProduct(BigIdeal& ideal, Scanner& in);
 
   void readCoefTerm(BigPolynomial& polynomial,
-					bool firstTerm,
-					Scanner& in);
+                    bool firstTerm,
+                    Scanner& in);
 
   void readCoefTerm(mpz_class& coef,
-					vector<mpz_class>& term,
-					const VarNames& names,
-					bool firstTerm,
-					Scanner& in);
+                    vector<mpz_class>& term,
+                    const VarNames& names,
+                    bool firstTerm,
+                    Scanner& in);
 
   void readVarPower(vector<mpz_class>& term,
-					const VarNames& names,
-					Scanner& in);
+                    const VarNames& names,
+                    Scanner& in);
 }
 
 #endif

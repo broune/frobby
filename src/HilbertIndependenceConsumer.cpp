@@ -29,13 +29,13 @@ HilbertIndependenceConsumer(HilbertStrategy* strategy):
 }
 
 void HilbertIndependenceConsumer::reset(CoefTermConsumer* parent,
-										IndependenceSplitter& splitter,
-										size_t varCount) {
+                                        IndependenceSplitter& splitter,
+                                        size_t varCount) {
   ASSERT(parent != 0);
-  
+
   _tmpTerm.reset(varCount);
   _parent = parent;
-  
+
   splitter.getBigProjection(_leftProjection);
   splitter.getRestProjection(_rightProjection);
 
@@ -72,7 +72,7 @@ void HilbertIndependenceConsumer::doneConsuming() {
 }
 
 void HilbertIndependenceConsumer::consume(const mpz_class& coef,
-										  const Term& term) {
+                                          const Term& term) {
   ASSERT(_parent != 0);
   consumeLeft(coef, term);
 }
@@ -114,33 +114,33 @@ void HilbertIndependenceConsumer::RightConsumer::doneConsuming() {
 
 
 void HilbertIndependenceConsumer::consumeLeft(const mpz_class& leftCoef,
-											  const Term& leftTerm) {
+                                              const Term& leftTerm) {
   ASSERT(_tmpTerm.getVarCount() ==
-		 _leftProjection.getRangeVarCount() +
-		 _rightProjection.getRangeVarCount());
+         _leftProjection.getRangeVarCount() +
+         _rightProjection.getRangeVarCount());
 
   _leftProjection.inverseProject(_tmpTerm, leftTerm);
 
   size_t rightSize = _rightTerms.getGeneratorCount();
   ASSERT(rightSize == _rightCoefs.size());
   for (size_t right = 0; right < rightSize; ++right) {
-	_rightProjection.inverseProject(_tmpTerm,
-									*(_rightTerms.begin() + right));
-	ASSERT(leftCoef != 0);
-	ASSERT(_rightCoefs[right] != 0);
-	_tmpCoef = leftCoef * _rightCoefs[right];
+    _rightProjection.inverseProject(_tmpTerm,
+                                    *(_rightTerms.begin() + right));
+    ASSERT(leftCoef != 0);
+    ASSERT(_rightCoefs[right] != 0);
+    _tmpCoef = leftCoef * _rightCoefs[right];
 
-	ASSERT(_tmpCoef != 0);
-	_parent->consume(_tmpCoef, _tmpTerm);
+    ASSERT(_tmpCoef != 0);
+    _parent->consume(_tmpCoef, _tmpTerm);
   }
 }
 
 void HilbertIndependenceConsumer::consumeRight(const mpz_class& coef,
-											   const Term& term) {
+                                               const Term& term) {
   ASSERT(term.getVarCount() == _rightProjection.getRangeVarCount());
   ASSERT(_rightTerms.getVarCount() == term.getVarCount());
   ASSERT(coef != 0);
-	
+
   _rightTerms.insert(term);
   _rightCoefs.push_back(coef);
 }

@@ -28,57 +28,57 @@
 
 namespace IO {
   NullIOHandler::NullIOHandler():
-	IOHandlerImpl(staticGetName(),
-				  "Ignores input and produces no output.") {
-	registerInput(DataType::getMonomialIdealType());
-	registerInput(DataType::getPolynomialType());
-	registerInput(DataType::getMonomialIdealListType());
+    IOHandlerImpl(staticGetName(),
+                  "Ignores input and produces no output.") {
+    registerInput(DataType::getMonomialIdealType());
+    registerInput(DataType::getPolynomialType());
+    registerInput(DataType::getMonomialIdealListType());
 
-	registerOutput(DataType::getMonomialIdealType());
-	registerOutput(DataType::getPolynomialType());
-	registerOutput(DataType::getMonomialIdealListType());
+    registerOutput(DataType::getMonomialIdealType());
+    registerOutput(DataType::getPolynomialType());
+    registerOutput(DataType::getMonomialIdealListType());
   }
 
   const char* NullIOHandler::staticGetName() {
-	return "null";
+    return "null";
   }
 
   BigTermConsumer* NullIOHandler::doCreateIdealWriter(FILE* out) {
-	return new NullTermConsumer();
+    return new NullTermConsumer();
   }
 
   CoefBigTermConsumer* NullIOHandler::doCreatePolynomialWriter(FILE* out) {
-	return new NullCoefTermConsumer();
+    return new NullCoefTermConsumer();
   }
 
   void NullIOHandler::doWriteTerm(const vector<mpz_class>& term,
-								  const VarNames& names,
-								  FILE* out) {
+                                  const VarNames& names,
+                                  FILE* out) {
   }
 
   void NullIOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
-	consumer.consume(BigIdeal());
+    consumer.consume(BigIdeal());
   }
 
   void NullIOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
-	consumer.consumeRing(VarNames());
+    consumer.consumeRing(VarNames());
   }
 
   void NullIOHandler::doReadTerm(Scanner& in,
-								 const VarNames& names,
-								 vector<mpz_class>& term) {
-	term.clear();
+                                 const VarNames& names,
+                                 vector<mpz_class>& term) {
+    term.clear();
   }
 
   void NullIOHandler::doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer) {
-	consumer.consume(BigPolynomial());
+    consumer.consume(BigPolynomial());
   }
 
   void NullIOHandler::doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) {
-	consumer.consume(SatBinomIdeal());
+    consumer.consume(SatBinomIdeal());
   }
 
   bool NullIOHandler::doHasMoreInput(Scanner& in) const {
-	return false;
+    return false;
   }
 }

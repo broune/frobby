@@ -30,13 +30,13 @@ IntersectFacade::IntersectFacade(bool printActions):
 }
 
 auto_ptr<BigIdeal> IntersectFacade::intersect(const vector<BigIdeal*>& ideals,
-											  const VarNames& emptyNames) {
+                                              const VarNames& emptyNames) {
   beginAction("Intersecting ideals.");
 
   if (ideals.empty()) {
-	auto_ptr<BigIdeal> entireRing(new BigIdeal(emptyNames));
-	entireRing->newLastTerm();
-	return entireRing;
+    auto_ptr<BigIdeal> entireRing(new BigIdeal(emptyNames));
+    entireRing->newLastTerm();
+    return entireRing;
   }
 
   vector<Ideal*> ideals2;
@@ -51,14 +51,14 @@ auto_ptr<BigIdeal> IntersectFacade::intersect(const vector<BigIdeal*>& ideals,
   intersection->insert(identity);
 
   for (size_t i = 0; i < ideals2.size(); ++i) {
-	ideals2[i]->minimize();
+    ideals2[i]->minimize();
 
     // Compute intersection
     auto_ptr<Ideal> tmp(new Ideal(variableCount));
     ::intersect(tmp.get(), intersection.get(), ideals2[i]);
 
     // Handle bookkeeping
-	intersection = tmp;
+    intersection = tmp;
   }
 
   auto_ptr<BigIdeal> bigIdeal(new BigIdeal(names));

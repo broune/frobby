@@ -32,35 +32,35 @@ class IdealTree;
 class ScarfHilbertAlgorithm {
  public:
   ScarfHilbertAlgorithm(const TermTranslator& translator,
-						const ScarfParams& params,
-						auto_ptr<IdealOrderer> enumerationOrder,
-						auto_ptr<IdealOrderer> deformationOrder);
+                        const ScarfParams& params,
+                        auto_ptr<IdealOrderer> enumerationOrder,
+                        auto_ptr<IdealOrderer> deformationOrder);
   ~ScarfHilbertAlgorithm();
 
   void runGeneric(const Ideal& ideal,
-				  CoefBigTermConsumer& consumer,
-				  bool univariate,
-				  bool canonical);
+                  CoefBigTermConsumer& consumer,
+                  bool univariate,
+                  bool canonical);
 
  private:
   struct State {
-	Term term;
-	Ideal::const_iterator pos;
-	vector<Exponent*> face;
-	bool plus;
+    Term term;
+    Ideal::const_iterator pos;
+    vector<Exponent*> face;
+    bool plus;
   };
   vector<State> _states;
 
   void enumerateScarfComplex(const Ideal& ideal,
-							 CoefTermConsumer& consumer);
+                             CoefTermConsumer& consumer);
   void initializeEnumeration(const Ideal& ideal,
-							 size_t& activeStateCount);
+                             size_t& activeStateCount);
   bool doEnumerationStep(const Ideal& ideal,
-						 const IdealTree& tree,
-						 State& state,
-						 State& nextState);
+                         const IdealTree& tree,
+                         State& state,
+                         State& nextState);
   void doEnumerationBaseCase(const State& state,
-							 CoefTermConsumer& consumer);
+                             CoefTermConsumer& consumer);
 
   const TermTranslator& _translator;
   const ScarfParams& _params;

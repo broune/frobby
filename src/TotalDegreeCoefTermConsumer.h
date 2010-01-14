@@ -35,9 +35,9 @@ class TermTranslator;
 class TotalDegreeCoefTermConsumer : public CoefTermConsumer {
  public:
   TotalDegreeCoefTermConsumer(auto_ptr<CoefBigTermConsumer> consumer,
-							  const TermTranslator& translator);
+                              const TermTranslator& translator);
   TotalDegreeCoefTermConsumer(CoefBigTermConsumer& consumer,
-							  const TermTranslator& translator);
+                              const TermTranslator& translator);
 
   virtual void consumeRing(const VarNames& names);
 

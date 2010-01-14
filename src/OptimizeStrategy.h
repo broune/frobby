@@ -44,17 +44,17 @@ class OptimizeStrategy : public MsmStrategy, public TermConsumer {
 public:
   /** The values of BoundSetting indicate how to use the bound. */
   enum BoundSetting {
-	/** Make no use of the bound. */
-	DoNotUseBound,
+    /** Make no use of the bound. */
+    DoNotUseBound,
 
-	/** Eliminate non-improving slices, achieving a branch-and-bound
-	 algorithm in place of the usual backtracking. */
-	UseBoundToEliminate,
+    /** Eliminate non-improving slices, achieving a branch-and-bound
+     algorithm in place of the usual backtracking. */
+    UseBoundToEliminate,
 
-	/** Eliminate non-improving slices and simplify slices by trying
-	 to generate non-improving slices that are then eliminated,
-	 allowing to move to the other slice. */
-	UseBoundToEliminateAndSimplify
+    /** Eliminate non-improving slices and simplify slices by trying
+     to generate non-improving slices that are then eliminated,
+     allowing to move to the other slice. */
+    UseBoundToEliminateAndSimplify
   };
 
   /** Construct an OptimizeStrategy.
@@ -69,9 +69,9 @@ public:
    @param boundSetting Indicates how much to use the bound.
   */
   OptimizeStrategy(TermGrader& grader,
-				   const SplitStrategy* splitStrategy,
-				   bool reportAllSolutions,
-				   BoundSetting boundSetting);
+                   const SplitStrategy* splitStrategy,
+                   bool reportAllSolutions,
+                   BoundSetting boundSetting);
 
   /** Returns one of or all of the msm's with optimal value found so
    far, depending on the value of reportAllSolutions passed to the
@@ -112,7 +112,7 @@ public:
    something. There are four cases where it makes sense to iterate the
    bound-based simplification after the slice has changed.
 
-	- Case 1: The sign is negative, and the divisor has increased. This is
+    - Case 1: The sign is negative, and the divisor has increased. This is
       relevant whether or not we are using a fake power, since if so
       there still is an effect on the bound for a split that gets rid
       of the pure power.
@@ -128,8 +128,8 @@ public:
       use it.
   */
   bool changedInWayRelevantToBound
-	(const Term& oldDivisor, const Term& oldDominator,
-	 const Term& newDivisor, const Term& newDominator) const;
+    (const Term& oldDivisor, const Term& oldDominator,
+     const Term& newDivisor, const Term& newDominator) const;
 
   /** This method simplifies a slice based on generating non-improving
    outer and inner slices. The idea is conceptually simple, but it has
@@ -208,9 +208,9 @@ public:
    @return Returns true if and only if slice changed.
   */
   bool boundSimplify
-	(Slice& slice,
-	 const Term& dominator,
-	 const mpz_class& upperBound);
+    (Slice& slice,
+     const Term& dominator,
+     const mpz_class& upperBound);
 
   /** Find an outer slice that is non-improving, allowing us to
    replace the current slice with the inner slice. We only need to
@@ -263,10 +263,10 @@ public:
     found.
   */
   bool getInnerSimplify
-	(const Term& divisor,
-	 const Term& dominator,
-	 const mpz_class& upperBound,
-	 Term& pivot);
+    (const Term& divisor,
+     const Term& dominator,
+     const mpz_class& upperBound,
+     Term& pivot);
 
   /** Find an inner slice that is non-improving, allowing us to
    replace the current slice with the outer slice. We only need to know a
@@ -322,10 +322,10 @@ public:
     found.
   */
   bool getOuterSimplify
-	(const Term& divisor,
-	 const Term& dominator,
-	 const mpz_class& upperBound,
-	 Term& pivot);
+    (const Term& divisor,
+     const Term& dominator,
+     const mpz_class& upperBound,
+     Term& pivot);
 
   /** Sets dominator to be a term dominating every element of the
    content of slice.
@@ -359,7 +359,7 @@ public:
      if (a <= _maxValueToBeat) ...
   */
   mpz_class _maxValueToBeat;
-  
+
   /** Stores the optimal solutions found so far, according to the best
    value found so far.
   */

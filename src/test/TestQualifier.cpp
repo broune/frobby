@@ -21,18 +21,18 @@
 
 bool TestQualifier::visitEnter(TestSuite& suite) {
   if (!suite.getName().empty()) {
-	_path += suite.getName();
-	_path += '.';
+    _path += suite.getName();
+    _path += '.';
   }
   return true;
 }
 
 bool TestQualifier::visitLeave(TestSuite& suite) {
   if (!suite.getName().empty()) {
-	// The -1 to remove the dot as well.
-	_path.resize(_path.size() - suite.getName().size() - 1);
+    // The -1 to remove the dot as well.
+    _path.resize(_path.size() - suite.getName().size() - 1);
   }
-  
+
   return true;
 }
 

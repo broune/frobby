@@ -36,9 +36,9 @@ void ActionPrinter::beginAction(const char* message) {
 
 void ActionPrinter::endAction() {
   if (_printActions) {
-	fputc(' ', stderr);
-	_timer.print(stderr);
-	fputc('\n', stderr);
-	fflush(stderr);
+    fputc(' ', stderr);
+    _timer.print(stderr);
+    fputc('\n', stderr);
+    fflush(stderr);
   }
 }

@@ -27,19 +27,19 @@ class CommonParams {
   CommonParams();
 
   /** Returns whether the input ideal is known to be minimally
-	  generated. This option is off by default.
+      generated. This option is off by default.
 
-	  If the ideal is minimally generated, setting this option can
-	  improve performance. However, if this option is set and the ideal
-	  is not actually minimally generated, then Frobby will exhibit
-	  undefined behavior. Possibilities for what might happen include
-	  crashing, going into an infinite loop and producing incorrect
-	  results. */
+      If the ideal is minimally generated, setting this option can
+      improve performance. However, if this option is set and the ideal
+      is not actually minimally generated, then Frobby will exhibit
+      undefined behavior. Possibilities for what might happen include
+      crashing, going into an infinite loop and producing incorrect
+      results. */
   bool getIdealIsMinimal() const {return _idealIsMinimal;}
   void idealIsMinimal(bool value) {_idealIsMinimal = value;}
 
   /** Returns whether to print and time the large-scale actions
-	  that Frobby performs. */
+      that Frobby performs. */
   bool getPrintActions() const {return _printActions;}
   void printActions(bool value) {_printActions = value;}
 
@@ -52,17 +52,17 @@ class CommonParams {
   void setOutputFormat(const string& value) {_outputFormat = value;}
 
   /** Returns whether to produce output in a canonical
-	  representation. */
+      representation. */
   bool getProduceCanonicalOutput() const {return _produceCanonicalOutput;}
   void produceCanonicalOutput(bool value) {_produceCanonicalOutput = value;}
 
   /** Returns whether to print information about what the algorithm
-	  is doing to standard error as it runs. */
+      is doing to standard error as it runs. */
   bool getPrintDebug() const {return _printDebug;}
   void printDebug(bool value) {_printDebug = value;}
 
   /** Returns whether to print statistics on what the algorithm did
-	  to standard error after it has run. */
+      to standard error after it has run. */
   bool getPrintStatistics() const {return _printStatistics;}
   void printStatistics(bool value) {_printStatistics = value;}
 
@@ -80,6 +80,6 @@ class CommonParams {
 void addCommonParams(CliParams& params);
 void addDebugParam(CliParams& params);
 
-void extractCliValues(CommonParams& common, const CliParams& cli);  
+void extractCliValues(CommonParams& common, const CliParams& cli);
 
 #endif

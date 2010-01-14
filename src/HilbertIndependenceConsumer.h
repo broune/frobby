@@ -33,8 +33,8 @@ public:
   HilbertIndependenceConsumer(HilbertStrategy* strategy);
 
   void reset(CoefTermConsumer* parent,
-			 IndependenceSplitter& splitter,
-			 size_t varCount);
+             IndependenceSplitter& splitter,
+             size_t varCount);
 
   void clear();
 
@@ -43,7 +43,7 @@ public:
 
   CoefTermConsumer* getLeftConsumer();
 
-  virtual void consumeRing(const VarNames& names); // Does nothing.	
+  virtual void consumeRing(const VarNames& names); // Does nothing.
   virtual void beginConsuming(); // Does nothing.
   virtual void consume(const mpz_class& coef, const Term& term);
   virtual void doneConsuming(); // Does nothing.
@@ -57,15 +57,15 @@ public:
 private:
   class RightConsumer : public CoefTermConsumer {
   public:
-	RightConsumer(HilbertIndependenceConsumer* parent);
+    RightConsumer(HilbertIndependenceConsumer* parent);
 
-	virtual void consumeRing(const VarNames& names); // Does nothing.	
-	virtual void beginConsuming(); // Does nothing.
-	virtual void consume(const mpz_class& coef, const Term& term);
-	virtual void doneConsuming(); // Does nothing.
+    virtual void consumeRing(const VarNames& names); // Does nothing.
+    virtual void beginConsuming(); // Does nothing.
+    virtual void consume(const mpz_class& coef, const Term& term);
+    virtual void doneConsuming(); // Does nothing.
 
   private:
-	HilbertIndependenceConsumer* _parent;
+    HilbertIndependenceConsumer* _parent;
   };
 
   virtual void consumeLeft(const mpz_class& leftCoef, const Term& leftTerm);

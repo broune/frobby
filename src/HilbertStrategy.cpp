@@ -27,7 +27,7 @@
 #include "ElementDeleter.h"
 
 HilbertStrategy::HilbertStrategy(CoefTermConsumer* consumer,
-								 const SplitStrategy* splitStrategy):
+                                 const SplitStrategy* splitStrategy):
   SliceStrategyCommon(splitStrategy),
   _consumerCache(),
   _consumerCacheDeleter(_consumerCache),
@@ -41,21 +41,21 @@ void HilbertStrategy::run(const Ideal& ideal) {
   Ideal sliceIdeal(varCount);
 
   if (!ideal.contains(Term(varCount))) {
-	_consumer->consume(1, Term(varCount));
+    _consumer->consume(1, Term(varCount));
 
-	if (ideal.getGeneratorCount() > 0) {
-	  Term allOnes(varCount);
-	  for (size_t var = 0; var < varCount; ++var)
-		allOnes[var] = 1;
+    if (ideal.getGeneratorCount() > 0) {
+      Term allOnes(varCount);
+      for (size_t var = 0; var < varCount; ++var)
+        allOnes[var] = 1;
 
-	  sliceIdeal = ideal;
-	  sliceIdeal.product(allOnes);
-	}
+      sliceIdeal = ideal;
+      sliceIdeal.product(allOnes);
+    }
   }
 
   auto_ptr<Slice> slice
-	(new HilbertSlice(*this, sliceIdeal, Ideal(varCount),
-					  Term(varCount), _consumer));
+    (new HilbertSlice(*this, sliceIdeal, Ideal(varCount),
+                      Term(varCount), _consumer));
 
   simplify(*slice);
   _tasks.addTask(slice.release());
@@ -69,15 +69,15 @@ bool HilbertStrategy::processSlice
   ASSERT(debugIsValidSlice(slice.get()));
 
   if (slice->baseCase(getUseSimplification())) {
-	freeSlice(slice);
-	return true;
+    freeSlice(slice);
+    return true;
   }
 
   if (getUseIndependence() && _indepSplitter.analyze(*slice)) {
-	independenceSplit(slice);
+    independenceSplit(slice);
   } else {
-	ASSERT(_split->isPivotSplit());
-	pivotSplit(auto_ptr<Slice>(slice));
+    ASSERT(_split->isPivotSplit());
+    pivotSplit(auto_ptr<Slice>(slice));
   }
 
   return false;
@@ -106,11 +106,11 @@ void HilbertStrategy::getPivot(Term& term, Slice& slice) {
 }
 
 void HilbertStrategy::freeConsumer(auto_ptr<HilbertIndependenceConsumer>
-								   consumer) {
+                                   consumer) {
   ASSERT(consumer.get() != 0);
   ASSERT(std::find(_consumerCache.begin(),
-				   _consumerCache.end(), consumer.get()) ==
-		 _consumerCache.end());
+                   _consumerCache.end(), consumer.get()) ==
+         _consumerCache.end());
 
   consumer->clear();
   noThrowPushBack(_consumerCache, consumer);
@@ -120,7 +120,7 @@ void HilbertStrategy::independenceSplit(auto_ptr<Slice> sliceParam) {
   ASSERT(sliceParam.get() != 0);
   ASSERT(debugIsValidSlice(sliceParam.get()));
   auto_ptr<HilbertSlice> slice
-	(static_cast<HilbertSlice*>(sliceParam.release()));
+    (static_cast<HilbertSlice*>(sliceParam.release()));
 
   // Construct split object.
   auto_ptr<HilbertIndependenceConsumer> autoSplit = newConsumer();
@@ -131,13 +131,13 @@ void HilbertStrategy::independenceSplit(auto_ptr<Slice> sliceParam) {
   // Construct left slice.
   auto_ptr<HilbertSlice> leftSlice(newHilbertSlice());
   leftSlice->setToProjOf(*slice, split->getLeftProjection(),
-						 split->getLeftConsumer());
+                         split->getLeftConsumer());
   _tasks.addTask(leftSlice.release());
 
   // Construct right slice.
   auto_ptr<HilbertSlice> rightSlice(newHilbertSlice());
   rightSlice->setToProjOf(*slice, split->getRightProjection(),
-						  split->getRightConsumer());
+                          split->getRightConsumer());
   _tasks.addTask(rightSlice.release());
 
   // Deal with slice.
@@ -146,8 +146,8 @@ void HilbertStrategy::independenceSplit(auto_ptr<Slice> sliceParam) {
 
 auto_ptr<HilbertIndependenceConsumer> HilbertStrategy::newConsumer() {
   if (_consumerCache.empty())
-	return auto_ptr<HilbertIndependenceConsumer>
-	  (new HilbertIndependenceConsumer(this));
+    return auto_ptr<HilbertIndependenceConsumer>
+      (new HilbertIndependenceConsumer(this));
 
   auto_ptr<HilbertIndependenceConsumer> consumer(_consumerCache.back());
   _consumerCache.pop_back();

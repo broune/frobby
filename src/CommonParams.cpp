@@ -28,7 +28,7 @@ CommonParams::CommonParams():
   _produceCanonicalOutput(false),
   _printDebug(false),
   _printStatistics(false),
-  _inputFormat(getFormatNameIndicatingToGuessTheInputFormat()), 
+  _inputFormat(getFormatNameIndicatingToGuessTheInputFormat()),
   _outputFormat(getFormatNameIndicatingToUseInputFormatAsOutputFormat()) {
 }
 
@@ -45,11 +45,11 @@ namespace {
 void addDebugParam(CliParams& params) {
   ASSERT(!params.hasParam(PrintDebugName));
   params.add
-	(auto_ptr<Parameter>
-	 (new BoolParameter
-	  ("debug",
-	   "Print what the algorithm does at each step.",
-	   false)));
+    (auto_ptr<Parameter>
+     (new BoolParameter
+      ("debug",
+       "Print what the algorithm does at each step.",
+       false)));
 }
 
 void addCommonParams(CliParams& params) {
@@ -62,11 +62,11 @@ void extractCliValues(CommonParams& common, const CliParams& cli) {
   common.produceCanonicalOutput(getBool(cli, CanonicalName));
 
   if (cli.hasParam(InputFormatParamName))
-	common.setInputFormat(getString(cli, InputFormatParamName));
+    common.setInputFormat(getString(cli, InputFormatParamName));
   if (cli.hasParam(OutputFormatParamName))
-	common.setOutputFormat(getString(cli, OutputFormatParamName));
+    common.setOutputFormat(getString(cli, OutputFormatParamName));
   if (cli.hasParam(PrintDebugName))
-	common.printDebug(getBool(cli, PrintDebugName));
+    common.printDebug(getBool(cli, PrintDebugName));
   if (cli.hasParam(PrintStatisticsName))
-	common.printStatistics(getBool(cli, PrintStatisticsName));
+    common.printStatistics(getBool(cli, PrintStatisticsName));
 }

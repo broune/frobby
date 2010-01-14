@@ -43,28 +43,28 @@ ScarfParams::ScarfParams(CliParams& cli):
 void addScarfParams(CliParams& params) {
   ASSERT(!params.hasParam(DeformToStrongName));
   params.add
-	(auto_ptr<Parameter>
-	 (new BoolParameter
-	  (DeformToStrongName,
-	   "Deform to a strongly generic ideal if true. "
-	   "Otherwise deform to a weakly generic ideal.",
-	   DeformToStrongDefault)));
+    (auto_ptr<Parameter>
+     (new BoolParameter
+      (DeformToStrongName,
+       "Deform to a strongly generic ideal if true. "
+       "Otherwise deform to a weakly generic ideal.",
+       DeformToStrongDefault)));
 
   ASSERT(!params.hasParam(EnumerationOrderName));
   params.add
-	(auto_ptr<Parameter>
-	 (new StringParameter
-	  (EnumerationOrderName,
-	   "The enumeration order used for the deformation algorithm.",
-	   EnumerationOrderDefault)));
+    (auto_ptr<Parameter>
+     (new StringParameter
+      (EnumerationOrderName,
+       "The enumeration order used for the deformation algorithm.",
+       EnumerationOrderDefault)));
 
   ASSERT(!params.hasParam(DeformationOrderName));
   params.add
-	(auto_ptr<Parameter>
-	 (new StringParameter
-	  (DeformationOrderName,
-	   "The deformation order used for the deformation algorithm.",
-	   DeformationOrderDefault)));
+    (auto_ptr<Parameter>
+     (new StringParameter
+      (DeformationOrderName,
+       "The deformation order used for the deformation algorithm.",
+       DeformationOrderDefault)));
 }
 
 void extractCliValues(ScarfParams& scarf, const CliParams& cli) {

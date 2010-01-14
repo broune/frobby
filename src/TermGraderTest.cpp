@@ -24,25 +24,25 @@
 TEST_SUITE(TermGrader)
 
 TEST(TermGrader, getUpperBound) {
-	vector<mpz_class> v(3);
-	v[0] = -10;
-	v[1] = 0;
-	v[2] = 10;
-	TermGrader grader(v, TermTranslator(3, 9));
+    vector<mpz_class> v(3);
+    v[0] = -10;
+    v[1] = 0;
+    v[2] = 10;
+    TermGrader grader(v, TermTranslator(3, 9));
 
-	// Simple cases.
-	ASSERT_EQ(grader.getUpperBound(Term("0 0 0"), Term("0 0 0")),   0);
-	ASSERT_EQ(grader.getUpperBound(Term("1 0 0"), Term("2 0 0")), -10);
-	ASSERT_EQ(grader.getUpperBound(Term("0 1 0"), Term("0 2 0")),   0);
-	ASSERT_EQ(grader.getUpperBound(Term("0 0 1"), Term("0 0 2")),  20);
-	ASSERT_EQ(grader.getUpperBound(Term("1 1 1"), Term("2 2 2")),  10);
+    // Simple cases.
+    ASSERT_EQ(grader.getUpperBound(Term("0 0 0"), Term("0 0 0")),   0);
+    ASSERT_EQ(grader.getUpperBound(Term("1 0 0"), Term("2 0 0")), -10);
+    ASSERT_EQ(grader.getUpperBound(Term("0 1 0"), Term("0 2 0")),   0);
+    ASSERT_EQ(grader.getUpperBound(Term("0 0 1"), Term("0 0 2")),  20);
+    ASSERT_EQ(grader.getUpperBound(Term("1 1 1"), Term("2 2 2")),  10);
 
-	// Test handling of highest value mapping to zero.
-	ASSERT_EQ(grader.getUpperBound(Term("9 9 9"), Term("9 9 9")),  0);
-	ASSERT_EQ(grader.getUpperBound(Term("1 0 0"), Term("9 0 0")),  0);
-	ASSERT_EQ(grader.getUpperBound(Term("0 0 0"), Term("0 9 0")),  0);
-	ASSERT_EQ(grader.getUpperBound(Term("0 0 0"), Term("0 0 9")), 80);
-	ASSERT_EQ(grader.getUpperBound(Term("1 1 1"), Term("9 9 9")), 80);
+    // Test handling of highest value mapping to zero.
+    ASSERT_EQ(grader.getUpperBound(Term("9 9 9"), Term("9 9 9")),  0);
+    ASSERT_EQ(grader.getUpperBound(Term("1 0 0"), Term("9 0 0")),  0);
+    ASSERT_EQ(grader.getUpperBound(Term("0 0 0"), Term("0 9 0")),  0);
+    ASSERT_EQ(grader.getUpperBound(Term("0 0 0"), Term("0 0 9")), 80);
+    ASSERT_EQ(grader.getUpperBound(Term("1 1 1"), Term("9 9 9")), 80);
 }
 
 #define MIN_INDEX_TEST(from, to, maxDegree, strict, expectFind, expectedIndex) \
@@ -52,7 +52,7 @@ TEST(TermGrader, getUpperBound) {
       (0, from, to, foundIndex, maxDegree - strict); \
     if (expectFind) { \
       ASSERT_TRUE(returnValue); \
-      ASSERT_EQ(foundIndex, (Exponent)expectedIndex);	\
+      ASSERT_EQ(foundIndex, (Exponent)expectedIndex);   \
     } else { \
       ASSERT_FALSE(returnValue); \
     } \
@@ -98,7 +98,7 @@ TEST(TermGrader, getMinIndexLessThanPositive) {
   TermGrader grader(v, TermTranslator(1, 10));
 
   // General case
-  MIN_INDEX_TEST(0, 10, 12, true, true, 0); // 0 < 12 
+  MIN_INDEX_TEST(0, 10, 12, true, true, 0); // 0 < 12
   MIN_INDEX_TEST(0, 10, 12, false, true, 0); // 0 <= 12
 
   // The zero at 0
@@ -149,7 +149,7 @@ TEST(TermGrader, getMinIndexLessThanZero) {
       (0, from, to, foundIndex, maxDegree - strict); \
     if (expectFind) { \
       ASSERT_TRUE(returnValue); \
-      ASSERT_EQ(foundIndex, (Exponent)expectedIndex);	\
+      ASSERT_EQ(foundIndex, (Exponent)expectedIndex);   \
     } else { \
       ASSERT_FALSE(returnValue); \
     } \
@@ -161,7 +161,7 @@ TEST(TermGrader, getMaxIndexLessThanNegative) {
   TermGrader grader(v, TermTranslator(1, 10));
 
   // General case
-  MAX_INDEX_TEST(0, 10, -12, true, true, 9); // -18 < -12 
+  MAX_INDEX_TEST(0, 10, -12, true, true, 9); // -18 < -12
   MAX_INDEX_TEST(0, 10, -12, false, true, 9); // -18 <= 12
 
   // The zero at 10

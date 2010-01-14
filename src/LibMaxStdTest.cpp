@@ -35,26 +35,26 @@ TEST(MaxStd, Typical) {
 
 TEST(MaxStd, ZeroIdeal) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal(varCount);
-	LibIdealConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal(varCount);
+    LibIdealConsumer consumer((VarNames(varCount)));
 
-	Frobby::maximalStandardMonomials(ideal, consumer);
+    Frobby::maximalStandardMonomials(ideal, consumer);
 
-	if (varCount == 0) {
-	  ASSERT_EQ(consumer.getIdeal(), IdealFactory::wholeRing(varCount));
-	} else {
-	  ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
-	}
+    if (varCount == 0) {
+      ASSERT_EQ(consumer.getIdeal(), IdealFactory::wholeRing(varCount));
+    } else {
+      ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
+    }
   }
 }
 
 TEST(MaxStd, WholeRing) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
-	LibIdealConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+    LibIdealConsumer consumer((VarNames(varCount)));
 
-	Frobby::maximalStandardMonomials(ideal, consumer);
+    Frobby::maximalStandardMonomials(ideal, consumer);
 
-	ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
+    ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
   }
 }

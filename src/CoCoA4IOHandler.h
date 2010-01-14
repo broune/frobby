@@ -28,28 +28,28 @@ class CoefBigTermConsumer;
 namespace IO {
   class CoCoA4IOHandler : public IOHandlerCommon {
   public:
-	CoCoA4IOHandler();
+    CoCoA4IOHandler();
 
-	static const char* staticGetName();
+    static const char* staticGetName();
 
   private:
-	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
-	virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
+    virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
+    virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-	virtual void doWriteTerm(const vector<mpz_class>& term,
-							 const VarNames& names,
-							 FILE* out);
-	virtual void doReadTerm(Scanner& in,
-							const VarNames& names,
-							vector<mpz_class>& term);
-	virtual void doReadRing(Scanner& in, VarNames& names);
-	virtual bool doPeekRing(Scanner& in);
-	virtual void doReadBareIdeal(Scanner& in,
-								 const VarNames& names,
-								 BigTermConsumer& consumer);
-	virtual void doReadBarePolynomial(Scanner& in,
-									  const VarNames& names,
-									  CoefBigTermConsumer& consumer);
+    virtual void doWriteTerm(const vector<mpz_class>& term,
+                             const VarNames& names,
+                             FILE* out);
+    virtual void doReadTerm(Scanner& in,
+                            const VarNames& names,
+                            vector<mpz_class>& term);
+    virtual void doReadRing(Scanner& in, VarNames& names);
+    virtual bool doPeekRing(Scanner& in);
+    virtual void doReadBareIdeal(Scanner& in,
+                                 const VarNames& names,
+                                 BigTermConsumer& consumer);
+    virtual void doReadBarePolynomial(Scanner& in,
+                                      const VarNames& names,
+                                      CoefBigTermConsumer& consumer);
   };
 }
 

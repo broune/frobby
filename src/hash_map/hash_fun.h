@@ -105,7 +105,7 @@ namespace __gnu_cxx {
 
   template<>
     struct hash<char>
-    { 
+    {
       size_t
       operator()(char __x) const
       { return __x; }
@@ -113,7 +113,7 @@ namespace __gnu_cxx {
 
   template<>
     struct hash<unsigned char>
-    { 
+    {
       size_t
       operator()(unsigned char __x) const
       { return __x; }
@@ -145,15 +145,15 @@ namespace __gnu_cxx {
 
   template<>
     struct hash<int>
-    { 
-      size_t 
-      operator()(int __x) const 
+    {
+      size_t
+      operator()(int __x) const
       { return __x; }
     };
 
   template<>
     struct hash<unsigned int>
-    { 
+    {
       size_t
       operator()(unsigned int __x) const
       { return __x; }

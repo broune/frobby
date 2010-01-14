@@ -31,12 +31,12 @@ TermPredicate::~TermPredicate() {
 namespace {
   typedef NameFactory<TermPredicate> PredFactory;
   PredFactory getPredFactory() {
-	PredFactory factory("Term ordering");
+    PredFactory factory("Term ordering");
 
-	nameFactoryRegister<LexComparator>(factory);
-	nameFactoryRegister<ReverseLexComparator>(factory);
+    nameFactoryRegister<LexComparator>(factory);
+    nameFactoryRegister<ReverseLexComparator>(factory);
 
-	return factory;
+    return factory;
   }
 }
 
@@ -52,13 +52,13 @@ int lexCompare(const Exponent* a, const Exponent* b, size_t varCount) {
   ASSERT(b != 0 || varCount == 0);
 
   for (size_t var = 0; var < varCount; ++var) {
-	if (a[var] == b[var])
-	  continue;
+    if (a[var] == b[var])
+      continue;
 
-	if (a[var] < b[var])
-	  return -1;
-	else
-	  return 1;
+    if (a[var] < b[var])
+      return -1;
+    else
+      return 1;
   }
   return 0;
 }
@@ -79,8 +79,8 @@ bool equals(const Exponent* a, const Exponent* b, size_t varCount) {
   ASSERT(b != 0 || varCount == 0);
 
   for (size_t var = 0; var < varCount; ++var)
-	if (a[var] != b[var])
-	  return false;
+    if (a[var] != b[var])
+      return false;
   return true;
 }
 
@@ -106,7 +106,7 @@ SingleDegreeComparator::SingleDegreeComparator(size_t var, size_t varCount):
 }
 
 ReverseSingleDegreeComparator::ReverseSingleDegreeComparator(size_t var,
-															 size_t varCount):
+                                                             size_t varCount):
   TermPredicate(varCount),
   _var(var) {
 }

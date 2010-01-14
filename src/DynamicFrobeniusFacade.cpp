@@ -25,7 +25,7 @@ DynamicFrobeniusFacade(bool printActions):
 
 void DynamicFrobeniusFacade::
 computeFrobeniusNumber(const vector<mpz_class>& instance,
-		       mpz_class& frobeniusNumber) {
+               mpz_class& frobeniusNumber) {
   beginAction
     ("Computing Frobenius number using dynamic programming algorithm.");
 

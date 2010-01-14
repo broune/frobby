@@ -30,17 +30,17 @@ namespace IO {
    output, without actually displaying those things. */
   class CountingIOHandler : public IOHandlerImpl {
   public:
-	CountingIOHandler();
+    CountingIOHandler();
 
-	static const char* staticGetName();
+    static const char* staticGetName();
 
   private:
-	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
-	virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
+    virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
+    virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-	virtual void doWriteTerm(const vector<mpz_class>& term,
-							 const VarNames& names,
-							 FILE* out);
+    virtual void doWriteTerm(const vector<mpz_class>& term,
+                             const VarNames& names,
+                             FILE* out);
   };
 }
 

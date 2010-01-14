@@ -287,10 +287,21 @@ clean: tidy
 tidy:
 	find .|grep -x ".*~\|.*/\#.*\#|.*\.stackdump\|gmon\.out\|.*\.orig\|.*/core\|core"|xargs rm -f
 
-# Convert any Windows-style whitespace into Unix-style whitespace. This is
-# a good thing to do before a commit if developing on e.g. Cygwin.
-dos2unix:
-	for f in `find src/ test/ scr/ doc/ -type f`; do dos2unix $$f; done
+# Fixes various white space related issues.
+#  - Remove trailing blank lines from files
+#  - Remove trailing white space from lines in files
+#  - Replace tabs with spaces with a tab-space of 4
+#  - Convert Windows-style line endigns to Unix-style ones
+fixspace:
+	for f in `find src/ doc/ -type f`; do \
+	  echo $$f; \
+	  sed -e :a -e '/^\n*$$/{$$d;N;ba' -e '}' < $$f | \
+	    sed 's/[[:blank:]]*$$//g' | \
+	    expand --tabs=4| \
+	    dos2unix > frobbySpaceTmp__; \
+	  mv frobbySpaceTmp__ $$f; \
+	done; \
+	find test/|xargs find;
 
 commit: test
 	echo

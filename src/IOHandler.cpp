@@ -60,7 +60,7 @@ void IOHandler::readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) {
 }
 
 void IOHandler::writeTerm(const vector<mpz_class>& term,
-						  const VarNames& names, FILE* out) {
+                          const VarNames& names, FILE* out) {
   doWriteTerm(term, names, out);
 }
 
@@ -78,18 +78,18 @@ const char* IOHandler::getDescription() const {
 
 auto_ptr<BigTermConsumer> IOHandler::createIdealWriter(FILE* out) {
   if (!supportsOutput(DataType::getMonomialIdealType())) {
-	throwError<UnsupportedException>
-	  ("The " + string(getName()) +
-	   " format does not support output of a monomial ideal.");
+    throwError<UnsupportedException>
+      ("The " + string(getName()) +
+       " format does not support output of a monomial ideal.");
   }
   return auto_ptr<BigTermConsumer>(doCreateIdealWriter(out));
 }
 
 auto_ptr<BigTermConsumer> IOHandler::createIdealListWriter(FILE* out) {
   if (!supportsOutput(DataType::getMonomialIdealListType())) {
-	throwError<UnsupportedException>
-	  ("The " + string(getName()) +
-	   " format does not support output of a list of monomial ideals.");
+    throwError<UnsupportedException>
+      ("The " + string(getName()) +
+       " format does not support output of a list of monomial ideals.");
   }
   // This is the same kind of object as for a non-list ideal
   // writer. The only difference is that we checked for support for
@@ -99,9 +99,9 @@ auto_ptr<BigTermConsumer> IOHandler::createIdealListWriter(FILE* out) {
 
 auto_ptr<CoefBigTermConsumer> IOHandler::createPolynomialWriter(FILE* out) {
   if (!supportsOutput(DataType::getPolynomialType())) {
-	throwError<UnsupportedException>
-	  ("The " + string(getName()) +
-	   " format does not support output of a polynomial.");
+    throwError<UnsupportedException>
+      ("The " + string(getName()) +
+       " format does not support output of a polynomial.");
   }
   return auto_ptr<CoefBigTermConsumer>(doCreatePolynomialWriter(out));
 }
@@ -117,18 +117,18 @@ bool IOHandler::supportsOutput(const DataType& type) const {
 namespace {
   typedef NameFactory<IOHandler> IOHandlerFactory;
   IOHandlerFactory getIOHandlerFactory() {
-	IOHandlerFactory factory("format");
+    IOHandlerFactory factory("format");
 
-	nameFactoryRegister<IO::Macaulay2IOHandler>(factory);
-	nameFactoryRegister<IO::CoCoA4IOHandler>(factory);
-	nameFactoryRegister<IO::SingularIOHandler>(factory);
-	nameFactoryRegister<IO::MonosIOHandler>(factory);
-	nameFactoryRegister<IO::NewMonosIOHandler>(factory);
-	nameFactoryRegister<IO::Fourti2IOHandler>(factory);
-	nameFactoryRegister<IO::NullIOHandler>(factory);
-	nameFactoryRegister<IO::CountingIOHandler>(factory);
+    nameFactoryRegister<IO::Macaulay2IOHandler>(factory);
+    nameFactoryRegister<IO::CoCoA4IOHandler>(factory);
+    nameFactoryRegister<IO::SingularIOHandler>(factory);
+    nameFactoryRegister<IO::MonosIOHandler>(factory);
+    nameFactoryRegister<IO::NewMonosIOHandler>(factory);
+    nameFactoryRegister<IO::Fourti2IOHandler>(factory);
+    nameFactoryRegister<IO::NullIOHandler>(factory);
+    nameFactoryRegister<IO::CountingIOHandler>(factory);
 
-	return factory;
+    return factory;
   }
 }
 
@@ -138,9 +138,9 @@ auto_ptr<IOHandler> createIOHandler(const string& prefix) {
 
 auto_ptr<IOHandler> createOHandler(const string& input, const string& output) {
   if (output == getFormatNameIndicatingToUseInputFormatAsOutputFormat())
-	return createIOHandler(input);
+    return createIOHandler(input);
   else
-	return createIOHandler(output);
+    return createIOHandler(output);
 }
 
 void getIOHandlerNames(vector<string>& names) {
@@ -153,35 +153,35 @@ void readFrobeniusInstance(Scanner& in, vector<mpz_class>& numbers) {
   string number;
   mpz_class n;
   while (!in.matchEOF()) {
-	in.readInteger(n);
+    in.readInteger(n);
 
     if (n <= 1) {
-	  FrobbyStringStream errorMsg;
-	  errorMsg << "Read the number " << n
-			   << " while reading Frobenius instance. "
-			   << "Only integers strictly larger than 1 are valid.";
-	  reportSyntaxError(in, errorMsg);
+      FrobbyStringStream errorMsg;
+      errorMsg << "Read the number " << n
+               << " while reading Frobenius instance. "
+               << "Only integers strictly larger than 1 are valid.";
+      reportSyntaxError(in, errorMsg);
     }
 
     numbers.push_back(n);
   }
 
   if (numbers.empty())
-	reportSyntaxError
-	  (in, "Read empty Frobenius instance, which is not allowed.");
+    reportSyntaxError
+      (in, "Read empty Frobenius instance, which is not allowed.");
 
   mpz_class gcd = numbers[0];
   for (size_t i = 1; i < numbers.size(); ++i)
     mpz_gcd(gcd.get_mpz_t(), gcd.get_mpz_t(), numbers[i].get_mpz_t());
 
   if (gcd != 1) {
-	// Maybe not strictly speaking a syntax error, but that category
-	// of errors still fits best.
-	FrobbyStringStream errorMsg;
-	errorMsg << "The numbers in the Frobenius instance are not "
-			 << "relatively prime. They are all divisible by "
-			 << gcd << '.';
-	reportSyntaxError(in, errorMsg);
+    // Maybe not strictly speaking a syntax error, but that category
+    // of errors still fits best.
+    FrobbyStringStream errorMsg;
+    errorMsg << "The numbers in the Frobenius instance are not "
+             << "relatively prime. They are all divisible by "
+             << gcd << '.';
+    reportSyntaxError(in, errorMsg);
   }
 }
 
@@ -193,27 +193,27 @@ string autoDetectFormat(Scanner& in) {
   switch (in.peek()) {
   case 'U': // correct
   case 'u': // incorrect
-	return IO::CoCoA4IOHandler::staticGetName();
+    return IO::CoCoA4IOHandler::staticGetName();
 
   case 'r': // correct
-	return IO::SingularIOHandler::staticGetName();
+    return IO::SingularIOHandler::staticGetName();
 
   case '(': // correct
   case 'l': // incorrect
   case ')': // incorrect
-	return IO::NewMonosIOHandler::staticGetName();
+    return IO::NewMonosIOHandler::staticGetName();
 
   case '0': case '1': case '2': case '3': case '4': // correct
   case '5': case '6': case '7': case '8': case '9': // correct
   case '+': case '-': // incorrect
-	return IO::Fourti2IOHandler::staticGetName();
+    return IO::Fourti2IOHandler::staticGetName();
 
   case 'v': // correct
-	return IO::MonosIOHandler::staticGetName();
+    return IO::MonosIOHandler::staticGetName();
 
   case 'R': // correct
   default: // incorrect
-	return IO::Macaulay2IOHandler::staticGetName();
+    return IO::Macaulay2IOHandler::staticGetName();
   }
 }
 

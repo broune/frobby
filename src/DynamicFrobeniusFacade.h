@@ -23,16 +23,16 @@
 class Configuration;
 
 /** A facade for using the dynamic programming Frobenius problem
-	algorithm.
+    algorithm.
 
-	@ingroup Facade 
+    @ingroup Facade
 */
 class DynamicFrobeniusFacade : private Facade {
  public:
   DynamicFrobeniusFacade(bool printActions);
 
   void computeFrobeniusNumber(const vector<mpz_class>& instance,
-			      mpz_class& frobeniusNumber);
+                  mpz_class& frobeniusNumber);
 };
 
 #endif

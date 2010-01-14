@@ -47,8 +47,8 @@ int main() {
   TestRunner runner;
   GET_TEST_SUITE(root).accept(runner);
   } catch (std::exception& e) {
-	cout << "caught exception!" << endl;
-	cout << e.what() << endl;
+    cout << "caught exception!" << endl;
+    cout << e.what() << endl;
   }
 
   return 0;

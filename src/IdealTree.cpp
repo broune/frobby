@@ -26,23 +26,23 @@ namespace {
   const size_t MaxLeafSize = 60;
 
   bool rawStrictlyDivides(Ideal::const_iterator begin,
-						  Ideal::const_iterator end,
-						  const Exponent* term,
-						  size_t varCount) {
-	for (; begin != end; ++begin)
-	  if (Term::strictlyDivides(*begin, term, varCount))
-		return true;
-	return false;
+                          Ideal::const_iterator end,
+                          const Exponent* term,
+                          size_t varCount) {
+    for (; begin != end; ++begin)
+      if (Term::strictlyDivides(*begin, term, varCount))
+        return true;
+    return false;
   }
 }
 
 class IdealTree::Node {
 public:
   Node(Ideal::iterator begin,
-	   Ideal::iterator end,
-	   size_t varCount):
-	_begin(begin), _end(end), _varCount(varCount) {
-	makeTree();
+       Ideal::iterator end,
+       size_t varCount):
+    _begin(begin), _end(end), _varCount(varCount) {
+    makeTree();
   }
 
   void makeTree();
@@ -61,87 +61,87 @@ private:
 
 void IdealTree::Node::makeTree() {
   if ((size_t)distance(_begin, _end) <= MaxLeafSize)
-	return;
+    return;
 
   Term lcm(_varCount);
   Term gcd(*_begin, _varCount);
   for (Ideal::const_iterator it = _begin; it != _end; ++it) {
-	lcm.lcm(lcm, *it);
-	gcd.gcd(gcd, *it);
+    lcm.lcm(lcm, *it);
+    gcd.gcd(gcd, *it);
   }
 
   while (true) {
-	size_t maxVar = 0;
-	for (size_t var = 1; var < _varCount; ++var)
-	  if (lcm[var] - gcd[var] > lcm[maxVar] - gcd[maxVar])
-		maxVar = var;
+    size_t maxVar = 0;
+    for (size_t var = 1; var < _varCount; ++var)
+      if (lcm[var] - gcd[var] > lcm[maxVar] - gcd[maxVar])
+        maxVar = var;
 
-	// TODO: could this ever happen?
-	if (lcm[maxVar] == 0)
-	  break; // we are not making any progress anyway.
+    // TODO: could this ever happen?
+    if (lcm[maxVar] == 0)
+      break; // we are not making any progress anyway.
 
-	ASSERT(lcm[maxVar] >= 1);
-	_var = maxVar;
+    ASSERT(lcm[maxVar] >= 1);
+    _var = maxVar;
 
-	// It's significant that we are rounding down to ensure that
-	// neither of _lessOrEqual and _greater becomes empty.
-	_pivot = (lcm[maxVar] + gcd[maxVar]) >> 1; // Note: x >> 1 == x / 2
+    // It's significant that we are rounding down to ensure that
+    // neither of _lessOrEqual and _greater becomes empty.
+    _pivot = (lcm[maxVar] + gcd[maxVar]) >> 1; // Note: x >> 1 == x / 2
 
-	Ideal::iterator left = _begin;
-	Ideal::iterator right = _end - 1;
+    Ideal::iterator left = _begin;
+    Ideal::iterator right = _end - 1;
 
-	// put those strictly divisible by _var^_pivot to right and the
-	// rest to the left.
-	while (left != right) {
-	  // Find left-most element that should go right.
-	  while ((*left)[_var] <= _pivot && left != right)
-		++left;
+    // put those strictly divisible by _var^_pivot to right and the
+    // rest to the left.
+    while (left != right) {
+      // Find left-most element that should go right.
+      while ((*left)[_var] <= _pivot && left != right)
+        ++left;
 
-	  // Find right-most element that should go left.
-	  while ((*right)[_var] > _pivot && left != right)
-		--right;
+      // Find right-most element that should go left.
+      while ((*right)[_var] > _pivot && left != right)
+        --right;
 
-	  // Swap the two found elements so that they both go into the
-	  // right place.
-	  using std::swap;
-	  swap(*left, *right);
-	}
-	ASSERT((*(_end - 1))[_var] > _pivot);
-	ASSERT((*_begin)[_var] <= _pivot);
+      // Swap the two found elements so that they both go into the
+      // right place.
+      using std::swap;
+      swap(*left, *right);
+    }
+    ASSERT((*(_end - 1))[_var] > _pivot);
+    ASSERT((*_begin)[_var] <= _pivot);
 
-	// Make middle the first element that went right, so that the two
-	// ranges become [_begin, middle) and [middle, _end).
-	ASSERT((*right)[_var] > _pivot)
-	Ideal::iterator middle = right;
-	while ((*middle)[_var] > _pivot) {
-	  ASSERT(middle != _begin);
-	  --middle;
-	}
-	++middle;
-	ASSERT(_begin < middle && middle <= _end);
-	ASSERT((*middle)[_var] > _pivot);
-	ASSERT((*(middle - 1))[_var] <= _pivot);
+    // Make middle the first element that went right, so that the two
+    // ranges become [_begin, middle) and [middle, _end).
+    ASSERT((*right)[_var] > _pivot)
+    Ideal::iterator middle = right;
+    while ((*middle)[_var] > _pivot) {
+      ASSERT(middle != _begin);
+      --middle;
+    }
+    ++middle;
+    ASSERT(_begin < middle && middle <= _end);
+    ASSERT((*middle)[_var] > _pivot);
+    ASSERT((*(middle - 1))[_var] <= _pivot);
 
-	_lessOrEqual.reset(new Node(_begin, middle, _varCount));
-	_greater.reset(new Node(middle, _end, _varCount));
+    _lessOrEqual.reset(new Node(_begin, middle, _varCount));
+    _greater.reset(new Node(middle, _end, _varCount));
 
-	_lessOrEqual->makeTree();
-	_greater->makeTree();
-	return;
+    _lessOrEqual->makeTree();
+    _greater->makeTree();
+    return;
   }
 }
 
 bool IdealTree::Node::strictlyContains(const Exponent* term) const {
   if (_lessOrEqual.get() != 0) {
-	ASSERT(_greater.get() != 0);
-	bool returnValue =
-	  _lessOrEqual->strictlyContains(term) ||
-	  _greater->strictlyContains(term);
-	ASSERT(returnValue == rawStrictlyDivides(_begin, _end, term, _varCount));
-	return returnValue;
+    ASSERT(_greater.get() != 0);
+    bool returnValue =
+      _lessOrEqual->strictlyContains(term) ||
+      _greater->strictlyContains(term);
+    ASSERT(returnValue == rawStrictlyDivides(_begin, _end, term, _varCount));
+    return returnValue;
   } else {
-	ASSERT(_greater.get() == 0);
-	return rawStrictlyDivides(_begin, _end, term, _varCount);
+    ASSERT(_greater.get() == 0);
+    return rawStrictlyDivides(_begin, _end, term, _varCount);
   }
 }
 
@@ -150,7 +150,7 @@ IdealTree::IdealTree(const Ideal& ideal) {
   // initialization of members.
   _storage.reset(new Ideal(ideal));
   _root.reset
-	(new Node(_storage->begin(), _storage->end(), ideal.getVarCount()));
+    (new Node(_storage->begin(), _storage->end(), ideal.getVarCount()));
 }
 
 IdealTree::~IdealTree() {

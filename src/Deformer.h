@@ -41,8 +41,8 @@ class Deformer {
 
    @todo Implement makeStronglyGeneric == false. */
   Deformer(Ideal& ideal,
-		   const IdealOrderer& deformationOrder,
-		   bool makeStronglyGeneric = true);
+           const IdealOrderer& deformationOrder,
+           bool makeStronglyGeneric = true);
 
   /** Apply the reverse transformation on term than that applied to
    the Ideal passed to the constructor. */

@@ -34,8 +34,8 @@ TEST(StandardProgram, TypicalNonNegative) {
   LibIdealConsumer consumer(IdealFactory::ring_xyzt());
 
   bool returnValue =
-	Frobby::solveStandardMonomialProgram
-	(ideal, castLibArray(grading), consumer);
+    Frobby::solveStandardMonomialProgram
+    (ideal, castLibArray(grading), consumer);
 
   ASSERT_TRUE(returnValue);
   ASSERT_EQ(consumer.getIdeal(), IdealFactory::z());
@@ -50,8 +50,8 @@ TEST(StandardProgram, TypicalNegative) {
   Frobby::Ideal ideal = toLibIdeal(IdealFactory::xx_yy_zz_t_xz_yz());
   LibIdealConsumer consumer(IdealFactory::ring_xyzt());
 
-  bool returnValue = 
-	Frobby::solveStandardMonomialProgram(ideal, castLibArray(grading), consumer);
+  bool returnValue =
+    Frobby::solveStandardMonomialProgram(ideal, castLibArray(grading), consumer);
 
   ASSERT_TRUE(returnValue);
   ASSERT_EQ(consumer.getIdeal(), IdealFactory::xy());
@@ -64,20 +64,20 @@ TEST(StandardProgram, ZeroIdeal) {
   grading[2] = -10000;
 
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal(varCount);
-	LibIdealConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal(varCount);
+    LibIdealConsumer consumer((VarNames(varCount)));
 
-	bool returnValue =
-	  Frobby::solveStandardMonomialProgram
-	  (ideal, castLibArray(grading), consumer);
+    bool returnValue =
+      Frobby::solveStandardMonomialProgram
+      (ideal, castLibArray(grading), consumer);
 
-	if (varCount == 0) {
-	  ASSERT_TRUE(returnValue);
-	  ASSERT_EQ(consumer.getIdeal(), IdealFactory::wholeRing(varCount));
-	} else {
-	  ASSERT_FALSE(returnValue);
-	  ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
-	}
+    if (varCount == 0) {
+      ASSERT_TRUE(returnValue);
+      ASSERT_EQ(consumer.getIdeal(), IdealFactory::wholeRing(varCount));
+    } else {
+      ASSERT_FALSE(returnValue);
+      ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
+    }
   }
 }
 
@@ -88,14 +88,14 @@ TEST(StandardProgram, WholeRing) {
   grading[2] = -10000;
 
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
-	LibIdealConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+    LibIdealConsumer consumer((VarNames(varCount)));
 
-	bool returnValue =
-	  Frobby::solveStandardMonomialProgram
-	  (ideal, castLibArray(grading), consumer);
+    bool returnValue =
+      Frobby::solveStandardMonomialProgram
+      (ideal, castLibArray(grading), consumer);
 
-	ASSERT_FALSE(returnValue);
-	ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
+    ASSERT_FALSE(returnValue);
+    ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
   }
 }

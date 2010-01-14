@@ -30,6 +30,6 @@ void SatBinomConsumer::beginConsuming(const VarNames& names) {
 void SatBinomConsumer::consume(const SatBinomIdeal& ideal) {
   beginConsuming(ideal.getNames());
   for (size_t binom = 0; binom < ideal.getGeneratorCount(); ++binom)
-	consume(ideal.getGenerator(binom));
+    consume(ideal.getGenerator(binom));
   doneConsuming();
 }

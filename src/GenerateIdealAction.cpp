@@ -68,22 +68,22 @@ void GenerateIdealAction::perform() {
   GenerateDataFacade generator(_printActions);
   const string& type = _type;
   if (type == "random")
-	generator.generateIdeal(ideal, 
-							_exponentRange,
-							_variableCount,
-							_generatorCount);
+    generator.generateIdeal(ideal,
+                            _exponentRange,
+                            _variableCount,
+                            _generatorCount);
   else if (type == "list")
-	generator.generateListIdeal(ideal, _variableCount);
+    generator.generateListIdeal(ideal, _variableCount);
   else if (type == "edge")
-	generator.generateEdgeIdeal(ideal, _variableCount, _generatorCount);
+    generator.generateEdgeIdeal(ideal, _variableCount, _generatorCount);
   else if (type == "king")
-	generator.generateKingChessIdeal(ideal, _variableCount);
+    generator.generateKingChessIdeal(ideal, _variableCount);
   else if (type == "knight")
-	generator.generateKnightChessIdeal(ideal, _variableCount);
+    generator.generateKnightChessIdeal(ideal, _variableCount);
   else if (type == "tree")
-	generator.generateTreeIdeal(ideal, _variableCount);
+    generator.generateTreeIdeal(ideal, _variableCount);
   else
-	reportError("Unknown ideal type \"" + type + "\".");
+    reportError("Unknown ideal type \"" + type + "\".");
 
   IOFacade ioFacade(_printActions);
   auto_ptr<IOHandler> output = _io.createOutputHandler();

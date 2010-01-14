@@ -29,40 +29,40 @@ logic_error(e) {
 
 void assertSucceeded(bool printDot) {
   if (printDot) {
-	fputc('.', stdout);
-	fflush(stdout);
+    fputc('.', stdout);
+    fflush(stdout);
   }
 }
 
 void assertFailed(const char* errorMsg,
-				  const char* testName, const char* file, size_t line) {
+                  const char* testName, const char* file, size_t line) {
   if (testName == 0)
-	testName = "";
+    testName = "";
 
   stringstream msg;
   msg << "Unit test " << testName
-	  << " failed in file " << file
-	  << " on line " << line << ".\n"
-	  << errorMsg;
+      << " failed in file " << file
+      << " on line " << line << ".\n"
+      << errorMsg;
   if (!msg) {
-	// This means msg has run out of memory, and so no message will be
-	// printed. In this case it is better to indicate running out of
-	// memory. As it happens, this also avoids the need for some
-	// special cases for tests when being run as a test for recovery
-	// from running out of memory. E.g. when precisely this thing
-	// happens with stringstream just ignoring its input without an
-	// exception causes tests to fail.
-	throw bad_alloc();
+    // This means msg has run out of memory, and so no message will be
+    // printed. In this case it is better to indicate running out of
+    // memory. As it happens, this also avoids the need for some
+    // special cases for tests when being run as a test for recovery
+    // from running out of memory. E.g. when precisely this thing
+    // happens with stringstream just ignoring its input without an
+    // exception causes tests to fail.
+    throw bad_alloc();
   }
   throw AssertException(msg.str());
 }
 
 void assertTrue(bool value, const char* valueString,
-				const char* testName, const char* file, size_t line,
-				bool printDot) {
+                const char* testName, const char* file, size_t line,
+                bool printDot) {
   if (value) {
-	assertSucceeded(printDot);
-	return;
+    assertSucceeded(printDot);
+    return;
   }
 
   stringstream msg;
@@ -71,11 +71,11 @@ void assertTrue(bool value, const char* valueString,
 }
 
 void assertFalse(bool value, const char* valueString,
-				 const char* testName, const char* file, size_t line,
-				 bool printDot) {
+                 const char* testName, const char* file, size_t line,
+                 bool printDot) {
   if (!value) {
-	assertSucceeded(printDot);
-	return;
+    assertSucceeded(printDot);
+    return;
   }
 
   stringstream msg;
@@ -84,11 +84,11 @@ void assertFalse(bool value, const char* valueString,
 }
 
 void assertEqualFailed(const char* a, const char* b,
-					   const char* aString, const char* bString,
-					   const char* testName, const char* file, size_t line) {
+                       const char* aString, const char* bString,
+                       const char* testName, const char* file, size_t line) {
   stringstream msg;
   msg << "Expected " << aString << " == " << bString << ", but\n"
-	  << "the  left hand side was equal to " << a << ", while\n"
-	  << "the right hand side was equal to " << b << ".\n";
+      << "the  left hand side was equal to " << a << ", while\n"
+      << "the right hand side was equal to " << b << ".\n";
   assertFailed(msg.str().c_str(), testName, file, line);
 }

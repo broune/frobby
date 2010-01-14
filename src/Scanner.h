@@ -33,15 +33,15 @@ class IOHandler;
  There are four concepts for consuming input through a Scanner:
 
  Read X: Require an X to be in the input, and return what is read.
- 
+
  Expect X: Require the exact value X to be in the input and skip past it.
- 
+
  Match X: Return true if the exact value X is in the input, and in that case
  skip past it. Otherwise return false and do nothing else.
 
  Peek X: Return true if X is the next thing int he input. Do not skip
  past anything. May or may not skip whitespace depending on what X is.
- 
+
  If a requirement is not met, Scanner reports a syntax error using the
  functions in the error.h header.
 */
@@ -61,26 +61,26 @@ public:
   auto_ptr<IOHandler> createIOHandler() const;
 
   /** Return true if the next character is c, and in that case skip
-	  past it. */
+      past it. */
   bool match(char c);
 
   /** Return true if no more input. */
   bool matchEOF();
 
   /** Require the next character to be equal to expected. This
-	  character is skipped past. */
+      character is skipped past. */
   void expect(char expected);
 
   /** Require the next character to be equal to a or b. This character
-	  is skipped past. */
+      is skipped past. */
   void expect(char a, char b);
 
   /** Require the following characters to be equal to str. These
-	  characters are skipped past. */
+      characters are skipped past. */
   void expect(const char* str);
 
   /** Require the following characters to be equal to str. These
-	  characters are skipped past. */
+      characters are skipped past. */
   void expect(const string& str);
 
   /** Require that there is no more input. */
@@ -95,41 +95,41 @@ public:
   void readIntegerAndNegativeAsZero(mpz_class& integer);
 
   /** Reads a size_t, where the representable range of that type
-	  determines when the number is too big. The number is required to
-	  be non-negative. */
+      determines when the number is too big. The number is required to
+      be non-negative. */
   void readSizeT(size_t& size);
 
   /** The returned string is only valid until the next method on this
-	  object gets called. */
+      object gets called. */
   const char* readIdentifier();
 
   /** Reads an identifier and returns the index of that identifier as
-	  the index of a variable in names. Throws an exception if there
-	  is no identifier or the identifier is not a variable in
-	  names. */
+      the index of a variable in names. Throws an exception if there
+      is no identifier or the identifier is not a variable in
+      names. */
   size_t readVariable(const VarNames& names);
 
   /** Skips whitespace and returns true if the next token is an
-	  identifier. */
+      identifier. */
   bool peekIdentifier();
 
   /** Returns true if the next character is whitespace. Does not,
-	  obviously, skip whitespace. */
+      obviously, skip whitespace. */
   bool peekWhite();
 
   /** Skips whitespace and returns true if the next character is equal
-	  to the parameter(s). */
+      to the parameter(s). */
   bool peek(char character);
 
   /** Returns the number of newlines seen. Does not skip
-	  whitespace. */
+      whitespace. */
   unsigned int getLineNumber() const;
 
   /** Returns the next character or EOF. Does not skip whitespace. */
   int peek();
 
   /** Reads past any whitespace, where whitespace is defined by the
-	  standard function isspace(). */
+      standard function isspace(). */
   void eatWhite();
 
 private:

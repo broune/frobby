@@ -63,30 +63,30 @@ HilbertAction::HilbertAction():
 
 void HilbertAction::perform() {
   if (_algorithm.getValue() == "bigatti") {
-	BigattiParams params(_params);
-	BigattiFacade facade(params);
+    BigattiParams params(_params);
+    BigattiFacade facade(params);
     if (_univariate)
-	  facade.computeUnivariateHilbertSeries();
+      facade.computeUnivariateHilbertSeries();
     else
-	  facade.computeMultigradedHilbertSeries();
+      facade.computeMultigradedHilbertSeries();
   } else if (_algorithm.getValue() == "slice") {
-	SliceParams params(_params);
-	validateSplit(params, false, false);
-	SliceFacade sliceFacade(params, DataType::getPolynomialType()); 
-	if (_univariate)
-	  sliceFacade.computeUnivariateHilbertSeries();
-	else
-	  sliceFacade.computeMultigradedHilbertSeries();
-  } else if (_algorithm.getValue() == "deform") {
-	ScarfParams params(_params);
-	ScarfFacade facade(params);
+    SliceParams params(_params);
+    validateSplit(params, false, false);
+    SliceFacade sliceFacade(params, DataType::getPolynomialType());
     if (_univariate)
-	  facade.computeUnivariateHilbertSeries();
+      sliceFacade.computeUnivariateHilbertSeries();
     else
-	  facade.computeMultigradedHilbertSeries();
+      sliceFacade.computeMultigradedHilbertSeries();
+  } else if (_algorithm.getValue() == "deform") {
+    ScarfParams params(_params);
+    ScarfFacade facade(params);
+    if (_univariate)
+      facade.computeUnivariateHilbertSeries();
+    else
+      facade.computeMultigradedHilbertSeries();
   } else
-	reportError("Unknown Hilbert-Poincare series algorithm \"" +
-				_algorithm.getValue() + "\".");
+    reportError("Unknown Hilbert-Poincare series algorithm \"" +
+                _algorithm.getValue() + "\".");
 }
 
 const char* HilbertAction::staticGetName() {

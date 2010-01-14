@@ -21,8 +21,8 @@
 #include "FrobbyStringStream.h"
 
 BoolParameter::BoolParameter(const string& name,
-							 const string& description,
-							 bool defaultValue):
+                             const string& description,
+                             bool defaultValue):
   Parameter(name, description),
   _value(defaultValue) {
 }
@@ -55,12 +55,12 @@ void BoolParameter::doProcessArguments(const char** args, size_t argCount) {
   else if (arg == "on")
     _value = true;
   else {
-	FrobbyStringStream errorMsg;
-	errorMsg << "Option -"
-			 << getName()
-			 << " was given the argument \""
-			 << arg
-			 << "\". The only valid arguments are \"on\" and \"off\".";
-	reportError(errorMsg);
+    FrobbyStringStream errorMsg;
+    errorMsg << "Option -"
+             << getName()
+             << " was given the argument \""
+             << arg
+             << "\". The only valid arguments are \"on\" and \"off\".";
+    reportError(errorMsg);
   }
 }

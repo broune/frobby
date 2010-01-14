@@ -35,9 +35,9 @@ class NullCoefTermConsumer : public CoefBigTermConsumer {
   virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
   virtual void consume
-	(const mpz_class& coef,
-	 const Term& term,
-	 const TermTranslator& translator);
+    (const mpz_class& coef,
+     const Term& term,
+     const TermTranslator& translator);
   virtual void consume(const mpz_class& coef, const vector<mpz_class>& term);
   virtual void doneConsuming();
 

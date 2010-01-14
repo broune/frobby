@@ -23,7 +23,7 @@ class BigPolynomial;
 
 /** A facade for operations on polynomials.
 
-	@ingroup Facade
+    @ingroup Facade
  */
 class PolynomialFacade : private Facade {
  public:

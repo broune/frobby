@@ -55,7 +55,7 @@ void addIdealParams(CliParams& params);
 void extractCliValues(SliceParams& slice, const CliParams& cli);
 
 void validateSplit(const SliceParams& params,
-				   bool allowLabel,
-				   bool allowDegree);
+                   bool allowLabel,
+                   bool allowDegree);
 
 #endif

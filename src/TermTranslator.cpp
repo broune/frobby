@@ -33,17 +33,17 @@ TermTranslator::TermTranslator(size_t varCount, size_t upToExponent):
   _exponents(varCount),
   _names(varCount) {
   if (varCount > 0) {
-	_exponents[0].reserve(upToExponent + 1);
-	for (size_t i = 0; i < upToExponent; ++i)
-	  _exponents[0].push_back(i);
-	_exponents[0].push_back(0);
-	for (size_t var = 1; var < varCount; ++var)
-	  _exponents[var] = _exponents[0];
+    _exponents[0].reserve(upToExponent + 1);
+    for (size_t i = 0; i < upToExponent; ++i)
+      _exponents[0].push_back(i);
+    _exponents[0].push_back(0);
+    for (size_t var = 1; var < varCount; ++var)
+      _exponents[var] = _exponents[0];
   }
 }
 
 TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal,
-							   bool sortVars) {
+                               bool sortVars) {
   vector<BigIdeal*> bigIdeals;
   bigIdeals.push_back(const_cast<BigIdeal*>(&bigIdeal));
   initialize(bigIdeals, sortVars);
@@ -52,7 +52,7 @@ TermTranslator::TermTranslator(const BigIdeal& bigIdeal, Ideal& ideal,
 }
 
 TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
-							   vector<Ideal*>& ideals) {
+                               vector<Ideal*>& ideals) {
   ASSERT(!bigIdeals.empty());
 
   ideals.clear();
@@ -61,7 +61,7 @@ TermTranslator::TermTranslator(const vector<BigIdeal*>& bigIdeals,
   initialize(bigIdeals, true);
 
   for (size_t i = 0; i < bigIdeals.size(); ++i) {
-	exceptionSafePushBack(ideals, auto_ptr<Ideal>(new Ideal()));
+    exceptionSafePushBack(ideals, auto_ptr<Ideal>(new Ideal()));
     shrinkBigIdeal(*(bigIdeals[i]), *(ideals.back()));
   }
   idealsDeleter.release();
@@ -88,8 +88,8 @@ bool mpzClassPointerEqual(const mpz_class* a, const mpz_class* b) {
 //
 // extractExponents changes the exponents that it extracts.
 void extractExponents(const vector<BigIdeal*>& ideals,
-					  vector<mpz_class>& exponents,
-					  const string& varName) {
+                      vector<mpz_class>& exponents,
+                      const string& varName) {
   vector<mpz_class*> exponentRefs;
 
   mpz_class zero(0);
@@ -114,16 +114,16 @@ void extractExponents(const vector<BigIdeal*>& ideals,
 
     size_t generatorCount = ideal.getGeneratorCount();
     for (size_t term = 0; term < generatorCount; ++term) {
-	  const mpz_class& e = ideal.getExponent(term, var);
-	  if (e <= MaxSmall) {
-		ASSERT(e.fits_uint_p());
-		unsigned int ui = e.get_ui();
-		if (seen[ui])
-		  continue;
-		seen[ui] = true;
-	  }
-	  exponentRefs.push_back(&(ideal.getExponent(term, var)));
-	}
+      const mpz_class& e = ideal.getExponent(term, var);
+      if (e <= MaxSmall) {
+        ASSERT(e.fits_uint_p());
+        unsigned int ui = e.get_ui();
+        if (seen[ui])
+          continue;
+        seen[ui] = true;
+      }
+      exponentRefs.push_back(&(ideal.getExponent(term, var)));
+    }
   }
 
   // Sort and remove duplicates.
@@ -163,27 +163,27 @@ bool TermTranslatorInitializeHelper_StringPointerCompareEqual
 }
 
 void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
-								bool sortVars) {
+                                bool sortVars) {
   ASSERT(!bigIdeals.empty());
 
   if (sortVars) {
-	vector<const string*> variables;
+    vector<const string*> variables;
     for (size_t ideal = 0; ideal < bigIdeals.size(); ++ideal) {
-	  const VarNames& names = bigIdeals[ideal]->getNames();
-	  if (ideal != 0 && names == bigIdeals[ideal - 1]->getNames())
-		continue;
+      const VarNames& names = bigIdeals[ideal]->getNames();
+      if (ideal != 0 && names == bigIdeals[ideal - 1]->getNames())
+        continue;
       for (size_t var = 0; var < bigIdeals[ideal]->getVarCount(); ++var)
-		variables.push_back(&(names.getName(var)));
-	}
-	std::sort(variables.begin(), variables.end(),
-			  TermTranslatorInitializeHelper_StringPointerCompareLess);
-	variables.erase
-	  (std::unique(variables.begin(), variables.end(),
-				   TermTranslatorInitializeHelper_StringPointerCompareEqual),
-	   variables.end());
+        variables.push_back(&(names.getName(var)));
+    }
+    std::sort(variables.begin(), variables.end(),
+              TermTranslatorInitializeHelper_StringPointerCompareLess);
+    variables.erase
+      (std::unique(variables.begin(), variables.end(),
+                   TermTranslatorInitializeHelper_StringPointerCompareEqual),
+       variables.end());
 
     for (vector<const string*>::const_iterator var = variables.begin();
-		 var != variables.end(); ++var)
+         var != variables.end(); ++var)
       _names.addVar(**var);
   } else {
     ASSERT(bigIdeals.size() == 1);
@@ -197,7 +197,7 @@ void TermTranslator::initialize(const vector<BigIdeal*>& bigIdeals,
 }
 
 void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
-									Ideal& ideal) const {
+                                    Ideal& ideal) const {
   ideal.clearAndSetVarCount(_names.getVarCount());
 
   // Figure out how bigIdeal's names map onto _names.
@@ -205,16 +205,16 @@ void TermTranslator::shrinkBigIdeal(const BigIdeal& bigIdeal,
   newVars.reserve(bigIdeal.getVarCount());
 
   if (bigIdeal.getNames() == _names) {
-	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
-	  newVars.push_back(var);
+    for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+      newVars.push_back(var);
   } else {
-	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
-	  const string& name = bigIdeal.getNames().getName(var);
-	  size_t newVar = _names.getIndex(name);
-	  newVars.push_back(newVar);
-	  
-	  ASSERT(newVar != VarNames::getInvalidIndex());
-	}
+    for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
+      const string& name = bigIdeal.getNames().getName(var);
+      size_t newVar = _names.getIndex(name);
+      newVars.push_back(newVar);
+
+      ASSERT(newVar != VarNames::getInvalidIndex());
+    }
   }
 
   // Insert generators after translating exponents and variables.
@@ -259,29 +259,29 @@ void TermTranslator::addPurePowersAtInfinity(Ideal& ideal) const {
 }
 
 /** @todo Figure out what is going on with the continue in this
-	method. Also, make it use the methods of ideal, instead of rolling
-	its own iteration code. */
+    method. Also, make it use the methods of ideal, instead of rolling
+    its own iteration code. */
 void TermTranslator::setInfinityPowersToZero(Ideal& ideal) const {
   size_t varCount = ideal.getVarCount();
   Ideal::iterator term = ideal.begin();
   while (term != ideal.end()) {
-	bool changed = false;
-	for (size_t var = 0; var < varCount; ++var) {
-	  if ((*term)[var] == getMaxId(var)) {
-		ASSERT(getExponent(var, (*term)[var]) == 0);
-		(*term)[var] = 0;
-		changed = true;
-	  }
-	}
-	++term;
-	continue; // uhm... ?
-	if (changed && Term::isIdentity(*term, varCount)) {
-	  bool last = (term + 1 == ideal.end());
-	  ideal.remove(term);
-	  if (last)
-		break;
-	} else
-	  ++term;
+    bool changed = false;
+    for (size_t var = 0; var < varCount; ++var) {
+      if ((*term)[var] == getMaxId(var)) {
+        ASSERT(getExponent(var, (*term)[var]) == 0);
+        (*term)[var] = 0;
+        changed = true;
+      }
+    }
+    ++term;
+    continue; // uhm... ?
+    if (changed && Term::isIdentity(*term, varCount)) {
+      bool last = (term + 1 == ideal.end());
+      ideal.remove(term);
+      if (last)
+        break;
+    } else
+      ++term;
   }
 }
 
@@ -289,15 +289,15 @@ void TermTranslator::dualize(const vector<mpz_class>& a) {
   clearStrings();
   for (size_t var = 0; var < _exponents.size(); ++var)
     for (size_t exp = 0; exp < _exponents[var].size(); ++exp)
-	  if (_exponents[var][exp] != 0)
-		_exponents[var][exp] = a[var] - _exponents[var][exp] + 1;
+      if (_exponents[var][exp] != 0)
+        _exponents[var][exp] = a[var] - _exponents[var][exp] + 1;
 }
 
 void TermTranslator::decrement() {
   clearStrings();
   for (size_t var = 0; var < _exponents.size(); ++var)
     for (size_t exp = 0; exp < _exponents[var].size(); ++exp)
-	  _exponents[var][exp] -= 1;
+      _exponents[var][exp] -= 1;
 }
 
 void TermTranslator::renameVariables(const VarNames& names) {
@@ -312,15 +312,15 @@ void TermTranslator::swapVariables(size_t a, size_t b) {
   ASSERT(b < getVarCount());
 
   if (a == b)
-	return;
+    return;
 
   std::swap(_exponents[a], _exponents[b]);
 
   if (!_stringExponents.empty())
-	std::swap(_stringExponents[a], _stringExponents[b]);
+    std::swap(_stringExponents[a], _stringExponents[b]);
 
   if (!_stringVarExponents.empty())
-	std::swap(_stringVarExponents[a], _stringVarExponents[b]);
+    std::swap(_stringVarExponents[a], _stringVarExponents[b]);
 
   _names.swapVariables(a, b);
 }
@@ -330,9 +330,9 @@ void TermTranslator::print(ostream& out) const {
   for (size_t var = 0; var < _exponents.size(); ++var) {
     out << " var " << var + 1 << ':';
     for (size_t e = 0; e < _exponents[var].size(); ++e) {
-	  out << ' ' << _exponents[var][e];
+      out << ' ' << _exponents[var][e];
     }
-	out << '\n';
+    out << '\n';
   }
   out << ")\n";
 }
@@ -345,7 +345,7 @@ string TermTranslator::toString() const {
 
 void TermTranslator::makeStrings(bool includeVar) const {
   vector<vector<const char*> >& strings =
-	includeVar ? _stringVarExponents : _stringExponents;
+    includeVar ? _stringVarExponents : _stringExponents;
 
   ASSERT(strings.empty());
 
@@ -356,17 +356,17 @@ void TermTranslator::makeStrings(bool includeVar) const {
       char* str = 0;
 
       if (_exponents[i][j] != 0 || !includeVar) {
-		FrobbyStringStream out;
-		if (!includeVar)
-		  out << _exponents[i][j];
-		else {
-		  out << _names.getName(i);
-		  if (_exponents[i][j] != 1)
-			out << '^' << _exponents[i][j];
-		}
+        FrobbyStringStream out;
+        if (!includeVar)
+          out << _exponents[i][j];
+        else {
+          out << _names.getName(i);
+          if (_exponents[i][j] != 1)
+            out << '^' << _exponents[i][j];
+        }
 
-		str = new char[out.str().size() + 1];
-		strcpy(str, out.str().c_str());
+        str = new char[out.str().size() + 1];
+        strcpy(str, out.str().c_str());
       }
       strings[i][j] = str;
     }
@@ -402,7 +402,7 @@ getVarExponentString(size_t variable, Exponent exponent) const {
   ASSERT(exponent < _exponents[variable].size());
 
   if (_stringVarExponents.empty())
-	makeStrings(true);
+    makeStrings(true);
   return _stringVarExponents[variable][exponent];
 }
 
@@ -412,7 +412,7 @@ getExponentString(size_t variable, Exponent exponent) const {
   ASSERT(exponent < _exponents[variable].size());
 
   if (_stringExponents.empty())
-	makeStrings(false);
+    makeStrings(false);
   return _stringExponents[variable][exponent];
 }
 
@@ -423,12 +423,12 @@ getExponent(size_t variable, const Term& term) const {
 
 Exponent TermTranslator::getMaxId(size_t variable) const {
   ASSERT(variable < _exponents.size());
-  
+
   return _exponents[variable].size() - 1;
 }
 
 Exponent TermTranslator::shrinkExponent(size_t var,
-										const mpz_class& exponent) const {
+                                        const mpz_class& exponent) const {
   const vector<mpz_class>& exponents = _exponents[var];
 
   // We subtract 1 from exponents.end() to skip past the 0 that is
@@ -453,25 +453,25 @@ lessThanReverseLex(const Exponent* a, const Exponent* b) const {
   size_t varCount = getVarCount();
 
   for (size_t var = 0; var < varCount; ++var) {
-	const mpz_class& ae = getExponent(var, a[var]);
-	const mpz_class& be = getExponent(var, b[var]);
+    const mpz_class& ae = getExponent(var, a[var]);
+    const mpz_class& be = getExponent(var, b[var]);
 
     if (ae != be)
-	  return ae > be;
+      return ae > be;
   }
 
   return 0;
 }
 
 bool TranslatedReverseLexComparator::operator()(const Term& a,
-												const Term& b) const {
+                                                const Term& b) const {
   ASSERT(a.getVarCount() == _translator.getVarCount());
   ASSERT(b.getVarCount() == _translator.getVarCount());
   return operator()(a.begin(), b.begin());
 }
 
 bool TranslatedReverseLexComparator::operator()(const Exponent* a,
-												const Exponent* b) const {
+                                                const Exponent* b) const {
   ASSERT(a != 0 || _translator.getVarCount() == 0);
   ASSERT(b != 0 || _translator.getVarCount() == 0);
 
@@ -483,10 +483,10 @@ void setToZeroOne(TermTranslator& translator) {
   zeroOneIdeal.newLastTerm(); // Add term with all exponents zero.
   zeroOneIdeal.newLastTerm(); // Add term with all exponents one.
   for (size_t var = 0; var < translator.getVarCount(); ++var)
-	zeroOneIdeal.getLastTermExponentRef(var) = 1;
+    zeroOneIdeal.getLastTermExponentRef(var) = 1;
 
   Ideal dummy;
-  translator = TermTranslator(zeroOneIdeal, dummy, false);  
+  translator = TermTranslator(zeroOneIdeal, dummy, false);
 }
 
 ostream& operator<<(ostream& out, const TermTranslator& translator) {

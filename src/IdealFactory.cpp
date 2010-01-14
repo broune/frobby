@@ -136,7 +136,7 @@ BigIdeal IdealFactory::wholeRing(size_t varCount) {
 }
 
 BigIdeal IdealFactory::zeroIdeal(size_t varCount) {
-  return BigIdeal(VarNames(varCount));  
+  return BigIdeal(VarNames(varCount));
 }
 
 vector<mpz_class> IdealFactory::makeTerm(int a, int b, int c, int d) {

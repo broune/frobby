@@ -44,7 +44,7 @@ class ObjectCache {
   /** Returns a copy of copyOf. The new object is constructed using
    the copy constructor, or it is an object previously passed to
    freeObject() that has copyOf assigned to it.
-  */  
+  */
   template<class S>
   auto_ptr<T> newObjectCopy(const S& copyOf);
 
@@ -68,7 +68,7 @@ inline ObjectCache<T>::ObjectCache():
 template<class T>
 auto_ptr<T> ObjectCache<T>::newObject() {
   if (_cache.empty())
-	return auto_ptr<T>(new T());
+    return auto_ptr<T>(new T());
 
   auto_ptr<T> object(_cache.back());
   _cache.pop_back();
@@ -78,12 +78,12 @@ auto_ptr<T> ObjectCache<T>::newObject() {
 template<class T> template<class S>
 auto_ptr<T> ObjectCache<T>::newObjectCopy(const S& copyOf) {
   if (_cache.empty())
-	return auto_ptr<T>(new T(copyOf));
+    return auto_ptr<T>(new T(copyOf));
 
   auto_ptr<T> object(_cache.back());
   _cache.pop_back();
   *object = copyOf;
-  return object;  
+  return object;
 }
 
 template<class T> template<class S>

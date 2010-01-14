@@ -25,7 +25,7 @@
 BigattiFacade::BigattiFacade(const BigattiParams& params):
   Facade(params.getPrintActions()),
   _pivot(BigattiPivotStrategy::createStrategy
-		 (params.getPivot(), params.getWidenPivot())),
+         (params.getPivot(), params.getWidenPivot())),
   _params(params) {
   _common.readIdealAndSetPolyOutput(params);
 }
@@ -39,10 +39,10 @@ void BigattiFacade::computeMultigradedHilbertSeries() {
   beginAction("Computing multigraded Hilbert-Poincare series.");
 
   BigattiHilbertAlgorithm alg(_common.takeIdeal(),
-							  _common.getTranslator(),
-							  _params,
-							  _pivot,
-							  _common.getPolyConsumer());
+                              _common.getTranslator(),
+                              _params,
+                              _pivot,
+                              _common.getPolyConsumer());
   alg.setComputeUnivariate(false);
   alg.run();
 
@@ -53,10 +53,10 @@ void BigattiFacade::computeUnivariateHilbertSeries() {
   beginAction("Computing univariate Hilbert-Poincare series");
 
   BigattiHilbertAlgorithm alg(_common.takeIdeal(),
-							  _common.getTranslator(),
-							  _params,
-							  _pivot,
-							  _common.getPolyConsumer());
+                              _common.getTranslator(),
+                              _params,
+                              _pivot,
+                              _common.getPolyConsumer());
   alg.setComputeUnivariate(true);
   alg.run();
 

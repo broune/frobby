@@ -51,34 +51,34 @@ void extractCliValues(SliceParams& slice, const CliParams& cli) {
   extractCliValues(static_cast<SliceLikeParams&>(slice), cli);
   slice.setSplit(getString(cli, SplitParamName));
   if (cli.hasParam(UseIndependenceName))
-	slice.useIndependenceSplits(getBool(cli, UseIndependenceName));
+    slice.useIndependenceSplits(getBool(cli, UseIndependenceName));
   if (cli.hasParam(UseBoundElimination))
-	slice.useBoundElimination(getBool(cli, UseBoundElimination));
+    slice.useBoundElimination(getBool(cli, UseBoundElimination));
   if (cli.hasParam(UseBoundSimplification))
-	slice.useBoundElimination(getBool(cli, UseBoundSimplification));
+    slice.useBoundElimination(getBool(cli, UseBoundSimplification));
 }
 
 void validateSplit(const SliceParams& params,
-				   bool allowLabel,
-				   bool allowDegree) {
+                   bool allowLabel,
+                   bool allowDegree) {
   auto_ptr<SplitStrategy>
-	split(SplitStrategy::createStrategy(params.getSplit()));
+    split(SplitStrategy::createStrategy(params.getSplit()));
   ASSERT(split.get() != 0)
 
   if (!allowLabel && split->isLabelSplit())
-	reportError("Label split strategy is not appropriate " 
-				"in this context.");
+    reportError("Label split strategy is not appropriate "
+                "in this context.");
 
   // TODO: implement degree when there is no grading too, so that it
   // is always appropriate.
   if (!allowDegree && params.getSplit() == "degree") {
-	reportError("The split strategy degree is not appropriate "
-				"in this context.");
+    reportError("The split strategy degree is not appropriate "
+                "in this context.");
   }
 
   // TODO: remove the deprecated frob.
   if (!allowDegree && params.getSplit() == "frob") {
-	reportError("The split strategy frob is not appropriate "
-				"in this context.");
+    reportError("The split strategy frob is not appropriate "
+                "in this context.");
   }
 }

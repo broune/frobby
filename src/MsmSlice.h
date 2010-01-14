@@ -34,10 +34,10 @@ class MsmSlice : public Slice {
  public:
   MsmSlice(MsmStrategy& strategy);
   MsmSlice(MsmStrategy& strategy,
-		   const Ideal& ideal,
-		   const Ideal& subtract,
-		   const Term& multiply,
-		   TermConsumer* consumer);
+           const Ideal& ideal,
+           const Ideal& subtract,
+           const Term& multiply,
+           TermConsumer* consumer);
 
   TermConsumer* getConsumer() {return _consumer;}
 
@@ -53,8 +53,8 @@ class MsmSlice : public Slice {
   virtual bool simplifyStep();
 
   void setToProjOf(const MsmSlice& slice,
-				   const Projection& projection,
-				   TermConsumer* consumer);
+                   const Projection& projection,
+                   TermConsumer* consumer);
 
   // Efficiently swaps the values of *this and slice.
   void swap(MsmSlice& slice);

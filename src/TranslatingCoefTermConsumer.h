@@ -26,19 +26,19 @@ class TermTranslator;
 class TranslatingCoefTermConsumer : public CoefBigTermConsumer {
  public:
   TranslatingCoefTermConsumer
-	(CoefBigTermConsumer& consumer, const TermTranslator& translator);
+    (CoefBigTermConsumer& consumer, const TermTranslator& translator);
   TranslatingCoefTermConsumer
-	(auto_ptr<CoefBigTermConsumer> consumer, const TermTranslator& translator);
+    (auto_ptr<CoefBigTermConsumer> consumer, const TermTranslator& translator);
 
   virtual void consumeRing(const VarNames& names);
 
   virtual void beginConsuming();
   virtual void consume(const mpz_class& coef, const Term& term);
   virtual void consume(const mpz_class& coef,
-					   const Term& term,
-					   const TermTranslator& translator);
+                       const Term& term,
+                       const TermTranslator& translator);
   virtual void consume(const mpz_class& coef,
-					   const vector<mpz_class>& term);
+                       const vector<mpz_class>& term);
   virtual void doneConsuming();
 
   virtual void consume(const BigPolynomial& poly);

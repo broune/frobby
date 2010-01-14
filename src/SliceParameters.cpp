@@ -23,8 +23,8 @@
 #include "BigattiFacade.h"
 
 SliceParameters::SliceParameters(bool exposeBoundParam,
-								 bool exposeIndependenceParam,
-								 bool supportBigattiAlgorithm):
+                                 bool exposeIndependenceParam,
+                                 bool supportBigattiAlgorithm):
   _exposeBoundParam(exposeBoundParam),
   _exposeIndependenceParam(exposeIndependenceParam),
 
@@ -96,35 +96,35 @@ SliceParameters::SliceParameters(bool exposeBoundParam,
   addParameter(&_split);
   addParameter(&_printStatistics);
   if (exposeIndependenceParam)
-	addParameter(&_useIndependence);
+    addParameter(&_useIndependence);
   addParameter(&_useSimplification);
   addParameter(&_printDebug);
   if (_exposeBoundParam) {
-	addParameter(&_useBoundSimplification);
-	addParameter(&_useBoundElimination);
+    addParameter(&_useBoundSimplification);
+    addParameter(&_useBoundElimination);
   }
   addParameter(&_canonical);
 
   if (supportBigattiAlgorithm) {
-	addParameter(&_useBigattiGeneric);
-	addParameter(&_widenPivot);
+    addParameter(&_useBigattiGeneric);
+    addParameter(&_widenPivot);
 
-	_printDebug.appendToDescription
-	  (" Slice algorithm only.");
-	_printStatistics.appendToDescription
-	  (" Slice algorithm only.");
-	_useIndependence.appendToDescription
-	  (" Slice algorithm only.");
-	_minimal.appendToDescription
-	  ("\nSlice algorithm only.");
-	_canonical.appendToDescription
-	  ("\nThe impact for the Bigatti et.al. algorithm is much less than for the"
-	   "\nSlice Algorithm since the Bigatti et.al. algorithm always has to\n"
-	   "store the entire output in memory regardless of this option.");
-	_split.appendToDescription
-	  ("\nBigatti et.al. options are median, mostNGPure, mostNGGcd,\n"
-	   "mostNGTight, typicalPure, typicalGcd, typicalTight, typicalNGPure,\n"
-	   "typicalNGGcd, typicalNGTight, someNGPure, someNGGcd and someNGTight.");
+    _printDebug.appendToDescription
+      (" Slice algorithm only.");
+    _printStatistics.appendToDescription
+      (" Slice algorithm only.");
+    _useIndependence.appendToDescription
+      (" Slice algorithm only.");
+    _minimal.appendToDescription
+      ("\nSlice algorithm only.");
+    _canonical.appendToDescription
+      ("\nThe impact for the Bigatti et.al. algorithm is much less than for the"
+       "\nSlice Algorithm since the Bigatti et.al. algorithm always has to\n"
+       "store the entire output in memory regardless of this option.");
+    _split.appendToDescription
+      ("\nBigatti et.al. options are median, mostNGPure, mostNGGcd,\n"
+       "mostNGTight, typicalPure, typicalGcd, typicalTight, typicalNGPure,\n"
+       "typicalNGGcd, typicalNGTight, someNGPure, someNGGcd and someNGTight.");
   }
 }
 
@@ -153,38 +153,38 @@ const string& SliceParameters::getSplit() const {
 }
 
 void SliceParameters::validateSplit(bool allowLabel,
-									bool allowDegree) {
+                                    bool allowDegree) {
   auto_ptr<SplitStrategy>
-	split(SplitStrategy::createStrategy(_split.getValue().c_str()));
+    split(SplitStrategy::createStrategy(_split.getValue().c_str()));
 
   if (split.get() == 0)
-	reportError("Unknown Slice split strategy \"" + _split.getValue() + "\".");
+    reportError("Unknown Slice split strategy \"" + _split.getValue() + "\".");
 
   if (!allowLabel && split->isLabelSplit())
-	reportError("Label split strategy is not appropriate " 
-				"in this context.");
+    reportError("Label split strategy is not appropriate "
+                "in this context.");
 
   // TODO: implement degree when there is no grading too, so that it
   // is always appropriate.
   if (!allowDegree && _split.getValue() == "degree") {
-	reportError("The split strategy degree is not appropriate "
-				"in this context.");
+    reportError("The split strategy degree is not appropriate "
+                "in this context.");
   }
 
   // TODO: remove the deprecated frob.
   if (!allowDegree && _split.getValue() == "frob") {
-	reportError("The split strategy frob is not appropriate "
-				"in this context.");
+    reportError("The split strategy frob is not appropriate "
+                "in this context.");
   }
 }
 
 void SliceParameters::validateSplitHilbert() {
   auto_ptr<BigattiPivotStrategy> split = BigattiPivotStrategy::createStrategy
-	 (_split.getValue().c_str(), _widenPivot);
+     (_split.getValue().c_str(), _widenPivot);
 
   if (split.get() == 0)
-	reportError("Unknown Bigatti et.al. pivot strategy \"" +
-				_split.getValue() + "\".");
+    reportError("Unknown Bigatti et.al. pivot strategy \"" +
+                _split.getValue() + "\".");
 }
 
 bool SliceParameters::getPrintDebug() const {

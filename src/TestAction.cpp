@@ -35,15 +35,15 @@ void TestAction::obtainParameters(vector<Parameter*>& parameters) {
 
 void TestAction::perform() {
   try {
-	TestSorter sorter;
-	GET_TEST_SUITE(root).accept(sorter);
+    TestSorter sorter;
+    GET_TEST_SUITE(root).accept(sorter);
 
-	TestRunner runner;
-	GET_TEST_SUITE(root).accept(runner);
+    TestRunner runner;
+    GET_TEST_SUITE(root).accept(runner);
   } catch (const FrobbyException& e) {
-	fputs(e.what(), stderr);
+    fputs(e.what(), stderr);
   } catch (const AssertException& e) {
-	fputs(e.what(), stderr);
+    fputs(e.what(), stderr);
   }
 }
 

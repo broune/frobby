@@ -33,8 +33,8 @@ class TermTranslator;
 class BigattiBaseCase {
  public:
   /** Initialize this object to handle the computation of
-	  Hilbert-Poincare series numerator polynomials in a polynomial
-	  ring with varCount variables. */
+      Hilbert-Poincare series numerator polynomials in a polynomial
+      ring with varCount variables. */
   BigattiBaseCase(const TermTranslator& translator);
 
   /** Returns ture if state is a base case slice while also
@@ -45,7 +45,7 @@ class BigattiBaseCase {
   /** Returns true if state is a base case slice without considering
    genericity. */
   bool baseCase(const BigattiState& state);
-  
+
   /** Add +term or -term to the output polynomial when plus is true or
    false respectively. */
   void output(bool plus, const Term& term);
@@ -108,9 +108,9 @@ class BigattiBaseCase {
   /** Used in enumerateScarfComplex and necessary to have here to
    define _states. */
   struct State {
-	Term term;
-	Ideal::const_iterator pos;
-	bool plus;
+    Term term;
+    Ideal::const_iterator pos;
+    bool plus;
   };
 
   /** Used in enumerateScarfCompex. Is not a local variable to avoid

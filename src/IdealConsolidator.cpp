@@ -53,7 +53,7 @@ void IdealConsolidator::consume(const Term& term) {
   ASSERT(term.getVarCount() == _tmp.size());
 
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	_tmp[var] = term[var];
+    _tmp[var] = term[var];
   consume(_tmp);
 }
 
@@ -62,7 +62,7 @@ void IdealConsolidator::consume
   ASSERT(term.getVarCount() == _tmp.size());
 
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	_tmp[var] = translator.getExponent(var, term);
+    _tmp[var] = translator.getExponent(var, term);
   consume(_tmp);
 }
 

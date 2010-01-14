@@ -32,12 +32,12 @@ bool TestVisitor::visit(TestCase& testCase) {
 
 bool TestVisitor::visit(TestSuite& testSuite) {
   if (visitEnter(testSuite)) {
-	TestSuite::TestIterator end = testSuite.end();
-	for (TestSuite::TestIterator it = testSuite.begin(); it != end; ++it)
-	  if (!(*it)->accept(*this))
-		return false;
+    TestSuite::TestIterator end = testSuite.end();
+    for (TestSuite::TestIterator it = testSuite.begin(); it != end; ++it)
+      if (!(*it)->accept(*this))
+        return false;
   }
-  
+
   return visitLeave(testSuite);
 }
 

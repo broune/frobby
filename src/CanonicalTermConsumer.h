@@ -35,14 +35,14 @@ class CanonicalTermConsumer : public TermConsumer {
    map to zero, which influences the sorted order.
   */
   CanonicalTermConsumer(auto_ptr<TermConsumer> consumer,
-						size_t varCount,
-						TermTranslator* translator = 0);
+                        size_t varCount,
+                        TermTranslator* translator = 0);
 
   /** Passes on the call immediately. Thus the ordering between when
    this gets called and when consume gets called on the wrapped
    consumer can be switched around if consumeRing is called while
    consuming a list of ideals.
-   
+
    @todo fix this.
   */
   virtual void consumeRing(const VarNames& names);

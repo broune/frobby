@@ -32,13 +32,13 @@ void CoefBigTermRecorder::beginConsuming() {
 }
 
 void CoefBigTermRecorder::consume(const mpz_class& coef,
-								  const Term& term,
-								  const TermTranslator& translator) {
+                                  const Term& term,
+                                  const TermTranslator& translator) {
   _recordInto->add(coef, term, translator);
 }
 
 void CoefBigTermRecorder::consume(const mpz_class& coef,
-								  const vector<mpz_class>& term) {
+                                  const vector<mpz_class>& term) {
   _recordInto->add(coef, term);
 }
 

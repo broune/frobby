@@ -33,7 +33,7 @@
 #include <algorithm>
 
 IO::IOHandlerImpl::IOHandlerImpl(const char* formatName,
-								   const char* formatDescription):
+                                   const char* formatDescription):
   _formatName(formatName),
   _formatDescription(formatDescription) {
 }
@@ -48,12 +48,12 @@ CoefBigTermConsumer* IO::IOHandlerImpl::doCreatePolynomialWriter(FILE* out) {
 
 bool IO::IOHandlerImpl::doSupportsInput(const DataType& type) const {
   return std::find(_supportedInputs.begin(), _supportedInputs.end(),
-				   &type) != _supportedInputs.end();
+                   &type) != _supportedInputs.end();
 }
 
 bool IO::IOHandlerImpl::doSupportsOutput(const DataType& type) const {
   return std::find(_supportedOutputs.begin(), _supportedOutputs.end(),
-				   &type) != _supportedOutputs.end();
+                   &type) != _supportedOutputs.end();
 }
 
 void IO::IOHandlerImpl::registerInput(const DataType& type) {
@@ -71,8 +71,8 @@ void IO::IOHandlerImpl::registerOutput(const DataType& type) {
 }
 
 void IO::IOHandlerImpl::doReadTerm(Scanner& in,
-								   const VarNames& names,
-								   vector<mpz_class>& term) {
+                                   const VarNames& names,
+                                   vector<mpz_class>& term) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
@@ -85,12 +85,12 @@ void IO::IOHandlerImpl::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
 }
 
 void IO::IOHandlerImpl::doReadPolynomial(Scanner& in,
-										 CoefBigTermConsumer& consumer) {
+                                         CoefBigTermConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
 void IO::IOHandlerImpl::doReadSatBinomIdeal(Scanner& in,
-											SatBinomConsumer& consumer) {
+                                            SatBinomConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
@@ -107,11 +107,11 @@ const char* IO::IOHandlerImpl::doGetDescription() const {
 }
 
 void IO::readTermProduct(Scanner& in,
-						 const VarNames& names,
-						 vector<mpz_class>& term) {
+                         const VarNames& names,
+                         vector<mpz_class>& term) {
   term.resize(names.getVarCount());
   for (size_t var = 0; var < term.size(); ++var)
-	term[var] = 0;
+    term[var] = 0;
 
   if (in.match('1'))
     return;
@@ -122,93 +122,93 @@ void IO::readTermProduct(Scanner& in,
 }
 
 void IO::writeCoefTermProduct(const mpz_class& coef,
-							  const Term& term,
-							  const TermTranslator& translator,
-							  bool hidePlus,
-							  FILE* out) {
+                              const Term& term,
+                              const TermTranslator& translator,
+                              bool hidePlus,
+                              FILE* out) {
   if (coef >= 0 && !hidePlus)
-	fputc('+', out);
+    fputc('+', out);
 
   if (term.isIdentity()) {
-	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
-	return;
+    gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+    return;
   }
 
   if (coef == -1)
-	fputc('-', out);
+    fputc('-', out);
   else if (coef != 1)
-	gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
+    gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
 
   writeTermProduct(term, translator, out);
 }
 
 void IO::writeCoefTermProduct(const mpz_class& coef,
-							  const vector<mpz_class>& term,
-							  const VarNames& names,
-							  bool hidePlus,
-							  FILE* out) {
+                              const vector<mpz_class>& term,
+                              const VarNames& names,
+                              bool hidePlus,
+                              FILE* out) {
   if (coef >= 0 && !hidePlus)
-	fputc('+', out);
+    fputc('+', out);
 
   bool isIdentity = true;
   for (size_t var = 0; var < term.size(); ++var)
-	if (term[var] != 0)
-	  isIdentity = false;
+    if (term[var] != 0)
+      isIdentity = false;
 
   if (isIdentity) {
-	gmp_fprintf(out, "%Zd", coef.get_mpz_t());
-	return;
+    gmp_fprintf(out, "%Zd", coef.get_mpz_t());
+    return;
   }
 
   if (coef == -1)
-	fputc('-', out);
+    fputc('-', out);
   else if (coef != 1)
-	gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
+    gmp_fprintf(out, "%Zd*", coef.get_mpz_t());
 
   writeTermProduct(term, names, out);
 }
 
 void IO::writeTermProduct(const Term& term,
-						  const TermTranslator& translator,
-						  FILE* out) {
+                          const TermTranslator& translator,
+                          FILE* out) {
   bool seenNonZero = false;
   size_t varCount = term.getVarCount();
   for (size_t var = 0; var < varCount; ++var) {
-	const char* exp = translator.getVarExponentString(var, term[var]);
-	if (exp == 0)
-	  continue;
+    const char* exp = translator.getVarExponentString(var, term[var]);
+    if (exp == 0)
+      continue;
 
-	if (seenNonZero)
-	  putc('*', out);
-	else
-	  seenNonZero = true;
+    if (seenNonZero)
+      putc('*', out);
+    else
+      seenNonZero = true;
 
-	fputs(exp, out);
+    fputs(exp, out);
   }
 
   if (!seenNonZero)
-	fputc('1', out);
+    fputc('1', out);
 }
 
 void IO::writeTermProduct(const vector<mpz_class>& term,
-						  const VarNames& names,
-						  FILE* out) {
+                          const VarNames& names,
+                          FILE* out) {
   bool seenNonZero = false;
   size_t varCount = term.size();
   for (size_t var = 0; var < varCount; ++var) {
     if (term[var] == 0)
       continue;
 
-	if (seenNonZero)
-	  fputc('*', out);
-	else
-	  seenNonZero = true;
+    if (seenNonZero)
+      fputc('*', out);
+    else
+      seenNonZero = true;
 
     fputs(names.getName(var).c_str(), out);
     if ((term[var]) != 1) {
-	  fputc('^', out);
-	  mpz_out_str(out, 10, term[var].get_mpz_t());
-	}
+      fputc('^', out);
+      mpz_out_str(out, 10, term[var].get_mpz_t());
+    }
   }
 
   if (!seenNonZero)
@@ -227,42 +227,42 @@ void IO::readTermProduct(BigIdeal& ideal, Scanner& in) {
 }
 
 void IO::readCoefTerm(mpz_class& coef,
-					  vector<mpz_class>& term,
-					  const VarNames& names,
-					  bool firstTerm,
-					  Scanner& in) {
+                      vector<mpz_class>& term,
+                      const VarNames& names,
+                      bool firstTerm,
+                      Scanner& in) {
   term.resize(names.getVarCount());
   for (size_t var = 0; var < term.size(); ++var)
-	term[var] = 0;
+    term[var] = 0;
 
   bool positive = true;
   if (!firstTerm && in.match('+'))
-	positive = !in.match('-');
+    positive = !in.match('-');
   else if (in.match('-'))
-	positive = false;
+    positive = false;
   else if (!firstTerm) {
-	in.expect('+');
-	return;
+    in.expect('+');
+    return;
   }
   if (in.match('+') || in.match('-'))
-	reportSyntaxError(in, "Too many adjacent signs.");
+    reportSyntaxError(in, "Too many adjacent signs.");
 
   if (in.peekIdentifier()) {
-	coef = 1;
-	readVarPower(term, names, in);
+    coef = 1;
+    readVarPower(term, names, in);
   } else
-	in.readInteger(coef);
+    in.readInteger(coef);
 
   while (in.match('*'))
-	readVarPower(term, names, in);
+    readVarPower(term, names, in);
 
   if (!positive)
-	coef = -coef;
+    coef = -coef;
 }
 
 void IO::readCoefTerm(BigPolynomial& polynomial,
-					  bool firstTerm,
-					  Scanner& in) {
+                      bool firstTerm,
+                      Scanner& in) {
   polynomial.newLastTerm();
   mpz_class& coef = polynomial.getLastCoef();
   vector<mpz_class>& term = polynomial.getLastTerm();
@@ -271,23 +271,23 @@ void IO::readCoefTerm(BigPolynomial& polynomial,
 }
 
 void IO::readVarPower(vector<mpz_class>& term,
-					  const VarNames& names,
-					  Scanner& in) {
+                      const VarNames& names,
+                      Scanner& in) {
   size_t var = in.readVariable(names);
 
   if (term[var] != 0) {
-	const string& name = names.getName(var);
-	reportSyntaxError(in, "The variable " + 
-					  name + " appears more than once in monomial.");
+    const string& name = names.getName(var);
+    reportSyntaxError(in, "The variable " +
+                      name + " appears more than once in monomial.");
   }
 
   if (in.match('^')) {
     in.readInteger(term[var]);
     if (term[var] <= 0) {
-	  FrobbyStringStream errorMsg;
-	  errorMsg << "Expected positive integer as exponent but got "
-			   << term[var] << ".";
-	  reportSyntaxError(in, errorMsg);
+      FrobbyStringStream errorMsg;
+      errorMsg << "Expected positive integer as exponent but got "
+               << term[var] << ".";
+      reportSyntaxError(in, errorMsg);
     }
   } else
     term[var] = 1;

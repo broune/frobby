@@ -18,7 +18,7 @@
 #ifndef DISPLAY_GUARD
 #define DISPLAY_GUARD
 
-/** @file display.h 
+/** @file display.h
 
  This file contains functions for printing strings to standard
  error. They all perform automatic line breaking suitable for printing

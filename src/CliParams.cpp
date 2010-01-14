@@ -36,7 +36,7 @@ namespace {
       }
     };
 
-	ParamNames names("option");
+    ParamNames names("option");
     for (size_t i = 0; i < params.size(); ++i)
       names.registerProduct(params[i]->getName(), HoldsFunction::dummyCreate);
     return names;
@@ -48,32 +48,32 @@ void CliParams::parseCommandLine(unsigned int tokenCount, const char** tokens) {
 
   unsigned int i = 0;
   while (i < tokenCount) {
-	if (tokens[i][0] != '-')
-	  reportError(string("Expected an option when reading \"") +
-				  tokens[i] + "\", but options start with a dash (-).\n");
-	string prefix(tokens[i] + 1); // +1 to skip the '-'
+    if (tokens[i][0] != '-')
+      reportError(string("Expected an option when reading \"") +
+                  tokens[i] + "\", but options start with a dash (-).\n");
+    string prefix(tokens[i] + 1); // +1 to skip the '-'
 
     string name = getUniqueNameWithPrefix(names, prefix);
 
     // Parse list of arguments to option.
-	size_t argCount = 0;
-	while (i + 1 + argCount < tokenCount &&
-		   tokens[i + 1 + argCount][0] != '-')
-	  ++argCount;
+    size_t argCount = 0;
+    while (i + 1 + argCount < tokenCount &&
+           tokens[i + 1 + argCount][0] != '-')
+      ++argCount;
 
-	processOption(name, tokens + i + 1, argCount);
+    processOption(name, tokens + i + 1, argCount);
 
-	i += argCount + 1;
+    i += argCount + 1;
   }
 }
 
 void CliParams::processOption(const string& optionName,
-							  const char** args,
-							  unsigned int argCount) {
+                              const char** args,
+                              unsigned int argCount) {
   for (vector<Parameter*>::iterator it = _params.begin();
     it != _params.end(); ++it) {
     if ((*it)->getName() == optionName) {
-	  (*it)->processArguments(args, argCount);
+      (*it)->processArguments(args, argCount);
       return;
     }
   }
@@ -94,13 +94,13 @@ void CliParams::add(Parameter& param) {
 
 void CliParams::add(ParameterGroup& params) {
   for (ParameterGroup::iterator it = params.begin(); it != params.end(); ++it)
-	add(**it);
+    add(**it);
 }
 
 bool CliParams::hasParam(const string& name) const {
   for (const_iterator it = _params.begin(); it != _params.end(); ++it)
-	if ((*it)->getName() == name)
-	  return true;
+    if ((*it)->getName() == name)
+      return true;
   return false;
 }
 
@@ -110,8 +110,8 @@ const Parameter& CliParams::getParam(const string& name) const {
 
 Parameter& CliParams::getParam(const string& name) {
   for (const_iterator it = _params.begin(); it != _params.end(); ++it)
-	if ((*it)->getName() == name)
-	  return **it;
+    if ((*it)->getName() == name)
+      return **it;
 
   INTERNAL_ERROR("Unknown parameter " + name + ".");
 }

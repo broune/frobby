@@ -61,8 +61,8 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
 }
 
 mpz_class IdealFacade::computeDimension(const BigIdeal& bigIdeal,
-										bool codimension,
-										bool squareFreeAndMinimal) {
+                                        bool codimension,
+                                        bool squareFreeAndMinimal) {
   beginAction("Computing dimension of ideal.");
 
   size_t varCount = bigIdeal.getVarCount();
@@ -71,20 +71,20 @@ mpz_class IdealFacade::computeDimension(const BigIdeal& bigIdeal,
   Ideal radical(varCount);
   Term tmp(varCount);
   for (size_t term = 0; term < genCount; ++term) {
-	for (size_t var = 0; var < varCount; ++var) {
-	  ASSERT(!squareFreeAndMinimal || bigIdeal[term][var] <= 1);
+    for (size_t var = 0; var < varCount; ++var) {
+      ASSERT(!squareFreeAndMinimal || bigIdeal[term][var] <= 1);
 
-	  if (bigIdeal[term][var] == 0)
-		tmp[var] = 0;
-	  else
-		tmp[var] = 1;
-	}
-	radical.insert(tmp);
+      if (bigIdeal[term][var] == 0)
+        tmp[var] = 0;
+      else
+        tmp[var] = 1;
+    }
+    radical.insert(tmp);
   }
   ASSERT(!squareFreeAndMinimal || radical.isMinimallyGenerated());
 
   if (!squareFreeAndMinimal)
-	radical.minimize();
+    radical.minimize();
 
   SizeMaxIndepSetAlg alg;
   alg.run(radical);
@@ -93,42 +93,42 @@ mpz_class IdealFacade::computeDimension(const BigIdeal& bigIdeal,
   endAction();
 
   if (codimension)
-	return varCount - result;
+    return varCount - result;
   else
-	return result;
+    return result;
 }
 
 void IdealFacade::takeProducts(const vector<BigIdeal*>& ideals,
-							   BigIdeal& ideal) {
+                               BigIdeal& ideal) {
   beginAction("Taking products.");
 
   size_t idealCount = ideals.size();
   for (size_t i = 0; i < idealCount; ++i) {
-	ASSERT(ideals[i] != 0);
+    ASSERT(ideals[i] != 0);
 
-	if (!(ideal.getNames() == ideals[i]->getNames())) {
-	  FrobbyStringStream errorMsg;
-	  errorMsg <<
-		"Taking products of ideals in rings with different variable lists.\n";
-	  
-	  string list;
-	  ideal.getNames().toString(list);
-	  errorMsg << "One ring has variables\n  " << list << ",\n";
-	  
-	  ideals[i]->getNames().toString(list);
-	  errorMsg << "while another has variables\n  " << list <<
-		".\nContact the Frobby developers if you need this functionality.";
+    if (!(ideal.getNames() == ideals[i]->getNames())) {
+      FrobbyStringStream errorMsg;
+      errorMsg <<
+        "Taking products of ideals in rings with different variable lists.\n";
 
-	  reportError(errorMsg);
-	}
+      string list;
+      ideal.getNames().toString(list);
+      errorMsg << "One ring has variables\n  " << list << ",\n";
 
-	size_t genCount = ideals[i]->getGeneratorCount();
-	size_t varCount = ideals[i]->getVarCount();
+      ideals[i]->getNames().toString(list);
+      errorMsg << "while another has variables\n  " << list <<
+        ".\nContact the Frobby developers if you need this functionality.";
 
-	ideal.newLastTerm();
-	for (size_t t = 0; t < genCount; ++t)
-	  for (size_t var = 0; var < varCount; ++var)
-		ideal.getLastTermExponentRef(var) += (*ideals[i])[t][var];
+      reportError(errorMsg);
+    }
+
+    size_t genCount = ideals[i]->getGeneratorCount();
+    size_t varCount = ideals[i]->getVarCount();
+
+    ideal.newLastTerm();
+    for (size_t t = 0; t < genCount; ++t)
+      for (size_t var = 0; var < varCount; ++var)
+        ideal.getLastTermExponentRef(var) += (*ideals[i])[t][var];
   }
 
   endAction();
@@ -167,13 +167,13 @@ void IdealFacade::addPurePowers(BigIdeal& bigIdeal) {
 
   vector<mpz_class> purePower(bigIdeal.getVarCount());
   for (size_t var = 0; var < bigIdeal.getVarCount(); ++var) {
-	purePower[var] = lcm[var] + 1;
-	if (!bigIdeal.contains(purePower))
-	  bigIdeal.insert(purePower);
+    purePower[var] = lcm[var] + 1;
+    if (!bigIdeal.contains(purePower))
+      bigIdeal.insert(purePower);
 
-	ASSERT(bigIdeal.contains(purePower));
+    ASSERT(bigIdeal.contains(purePower));
 
-	purePower[var] = 0;
+    purePower[var] = 0;
   }
 
   endAction();
@@ -210,26 +210,26 @@ void IdealFacade::printAnalysis(FILE* out, BigIdeal& bigIdeal) {
   TermTranslator translator(bigIdeal, ideal, false);
 
   fprintf(stdout, "generators: %lu\n",
-		  (unsigned long)ideal.getGeneratorCount());
+          (unsigned long)ideal.getGeneratorCount());
   fprintf(stdout, "variables:  %lu\n",
-		  (unsigned long)ideal.getVarCount());
+          (unsigned long)ideal.getVarCount());
 
   size_t sizeBeforeMinimize = ideal.getGeneratorCount();
   ideal.minimize();
   fprintf(stdout, "minimally generated: %s\n",
-		  ideal.getGeneratorCount() == sizeBeforeMinimize ? "yes" : "no");
+          ideal.getGeneratorCount() == sizeBeforeMinimize ? "yes" : "no");
 
   fprintf(out, "strongly generic: %s\n",
-		  ideal.isStronglyGeneric() ? "yes" : "no");
+          ideal.isStronglyGeneric() ? "yes" : "no");
   fprintf(out, "weakly generic: %s\n",
-		  ideal.isWeaklyGeneric() ? "yes" : "no");
+          ideal.isWeaklyGeneric() ? "yes" : "no");
 
   endAction();
 }
 
 void IdealFacade::printLcm(BigIdeal& ideal,
-						   IOHandler* handler,
-						   FILE* out) {
+                           IOHandler* handler,
+                           FILE* out) {
   beginAction("Computing lcm");
 
   vector<mpz_class> lcm;

@@ -21,7 +21,7 @@
 
 class BigIdeal;
 
-/** @file 
+/** @file
   This file contains functions that generate data. They are NOT all random.
 
   @todo Fix the name of the file, since not everything here is random,
@@ -37,19 +37,19 @@ class BigIdeal;
 */
 
 /** Generate an ideal of the form \$fx_1*x_2\f$, \f$x_2*x_3\f$ and so
-	on.
+    on.
 */
 void generateLinkedListIdeal(BigIdeal& ideal, size_t varCount);
 
 /** Generate an ideal where \f$x_(a,b)*x_(c,d)\f$ is a generator when
-	\f$(a,b)\f$ and \f$(c,d)\f$ indicate coordinates on a square
-	chessboard where the move is a valid king's move.
+    \f$(a,b)\f$ and \f$(c,d)\f$ indicate coordinates on a square
+    chessboard where the move is a valid king's move.
 */
 void generateKingChessIdeal(BigIdeal& ideal, size_t rowsAndColumns);
 
 /** Generate an ideal where \f$x_(a,b)*x_(c,d)\f$ is a generator when
-	\f$(a,b)\f$ and \f$(c,d)\f$ indicate coordinates on a square
-	chessboard where the move is a valid knight's move.
+    \f$(a,b)\f$ and \f$(c,d)\f$ indicate coordinates on a square
+    chessboard where the move is a valid knight's move.
 */
 void generateKnightChessIdeal(BigIdeal& ideal, size_t rowsAndColumns);
 
@@ -74,25 +74,25 @@ it's total degree.
 void generateTreeIdeal(BigIdeal& ideal, size_t varCount);
 
 /** Generate a random ideal where every edge is a product of two
-	different variables. Returns true if the requested number of
-	generators was achieved.
+    different variables. Returns true if the requested number of
+    generators was achieved.
 */
 bool generateRandomEdgeIdeal
 (BigIdeal& ideal, size_t varCount, size_t generatorCount);
 
 /** Generate a random ideal with exponents in the range [0,
-	exponentRange]. Returns true if the requested number of generators
-	was achieved.
+    exponentRange]. Returns true if the requested number of generators
+    was achieved.
 */
 bool generateRandomIdeal(BigIdeal& bigIdeal,
-						 size_t exponentRange,
-						 size_t varCount,
-						 size_t generatorCount);
+                         size_t exponentRange,
+                         size_t varCount,
+                         size_t generatorCount);
 
 /** Generate a random vector of numbers whose gcd is 1.
  */
 void generateRandomFrobeniusInstance(vector<mpz_class>& degrees,
-									 size_t entryCount,
-									 const mpz_class& maxEntry);
+                                     size_t entryCount,
+                                     const mpz_class& maxEntry);
 
 #endif

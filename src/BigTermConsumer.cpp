@@ -33,7 +33,7 @@ void BigTermConsumer::consume
 
   vector<mpz_class> bigTerm(term.getVarCount());
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	bigTerm[var] = translator.getExponent(var, term);
+    bigTerm[var] = translator.getExponent(var, term);
 
   consume(bigTerm);
 }
@@ -42,7 +42,7 @@ void BigTermConsumer::consume
 void BigTermConsumer::consume(const Term& term) {
   vector<mpz_class> bigTerm(term.getVarCount());
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	bigTerm[var] = term[var];
+    bigTerm[var] = term[var];
 
   consume(bigTerm);
 }
@@ -56,6 +56,6 @@ void BigTermConsumer::consume(const BigIdeal& ideal) {
   consumeRing(ideal.getNames());
   beginConsuming(ideal.getNames());
   for (size_t term = 0; term < ideal.getGeneratorCount(); ++term)
-	consume(ideal.getTerm(term));
+    consume(ideal.getTerm(term));
   doneConsuming();
 }

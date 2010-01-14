@@ -46,7 +46,7 @@ void CanonicalCoefTermConsumer::doneConsuming() {
   _consumer->consumeRing(_names);
   _consumer->beginConsuming();
   for (size_t index = 0; index < _polynomial.getTermCount(); ++index)
-	_consumer->consume(_polynomial.getCoef(index), _polynomial.getTerm(index));
+    _consumer->consume(_polynomial.getCoef(index), _polynomial.getTerm(index));
   _consumer->doneConsuming();
   _polynomial.clear();
 }

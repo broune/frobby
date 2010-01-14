@@ -109,43 +109,43 @@ void OptimizeAction::perform() {
   BigIdeal ideal;
   vector<mpz_class> v;
   {
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
+    Scanner in(_io.getInputFormat(), stdin);
+    _io.autoDetectInputFormat(in);
+    _io.validateFormats();
 
-	IOFacade ioFacade(_printActions);
-	ioFacade.readIdeal(in, ideal);
-	if (!in.matchEOF())
-	  ioFacade.readVector(in, v, ideal.getVarCount());
-	else
-	  fill_n(back_inserter(v), ideal.getVarCount(), 1);
-	in.expectEOF();
+    IOFacade ioFacade(_printActions);
+    ioFacade.readIdeal(in, ideal);
+    if (!in.matchEOF())
+      ioFacade.readVector(in, v, ideal.getVarCount());
+    else
+      fill_n(back_inserter(v), ideal.getVarCount(), 1);
+    in.expectEOF();
   }
 
   mpz_class subtract = 0;
   if (_chopFirstAndSubtract) {
-	if (v.empty()) {
-	  _chopFirstAndSubtract = false;
-	} else {
-	  subtract = v[0];
+    if (v.empty()) {
+      _chopFirstAndSubtract = false;
+    } else {
+      subtract = v[0];
 
-	  v.erase(v.begin());
-	  ideal.eraseVar(0);
-	}
+      v.erase(v.begin());
+      ideal.eraseVar(0);
+    }
   }
 
   if (_minimizeValue) {
-	for (size_t var = 0; var < v.size(); ++var)
-	  v[var] = -v[var];
+    for (size_t var = 0; var < v.size(); ++var)
+      v[var] = -v[var];
   }
 
   auto_ptr<IOHandler> handler;
   auto_ptr<BigTermConsumer> output;
   if (_displayLevel > 0) {
-	handler = _io.createOutputHandler();
-	output = handler->createIdealWriter(stdout);
+    handler = _io.createOutputHandler();
+    output = handler->createIdealWriter(stdout);
   } else
-	output.reset(new NullTermConsumer());
+    output.reset(new NullTermConsumer());
 
   SliceFacade facade(params, ideal, *output);
 
@@ -154,25 +154,25 @@ void OptimizeAction::perform() {
   bool displayAll = (_displayLevel >= 2);
   bool anySolution;
   if (_maxStandard)
-	anySolution = facade.solveStandardProgram
-	  (v, optimalValue, displayAll);
+    anySolution = facade.solveStandardProgram
+      (v, optimalValue, displayAll);
   else
-	anySolution = facade.solveIrreducibleDecompositionProgram
-	  (v, optimalValue, displayAll);
+    anySolution = facade.solveIrreducibleDecompositionProgram
+      (v, optimalValue, displayAll);
 
   if (_displayValue) {
-	if (!anySolution)
-	  fputs("no solution.\n", stdout);
-	else {
-	  if (_minimizeValue) {
-		// We flipped the sign of the vector to optimize before, so we
-		// need to flip the sign of the value again.
-		optimalValue = -optimalValue;
-	  }
-	  if (_chopFirstAndSubtract)
-		optimalValue -= subtract;
-	  gmp_fprintf(stdout, "%Zd\n", optimalValue.get_mpz_t());
-	}
+    if (!anySolution)
+      fputs("no solution.\n", stdout);
+    else {
+      if (_minimizeValue) {
+        // We flipped the sign of the vector to optimize before, so we
+        // need to flip the sign of the value again.
+        optimalValue = -optimalValue;
+      }
+      if (_chopFirstAndSubtract)
+        optimalValue -= subtract;
+      gmp_fprintf(stdout, "%Zd\n", optimalValue.get_mpz_t());
+    }
   }
 }
 

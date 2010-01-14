@@ -25,101 +25,101 @@
 
 namespace IO {
   namespace {
-	/** This class is a helper class for CountingIOHandler. It counts
-		the number of terms that it consumes. */
-	class CountingConsumer :
-	  public BigTermConsumer, public CoefBigTermConsumer {
-	public:
-	  CountingConsumer(FILE* out):
-		_termCount(0),
-		_out(out) {
-	  }
+    /** This class is a helper class for CountingIOHandler. It counts
+        the number of terms that it consumes. */
+    class CountingConsumer :
+      public BigTermConsumer, public CoefBigTermConsumer {
+    public:
+      CountingConsumer(FILE* out):
+        _termCount(0),
+        _out(out) {
+      }
 
-	  /** This destructor writes the final number out.
+      /** This destructor writes the final number out.
 
-		  @todo This should not be happening in a destructor. Make a
-		  doneAllConsuming or something like that to do the output.
-	  */
-	  virtual ~CountingConsumer() {
-		// Destructors must not throw exceptions. As far as I know,
-		// bad_alloc is the only thing that could be thrown from
-		// gmp_fprintf.
-	  }
+          @todo This should not be happening in a destructor. Make a
+          doneAllConsuming or something like that to do the output.
+      */
+      virtual ~CountingConsumer() {
+        // Destructors must not throw exceptions. As far as I know,
+        // bad_alloc is the only thing that could be thrown from
+        // gmp_fprintf.
+      }
 
-	  virtual void consumeRing(const VarNames& names) {
-	  }
+      virtual void consumeRing(const VarNames& names) {
+      }
 
-	  virtual void beginConsuming() {
-		_termCount = 0;
-	  }
+      virtual void beginConsuming() {
+        _termCount = 0;
+      }
 
-	  virtual void consume(const Term& term, const TermTranslator& translator) {
-		++_termCount;
-	  }
+      virtual void consume(const Term& term, const TermTranslator& translator) {
+        ++_termCount;
+      }
 
-	  virtual void consume(const vector<mpz_class>& term) {
-		++_termCount;
-	  }
+      virtual void consume(const vector<mpz_class>& term) {
+        ++_termCount;
+      }
 
-	  virtual void consume(const BigIdeal& ideal) {
-		beginConsuming();
-		_termCount += ideal.getGeneratorCount();
-		doneConsuming();
-	  }
+      virtual void consume(const BigIdeal& ideal) {
+        beginConsuming();
+        _termCount += ideal.getGeneratorCount();
+        doneConsuming();
+      }
 
-	  virtual void consume(const mpz_class& coef, const Term& term) {
-		++_termCount;
-	  }
+      virtual void consume(const mpz_class& coef, const Term& term) {
+        ++_termCount;
+      }
 
-	  virtual void consume(const mpz_class& coef,
-						   const Term& term,
-						   const TermTranslator& translator) {
-		++_termCount;
-	  }
+      virtual void consume(const mpz_class& coef,
+                           const Term& term,
+                           const TermTranslator& translator) {
+        ++_termCount;
+      }
 
-	  virtual void consume(const mpz_class& coef,
-						   const vector<mpz_class>& term) {
-		++_termCount;
-	  }
+      virtual void consume(const mpz_class& coef,
+                           const vector<mpz_class>& term) {
+        ++_termCount;
+      }
 
-	  virtual void consume(const BigPolynomial& poly) {
-		beginConsuming();
-		_termCount += poly.getTermCount();
-		doneConsuming();
-	  }
+      virtual void consume(const BigPolynomial& poly) {
+        beginConsuming();
+        _termCount += poly.getTermCount();
+        doneConsuming();
+      }
 
-	  virtual void doneConsuming() {
-		gmp_fprintf(_out, "%Zd\n", _termCount.get_mpz_t());
-	  }
+      virtual void doneConsuming() {
+        gmp_fprintf(_out, "%Zd\n", _termCount.get_mpz_t());
+      }
 
-	private:
-	  mpz_class _termCount;
-	  FILE* _out;
-	};
+    private:
+      mpz_class _termCount;
+      FILE* _out;
+    };
   }
 
   CountingIOHandler::CountingIOHandler():
-	IOHandlerImpl(staticGetName(), "Writes the number of output terms.") {
-	registerOutput(DataType::getMonomialIdealType());
-	registerOutput(DataType::getPolynomialType());
-	registerOutput(DataType::getMonomialIdealListType());
+    IOHandlerImpl(staticGetName(), "Writes the number of output terms.") {
+    registerOutput(DataType::getMonomialIdealType());
+    registerOutput(DataType::getPolynomialType());
+    registerOutput(DataType::getMonomialIdealListType());
   }
 
   const char* CountingIOHandler::staticGetName() {
-	return "count";
+    return "count";
   }
 
   BigTermConsumer* CountingIOHandler::doCreateIdealWriter(FILE* out) {
-	return new CountingConsumer(out);
+    return new CountingConsumer(out);
   }
 
   CoefBigTermConsumer* CountingIOHandler::doCreatePolynomialWriter(FILE* out) {
-	return new CountingConsumer(out);
+    return new CountingConsumer(out);
   }
 
   void CountingIOHandler::doWriteTerm(const vector<mpz_class>& term,
-									  const VarNames& names,
-									  FILE* out) {
-	fputc('1', out);
+                                      const VarNames& names,
+                                      FILE* out) {
+    fputc('1', out);
   }
 }

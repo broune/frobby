@@ -98,7 +98,7 @@ public:
   void print(ostream& out) const;
 
   static bool bigTermCompare(const vector<mpz_class>& a,
-							 const vector<mpz_class>& b);
+                             const vector<mpz_class>& b);
 private:
   vector<vector<mpz_class> > _terms;
   VarNames _names;

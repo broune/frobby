@@ -85,7 +85,7 @@ class Slice : public Task {
    \codeVar{multiply})\f$.
   */
   Slice(SliceStrategy& strategy,
-		const Ideal& ideal, const Ideal& subtract, const Term& multiply);
+        const Ideal& ideal, const Ideal& subtract, const Term& multiply);
 
   virtual ~Slice();
 

@@ -47,7 +47,7 @@ class Ideal {
 
   const_iterator begin() const {return _terms.begin();}
   const_iterator end() const {return _terms.end();}
-  const Exponent* operator[](size_t index) const {return _terms[index];}  
+  const Exponent* operator[](size_t index) const {return _terms[index];}
 
   iterator begin() {return _terms.begin();}
   iterator end() {return _terms.end();}
@@ -256,14 +256,14 @@ class Ideal {
   void clearAndSetVarCount(size_t varCount);
 
   /** Replaces the exponents from zeroExponents with zero and does not
-	  remove any non-minimal generators this may produce. If a
-	  generator raises var to precisely the power t, and zeroExponents
-	  also raises var to precisely the power t, then that generator is
-	  changed to instead raise var to the power zero. */
+      remove any non-minimal generators this may produce. If a
+      generator raises var to precisely the power t, and zeroExponents
+      also raises var to precisely the power t, then that generator is
+      changed to instead raise var to the power zero. */
   void mapExponentsToZeroNoMinimize(const Term& zeroExponents);
 
   /** Replaces all generators with their support and does not remove
-	  any non-minimal generators this may produce.
+      any non-minimal generators this may produce.
   */
   void takeRadicalNoMinimize();
 

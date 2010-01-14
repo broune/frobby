@@ -31,42 +31,42 @@ namespace IO {
    cases. */
   class IOHandlerCommon : public IOHandlerImpl {
   public:
-	IOHandlerCommon(const char* formatName,
-					const char* formatDescription);
+    IOHandlerCommon(const char* formatName,
+                    const char* formatDescription);
 
-	/** Reads a ring, i.e. the names of the variables. */
-	void readRing(Scanner& in, VarNames& names);
+    /** Reads a ring, i.e. the names of the variables. */
+    void readRing(Scanner& in, VarNames& names);
 
-	/** Returns true if what follows in the input is a ring, assuming
-	 there are no syntax errors. */
-	bool peekRing(Scanner& in);
+    /** Returns true if what follows in the input is a ring, assuming
+     there are no syntax errors. */
+    bool peekRing(Scanner& in);
 
-	/** Reads an ideal without a ring preceding it. */
-	void readBareIdeal(Scanner& in,
-					   const VarNames& names,
-					   BigTermConsumer& consumer);
+    /** Reads an ideal without a ring preceding it. */
+    void readBareIdeal(Scanner& in,
+                       const VarNames& names,
+                       BigTermConsumer& consumer);
 
-	/** Reads a polynomial without a ring preceding it. */
-	void readBarePolynomial(Scanner& in,
-							const VarNames& names,
-							CoefBigTermConsumer& consumer);
+    /** Reads a polynomial without a ring preceding it. */
+    void readBarePolynomial(Scanner& in,
+                            const VarNames& names,
+                            CoefBigTermConsumer& consumer);
 
   private:
-	// The following methods are implemented in terms of the new methods.
-	virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+    // The following methods are implemented in terms of the new methods.
+    virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
-	// Override these methods except for those that do input
-	// of un-supported type.
-	virtual void doReadRing(Scanner& in, VarNames& names) = 0;
-	virtual bool doPeekRing(Scanner& in) = 0;
-	virtual void doReadBareIdeal(Scanner& in,
-								 const VarNames& names,
-								 BigTermConsumer& consumer);
-	virtual void doReadBarePolynomial(Scanner& in,
-									  const VarNames& names,
-									  CoefBigTermConsumer& consumer);
+    // Override these methods except for those that do input
+    // of un-supported type.
+    virtual void doReadRing(Scanner& in, VarNames& names) = 0;
+    virtual bool doPeekRing(Scanner& in) = 0;
+    virtual void doReadBareIdeal(Scanner& in,
+                                 const VarNames& names,
+                                 BigTermConsumer& consumer);
+    virtual void doReadBarePolynomial(Scanner& in,
+                                      const VarNames& names,
+                                      CoefBigTermConsumer& consumer);
   };
 }
 

@@ -79,21 +79,21 @@ FrobbyStringStream::operator const string&() const {
 }
 
 void FrobbyStringStream::appendIntegerToString(string& str,
-											   unsigned long integer) {
+                                               unsigned long integer) {
   unsigned long initialLength = str.size();
 
   // Append string representation of integer with digits in reverse
   // order.
   do {
-	unsigned long quotient = integer / 10;
-	unsigned long remainder = integer - quotient * 10; // faster than %
+    unsigned long quotient = integer / 10;
+    unsigned long remainder = integer - quotient * 10; // faster than %
 
-	char digit = static_cast<char>(remainder + '0');
-	str += digit;
+    char digit = static_cast<char>(remainder + '0');
+    str += digit;
 
-	integer = quotient;
+    integer = quotient;
 
-	// condition at end so that zero maps to "0" rather than "".
+    // condition at end so that zero maps to "0" rather than "".
   } while (integer != 0);
 
   // Reverse the digits (and only the digits) to get the correct
@@ -102,14 +102,14 @@ void FrobbyStringStream::appendIntegerToString(string& str,
 }
 
 void FrobbyStringStream::appendIntegerToString(string& str,
-											   const mpz_class& integer) {
+                                               const mpz_class& integer) {
   str += integer.get_str();
 }
 
 void FrobbyStringStream::parseInteger(mpz_class& integer, const string& str) {
   if (integer.set_str(str, 10) != 0)
-	throw NotAnIntegerException
-	  ("Argument to FrobbyStringStream::parseInteger not a valid integer.");
+    throw NotAnIntegerException
+      ("Argument to FrobbyStringStream::parseInteger not a valid integer.");
 }
 
 FrobbyStringStream::NotAnIntegerException::NotAnIntegerException

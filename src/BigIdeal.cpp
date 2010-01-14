@@ -30,17 +30,17 @@ public:
   }
 
   bool operator()(size_t aa, size_t bb) const {
-	const vector<mpz_class>& a = _ideal.getTerm(aa);
-	const vector<mpz_class>& b = _ideal.getTerm(bb);
+    const vector<mpz_class>& a = _ideal.getTerm(aa);
+    const vector<mpz_class>& b = _ideal.getTerm(bb);
 
-	ASSERT(a.size() == b.size());
-	for (size_t i = 0; i < a.size(); ++i) {
-	  if (a[i] > b[i])
-		return true;
-	  if (a[i] < b[i])
-		return false;
-	}
-	return false;
+    ASSERT(a.size() == b.size());
+    for (size_t i = 0; i < a.size(); ++i) {
+      if (a[i] > b[i])
+        return true;
+      if (a[i] < b[i])
+        return false;
+    }
+    return false;
   }
 
 private:
@@ -69,7 +69,7 @@ void BigIdeal::insert(const Ideal& ideal) {
 }
 
 void BigIdeal::insert(const Ideal& ideal,
-					  const TermTranslator& translator) {
+                      const TermTranslator& translator) {
   reserve(_terms.size() + ideal.getGeneratorCount());
 
   Ideal::const_iterator it = ideal.begin();
@@ -93,7 +93,7 @@ void BigIdeal::renameVars(const VarNames& names) {
 
 void BigIdeal::newLastTerm() {
   if (_terms.size() == _terms.capacity())
-	reserve(getVarCount() * _terms.size());
+    reserve(getVarCount() * _terms.size());
 
   _terms.resize(_terms.size() + 1);
   _terms.back().resize(_names.getVarCount());
@@ -103,7 +103,7 @@ void BigIdeal::reserve(size_t capacity) {
   // std::vector can do reallocations by itself, but the version here
   // is much faster.
   if (capacity <= _terms.capacity())
-	return;
+    return;
 
   // We grow the capacity at a rate of getVarCount() instead of a
   // doubling because each *used* entry allocates at least
@@ -119,21 +119,21 @@ void BigIdeal::reserve(size_t capacity) {
   vector<vector<mpz_class> > tmp;
   size_t newCapacity = getVarCount() * _terms.size();
   if (capacity > newCapacity)
-	newCapacity = capacity;
+    newCapacity = capacity;
 
   tmp.reserve(newCapacity);
   tmp.resize(_terms.size());
 
   size_t size = _terms.size();
   for (size_t i = 0; i < size; ++i)
-	tmp[i].swap(_terms[i]);
+    tmp[i].swap(_terms[i]);
   tmp.swap(_terms);
 }
 
 mpz_class& BigIdeal::getLastTermExponentRef(size_t var) {
   ASSERT(!empty());
   ASSERT(var < _names.getVarCount());
-  
+
   return _terms.back()[var];
 }
 
@@ -153,10 +153,10 @@ void BigIdeal::getLcm(vector<mpz_class>& lcm) const {
   lcm.resize(getVarCount());
 
   for (vector<vector<mpz_class> >::const_iterator it = _terms.begin();
-	   it != _terms.end(); ++it)
-	for (size_t var = 0; var < getVarCount(); ++var)
-	  if (lcm[var] < (*it)[var])
-		lcm[var] = (*it)[var];
+       it != _terms.end(); ++it)
+    for (size_t var = 0; var < getVarCount(); ++var)
+      if (lcm[var] < (*it)[var])
+        lcm[var] = (*it)[var];
 }
 
 bool BigIdeal::operator==(const BigIdeal& b) const {
@@ -177,31 +177,31 @@ void BigIdeal::projectVar(size_t var) {
   ASSERT(var < getVarCount());
 
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	_terms[gen].erase(_terms[gen].begin() + var);
+    _terms[gen].erase(_terms[gen].begin() + var);
   _names.projectVar(var);
 }
 
 bool BigIdeal::operator<(const BigIdeal& ideal) const {
   if (getNames() < ideal.getNames())
-	return true;
+    return true;
   if (ideal.getNames() < getNames())
-	return false;
+    return false;
 
   for (size_t t = 0; t < _terms.size(); ++t) {
-	if (t == ideal._terms.size())
-	  return true;
+    if (t == ideal._terms.size())
+      return true;
 
-	const vector<mpz_class>& a = _terms[t];
-	const vector<mpz_class>& b = ideal._terms[t];
+    const vector<mpz_class>& a = _terms[t];
+    const vector<mpz_class>& b = ideal._terms[t];
 
-	ASSERT(a.size() == b.size());
+    ASSERT(a.size() == b.size());
 
-	for (size_t i = 0; i < a.size(); ++i) {
-	  if (a[i] > b[i])
-		return true;
-	  if (a[i] < b[i])
-		return false;
-	}
+    for (size_t i = 0; i < a.size(); ++i) {
+      if (a[i] > b[i])
+        return true;
+      if (a[i] < b[i])
+        return false;
+    }
   }
 
   return false;
@@ -213,10 +213,10 @@ bool BigIdeal::empty() const {
 
 bool BigIdeal::containsIdentity() const {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
-	for (size_t var = 0; var < getVarCount(); ++var)
-	  if (_terms[gen][var] != 0)
-		goto notIdentity;
-	return true;
+    for (size_t var = 0; var < getVarCount(); ++var)
+      if (_terms[gen][var] != 0)
+        goto notIdentity;
+    return true;
   notIdentity:;
   }
   return false;
@@ -224,10 +224,10 @@ bool BigIdeal::containsIdentity() const {
 
 bool BigIdeal::contains(const vector<mpz_class>& term) const {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
-	for (size_t var = 0; var < getVarCount(); ++var)
-	  if (_terms[gen][var] > term[var])
-		goto notDivisor;
-	return true;
+    for (size_t var = 0; var < getVarCount(); ++var)
+      if (_terms[gen][var] > term[var])
+        goto notDivisor;
+    return true;
   notDivisor:;
   }
   return false;
@@ -261,18 +261,18 @@ void BigIdeal::eraseVar(size_t varToErase) {
 
   VarNames newNames;
   for (size_t var = 0; var < getVarCount(); ++var)
-	if (var != varToErase)
-	  newNames.addVar(_names.getName(var));
+    if (var != varToErase)
+      newNames.addVar(_names.getName(var));
 
   try {
-	_names = newNames;
-	for (size_t term = 0; term < getGeneratorCount(); ++term)
-	  _terms[term].erase(_terms[term].begin() + varToErase);
+    _names = newNames;
+    for (size_t term = 0; term < getGeneratorCount(); ++term)
+      _terms[term].erase(_terms[term].begin() + varToErase);
   } catch (...) {
-	// To leave in valid state, which requires that _names has the same
-	// number of variables as each generator.
-	clear();
-	throw;
+    // To leave in valid state, which requires that _names has the same
+    // number of variables as each generator.
+    clear();
+    throw;
   }
 }
 
@@ -282,18 +282,18 @@ const VarNames& BigIdeal::getNames() const {
 
 void BigIdeal::deform() {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	for (size_t var = 0; var < getVarCount(); ++var)
-	  if (_terms[gen][var] > 0)
-		_terms[gen][var] = _terms[gen][var] * getGeneratorCount() + gen;
+    for (size_t var = 0; var < getVarCount(); ++var)
+      if (_terms[gen][var] > 0)
+        _terms[gen][var] = _terms[gen][var] * getGeneratorCount() + gen;
 }
 
 void BigIdeal::takeRadical() {
   vector<vector<mpz_class> >::iterator end = _terms.end();
   for (vector<vector<mpz_class> >::iterator it = _terms.begin();
-	   it != end; ++it)
-	for (size_t var = 0; var < getVarCount(); ++var)
-	  if ((*it)[var] > 1)
-		(*it)[var] = 1;
+       it != end; ++it)
+    for (size_t var = 0; var < getVarCount(); ++var)
+      if ((*it)[var] > 1)
+        (*it)[var] = 1;
 }
 
 void BigIdeal::sortGeneratorsUnique() {
@@ -307,16 +307,16 @@ void BigIdeal::sortGenerators() {
   size_t size = _terms.size();
   vector<size_t> sortedOffsets(size);
   for (size_t term = 0; term < size; ++term)
-	sortedOffsets[term] = term;
+    sortedOffsets[term] = term;
 
   std::sort(sortedOffsets.begin(), sortedOffsets.end(),
-			OffsetTermCompare(*this));
+            OffsetTermCompare(*this));
 
   vector<vector<mpz_class> > sorted;
   sorted.reserve(_terms.capacity());
   sorted.resize(size);
   for (size_t term = 0; term < size; ++term)
-	sorted[term].swap(_terms[sortedOffsets[term]]);
+    sorted[term].swap(_terms[sortedOffsets[term]]);
 
   _terms.swap(sorted);
 }
@@ -337,11 +337,11 @@ void BigIdeal::print(FILE* file) const {
 void BigIdeal::print(ostream& out) const {
   out << "/---- BigIdeal of " << _terms.size() << " terms:\n";
   for (vector<vector<mpz_class> >::const_iterator it = _terms.begin();
-	   it != _terms.end(); ++it) {
-	for (vector<mpz_class>::const_iterator entry = it->begin();
-		 entry != it->end(); ++entry)
-	  out << *entry << ' ';
-	out << '\n';
+       it != _terms.end(); ++it) {
+    for (vector<mpz_class>::const_iterator entry = it->begin();
+         entry != it->end(); ++entry)
+      out << *entry << ' ';
+    out << '\n';
   }
   out << "----/ End of list.\n";
 }
@@ -368,7 +368,7 @@ void BigIdeal::setExponent(size_t term, size_t var, const mpz_class& exp) {
 }
 
 bool BigIdeal::bigTermCompare(const vector<mpz_class>& a,
-			      const vector<mpz_class>& b) {
+                  const vector<mpz_class>& b) {
   ASSERT(a.size() == b.size());
   for (size_t i = 0; i < a.size(); ++i) {
     if (a[i] > b[i])
@@ -387,6 +387,6 @@ ostream& operator<<(ostream& out, const BigIdeal& ideal) {
 ostream& operator<<(ostream& out, const vector<BigIdeal>& ideals) {
   out << "List of " << ideals.size() << " ideals:\n";
   for (size_t i = 0; i < ideals.size(); ++i)
-	out << ideals[i];
+    out << ideals[i];
   return out;
 }

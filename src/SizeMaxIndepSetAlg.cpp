@@ -25,11 +25,11 @@ void SizeMaxIndepSetAlg::run(Ideal& ideal) {
   ASSERT(ideal.isMinimallyGenerated());
 
   if (ideal.getGeneratorCount() == 1 && // for efficiency
-	  ideal.containsIdentity()) {
-	_noIndependentSets = true;
-	return;
+      ideal.containsIdentity()) {
+    _noIndependentSets = true;
+    return;
   } else
-	_noIndependentSets = false;
+    _noIndependentSets = false;
 
   // Improves efficiency by putting related edges together.
   ideal.sortReverseLex();
@@ -45,18 +45,18 @@ void SizeMaxIndepSetAlg::run(Ideal& ideal) {
 
   // Encode the hypergraph of the ideal into _edges.
   for (size_t term = 0; term < ideal.getGeneratorCount(); ++term) {
-	_edges.push_back(Term::getSizeOfSupport(ideal[term], _varCount));
-	for (size_t var = 0; var < _varCount; ++var) {
-	  if (ideal[term][var] != 0) {
-		ASSERT(ideal[term][var] == 1);
-		_edges.push_back(var);
-	  }
-	}
+    _edges.push_back(Term::getSizeOfSupport(ideal[term], _varCount));
+    for (size_t var = 0; var < _varCount; ++var) {
+      if (ideal[term][var] != 0) {
+        ASSERT(ideal[term][var] == 1);
+        _edges.push_back(var);
+      }
+    }
   }
 
   _endPos = _edges.size();
 
-  // Make state 
+  // Make state
   _state.clear();
   _state.resize(_varCount);
 
@@ -68,24 +68,24 @@ mpz_class SizeMaxIndepSetAlg::getMaxIndepSetSize() {
   // We can't just let _minExcluded itself be _varCount + 1, as that
   // may cause an overflow due to non-infinite precision of size_t.
   if (_noIndependentSets)
-	return -1;
+    return -1;
   else {
-	ASSERT(_varCount >= _minExcluded);
-	return _varCount - _minExcluded;
+    ASSERT(_varCount >= _minExcluded);
+    return _varCount - _minExcluded;
   }
 }
 
 bool SizeMaxIndepSetAlg::isIndependentIncludingMaybe(size_t pos) {
   while (pos != _endPos) {
-	size_t nextPos = pos + _edges[pos] + 1;
-	while (true) {
-	  ++pos;
-	  if (pos == nextPos)
-		return false;
-	  if (_state[_edges[pos]] == IsNotInSet)
-		break;
-	}
-	pos = nextPos;
+    size_t nextPos = pos + _edges[pos] + 1;
+    while (true) {
+      ++pos;
+      if (pos == nextPos)
+        return false;
+      if (_state[_edges[pos]] == IsNotInSet)
+        break;
+    }
+    pos = nextPos;
   }
   return true;
 }
@@ -93,14 +93,14 @@ bool SizeMaxIndepSetAlg::isIndependentIncludingMaybe(size_t pos) {
 inline bool SizeMaxIndepSetAlg::couldBeDependence(size_t pos, size_t nextPos, size_t& maybeCount) {
   maybeCount = 0;
   for (size_t p = pos + 1; p != nextPos; ++p) {
-	VarState varState = _state[_edges[p]];
-	if (varState == IsNotInSet) {
-	  // In this case the term cannot make the set dependent.
-	  return false;
-	} else if (varState == IsMaybeInSet)
-	  ++maybeCount;
+    VarState varState = _state[_edges[p]];
+    if (varState == IsNotInSet) {
+      // In this case the term cannot make the set dependent.
+      return false;
+    } else if (varState == IsMaybeInSet)
+      ++maybeCount;
   }
-  return true;  
+  return true;
 }
 
 void SizeMaxIndepSetAlg::recurse(size_t pos, size_t excluded) {
@@ -110,7 +110,7 @@ void SizeMaxIndepSetAlg::recurse(size_t pos, size_t excluded) {
 
   // Branch-and-bound criterion.
   if (excluded >= _minExcluded)
-	return;
+    return;
 
   // An optimization made possible by branch-and-bound. If we are only
   // 1 node from being excluded by the branch-and-bound criterion
@@ -119,89 +119,89 @@ void SizeMaxIndepSetAlg::recurse(size_t pos, size_t excluded) {
   // only matters if the set we are looking at now is independent
   // where maybe's are treated as yes.
   if (excluded + 1 == _minExcluded) {
-	if (isIndependentIncludingMaybe(pos))
-	  _minExcluded = excluded;
-	return;
+    if (isIndependentIncludingMaybe(pos))
+      _minExcluded = excluded;
+    return;
   }
 
   // Run through the edges only one becomes undecided (and then
   // consider cases) or we know that the set is independent according
   // to all edges.
   while (true) {
-	// The set is independent according to all edges.
-	if (pos == _endPos) {
-	  // The set has not been eliminated by brand-and-bound, so there
-	  // must be an improvement.
-	  ASSERT(excluded < _minExcluded);
-	  _minExcluded = excluded;
-	  break;
-	}
+    // The set is independent according to all edges.
+    if (pos == _endPos) {
+      // The set has not been eliminated by brand-and-bound, so there
+      // must be an improvement.
+      ASSERT(excluded < _minExcluded);
+      _minExcluded = excluded;
+      break;
+    }
 
-	// The starting point of the encoding of the next term.
-	size_t nextPos = pos + _edges[pos] + 1;
+    // The starting point of the encoding of the next term.
+    size_t nextPos = pos + _edges[pos] + 1;
 
-	// Set to the number of maybe's in the support of the term at pos.
-	size_t maybeCount;
-	if (!couldBeDependence(pos, nextPos, maybeCount)) {
-	  // This edge cannot make the set dependent, so move on to the
-	  // next one.
-	  pos = nextPos;
-	  continue;
-	}
+    // Set to the number of maybe's in the support of the term at pos.
+    size_t maybeCount;
+    if (!couldBeDependence(pos, nextPos, maybeCount)) {
+      // This edge cannot make the set dependent, so move on to the
+      // next one.
+      pos = nextPos;
+      continue;
+    }
 
-	if (maybeCount == 0) {
-	  // This edge definitely makes the set dependent, so stop looking
-	  // at this further.
-	  break;
-	}
+    if (maybeCount == 0) {
+      // This edge definitely makes the set dependent, so stop looking
+      // at this further.
+      break;
+    }
 
-	// Now we consider the two cases for each undecided variable.
+    // Now we consider the two cases for each undecided variable.
 
-	vector<size_t>& undo = _undo[excluded]; // for convenience
-	for (size_t p = pos + 1; p != nextPos; ++p) {
-	  size_t var = _edges[p];
-	  VarState& varState = _state[var];
+    vector<size_t>& undo = _undo[excluded]; // for convenience
+    for (size_t p = pos + 1; p != nextPos; ++p) {
+      size_t var = _edges[p];
+      VarState& varState = _state[var];
 
-	  if (varState != IsMaybeInSet)
-		continue;
+      if (varState != IsMaybeInSet)
+        continue;
 
-	  // The case of var definitely not in the set.
-	  varState = IsNotInSet;
-	  recurse(nextPos, excluded + 1);
-	  // recurse may change temporarily change _state, but it restores
-	  // it to the way it was before it returns, so consider it as
-	  // though this call did not change _state. This is done because
-	  // this way is more efficient than copying since often
-	  // maybeCount is much less than _varCount.
+      // The case of var definitely not in the set.
+      varState = IsNotInSet;
+      recurse(nextPos, excluded + 1);
+      // recurse may change temporarily change _state, but it restores
+      // it to the way it was before it returns, so consider it as
+      // though this call did not change _state. This is done because
+      // this way is more efficient than copying since often
+      // maybeCount is much less than _varCount.
 
-	  // We have considered the other case, so now let var definitely
-	  // be in the set, moving on to the next undecided variable, if
-	  // any.
+      // We have considered the other case, so now let var definitely
+      // be in the set, moving on to the next undecided variable, if
+      // any.
 
-	  if (maybeCount == 1) {
-		// There are no more undecided vars, so restore _state to the
-		// way it was when we were called and then return to the
-		// caller.
-		varState = IsMaybeInSet;
-		while (!undo.empty()) {
-		  _state[undo.back()] = IsMaybeInSet;
-		  undo.pop_back();
-		}
+      if (maybeCount == 1) {
+        // There are no more undecided vars, so restore _state to the
+        // way it was when we were called and then return to the
+        // caller.
+        varState = IsMaybeInSet;
+        while (!undo.empty()) {
+          _state[undo.back()] = IsMaybeInSet;
+          undo.pop_back();
+        }
 
-		// On gcc 3.4.4 on Cygwin (at least), putting break here
-		// instead of return is on the order of 15% faster. So that is
-		// why it says break, and then break again below, even though
-		// a return would be more natural.
-		break;
-	  }
+        // On gcc 3.4.4 on Cygwin (at least), putting break here
+        // instead of return is on the order of 15% faster. So that is
+        // why it says break, and then break again below, even though
+        // a return would be more natural.
+        break;
+      }
 
-	  varState = IsInSet;
-	  --maybeCount;
+      varState = IsInSet;
+      --maybeCount;
 
-	  // Store information needed to restore _state to the way it was
-	  // before.
-	  undo.push_back(var);
-	}
-	break;
+      // Store information needed to restore _state to the way it was
+      // before.
+      undo.push_back(var);
+    }
+    break;
   }
 }

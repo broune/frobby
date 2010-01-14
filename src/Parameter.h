@@ -42,9 +42,9 @@ class Parameter {
   virtual void doProcessArguments(const char** args, size_t argCount) = 0;
 
   void checkCorrectParameterCount(unsigned int from,
-								  unsigned int to,
-								  const char** params,
-								  unsigned int paramCount);
+                                  unsigned int to,
+                                  const char** params,
+                                  unsigned int paramCount);
 
   string _name;
   string _description;

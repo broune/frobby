@@ -81,7 +81,7 @@ class SatBinomIdeal {
   /// Returns true if the smallest body containing zero, a and b has a
   /// generator in its interior.
   bool isPointFreeBody(const vector<mpz_class>& a,
-					   const vector<mpz_class>& b) const;
+                       const vector<mpz_class>& b) const;
 
   /// Returns true if any generator, considered as an integer vector,
   /// is dominated by v.

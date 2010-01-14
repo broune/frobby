@@ -36,8 +36,8 @@ void reportInternalError
 (const string& errorMsg, const char* file, unsigned int lineNumber) {
   FrobbyStringStream err;
   err << errorMsg << '\n'
-	  << "The internal error occured in file " << file
-	  << " on line " << lineNumber << '.';
+      << "The internal error occured in file " << file
+      << " on line " << lineNumber << '.';
   reportInternalError(err);
 }
 
@@ -46,13 +46,13 @@ void reportSyntaxError(const Scanner& scanner, const string& errorMsg) {
   err << "SYNTAX ERROR (";
 
   if (scanner.getFormat() != "")
-	err << "format " << scanner.getFormat() << ", ";
+    err << "format " << scanner.getFormat() << ", ";
 
   err << "line "
-	  << scanner.getLineNumber()
-	  << "):\n  "
-	  << errorMsg
-	  << '\n';
+      << scanner.getLineNumber()
+      << "):\n  "
+      << errorMsg
+      << '\n';
 
   throw FrobbyException(err);
 }

@@ -27,12 +27,12 @@ class BigattiParams : public SliceLikeParams {
   BigattiParams(const CliParams& cli);
 
   /** Returns whether to detect generic monomial ideals as a base
-	  case. */
+      case. */
   bool getUseGenericBaseCase() const {return _useGenericBaseCase;}
   void setPivot(const string& name) {_pivot = name;}
 
   /** Returns the name of the pivot selection strategy used for
-	  pivots splits. */
+      pivots splits. */
   const string& getPivot() const {return _pivot;}
   void useGenericBaseCase(bool value) {_useGenericBaseCase = value;}
 

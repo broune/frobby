@@ -42,9 +42,9 @@ bool IOFacade::isValidMonomialIdealFormat(const string& format) {
 
   bool valid = true;
   try {
-	createIOHandler(format).get();
+    createIOHandler(format).get();
   } catch (const UnknownNameException&) {
-	valid = false;
+    valid = false;
   }
 
   endAction();
@@ -61,7 +61,7 @@ void IOFacade::readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) {
   handler->readSatBinomIdeal(in, consumer);
 
   endAction();
-}  
+}
 
 void IOFacade::readSatBinomIdeal(Scanner& in, SatBinomIdeal& ideal) {
   beginAction("Reading saturated binomial ideal.");
@@ -105,8 +105,8 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
 }
 
 void IOFacade::readIdeals(Scanner& in,
-						  vector<BigIdeal*>& ideals,
-						  VarNames& names) {
+                          vector<BigIdeal*>& ideals,
+                          VarNames& names) {
   beginAction("Reading monomial ideals.");
 
   // To make it clear what needs to be deleted in case of an exception.
@@ -120,7 +120,7 @@ void IOFacade::readIdeals(Scanner& in,
 
   names = recorder.getRing();
   while (!recorder.empty())
-	exceptionSafePushBack(ideals, recorder.releaseIdeal());
+    exceptionSafePushBack(ideals, recorder.releaseIdeal());
 
   idealsDeleter.release();
 
@@ -128,8 +128,8 @@ void IOFacade::readIdeals(Scanner& in,
 }
 
 void IOFacade::writeIdeal(const BigIdeal& ideal,
-						  IOHandler* handler,
-						  FILE* out) {
+                          IOHandler* handler,
+                          FILE* out) {
   ASSERT(handler != 0);
 
   beginAction("Writing monomial ideal.");
@@ -140,27 +140,27 @@ void IOFacade::writeIdeal(const BigIdeal& ideal,
 }
 
 void IOFacade::writeIdeals(const vector<BigIdeal*>& ideals,
-						   const VarNames& names,
-						   IOHandler* handler,
-						   FILE* out) {
+                           const VarNames& names,
+                           IOHandler* handler,
+                           FILE* out) {
   ASSERT(handler != 0);
 
   beginAction("Writing monomial ideals.");
 
   {
-	auto_ptr<BigTermConsumer> consumer = handler->createIdealWriter(out);
+    auto_ptr<BigTermConsumer> consumer = handler->createIdealWriter(out);
 
-	consumer->beginConsumingList();
-	consumer->consumeRing(names);
+    consumer->beginConsumingList();
+    consumer->consumeRing(names);
 
-	for (vector<BigIdeal*>::const_iterator it = ideals.begin();
-		 it != ideals.end(); ++it)
-	  consumer->consume(**it);
+    for (vector<BigIdeal*>::const_iterator it = ideals.begin();
+         it != ideals.end(); ++it)
+      consumer->consume(**it);
 
-	consumer->doneConsumingList();
+    consumer->doneConsumingList();
   }
 
-  endAction();  
+  endAction();
 }
 
 void IOFacade::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
@@ -177,8 +177,8 @@ void IOFacade::readPolynomial(Scanner& in, BigPolynomial& polynomial) {
 }
 
 void IOFacade::writePolynomial(const BigPolynomial& polynomial,
-							   IOHandler* handler,
-							   FILE* out) {
+                               IOHandler* handler,
+                               FILE* out) {
   ASSERT(handler != 0);
   ASSERT(out != 0);
 
@@ -190,9 +190,9 @@ void IOFacade::writePolynomial(const BigPolynomial& polynomial,
 }
 
 void IOFacade::writeTerm(const vector<mpz_class>& term,
-						 const VarNames& names,
-						 IOHandler* handler,
-						 FILE* out) {
+                         const VarNames& names,
+                         IOHandler* handler,
+                         FILE* out) {
   beginAction("Writing monomial.");
 
   handler->writeTerm(term, names, out);
@@ -217,11 +217,11 @@ bool IOFacade::readAlexanderDualInstance
 
   bool pointSpecified = false;
   if (handler->hasMoreInput(in)) {
-	handler->readTerm(in, ideal.getNames(), term);
-	pointSpecified = true;
+    handler->readTerm(in, ideal.getNames(), term);
+    pointSpecified = true;
   }
 
-  endAction();  
+  endAction();
 
   return pointSpecified;
 }
@@ -232,7 +232,7 @@ void IOFacade::readVector
 
   v.resize(integerCount);
   for (size_t i = 0; i < integerCount; ++i)
-	in.readInteger(v[i]);
+    in.readInteger(v[i]);
 
   endAction();
 }
@@ -255,21 +255,21 @@ void IOFacade::readFrobeniusInstanceWithGrobnerBasis
 
   if (instance.size() != ideal.getVarCount() + 1) {
     if (instance.empty())
-	  reportSyntaxError
-		(in, "The Grobner basis is not followed by a Frobenius instance.");
+      reportSyntaxError
+        (in, "The Grobner basis is not followed by a Frobenius instance.");
     else {
-	  // Note that we add one since the first entry of the rows encoding
-	  // the Grobner basis is chopped off.	  
-	  FrobbyStringStream errorMsg;
-	  errorMsg << "The Grobner basis has "
-			   << ideal.getVarCount() + 1
-			   << " entries, and the Frobenius instance should then also have "
-			   << ideal.getVarCount() + 1
-			   << " entries, but in fact it has "
-			   << instance.size() 
-			   << " entries.";
-		reportSyntaxError(in, errorMsg);
-	}
+      // Note that we add one since the first entry of the rows encoding
+      // the Grobner basis is chopped off.
+      FrobbyStringStream errorMsg;
+      errorMsg << "The Grobner basis has "
+               << ideal.getVarCount() + 1
+               << " entries, and the Frobenius instance should then also have "
+               << ideal.getVarCount() + 1
+               << " entries, but in fact it has "
+               << instance.size()
+               << " entries.";
+        reportSyntaxError(in, errorMsg);
+    }
   }
 
   endAction();

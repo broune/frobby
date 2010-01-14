@@ -75,25 +75,25 @@ void DimensionAction::obtainParameters(vector<Parameter*>& parameters) {
 void DimensionAction::perform() {
   mpz_class result;
   if (_useSlice) {
-	SliceParams params;
-	params.useIndependenceSplits(false); // not supported
-	validateSplit(params, true, false);
-	SliceFacade facade(params, DataType::getNullType()); 
-	result = facade.computeDimension(_codimension);
+    SliceParams params;
+    params.useIndependenceSplits(false); // not supported
+    validateSplit(params, true, false);
+    SliceFacade facade(params, DataType::getNullType());
+    result = facade.computeDimension(_codimension);
   } else {
-	BigIdeal ideal;
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
+    BigIdeal ideal;
+    Scanner in(_io.getInputFormat(), stdin);
+    _io.autoDetectInputFormat(in);
+    _io.validateFormats();
 
-	IOFacade ioFacade(_printActions);
-	ioFacade.readIdeal(in, ideal);
-	in.expectEOF();
+    IOFacade ioFacade(_printActions);
+    ioFacade.readIdeal(in, ideal);
+    in.expectEOF();
 
-	IdealFacade facade(_printActions);
-	result = facade.computeDimension(ideal,
-									 _codimension,
-									 _squareFreeAndMinimal);
+    IdealFacade facade(_printActions);
+    result = facade.computeDimension(ideal,
+                                     _codimension,
+                                     _squareFreeAndMinimal);
   }
   gmp_fprintf(stdout, "%Zd\n", result.get_mpz_t());
 }

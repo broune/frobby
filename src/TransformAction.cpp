@@ -118,53 +118,53 @@ void TransformAction::perform() {
   IdealFacade idealFacade(_printActions);
 
   if (0 < _projectVar && _projectVar <= names.getVarCount()) {
-	size_t var = _projectVar - 1;
-	names.projectVar(var);
+    size_t var = _projectVar - 1;
+    names.projectVar(var);
 
-	for (size_t i = 0; i < ideals.size(); ++i) {
-	  BigIdeal& ideal = *(ideals[i]);
-	  idealFacade.projectVar(ideal, var);
-	}
+    for (size_t i = 0; i < ideals.size(); ++i) {
+      BigIdeal& ideal = *(ideals[i]);
+      idealFacade.projectVar(ideal, var);
+    }
   }
 
   if (_product) {
-	auto_ptr<BigIdeal> ideal;
-	ideal.reset(new BigIdeal(names));
+    auto_ptr<BigIdeal> ideal;
+    ideal.reset(new BigIdeal(names));
 
-	idealFacade.takeProducts(ideals, *ideal);
+    idealFacade.takeProducts(ideals, *ideal);
 
-	idealsDeleter.deleteElements();
-	exceptionSafePushBack(ideals, ideal);
+    idealsDeleter.deleteElements();
+    exceptionSafePushBack(ideals, ideal);
   }
 
   for (size_t i = 0; i < ideals.size(); ++i) {
-	BigIdeal& ideal = *(ideals[i]);
+    BigIdeal& ideal = *(ideals[i]);
 
-	if (_radical)
-	  idealFacade.takeRadical(ideal);
+    if (_radical)
+      idealFacade.takeRadical(ideal);
 
-	if (_minimize)
-	  idealFacade.sortAllAndMinimize(ideal);
+    if (_minimize)
+      idealFacade.sortAllAndMinimize(ideal);
 
-	if (_deform)
-	  idealFacade.deform(ideal);
+    if (_deform)
+      idealFacade.deform(ideal);
 
-	if (_addPurePowers)
-	  idealFacade.addPurePowers(ideal);
+    if (_addPurePowers)
+      idealFacade.addPurePowers(ideal);
 
-	if (_canonicalize)
-	  idealFacade.sortVariables(ideal);
-	if (_unique)
-	  idealFacade.sortGeneratorsUnique(ideal);
-	else if (_sort || _canonicalize)
-	  idealFacade.sortGenerators(ideal);
+    if (_canonicalize)
+      idealFacade.sortVariables(ideal);
+    if (_unique)
+      idealFacade.sortGeneratorsUnique(ideal);
+    else if (_sort || _canonicalize)
+      idealFacade.sortGenerators(ideal);
   }
 
   if (_canonicalize) {
-	VarSorter sorter(names);
-	sorter.getOrderedNames(names);
+    VarSorter sorter(names);
+    sorter.getOrderedNames(names);
 
-	sort(ideals.begin(), ideals.end(), compareIdeals);
+    sort(ideals.begin(), ideals.end(), compareIdeals);
   }
 
   auto_ptr<IOHandler> output(_io.createOutputHandler());

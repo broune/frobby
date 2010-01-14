@@ -30,14 +30,14 @@ namespace fourti2 {
     scanner.readIntegerAndNegativeAsZero(tmp);
 
     if (tmp > 0)
-	  reportError("Encountered positive entry as first entry in term. "
-				  "This is impossible if using the required degree reverse "
-				  "lexicographic term order.\n");
+      reportError("Encountered positive entry as first entry in term. "
+                  "This is impossible if using the required degree reverse "
+                  "lexicographic term order.\n");
 
     for (size_t i = 0; i < ideal.getVarCount(); ++i) {
       scanner.readIntegerAndNegativeAsZero(tmp);
       if (tmp > 0)
-		ideal.getLastTermExponentRef(i) = tmp;
+        ideal.getLastTermExponentRef(i) = tmp;
     }
   }
 
@@ -48,10 +48,10 @@ namespace fourti2 {
     scanner.readSizeT(termCount);
     scanner.readSizeT(varCount);
 
-	if (varCount == 0)
-	  reportError
-		("The matrix defining the Frobenius-related Grobner basis must "
-		 "have at least one column, and this one has none.");
+    if (varCount == 0)
+      reportError
+        ("The matrix defining the Frobenius-related Grobner basis must "
+         "have at least one column, and this one has none.");
 
     VarNames names(varCount - 1);
     basis.clearAndSetNames(names);
@@ -73,19 +73,19 @@ namespace fourti2 {
     for (unsigned int i = 0; i < rowCount; ++i) {
       basis.newLastTerm();
       for (unsigned int j = 0; j < columnCount; ++j)
-		scanner.readInteger(basis.getLastTermExponentRef(j));
+        scanner.readInteger(basis.getLastTermExponentRef(j));
     }
   }
 
   void writeLatticeBasis(FILE* out, const BigIdeal& basis) {
     fprintf(out, "%lu %lu\n",
-			(unsigned long)basis.getGeneratorCount(),
-			(unsigned long)basis.getVarCount());
+            (unsigned long)basis.getGeneratorCount(),
+            (unsigned long)basis.getVarCount());
     for (unsigned int i = 0; i < basis.getGeneratorCount(); ++i) {
       const char* prefix = "";
       for (unsigned int j = 0; j < basis[i].size(); ++j) {
-		gmp_fprintf(out, "%s%Zd", prefix, basis[i][j].get_mpz_t());
-		prefix = " ";
+        gmp_fprintf(out, "%s%Zd", prefix, basis[i][j].get_mpz_t());
+        prefix = " ";
       }
       fputc('\n', out);
     }

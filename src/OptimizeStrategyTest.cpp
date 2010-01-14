@@ -35,12 +35,12 @@ TEST_SUITE2(SliceStrategy, OptimizeStrategy)
 
 namespace {
   vector<mpz_class> makeVector(mpz_class a, mpz_class b, mpz_class c, mpz_class d) {
-	vector<mpz_class> vec(4);
-	vec[0] = a;
-	vec[1] = b;
-	vec[2] = c;
-	vec[3] = d;
-	return vec;
+    vector<mpz_class> vec(4);
+    vec[0] = a;
+    vec[1] = b;
+    vec[2] = c;
+    vec[3] = d;
+    return vec;
   }
 }
 
@@ -50,8 +50,8 @@ TEST(OptimizeStrategy, Simplify) {
   TermGrader grader(makeVector(0, 100, 10000, mpz_class("300000000000000007")), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
   OptimizeStrategy strategy
-	(grader, splitStrategy.get(), false,
-	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+    (grader, splitStrategy.get(), false,
+     OptimizeStrategy::UseBoundToEliminateAndSimplify);
   strategy.run(ideal);
 
   ASSERT_EQ(strategy.getMaximalSolutions(), Ideal(Term("1 1 2 1")));
@@ -63,38 +63,38 @@ TEST(OptimizeStrategy, ChangedInWayRelevantToBound) {
   TermGrader grader(makeVector(1, -1, 0, 0), translator);
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
   OptimizeStrategy opt
-	(grader, splitStrategy.get(), true,
-	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+    (grader, splitStrategy.get(), true,
+     OptimizeStrategy::UseBoundToEliminateAndSimplify);
 
   // Case 1 from the documentation.
   ASSERT_TRUE(opt.changedInWayRelevantToBound
-			  (Term("0 0 0 0"), Term("0 2 0 0"),
-			   Term("0 1 0 0"), Term("0 2 0 0")));
+              (Term("0 0 0 0"), Term("0 2 0 0"),
+               Term("0 1 0 0"), Term("0 2 0 0")));
 
   // Case 2 from the documentation.
   ASSERT_TRUE(opt.changedInWayRelevantToBound
-			  (Term("0 0 0 0"), Term("0 10 0 0"),
-			   Term("0 0 0 0"), Term("0 9 0 0")));
+              (Term("0 0 0 0"), Term("0 10 0 0"),
+               Term("0 0 0 0"), Term("0 9 0 0")));
 
   // Case 3 from the documentation.
   ASSERT_TRUE(opt.changedInWayRelevantToBound
-			  (Term("0 0 0 0"), Term("9 0 0 0"),
-			   Term("0 0 0 0"), Term("8 0 0 0")));
+              (Term("0 0 0 0"), Term("9 0 0 0"),
+               Term("0 0 0 0"), Term("8 0 0 0")));
 
   // Case 4 from the documentation.
   ASSERT_TRUE(opt.changedInWayRelevantToBound
-			  (Term(" 9 0 0 0"), Term("10 0 0 0"),
-			   Term("10 0 0 0"), Term("10 0 0 0")));
+              (Term(" 9 0 0 0"), Term("10 0 0 0"),
+               Term("10 0 0 0"), Term("10 0 0 0")));
 
   // Nothing changed.
   ASSERT_FALSE(opt.changedInWayRelevantToBound
-			   (Term("0 0 0 0"), Term("0 0 0 0"),
-				Term("0 0 0 0"), Term("0 0 0 0")));
+               (Term("0 0 0 0"), Term("0 0 0 0"),
+                Term("0 0 0 0"), Term("0 0 0 0")));
 
   // No case applies.
   ASSERT_FALSE(opt.changedInWayRelevantToBound
-			   (Term("1 2 3 3"), Term("10 9 10 9"),
-				Term("1 2 4 4"), Term(" 9 5  9 4")));
+               (Term("1 2 3 3"), Term("10 9 10 9"),
+                Term("1 2 4 4"), Term(" 9 5  9 4")));
 }
 
 #define INNER_SIMP_TEST(strat, div, dom, degree, expectPivot) \
@@ -102,10 +102,10 @@ TEST(OptimizeStrategy, ChangedInWayRelevantToBound) {
     Term gotPivot(Term(expectPivot).getVarCount()); \
     bool expectSimplify = !Term(expectPivot).isIdentity(); \
     ASSERT_EQ(strat.getInnerSimplify \
-			  (Term(div), Term(dom), degree, gotPivot), \
-			  expectSimplify); \
-	if (expectSimplify) { \
-	  ASSERT_EQ(gotPivot, Term(expectPivot)); \
+              (Term(div), Term(dom), degree, gotPivot), \
+              expectSimplify); \
+    if (expectSimplify) { \
+      ASSERT_EQ(gotPivot, Term(expectPivot)); \
     } \
   }
 
@@ -114,10 +114,10 @@ TEST(OptimizeStrategy, ChangedInWayRelevantToBound) {
     Term gotPivot(Term(expectPivot).getVarCount()); \
     bool expectSimplify = !Term(expectPivot).isIdentity(); \
     ASSERT_EQ(strat.getOuterSimplify \
-			  (Term(div), Term(dom), degree, gotPivot), \
-			  expectSimplify); \
-	if (expectSimplify) { \
-	  ASSERT_EQ(gotPivot, Term(expectPivot)); \
+              (Term(div), Term(dom), degree, gotPivot), \
+              expectSimplify); \
+    if (expectSimplify) { \
+      ASSERT_EQ(gotPivot, Term(expectPivot)); \
     } \
   }
 
@@ -127,11 +127,11 @@ TEST(OptimizeStrategy, SimplifyPositiveGrading) {
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
 
   OptimizeStrategy all // Report all optimal solutions.
-	(grader, splitStrategy.get(), true,
-	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+    (grader, splitStrategy.get(), true,
+     OptimizeStrategy::UseBoundToEliminateAndSimplify);
   OptimizeStrategy one // Report one optimal solution.
-	(grader, splitStrategy.get(), false,
-	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+    (grader, splitStrategy.get(), false,
+     OptimizeStrategy::UseBoundToEliminateAndSimplify);
 
   all.beginConsuming();
   all.consume(Term("1 2 3 4"));
@@ -171,11 +171,11 @@ TEST(OptimizeStrategy, SimplifyNegativeGrading) {
   auto_ptr<SplitStrategy> splitStrategy = SplitStrategy::createStrategy("median");
 
   OptimizeStrategy all // Report all optimal solutions.
-	(grader, splitStrategy.get(), true,
-	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+    (grader, splitStrategy.get(), true,
+     OptimizeStrategy::UseBoundToEliminateAndSimplify);
   OptimizeStrategy one // Report one optimal solution.
-	(grader, splitStrategy.get(), false,
-	 OptimizeStrategy::UseBoundToEliminateAndSimplify);
+    (grader, splitStrategy.get(), false,
+     OptimizeStrategy::UseBoundToEliminateAndSimplify);
 
   all.beginConsuming();
   all.consume(Term("1 2 3 4"));
