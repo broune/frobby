@@ -38,16 +38,16 @@ DebugAllocator& DebugAllocator::getSingleton() {
 
 void DebugAllocator::rewindInput() {
   if (_inputFile != "")
-	if (!freopen(_inputFile.c_str(), "r", stdin))
-	  reportError("Could not open file \"" + _inputFile + "\" for input.");
+    if (!freopen(_inputFile.c_str(), "r", stdin))
+      reportError("Could not open file \"" + _inputFile + "\" for input.");
 }
 
 /** @todo consider off-by-one conditions on the allocation limit
-	conditions in this method.
+    conditions in this method.
 
     @todo at the end, make sure each identifiable allocation site has
-	been hit. Some can be missed now when the stepsize is larger than
-	1. This would require having a set of sites that have been hit.
+    been hit. Some can be missed now when the stepsize is larger than
+    1. This would require having a set of sites that have been hit.
 */
 int DebugAllocator::runDebugMain(int argc, const char** argv) {
   processDebugOptions(argc, argv);
@@ -61,52 +61,52 @@ int DebugAllocator::runDebugMain(int argc, const char** argv) {
   int exitCode = frobbyMain(argc, argv);
   size_t maxAllocations = _allocationCount;
   if (_actionIsTest || !_debugAllocation)
-	return exitCode;
+    return exitCode;
 
   fclose(stdout); // Output has already been produced.
 
   fputs("DEBUG: Now debugging out-of-memory conditions.\n", stderr);
   fprintf(stderr, "DEBUG: There are %i allocations in total on this input.\n",
-		  (int)maxAllocations);
+          (int)maxAllocations);
 
   // If maxAllocations is small then just try every possible limit.
   if (maxAllocations < AllocationLimitsTryFirst + AllocationLimitsTryLast) {
-	fputs("DEBUG: This is few, so am now running through "
-		  "every possible condition.\n", stderr);
-	for (size_t limit = 0; limit < maxAllocations; ++limit)
-	  runWithLimit(argc, argv, limit);
-	return ExitCodeSuccess;
+    fputs("DEBUG: This is few, so am now running through "
+          "every possible condition.\n", stderr);
+    for (size_t limit = 0; limit < maxAllocations; ++limit)
+      runWithLimit(argc, argv, limit);
+    return ExitCodeSuccess;
   }
 
   fprintf(stderr, "DEBUG: Trying the first %i allocations.\n",
-		  (int)AllocationLimitsTryFirst);
+          (int)AllocationLimitsTryFirst);
   for (size_t limit = 0; limit < AllocationLimitsTryFirst; ++limit)
-	runWithLimit(argc, argv, limit);
+    runWithLimit(argc, argv, limit);
 
   fprintf(stderr, "DEBUG: Trying the last %i allocations.\n",
-		  (int)AllocationLimitsTryLast);
+          (int)AllocationLimitsTryLast);
   for (size_t limit = 0; limit < AllocationLimitsTryLast; ++limit)
-	runWithLimit(argc, argv, maxAllocations - limit);
+    runWithLimit(argc, argv, maxAllocations - limit);
 
   size_t limitsLeft =
-	maxAllocations - AllocationLimitsTryFirst - AllocationLimitsTryLast;
+    maxAllocations - AllocationLimitsTryFirst - AllocationLimitsTryLast;
   size_t stepSize = limitsLeft / AllocationLimitsStepRatio + 1;
   fprintf(stderr,
-		  "DEBUG: Going through the %i remaining allocations "
-		  "with steps of size %i.\n",
-		  (int)limitsLeft, (int)stepSize);
+          "DEBUG: Going through the %i remaining allocations "
+          "with steps of size %i.\n",
+          (int)limitsLeft, (int)stepSize);
 
   for (size_t limit = AllocationLimitsTryFirst;
-	   limit < maxAllocations - AllocationLimitsTryLast; limit += stepSize)
-	runWithLimit(argc, argv, limit);
+       limit < maxAllocations - AllocationLimitsTryLast; limit += stepSize)
+    runWithLimit(argc, argv, limit);
 
   return ExitCodeSuccess;
 }
 
 void DebugAllocator::runWithLimit(int argc, const char** argv, size_t limit) {
   if (_detailAllocation)
-	fprintf(stderr, "DEBUG: Trying allocation limit of %i\n", (int)limit);
-  
+    fprintf(stderr, "DEBUG: Trying allocation limit of %i\n", (int)limit);
+
   // To make each run more similar.
   Ideal::clearStaticCache();
 
@@ -121,10 +121,10 @@ void DebugAllocator::runWithLimit(int argc, const char** argv, size_t limit) {
   rewindInput();
 
   try {
-	frobbyMain(argc, argv);
+    frobbyMain(argc, argv);
   } catch (const bad_alloc&) {
-	if (!_expectBadAllocException)
-	  throw;
+    if (!_expectBadAllocException)
+      throw;
   }
 
   _limitAllocation = false;
@@ -134,30 +134,30 @@ void DebugAllocator::processDebugOptions(int& argc, const char**& argv) {
   const char* originalArgvZero = argv[0];
 
   while (true) {
-	if (argc <= 1 || argv[1][0] != '_')
-	  break;
+    if (argc <= 1 || argv[1][0] != '_')
+      break;
 
-	string option(argv[1] + 1);
-	++argv;
-	--argc;
+    string option(argv[1] + 1);
+    ++argv;
+    --argc;
 
-	if (option == "debugAlloc")
-	  _debugAllocation = true;
-	else if (option == "detailAlloc")
-	  _detailAllocation = true;
-	else if (option == "input") {
-	  if (argc <= 1)
-		reportError("Debug option _input requries an argument.");
+    if (option == "debugAlloc")
+      _debugAllocation = true;
+    else if (option == "detailAlloc")
+      _detailAllocation = true;
+    else if (option == "input") {
+      if (argc <= 1)
+        reportError("Debug option _input requries an argument.");
 
-	  _inputFile = argv[1];
-	  ++argv;
-	  --argc;
-	} else
-	  reportError("Unknown debug option \"" + option + "\".");
+      _inputFile = argv[1];
+      ++argv;
+      --argc;
+    } else
+      reportError("Unknown debug option \"" + option + "\".");
   }
 
   if (argc >= 2 && string(argv[1]) == "test")
-	_actionIsTest = true;
+    _actionIsTest = true;
 
   argv[0] = originalArgvZero;
 }
@@ -166,34 +166,34 @@ void DebugAllocator::runTest(TestCase& test, const string& name) {
   test.run(name.c_str(), true);
 
   if (!_debugAllocation)
-	return;
+    return;
 
   _limitAllocation = true;
 
   for (_allocationLimit = 0; _allocationLimit < numeric_limits<size_t>::max();
-	   ++_allocationLimit) {
-	if (_detailAllocation)
-	  fprintf(stderr, "DEBUG: Trying test allocation limit of %i\n",
-			  (int)_allocationLimit);
+       ++_allocationLimit) {
+    if (_detailAllocation)
+      fprintf(stderr, "DEBUG: Trying test allocation limit of %i\n",
+              (int)_allocationLimit);
 
-	// To make each run more similar.
-	Ideal::clearStaticCache();
+    // To make each run more similar.
+    Ideal::clearStaticCache();
 
-	_allocationCount = 0;
-	_expectBadAllocException = false;
+    _allocationCount = 0;
+    _expectBadAllocException = false;
 
-	rewindInput();
+    rewindInput();
 
-	try {
-	  test.run(name.c_str(), false);
+    try {
+      test.run(name.c_str(), false);
 
-	  // At this point test has completed within allocation limit.
-	  break;
-	} catch (const bad_alloc&) {
-	  if (!_expectBadAllocException)
-		throw;
-	  // Continue and try next limit.
-	}
+      // At this point test has completed within allocation limit.
+      break;
+    } catch (const bad_alloc&) {
+      if (!_expectBadAllocException)
+        throw;
+      // Continue and try next limit.
+    }
   }
 
   _limitAllocation = false;
@@ -204,23 +204,23 @@ void* DebugAllocator::allocate(size_t size) {
 }
 
 void* DebugAllocator::allocate(size_t size,
-							   const char* file,
-							   size_t lineNumber) {
+                               const char* file,
+                               size_t lineNumber) {
   if (_detailAllocation) {
-	if (file != 0)
-	  fprintf(stderr, "DEBUG: Allocating %i bytes at %s:%i.\n",
-			  (int)size, file, (int)lineNumber);
-	if (file == 0)
-	  fprintf(stderr, "DEBUG: Allocating %i bytes at an unknown point.\n",
-			  (int)size);
+    if (file != 0)
+      fprintf(stderr, "DEBUG: Allocating %i bytes at %s:%i.\n",
+              (int)size, file, (int)lineNumber);
+    if (file == 0)
+      fprintf(stderr, "DEBUG: Allocating %i bytes at an unknown point.\n",
+              (int)size);
   }
 
   if (_limitAllocation && _allocationCount >= _allocationLimit) {
-	if (_detailAllocation)
-	  fputs("DEBUG: Throwing bad_alloc due to artifically imposed limit.\n",
-			stderr);
-	_expectBadAllocException = true;
-	throw bad_alloc();
+    if (_detailAllocation)
+      fputs("DEBUG: Throwing bad_alloc due to artifically imposed limit.\n",
+            stderr);
+    _expectBadAllocException = true;
+    throw bad_alloc();
   }
 
   ++_allocationCount;

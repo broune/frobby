@@ -28,123 +28,123 @@
 
 namespace IO {
   namespace NewMonos {
-	void writeRing(const VarNames& names, FILE* out);
-	void readRingNoLeftParen(Scanner& in, VarNames& names);
-	void readIdealNoLeftParen(Scanner& in, BigTermConsumer& consumer);
+    void writeRing(const VarNames& names, FILE* out);
+    void readRingNoLeftParen(Scanner& in, VarNames& names);
+    void readIdealNoLeftParen(Scanner& in, BigTermConsumer& consumer);
   }
   namespace N = NewMonos;
 
   class NewMonosIdealWriter : public IdealWriter {
   public:
-	NewMonosIdealWriter(FILE* out): IdealWriter(out) {
-	}
+    NewMonosIdealWriter(FILE* out): IdealWriter(out) {
+    }
 
   private:
-	virtual void doWriteHeader(bool first) {
-	  fputs("(monomial-ideal-with-order\n ", getFile());
-	  N::writeRing(getNames(), getFile());
-	}
+    virtual void doWriteHeader(bool first) {
+      fputs("(monomial-ideal-with-order\n ", getFile());
+      N::writeRing(getNames(), getFile());
+    }
 
-	virtual void doWriteTerm(const Term& term,
-							 const TermTranslator& translator,
-							 bool first) {
-	  fputs("\n ", getFile());
-	  writeTermProduct(term, translator, getFile());
-	}
+    virtual void doWriteTerm(const Term& term,
+                             const TermTranslator& translator,
+                             bool first) {
+      fputs("\n ", getFile());
+      writeTermProduct(term, translator, getFile());
+    }
 
-	virtual void doWriteTerm(const vector<mpz_class>& term,
-							 bool first) {
-	  fputs("\n ", getFile());
-	  writeTermProduct(term, getNames(), getFile());
-	}
+    virtual void doWriteTerm(const vector<mpz_class>& term,
+                             bool first) {
+      fputs("\n ", getFile());
+      writeTermProduct(term, getNames(), getFile());
+    }
 
-	virtual void doWriteFooter(bool wasZeroIdeal) {
-	  fputs("\n)\n", getFile());
-	}
+    virtual void doWriteFooter(bool wasZeroIdeal) {
+      fputs("\n)\n", getFile());
+    }
 
-	virtual void doWriteEmptyList() {
-	  N::writeRing(getNames(), getFile());
-	}
+    virtual void doWriteEmptyList() {
+      N::writeRing(getNames(), getFile());
+    }
   };
 
   NewMonosIOHandler::NewMonosIOHandler():
-	IOHandlerImpl(staticGetName(), "Newer format used by the program Monos.") {
-	registerInput(DataType::getMonomialIdealType());
-	registerInput(DataType::getMonomialIdealListType());
-	registerOutput(DataType::getMonomialIdealType());
+    IOHandlerImpl(staticGetName(), "Newer format used by the program Monos.") {
+    registerInput(DataType::getMonomialIdealType());
+    registerInput(DataType::getMonomialIdealListType());
+    registerOutput(DataType::getMonomialIdealType());
   }
 
   const char* NewMonosIOHandler::staticGetName() {
-	return "newmonos";
+    return "newmonos";
   }
 
   BigTermConsumer* NewMonosIOHandler::doCreateIdealWriter(FILE* out) {
-	return new NewMonosIdealWriter(out);
+    return new NewMonosIdealWriter(out);
   }
 
   void NewMonosIOHandler::doWriteTerm(const vector<mpz_class>& term,
-									  const VarNames& names,
-									  FILE* out) {
-	writeTermProduct(term, names, out);
+                                      const VarNames& names,
+                                      FILE* out) {
+    writeTermProduct(term, names, out);
   }
 
   void NewMonosIOHandler::doReadTerm(Scanner& in,
-									  const VarNames& names,
-									  vector<mpz_class>& term) {
-	readTermProduct(in, names, term);
+                                      const VarNames& names,
+                                      vector<mpz_class>& term) {
+    readTermProduct(in, names, term);
   }
 
   void NewMonosIOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
-	in.expect('(');
-	N::readIdealNoLeftParen(in, consumer);
+    in.expect('(');
+    N::readIdealNoLeftParen(in, consumer);
   }
 
   void NewMonosIOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
-	in.expect('(');
-	if (in.peek('l') || in.peek('L')) {
-	  VarNames names;
-	  N::readRingNoLeftParen(in, names);
-	  consumer.consumeRing(names);
-	  return;
-	}
+    in.expect('(');
+    if (in.peek('l') || in.peek('L')) {
+      VarNames names;
+      N::readRingNoLeftParen(in, names);
+      consumer.consumeRing(names);
+      return;
+    }
 
-	do {
-	  N::readIdealNoLeftParen(in, consumer);
-	} while (in.match('('));
+    do {
+      N::readIdealNoLeftParen(in, consumer);
+    } while (in.match('('));
   }
 
   void N::writeRing(const VarNames& names, FILE* out) {
-	fputs("(lex-order", out);
-	for (unsigned int i = 0; i < names.getVarCount(); ++i) {
-	  putc(' ', out);
-	  fputs(names.getName(i).c_str(), out);
-	}
-	fputc(')', out);
+    fputs("(lex-order", out);
+    for (unsigned int i = 0; i < names.getVarCount(); ++i) {
+      putc(' ', out);
+      fputs(names.getName(i).c_str(), out);
+    }
+    fputc(')', out);
   }
 
   void N::readRingNoLeftParen(Scanner& in, VarNames& names) {
-	in.expect("lex-order");
-	while (!in.match(')'))
-	  names.addVarSyntaxCheckUnique(in, in.readIdentifier());
+    in.expect("lex-order");
+    while (!in.match(')'))
+      names.addVarSyntaxCheckUnique(in, in.readIdentifier());
   }
 
   void N::readIdealNoLeftParen(Scanner& in,
-							   BigTermConsumer& consumer) {
-	in.expect("monomial-ideal-with-order");
+                               BigTermConsumer& consumer) {
+    in.expect("monomial-ideal-with-order");
 
-	VarNames names;
-	in.expect('(');
-	N::readRingNoLeftParen(in, names);
-	consumer.consumeRing(names);
+    VarNames names;
+    in.expect('(');
+    N::readRingNoLeftParen(in, names);
+    consumer.consumeRing(names);
 
-	consumer.beginConsuming();
-	vector<mpz_class> term(names.getVarCount());
+    consumer.beginConsuming();
+    vector<mpz_class> term(names.getVarCount());
 
-	while (!in.match(')')) {
-	  readTermProduct(in, names, term);
-	  consumer.consume(term);
-	}
+    while (!in.match(')')) {
+      readTermProduct(in, names, term);
+      consumer.consume(term);
+    }
 
-	consumer.doneConsuming();
+    consumer.doneConsuming();
   }
 }

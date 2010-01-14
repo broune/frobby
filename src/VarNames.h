@@ -25,17 +25,17 @@
 class Scanner;
 
 /** Defines the variables of a polynomial ring and facilities IO
-	involving them.
+    involving them.
 
-	@todo Rename to Ring or a similar name.
+    @todo Rename to Ring or a similar name.
 
-	@todo make this class immutable and make a VarNamesBuilder.
-	
-	@todo make copies share the same memory and use reference counting
-	to deallocate the shared memory.
-	
-	@todo make equality check for the same memory and thus return true very
-	quickly if that is the case.
+    @todo make this class immutable and make a VarNamesBuilder.
+
+    @todo make copies share the same memory and use reference counting
+    to deallocate the shared memory.
+
+    @todo make equality check for the same memory and thus return true very
+    quickly if that is the case.
 */
 class VarNames {
 public:
@@ -45,14 +45,14 @@ public:
   ~VarNames();
 
   /** Adds the variable and returns true if name is not already a variable.
-	  Otherwise it returns false without adding the variable (again).
+      Otherwise it returns false without adding the variable (again).
   */
   bool addVar(const string& name);
 
   /** As addvar, except it reports a syntax error if name is already a
-	  variable.
+      variable.
 
-	  @todo Move this somewhere more appropriate.
+      @todo Move this somewhere more appropriate.
   */
   void addVarSyntaxCheckUnique(const Scanner& in, const string& name);
 
@@ -69,10 +69,10 @@ public:
   bool namesAreDefault() const;
 
   /** The returned reference can become invalid next time addVar is
-	  called.
+      called.
   */
   const string& getName(size_t index) const;
-  
+
   /** Returns the current number of variables. */
   size_t getVarCount() const;
 

@@ -37,7 +37,7 @@ _inputFormat
   ("iformat",
    "The input format. The available formats are 4ti2 and fplll.",
    "4ti2"),
-  
+
   _outputFormat
   ("oformat",
    "The output format. The additional format \"" +
@@ -68,9 +68,9 @@ void LatticeFormatAction::perform() {
   IOFacade facade(_printActions);
 
   if (!facade.isValidLatticeFormat(iformat))
-	reportError("Unknown lattice input format \"" + iformat + "\".");
+    reportError("Unknown lattice input format \"" + iformat + "\".");
   if (!facade.isValidLatticeFormat(oformat))
-	reportError("Unknown lattice output format \"" + oformat + "\".");
+    reportError("Unknown lattice output format \"" + oformat + "\".");
 
   BigIdeal basis;
   Scanner in(iformat, stdin);

@@ -25,7 +25,7 @@ GenerateDataFacade::GenerateDataFacade(bool printActions):
 }
 
 void GenerateDataFacade::generateListIdeal(BigIdeal& ideal,
-										   size_t varCount) {
+                                           size_t varCount) {
   beginAction("Generating list ideal.");
 
   ::generateLinkedListIdeal(ideal, varCount);
@@ -34,7 +34,7 @@ void GenerateDataFacade::generateListIdeal(BigIdeal& ideal,
 }
 
 void GenerateDataFacade::generateKingChessIdeal(BigIdeal& ideal,
-												unsigned int rowsAndColumns) {
+                                                unsigned int rowsAndColumns) {
   beginAction("Generating king ideal.");
 
   ::generateKingChessIdeal(ideal, rowsAndColumns);
@@ -70,32 +70,32 @@ void GenerateDataFacade::generateEdgeIdeal
     ::generateRandomEdgeIdeal(ideal, varCount, generatorCount);
 
   if (!fullSize)
-	displayNote("Generated ideal has fewer minimal "
-				"generators than requested.\n");
+    displayNote("Generated ideal has fewer minimal "
+                "generators than requested.\n");
 
-  endAction();  
+  endAction();
 }
 
 void GenerateDataFacade::generateIdeal(BigIdeal& ideal,
-									   size_t exponentRange,
-									   size_t varCount,
-									   size_t generatorCount) {
+                                       size_t exponentRange,
+                                       size_t varCount,
+                                       size_t generatorCount) {
   beginAction("Generating random monomial ideal.");
 
   bool fullSize =
     ::generateRandomIdeal(ideal, exponentRange, varCount, generatorCount);
 
   if (!fullSize)
-	displayNote("Generated ideal has fewer minimal "
-				"generators than requested.\n");
+    displayNote("Generated ideal has fewer minimal "
+                "generators than requested.\n");
 
-  endAction();  
+  endAction();
 }
 
 void GenerateDataFacade::
 generateFrobeniusInstance(vector<mpz_class>& instance,
-						  size_t entryCount,
-						  const mpz_class& maxEntry) {
+                          size_t entryCount,
+                          const mpz_class& maxEntry) {
   beginAction("Generating random Frobenius instance.");
 
   ::generateRandomFrobeniusInstance(instance, entryCount, maxEntry);

@@ -27,7 +27,7 @@ class BigattiHilbertAlgorithm;
 class BigattiState : public Task {
  public:
   BigattiState(BigattiHilbertAlgorithm* algorithm,
-			   const Ideal& ideal, const Term& _multiply);
+               const Ideal& ideal, const Term& _multiply);
 
   const Ideal& getIdeal() const;
   const Term& getMultiply() const;

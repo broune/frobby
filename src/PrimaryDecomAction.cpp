@@ -43,7 +43,7 @@ void PrimaryDecomAction::obtainParameters(vector<Parameter*>& parameters) {
 void PrimaryDecomAction::perform() {
   SliceParams params(_params);
   validateSplit(params, true, false);
-  SliceFacade facade(params, DataType::getMonomialIdealListType()); 
+  SliceFacade facade(params, DataType::getMonomialIdealListType());
   facade.computePrimaryDecomposition();
 }
 

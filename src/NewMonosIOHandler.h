@@ -27,21 +27,21 @@ class BigTermConsumer;
 namespace IO {
   class NewMonosIOHandler : public IOHandlerImpl {
   public:
-	NewMonosIOHandler();
+    NewMonosIOHandler();
 
-	static const char* staticGetName();
+    static const char* staticGetName();
 
   private:
-	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
+    virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
 
-	virtual void doWriteTerm(const vector<mpz_class>& term,
-							 const VarNames& names,
-							 FILE* out);
-	virtual void doReadTerm(Scanner& in,
-							const VarNames& names,
-							vector<mpz_class>& term);
-	void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-	void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doWriteTerm(const vector<mpz_class>& term,
+                             const VarNames& names,
+                             FILE* out);
+    virtual void doReadTerm(Scanner& in,
+                            const VarNames& names,
+                            vector<mpz_class>& term);
+    void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+    void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
   };
 }
 

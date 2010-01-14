@@ -24,7 +24,7 @@
 
 Exponent median(const Exponent* a, size_t varCount) {
   if (varCount == 0)
-	return 0;
+    return 0;
 
   Term t(a, varCount);
   Exponent* middle = t.begin() + varCount / 2;
@@ -36,10 +36,10 @@ Exponent medianPositive(const Exponent* a, size_t varCount) {
   vector<Exponent> exps;
   exps.reserve(varCount);
   for (size_t var = 0; var < varCount; ++var)
-	if (a[var] > 0)
-	  exps.push_back(a[var]);
+    if (a[var] > 0)
+      exps.push_back(a[var]);
   if (exps.empty())
-	return 0;
+    return 0;
 
   vector<Exponent>::iterator middle = exps.begin() + exps.size() / 2;
   nth_element(exps.begin(), middle, exps.end());
@@ -49,18 +49,18 @@ Exponent medianPositive(const Exponent* a, size_t varCount) {
 void totalDegree(mpz_class& res, const Exponent* a, size_t varCount) {
   res = a[0];
   for (size_t var = 1; var < varCount; ++var)
-	res += a[var];
+    res += a[var];
 }
 
 Exponent minimumPositive(const Exponent* a, size_t varCount) {
   for (size_t var = 0; var < varCount; ++var) {
-	if (a[var] != 0) {
-	  Exponent min = a[var];
-	  for (; var < varCount; ++var)
-		if (a[var] != 0 && a[var] < min)
-		  min = a[var];
-	  return min;
-	}
+    if (a[var] != 0) {
+      Exponent min = a[var];
+      for (; var < varCount; ++var)
+        if (a[var] != 0 && a[var] < min)
+          min = a[var];
+      return min;
+    }
   }
   return 0;
 }
@@ -68,7 +68,7 @@ Exponent minimumPositive(const Exponent* a, size_t varCount) {
 Exponent maximum(const Exponent* a, size_t varCount) {
   Exponent max = 0;
   for (size_t var = 0; var < varCount; ++var)
-	if (a[var] > max)
-	  max = a[var];
+    if (a[var] > max)
+      max = a[var];
   return max;
 }

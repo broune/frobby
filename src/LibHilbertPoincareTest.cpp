@@ -47,44 +47,44 @@ TEST(HilbertPoincare, TypicalUnivariate) {
 
 TEST(HilbertPoincare, ZeroIdealMultigraded) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal(varCount);
-	LibPolynomialConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal(varCount);
+    LibPolynomialConsumer consumer((VarNames(varCount)));
 
-	Frobby::multigradedHilbertPoincareSeries(ideal, consumer);
+    Frobby::multigradedHilbertPoincareSeries(ideal, consumer);
 
-	ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::one(varCount));
+    ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::one(varCount));
   }
 }
 
 TEST(HilbertPoincare, ZeroIdealUnivariate) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal(varCount);
-	LibPolynomialConsumer consumer((VarNames(1)));
+    Frobby::Ideal ideal(varCount);
+    LibPolynomialConsumer consumer((VarNames(1)));
 
-	Frobby::univariateHilbertPoincareSeries(ideal, consumer);
+    Frobby::univariateHilbertPoincareSeries(ideal, consumer);
 
-	ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::one(1));
+    ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::one(1));
   }
 }
 
 TEST(HilbertPoincare, WholeRingMultigraded) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
-	LibPolynomialConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+    LibPolynomialConsumer consumer((VarNames(varCount)));
 
-	Frobby::multigradedHilbertPoincareSeries(ideal, consumer);
+    Frobby::multigradedHilbertPoincareSeries(ideal, consumer);
 
-	ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::zero(varCount));
+    ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::zero(varCount));
   }
 }
 
 TEST(HilbertPoincare, WholeRingUnivariate) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
-	LibPolynomialConsumer consumer((VarNames(1)));
+    Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+    LibPolynomialConsumer consumer((VarNames(1)));
 
-	Frobby::univariateHilbertPoincareSeries(ideal, consumer);
+    Frobby::univariateHilbertPoincareSeries(ideal, consumer);
 
-	ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::zero(1));
+    ASSERT_EQ(consumer.getPolynomial(), PolynomialFactory::zero(1));
   }
 }

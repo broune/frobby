@@ -18,7 +18,7 @@
 #include "Facade.h"
 
 Facade::Facade(bool printActions):
-  _printActions(printActions) 
+  _printActions(printActions)
 #ifdef DEBUG
   , _doingAnAction(false)
 #endif

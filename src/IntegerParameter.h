@@ -24,8 +24,8 @@
 class IntegerParameter : public Parameter {
 public:
   IntegerParameter(const string& name,
-				   const string& description,
-				   unsigned int defaultValue);
+                   const string& description,
+                   unsigned int defaultValue);
 
   unsigned int getValue() const {return _value;}
   void setValue(unsigned int value) {_value = value;}

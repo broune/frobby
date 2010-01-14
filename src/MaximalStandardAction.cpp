@@ -32,7 +32,7 @@ MaximalStandardAction::MaximalStandardAction():
  false),
 
   _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()),
- 
+
   _increment
   ("increment",
    "Increase each entry of the output by 1 to compute maximal staircase\n"
@@ -54,9 +54,9 @@ void MaximalStandardAction::obtainParameters(vector<Parameter*>& parameters) {
 void MaximalStandardAction::perform() {
   SliceParams params(_params);
   validateSplit(params, true, false);
-  SliceFacade facade(params, DataType::getMonomialIdealListType()); 
+  SliceFacade facade(params, DataType::getMonomialIdealListType());
   if (_increment)
-	facade.computeMaximalStaircaseMonomials();
+    facade.computeMaximalStaircaseMonomials();
   else
-	facade.computeMaximalStandardMonomials();
+    facade.computeMaximalStandardMonomials();
 }

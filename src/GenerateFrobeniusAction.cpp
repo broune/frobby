@@ -52,16 +52,16 @@ void GenerateFrobeniusAction::perform() {
   vector<mpz_class> instance;
 
   if (_entryCount < 1)
-	reportError("There must be at least one entry.");
+    reportError("There must be at least one entry.");
   if (_maxEntryDigits < 1)
-	reportError("The largest allowed number of digits must be at least 1.");
+    reportError("The largest allowed number of digits must be at least 1.");
 
   mpz_class maxEntry;
   mpz_ui_pow_ui(maxEntry.get_mpz_t(), 10, _maxEntryDigits.getValue());
 
   GenerateDataFacade generator(_printActions);
   generator.generateFrobeniusInstance
-	(instance, _entryCount.getValue(), maxEntry);
+    (instance, _entryCount.getValue(), maxEntry);
 
   IOFacade ioFacade(_printActions);
   ioFacade.writeFrobeniusInstance(stdout, instance);

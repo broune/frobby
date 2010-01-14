@@ -31,66 +31,66 @@ void generateLinkedListIdeal(BigIdeal& ideal, size_t variableCount) {
   ideal.clearAndSetNames(variableCount);
   ideal.reserve(variableCount);
   for (size_t var = 1; var < variableCount; ++var) {
-	ideal.newLastTerm();
-	ideal.getLastTermExponentRef(var) = 1;
-	ideal.getLastTermExponentRef(var - 1) = 1;
+    ideal.newLastTerm();
+    ideal.getLastTermExponentRef(var) = 1;
+    ideal.getLastTermExponentRef(var - 1) = 1;
   }
 }
 
 void generateChessIdeal(BigIdeal& bigIdeal,
-						size_t rowCount,
-						size_t columnCount,
-						int deltaRow[],
-						int deltaColumn[],
-						size_t deltaCount) {
+                        size_t rowCount,
+                        size_t columnCount,
+                        int deltaRow[],
+                        int deltaColumn[],
+                        size_t deltaCount) {
   if (mpz_class(rowCount) * mpz_class(columnCount) >
-	  numeric_limits<size_t>::max())
-	reportError("Number of positions on requested chess board too large.");
+      numeric_limits<size_t>::max())
+    reportError("Number of positions on requested chess board too large.");
 
   // Generate names
   VarNames names;
   for (size_t row = 0; row < rowCount; ++row) {
-	for (size_t column = 0; column < columnCount; ++column) {
-	  FrobbyStringStream name;
-	  name << 'r' << (row + 1) << 'c' << (column + 1);
-	  names.addVar(name);
-	}
+    for (size_t column = 0; column < columnCount; ++column) {
+      FrobbyStringStream name;
+      name << 'r' << (row + 1) << 'c' << (column + 1);
+      names.addVar(name);
+    }
   }
   bigIdeal.clearAndSetNames(names);
   Ideal ideal(bigIdeal.getVarCount());
 
   // Generate ideal
   for (size_t row = 0; row < rowCount; ++row) {
-	for (size_t column = 0; column < columnCount; ++column) {
-	  for (size_t delta = 0; delta < deltaCount; ++delta) {
-		// Check that the target position is within the board.
-		
-		if (deltaRow[delta] == numeric_limits<int>::min() ||
-			(deltaRow[delta] < 0 &&
-			 row < (size_t)-deltaRow[delta]) ||
-			(deltaRow[delta] > 0 &&
-			 rowCount - row <= (size_t)deltaRow[delta]))
-		  continue;
+    for (size_t column = 0; column < columnCount; ++column) {
+      for (size_t delta = 0; delta < deltaCount; ++delta) {
+        // Check that the target position is within the board.
 
-		if (deltaColumn[delta] == numeric_limits<int>::min() ||
-			(deltaColumn[delta] < 0 &&
-			 column < (size_t)-deltaColumn[delta]) ||
-			(deltaColumn[delta] > 0 &&
-			 columnCount - column <= (size_t)deltaColumn[delta]))
-		  continue;
+        if (deltaRow[delta] == numeric_limits<int>::min() ||
+            (deltaRow[delta] < 0 &&
+             row < (size_t)-deltaRow[delta]) ||
+            (deltaRow[delta] > 0 &&
+             rowCount - row <= (size_t)deltaRow[delta]))
+          continue;
 
-		Term chessMove(ideal.getVarCount());
-		chessMove[row * columnCount + column] = 1;
+        if (deltaColumn[delta] == numeric_limits<int>::min() ||
+            (deltaColumn[delta] < 0 &&
+             column < (size_t)-deltaColumn[delta]) ||
+            (deltaColumn[delta] > 0 &&
+             columnCount - column <= (size_t)deltaColumn[delta]))
+          continue;
 
-		size_t targetRow = row + deltaRow[delta];
-		size_t targetColumn = column + deltaColumn[delta];
-		ASSERT(targetRow < rowCount);
-		ASSERT(targetColumn < columnCount);
+        Term chessMove(ideal.getVarCount());
+        chessMove[row * columnCount + column] = 1;
 
-		chessMove[targetRow * columnCount + targetColumn] = 1;
-		ideal.insert(chessMove);
-	  }
-	}
+        size_t targetRow = row + deltaRow[delta];
+        size_t targetColumn = column + deltaColumn[delta];
+        ASSERT(targetRow < rowCount);
+        ASSERT(targetColumn < columnCount);
+
+        chessMove[targetRow * columnCount + targetColumn] = 1;
+        ideal.insert(chessMove);
+      }
+    }
   }
 
   ideal.sortReverseLex();
@@ -105,7 +105,7 @@ void generateKingChessIdeal(BigIdeal& ideal, size_t rowsAndColumns) {
   size_t deltaCount = sizeof(deltaRow) / sizeof(int);
 
   generateChessIdeal(ideal, rowsAndColumns, rowsAndColumns,
-					 deltaRow, deltaColumn, deltaCount);
+                     deltaRow, deltaColumn, deltaCount);
 }
 
 void generateKnightChessIdeal(BigIdeal& ideal, size_t rowsAndColumns) {
@@ -116,7 +116,7 @@ void generateKnightChessIdeal(BigIdeal& ideal, size_t rowsAndColumns) {
   size_t deltaCount = sizeof(deltaRow) / sizeof(int);
 
   generateChessIdeal(ideal, rowsAndColumns, rowsAndColumns,
-					 deltaRow, deltaColumn, deltaCount);
+                     deltaRow, deltaColumn, deltaCount);
 }
 
 namespace {
@@ -124,19 +124,19 @@ namespace {
    number. This method adds 1 and returns true if the resulting
    pattern is all zeroes. */
   bool nextBitPattern(vector<char>& pattern) {
-	typedef vector<char>::iterator iterator;
-	for (iterator it = pattern.begin(); it != pattern.end(); ++it) {
-	  if (*it)
-		*it = 0;
-	  else {
-		*it = 1;
-		ASSERT(pattern != vector<char>(pattern.size()));
-		return true;
-	  }
-	}
+    typedef vector<char>::iterator iterator;
+    for (iterator it = pattern.begin(); it != pattern.end(); ++it) {
+      if (*it)
+        *it = 0;
+      else {
+        *it = 1;
+        ASSERT(pattern != vector<char>(pattern.size()));
+        return true;
+      }
+    }
 
-	ASSERT(pattern == vector<char>(pattern.size()));
-	return false;
+    ASSERT(pattern == vector<char>(pattern.size()));
+    return false;
   }
 }
 
@@ -153,16 +153,16 @@ void generateTreeIdeal(BigIdeal& ideal, size_t varCount) {
   // iteration to go past that.
   vector<char> pattern(varCount);
   while (nextBitPattern(pattern)) {
-	size_t setSize = 0;
-	typedef vector<char>::iterator iterator;
-	for (iterator it = pattern.begin(); it != pattern.end(); ++it)
-	  setSize += (size_t)*it;
+    size_t setSize = 0;
+    typedef vector<char>::iterator iterator;
+    for (iterator it = pattern.begin(); it != pattern.end(); ++it)
+      setSize += (size_t)*it;
 
-	exponent = varCount - setSize + 1;
-	ideal.newLastTerm();
-	for (size_t var = 0; var < varCount; ++var)
-	  if (pattern[var])
-		ideal.getLastTermExponentRef(var) = exponent;
+    exponent = varCount - setSize + 1;
+    ideal.newLastTerm();
+    for (size_t var = 0; var < varCount; ++var)
+      if (pattern[var])
+        ideal.getLastTermExponentRef(var) = exponent;
   }
 }
 
@@ -176,21 +176,21 @@ bool generateRandomEdgeIdeal
   while (generatorsToGo > 0 && triesLeft > 0) {
     --triesLeft;
 
-	size_t a = rand() % variableCount;
-	size_t b = rand() % variableCount;
-	if (a == b)
-	  continue;
+    size_t a = rand() % variableCount;
+    size_t b = rand() % variableCount;
+    if (a == b)
+      continue;
 
-	term[a] = 1;
-	term[b] = 1;
+    term[a] = 1;
+    term[b] = 1;
 
     if (ideal.isIncomparable(term)) {
       ideal.insert(term);
       --generatorsToGo;
     }
 
-	term[a] = 0;
-	term[b] = 0;
+    term[a] = 0;
+    term[b] = 0;
 
     --triesLeft;
   }
@@ -204,9 +204,9 @@ bool generateRandomEdgeIdeal
 
 
 bool generateRandomIdeal(BigIdeal& bigIdeal,
-						 size_t exponentRange,
-						 size_t variableCount,
-						 size_t generatorCount) {
+                         size_t exponentRange,
+                         size_t variableCount,
+                         size_t generatorCount) {
   Ideal ideal(variableCount);
   Term term(variableCount);
 
@@ -218,7 +218,7 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
     for (size_t var = 0; var < variableCount; ++var) {
       term[var] = rand();
       if (exponentRange != numeric_limits<size_t>::max())
-		term[var] %= exponentRange + 1;
+        term[var] %= exponentRange + 1;
     }
 
     if (ideal.isIncomparable(term)) {
@@ -235,8 +235,8 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
 }
 
 void generateRandomFrobeniusInstance(vector<mpz_class>& instance,
-									 size_t entryCount,
-									 const mpz_class& maxEntry) {
+                                     size_t entryCount,
+                                     const mpz_class& maxEntry) {
   ASSERT(entryCount >= 1);
   ASSERT(maxEntry >= 1);
 
@@ -245,20 +245,20 @@ void generateRandomFrobeniusInstance(vector<mpz_class>& instance,
   // TODO: preserve state across calls.
   random.seed((unsigned long)time(0) +
 #ifdef __GNUC__ // Only GCC defines this macro.
-			  (unsigned long)getpid() +
+              (unsigned long)getpid() +
 #endif
-			  (unsigned long)clock());
+              (unsigned long)clock());
 
   instance.resize(entryCount);
 
   // Populate instance with random numbers in range [1,maxEntry].
   for (size_t i = 0; i < entryCount; ++i)
-	instance[i] = random.get_z_range(maxEntry) + 1;
+    instance[i] = random.get_z_range(maxEntry) + 1;
 
   // Calculate greatest common divisor of instance.
   mpz_class gcd = instance[0];
   for (size_t i = 1; i < entryCount; ++i)
-	mpz_gcd(gcd.get_mpz_t(), gcd.get_mpz_t(), instance[i].get_mpz_t());
+    mpz_gcd(gcd.get_mpz_t(), gcd.get_mpz_t(), instance[i].get_mpz_t());
 
   // Ensure that instance are relatively prime.
   instance.front() /= gcd;

@@ -29,27 +29,27 @@ class SatBinomConsumer;
 namespace IO {
   class Fourti2IOHandler : public IOHandlerImpl {
   public:
-	Fourti2IOHandler();
+    Fourti2IOHandler();
 
-	static const char* staticGetName();
+    static const char* staticGetName();
 
   private:
-	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
-	virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
+    virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
+    virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-	virtual void doWriteTerm(const vector<mpz_class>& term,
-							 const VarNames& names,
-							 FILE* out);
-	virtual void doReadTerm(Scanner& in,
-							const VarNames& names,
-							vector<mpz_class>& term);
+    virtual void doWriteTerm(const vector<mpz_class>& term,
+                             const VarNames& names,
+                             FILE* out);
+    virtual void doReadTerm(Scanner& in,
+                            const VarNames& names,
+                            vector<mpz_class>& term);
 
-	virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadPolynomial(Scanner& in,
-								  CoefBigTermConsumer& consumer);
-	virtual void doReadSatBinomIdeal(Scanner& in,
-									 SatBinomConsumer& consumer);
+    virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadPolynomial(Scanner& in,
+                                  CoefBigTermConsumer& consumer);
+    virtual void doReadSatBinomIdeal(Scanner& in,
+                                     SatBinomConsumer& consumer);
   };
 }
 

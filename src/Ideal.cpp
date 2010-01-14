@@ -49,7 +49,7 @@ bool Ideal::isIncomparable(const Exponent* term) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
     if (Term::dominates(term, *it, _varCount) ||
-		Term::divides(term, *it, _varCount))
+        Term::divides(term, *it, _varCount))
       return false;
   return true;
 }
@@ -105,15 +105,15 @@ bool Ideal::isSquareFree() const {
 
 bool Ideal::isStronglyGeneric() {
   for (size_t var = 0; var < _varCount; ++var) {
-	singleDegreeSort(var);
+    singleDegreeSort(var);
 
-	Exponent lastExponent = 0;
-	const_iterator stop = _terms.end();
-	for (const_iterator it = _terms.begin(); it != stop; ++it) {
-	  if (lastExponent != 0 && lastExponent == (*it)[var])
-		return false;
-	  lastExponent = (*it)[var];
-	}
+    Exponent lastExponent = 0;
+    const_iterator stop = _terms.end();
+    for (const_iterator it = _terms.begin(); it != stop; ++it) {
+      if (lastExponent != 0 && lastExponent == (*it)[var])
+        return false;
+      lastExponent = (*it)[var];
+    }
   }
   return true;
 }
@@ -123,18 +123,18 @@ bool Ideal::isWeaklyGeneric() const {
 
   const_iterator stop = _terms.end();
   for (const_iterator itA = _terms.begin(); itA != stop; ++itA) {
-	for (const_iterator itB = itA + 1; itB != stop; ++itB) {
-	  if (!Term::sharesNonZeroExponent(*itA, *itB, _varCount))
-		continue;
+    for (const_iterator itB = itA + 1; itB != stop; ++itB) {
+      if (!Term::sharesNonZeroExponent(*itA, *itB, _varCount))
+        continue;
 
-	  lcm.lcm(*itA, *itB);
-	  for (const_iterator itC = _terms.begin(); itC != stop; ++itC)
-		if (Term::strictlyDivides(*itC, lcm, _varCount))
-		  goto foundStrictDivisor;
-	  return false;
+      lcm.lcm(*itA, *itB);
+      for (const_iterator itC = _terms.begin(); itC != stop; ++itC)
+        if (Term::strictlyDivides(*itC, lcm, _varCount))
+          goto foundStrictDivisor;
+      return false;
 
-	foundStrictDivisor:;
-	}
+    foundStrictDivisor:;
+    }
   }
   return true;
 }
@@ -158,12 +158,12 @@ void Ideal::getLcm(Exponent* lcm) const {
   Term::setToIdentity(lcm, _varCount);
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-	Term::lcm(lcm, lcm, *it, _varCount);
+    Term::lcm(lcm, lcm, *it, _varCount);
 }
 
 void Ideal::getGcd(Exponent* gcd) const {
   if (_terms.empty()) {
-	Term::setToIdentity(gcd, _varCount);
+    Term::setToIdentity(gcd, _varCount);
     return;
   }
 
@@ -180,18 +180,18 @@ void Ideal::getGcdAtExponent(Exponent* gcd, size_t var, Exponent exp) {
   const_iterator stop = _terms.end();
   const_iterator it = _terms.begin();
   for (; it != stop; ++it) {
-	Exponent* m = *it;
-	if (m[var] == exp) {
-	  if (first) {
-		first = false;
-		copy(m, m + _varCount, gcd);
-	  } else
-		Term::gcd(gcd, gcd, m, _varCount);
-	}
+    Exponent* m = *it;
+    if (m[var] == exp) {
+      if (first) {
+        first = false;
+        copy(m, m + _varCount, gcd);
+      } else
+        Term::gcd(gcd, gcd, m, _varCount);
+    }
   }
 
   if (first)
-	Term::setToIdentity(gcd, _varCount);
+    Term::setToIdentity(gcd, _varCount);
 }
 
 void Ideal::getGcdOfMultiplesOf(Exponent* gcd, const Exponent* divisor) {
@@ -200,37 +200,37 @@ void Ideal::getGcdOfMultiplesOf(Exponent* gcd, const Exponent* divisor) {
   const_iterator stop = _terms.end();
   const_iterator it = _terms.begin();
   for (; it != stop; ++it) {
-	Exponent* m = *it;
-	if (Term::divides(divisor, m, _varCount)) {
-	  if (first) {
-		first = false;
-		copy(m, m + _varCount, gcd);
-	  } else
-		Term::gcd(gcd, gcd, m, _varCount);
-	}
+    Exponent* m = *it;
+    if (Term::divides(divisor, m, _varCount)) {
+      if (first) {
+        first = false;
+        copy(m, m + _varCount, gcd);
+      } else
+        Term::gcd(gcd, gcd, m, _varCount);
+    }
   }
 
   if (first)
-	Term::setToIdentity(gcd, _varCount);
+    Term::setToIdentity(gcd, _varCount);
 }
 
 void Ideal::getLeastExponents(Exponent* least) const {
   Term::setToIdentity(least, _varCount);
-  
+
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-	for (size_t var = 0; var < _varCount; ++var)
-	  if (least[var] == 0 || ((*it)[var] < least[var] && (*it)[var] > 0))
-		least[var] = (*it)[var];
+    for (size_t var = 0; var < _varCount; ++var)
+      if (least[var] == 0 || ((*it)[var] < least[var] && (*it)[var] > 0))
+        least[var] = (*it)[var];
 }
 
 void Ideal::getSupportCounts(Exponent* counts) const {
   Term::setToIdentity(counts, _varCount);
   const_iterator stop = _terms.end();
   for (const_iterator it = begin(); it != stop; ++it)
-	for (size_t var = 0; var < _varCount; ++var)
-	  if ((*it)[var] > 0)
-		counts[var] += 1;
+    for (size_t var = 0; var < _varCount; ++var)
+      if ((*it)[var] > 0)
+        counts[var] += 1;
 }
 
 size_t Ideal::
@@ -240,29 +240,29 @@ getTypicalExponent(size_t& typicalVar, Exponent& typicalExponent) {
   typicalExponent = 0;
 
   for (size_t var = 0; var < _varCount; ++var) {
-	singleDegreeSort(var);
+    singleDegreeSort(var);
 
-	Exponent lastExponent = 0;
-	size_t count = 0;
-	const_iterator stop = _terms.end();
-	for (const_iterator it = _terms.begin(); it != stop; ++it) {
-	  Exponent exponent = (*it)[var];
-	  if (exponent == 0)
-		continue;
+    Exponent lastExponent = 0;
+    size_t count = 0;
+    const_iterator stop = _terms.end();
+    for (const_iterator it = _terms.begin(); it != stop; ++it) {
+      Exponent exponent = (*it)[var];
+      if (exponent == 0)
+        continue;
 
-	  if (lastExponent == exponent)
-		++count;
-	  else
-		count = 1;
+      if (lastExponent == exponent)
+        ++count;
+      else
+        count = 1;
 
-	  if (count > maxCount) {
-		maxCount = count;
-		typicalVar = var;
-		typicalExponent = exponent;
-	  }
+      if (count > maxCount) {
+        maxCount = count;
+        typicalVar = var;
+        typicalExponent = exponent;
+      }
 
-	  lastExponent = exponent;
-	}
+      lastExponent = exponent;
+    }
   }
 
   return maxCount;
@@ -277,46 +277,46 @@ size_t Ideal::getMostNonGenericExponent
   mostNGExponent = 0;
 
   for (size_t var = 0; var < _varCount; ++var) {
-	singleDegreeSort(var);
+    singleDegreeSort(var);
 
-	const_iterator blockBegin = _terms.begin();
-	const_iterator stop = _terms.end();
-	while (blockBegin != stop) {
-	  Exponent blockExponent = (*blockBegin)[var];
-	  const_iterator blockEnd = blockBegin;
-	  do {
-		++blockEnd;
-	  } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
+    const_iterator blockBegin = _terms.begin();
+    const_iterator stop = _terms.end();
+    while (blockBegin != stop) {
+      Exponent blockExponent = (*blockBegin)[var];
+      const_iterator blockEnd = blockBegin;
+      do {
+        ++blockEnd;
+      } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
 
-	  // At this point the range [blockBegin, blockEnd) contains every
-	  // generator that raises var to blockExponent. Each pair of
-	  // these is potentially non-generic, and we count the number
-	  // that actually are non-generic.
+      // At this point the range [blockBegin, blockEnd) contains every
+      // generator that raises var to blockExponent. Each pair of
+      // these is potentially non-generic, and we count the number
+      // that actually are non-generic.
 
-	  size_t span = blockEnd - blockBegin;
-	  if (blockExponent == 0 || (span * (span + 1)) / 2  <= maxCount) {
-		blockBegin = blockEnd;
-		continue;
-	  }
+      size_t span = blockEnd - blockBegin;
+      if (blockExponent == 0 || (span * (span + 1)) / 2  <= maxCount) {
+        blockBegin = blockEnd;
+        continue;
+      }
 
-	  size_t nonGenericCount = 0;
-	  for (; blockBegin != blockEnd; ++blockBegin) {
-		const_iterator it = blockBegin;
-		for (++it; it != blockEnd; ++it) {
-		  lcm.lcm(*blockBegin, *it);
-		  if (!strictlyContains(lcm)) {
-			// The pair (*blockBegin, *it) is non-generic.
-			++nonGenericCount;
-		  }
-		}
-	  }
+      size_t nonGenericCount = 0;
+      for (; blockBegin != blockEnd; ++blockBegin) {
+        const_iterator it = blockBegin;
+        for (++it; it != blockEnd; ++it) {
+          lcm.lcm(*blockBegin, *it);
+          if (!strictlyContains(lcm)) {
+            // The pair (*blockBegin, *it) is non-generic.
+            ++nonGenericCount;
+          }
+        }
+      }
 
-	  if (nonGenericCount > maxCount) {
-		maxCount = nonGenericCount;
-		mostNGVar = var;
-		mostNGExponent = blockExponent;
-	  }
-	}
+      if (nonGenericCount > maxCount) {
+        maxCount = nonGenericCount;
+        mostNGVar = var;
+        mostNGExponent = blockExponent;
+      }
+    }
   }
 
   return maxCount;
@@ -331,45 +331,45 @@ size_t Ideal::getTypicalNonGenericExponent
   typicalExponent = 0;
 
   for (size_t var = 0; var < _varCount; ++var) {
-	singleDegreeSort(var);
+    singleDegreeSort(var);
 
-	const_iterator blockBegin = _terms.begin();
-	const_iterator stop = _terms.end();
-	while (blockBegin != stop) {
-	  Exponent blockExponent = (*blockBegin)[var];
-	  const_iterator blockEnd = blockBegin;
-	  do {
-		++blockEnd;
-	  } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
+    const_iterator blockBegin = _terms.begin();
+    const_iterator stop = _terms.end();
+    while (blockBegin != stop) {
+      Exponent blockExponent = (*blockBegin)[var];
+      const_iterator blockEnd = blockBegin;
+      do {
+        ++blockEnd;
+      } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
 
-	  // At this point the range [blockBegin, blockEnd) contains every
-	  // generator that raises var to blockExponent. Each pair of
-	  // these is potentially non-generic, and we count the number
-	  // that actually are non-generic.
+      // At this point the range [blockBegin, blockEnd) contains every
+      // generator that raises var to blockExponent. Each pair of
+      // these is potentially non-generic, and we count the number
+      // that actually are non-generic.
 
-	  size_t count = blockEnd - blockBegin;
-	  if (blockExponent == 0 || count <= maxCount) {
-		blockBegin = blockEnd;
-		continue;
-	  }
+      size_t count = blockEnd - blockBegin;
+      if (blockExponent == 0 || count <= maxCount) {
+        blockBegin = blockEnd;
+        continue;
+      }
 
-	  for (; blockBegin != blockEnd; ++blockBegin) {
-		const_iterator it = blockBegin;
-		for (++it; it != blockEnd; ++it) {
-		  lcm.lcm(*blockBegin, *it);
-		  if (!strictlyContains(lcm)) {
-			// The pair (*blockBegin, *it) is non-generic.
-			ASSERT(maxCount < count);
-			maxCount = count;
-			typicalVar = var;
-			typicalExponent = blockExponent;
-			blockBegin = blockEnd;
-			goto blockDone;
-		  }
-		}
-	  }
-	blockDone:;
-	}
+      for (; blockBegin != blockEnd; ++blockBegin) {
+        const_iterator it = blockBegin;
+        for (++it; it != blockEnd; ++it) {
+          lcm.lcm(*blockBegin, *it);
+          if (!strictlyContains(lcm)) {
+            // The pair (*blockBegin, *it) is non-generic.
+            ASSERT(maxCount < count);
+            maxCount = count;
+            typicalVar = var;
+            typicalExponent = blockExponent;
+            blockBegin = blockEnd;
+            goto blockDone;
+          }
+        }
+      }
+    blockDone:;
+    }
   }
 
   return maxCount;
@@ -383,39 +383,39 @@ bool Ideal::getNonGenericExponent
   ngExponent = 0;
 
   for (size_t var = 0; var < _varCount; ++var) {
-	singleDegreeSort(var);
+    singleDegreeSort(var);
 
-	const_iterator blockBegin = _terms.begin();
-	const_iterator stop = _terms.end();
-	while (blockBegin != stop) {
-	  Exponent blockExponent = (*blockBegin)[var];
-	  const_iterator blockEnd = blockBegin;
-	  do {
-		++blockEnd;
-	  } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
+    const_iterator blockBegin = _terms.begin();
+    const_iterator stop = _terms.end();
+    while (blockBegin != stop) {
+      Exponent blockExponent = (*blockBegin)[var];
+      const_iterator blockEnd = blockBegin;
+      do {
+        ++blockEnd;
+      } while (blockEnd != stop && (*blockEnd)[var] == blockExponent);
 
-	  // At this point the range [blockBegin, blockEnd) contains every
-	  // generator that raises var to blockExponent. Each pair of
-	  // these is potentially non-generic.
+      // At this point the range [blockBegin, blockEnd) contains every
+      // generator that raises var to blockExponent. Each pair of
+      // these is potentially non-generic.
 
-	  if (blockExponent == 0) {
-		blockBegin = blockEnd;
-		continue;
-	  }
+      if (blockExponent == 0) {
+        blockBegin = blockEnd;
+        continue;
+      }
 
-	  for (; blockBegin != blockEnd; ++blockBegin) {
-		const_iterator it = blockBegin;
-		for (++it; it != blockEnd; ++it) {
-		  lcm.lcm(*blockBegin, *it);
-		  if (!strictlyContains(lcm)) {
-			// The pair (*blockBegin, *it) is non-generic.
-			ngVar = var;
-			ngExponent = blockExponent;
-			return true;
-		  }
-		}
-	  }
-	}
+      for (; blockBegin != blockEnd; ++blockBegin) {
+        const_iterator it = blockBegin;
+        for (++it; it != blockEnd; ++it) {
+          lcm.lcm(*blockBegin, *it);
+          if (!strictlyContains(lcm)) {
+            // The pair (*blockBegin, *it) is non-generic.
+            ngVar = var;
+            ngExponent = blockExponent;
+            return true;
+          }
+        }
+      }
+    }
   }
 
   return false;
@@ -423,16 +423,16 @@ bool Ideal::getNonGenericExponent
 
 bool Ideal::operator==(const Ideal& ideal) const {
   if (getVarCount() != ideal.getVarCount())
-	return false;
+    return false;
   if (getGeneratorCount() != ideal.getGeneratorCount())
-	return false;
+    return false;
 
   const_iterator stop = _terms.end();
   const_iterator it = begin();
   const_iterator it2 = ideal.begin();
   for (; it != stop; ++it, ++it2)
-	if (!equals(*it, *it2, getVarCount()))
-	  return false;
+    if (!equals(*it, *it2, getVarCount()))
+      return false;
 
   return true;
 }
@@ -447,7 +447,7 @@ void Ideal::print(ostream& out) const {
   out << "//------------ Ideal:\n";
   for (const_iterator it = _terms.begin(); it != _terms.end(); ++it) {
     Term::print(out, *it, _varCount);
-	out << '\n';
+    out << '\n';
   }
   out << "------------\\\\\n";
 }
@@ -483,7 +483,7 @@ void Ideal::insert(size_t var, Exponent e) {
 void Ideal::insertReminimize(const Exponent* term) {
   ASSERT(isMinimallyGenerated());
   if (contains(term))
-	return;
+    return;
 
   removeMultiples(term);
   insert(term);
@@ -517,8 +517,8 @@ void Ideal::sortLex() {
 void Ideal::singleDegreeSort(size_t var) {
   ASSERT(var < _varCount);
   std::sort(_terms.begin(),
-			_terms.end(),
-			SingleDegreeComparator(var, _varCount));
+            _terms.end(),
+            SingleDegreeComparator(var, _varCount));
 }
 
 void Ideal::product(const Exponent* by) {
@@ -536,13 +536,13 @@ void Ideal::colon(const Exponent* by) {
 void Ideal::colon(size_t var, Exponent e) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it) {
-	Exponent& ite = (*it)[var];
-	if (ite != 0) {
-	  if (ite > e)
-		ite -= e;
-	  else
-		ite = 0;
-	}
+    Exponent& ite = (*it)[var];
+    if (ite != 0) {
+      if (ite > e)
+        ite -= e;
+      else
+        ite = 0;
+    }
   }
 }
 
@@ -551,7 +551,7 @@ bool Ideal::colonReminimize(const Exponent* by) {
 
   Minimizer minimizer(_varCount);
   pair<iterator, bool> pair =
-	minimizer.colonReminimize(_terms.begin(), _terms.end(), by);
+    minimizer.colonReminimize(_terms.begin(), _terms.end(), by);
 
   _terms.erase(pair.first, _terms.end());
 
@@ -564,7 +564,7 @@ bool Ideal::colonReminimize(size_t var, Exponent e) {
 
   Minimizer minimizer(_varCount);
   pair<iterator, bool> pair =
-	minimizer.colonReminimize(_terms.begin(), _terms.end(), var, e);
+    minimizer.colonReminimize(_terms.begin(), _terms.end(), var, e);
 
   _terms.erase(pair.first, _terms.end());
 
@@ -585,8 +585,8 @@ void Ideal::removeMultiples(const Exponent* term) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it) {
     if (!Term::divides(term, *it, _varCount)) {
-	  *newEnd = *it;
-	  ++newEnd;
+      *newEnd = *it;
+      ++newEnd;
     }
   }
   _terms.erase(newEnd, stop);
@@ -597,8 +597,8 @@ void Ideal::removeMultiples(size_t var, Exponent e) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it) {
     if ((*it)[var] < e) {
-	  *newEnd = *it;
-	  ++newEnd;
+      *newEnd = *it;
+      ++newEnd;
     }
   }
   _terms.erase(newEnd, stop);
@@ -608,14 +608,14 @@ void Ideal::insertNonMultiples(const Exponent* term, const Ideal& ideal) {
   const_iterator stop = ideal.end();
   for (const_iterator it = ideal.begin(); it != stop; ++it)
     if (!Term::divides(term, *it, _varCount))
-	  insert(*it);
+      insert(*it);
 }
 
 void Ideal::insertNonMultiples(size_t var, Exponent e, const Ideal& ideal) {
   const_iterator stop = ideal.end();
   for (const_iterator it = ideal.begin(); it != stop; ++it)
     if ((*it)[var] < e)
-	  insert(*it);
+      insert(*it);
 }
 
 void Ideal::removeStrictMultiples(const Exponent* term) {
@@ -623,8 +623,8 @@ void Ideal::removeStrictMultiples(const Exponent* term) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it) {
     if (!Term::strictlyDivides(term, *it, _varCount)) {
-	  *newEnd = *it;
-	  ++newEnd;
+      *newEnd = *it;
+      ++newEnd;
     }
   }
   _terms.erase(newEnd, stop);
@@ -651,24 +651,24 @@ void Ideal::clearAndSetVarCount(size_t varCount) {
 void Ideal::mapExponentsToZeroNoMinimize(const Term& zeroExponents) {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it)
-	for (size_t var = 0; var < _varCount; ++var)
-	  if ((*it)[var] == zeroExponents[var])
-		(*it)[var] = 0;
+    for (size_t var = 0; var < _varCount; ++var)
+      if ((*it)[var] == zeroExponents[var])
+        (*it)[var] = 0;
 }
 
 void Ideal::takeRadicalNoMinimize() {
   iterator stop = _terms.end();
   for (iterator it = _terms.begin(); it != stop; ++it)
-	for (size_t var = 0; var < _varCount; ++var)
-	  if ((*it)[var] > 1)
-		(*it)[var] = 1;
+    for (size_t var = 0; var < _varCount; ++var)
+      if ((*it)[var] > 1)
+        (*it)[var] = 1;
 }
 
 Ideal::const_iterator Ideal::getMultiple(size_t var) const {
   const_iterator stop = _terms.end();
   for (const_iterator it = _terms.begin(); it != stop; ++it)
-	if ((*it)[var] > 0)
-	  return it;
+    if ((*it)[var] > 0)
+      return it;
   return stop;
 }
 
@@ -711,23 +711,23 @@ public:
   }
 
   void deallocate(Exponent* chunk) {
-	// deallocate can be called from a destructor, so no exceptions
-	// can be allowed to escape from it.
-	try {
-	  _chunks.push_back(chunk);
-	} catch (const bad_alloc&) {
-	  delete[] chunk;
-	}
+    // deallocate can be called from a destructor, so no exceptions
+    // can be allowed to escape from it.
+    try {
+      _chunks.push_back(chunk);
+    } catch (const bad_alloc&) {
+      delete[] chunk;
+    }
   }
 
   void clear() {
     for (size_t i = 0; i < _chunks.size(); ++i)
       delete[] _chunks[i];
-	_chunks.clear();
+    _chunks.clear();
   }
 
   ~ChunkPool() {
-	clear();
+    clear();
   }
 
 private:
@@ -739,7 +739,7 @@ Ideal::ExponentAllocator::ExponentAllocator(size_t varCount):
   _chunkIterator(0),
   _chunkEnd(0) {
   if (_varCount == 0)
-	_varCount = 1;
+    _varCount = 1;
 }
 
 Ideal::ExponentAllocator::~ExponentAllocator() {
@@ -750,24 +750,24 @@ Exponent* Ideal::ExponentAllocator::allocate() {
   if (_chunkIterator + _varCount > _chunkEnd) {
     if (useSingleChunking()) {
       Exponent* term = new Exponent[_varCount];
-	  try {
-		_chunks.push_back(term);
-	  } catch (...) {
-		delete[] term;
-		throw;
-	  }
+      try {
+        _chunks.push_back(term);
+      } catch (...) {
+        delete[] term;
+        throw;
+      }
       return term;
     }
 
-	_chunkIterator = globalChunkPool.allocate();
-	_chunkEnd = _chunkIterator + ExponentsPerChunk;
-	
-	try {
-	  _chunks.push_back(_chunkIterator);
-	} catch (...) {
-	  globalChunkPool.deallocate(_chunkIterator);
-	  throw;
-	}
+    _chunkIterator = globalChunkPool.allocate();
+    _chunkEnd = _chunkIterator + ExponentsPerChunk;
+
+    try {
+      _chunks.push_back(_chunkIterator);
+    } catch (...) {
+      globalChunkPool.deallocate(_chunkIterator);
+      throw;
+    }
   }
 
   Exponent* term = _chunkIterator;
@@ -787,7 +787,7 @@ void Ideal::ExponentAllocator::reset(size_t newVarCount) {
   } else {
     _chunkIterator = 0;
     _chunkEnd = 0;
-    
+
     for (size_t i = 0; i < _chunks.size(); ++i)
       globalChunkPool.deallocate(_chunks[i]);
     _chunks.clear();

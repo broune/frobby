@@ -26,10 +26,10 @@ MsmSlice::MsmSlice(MsmStrategy& strategy):
 }
 
 MsmSlice::MsmSlice(MsmStrategy& strategy,
-				   const Ideal& ideal,
-				   const Ideal& subtract,
-				   const Term& multiply,
-				   TermConsumer* consumer):
+                   const Ideal& ideal,
+                   const Ideal& subtract,
+                   const Term& multiply,
+                   TermConsumer* consumer):
   Slice(strategy, ideal, subtract, multiply),
   _consumer(consumer) {
   ASSERT(consumer != 0);
@@ -50,9 +50,9 @@ bool MsmSlice::baseCase(bool simplified) {
   ASSERT(!removeDoubleLcm());
 
   if (_varCount == 0) {
-	if (getIdeal().isZeroIdeal())
-	  _consumer->consume(_multiply);
-	return true;
+    if (getIdeal().isZeroIdeal())
+      _consumer->consume(_multiply);
+    return true;
   }
 
   if (_varCount == 1) {
@@ -61,30 +61,30 @@ bool MsmSlice::baseCase(bool simplified) {
   }
 
   if (!simplified) {
-	if (getLcm().isSquareFree()) {
-	  // We know this since !removeDoubleLcm().
-	  ASSERT(getIdeal().isIrreducible());
+    if (getLcm().isSquareFree()) {
+      // We know this since !removeDoubleLcm().
+      ASSERT(getIdeal().isIrreducible());
 
-	  _consumer->consume(_multiply);
-	  return true;
-	}
+      _consumer->consume(_multiply);
+      return true;
+    }
 
-	if (getIdeal().getGeneratorCount() == _varCount) {
-	  if (getSubtract().isZeroIdeal()) {
-		_lcm.decrement();
-		_multiply.product(_multiply, _lcm);
-	  } else {
-		Term tmp(getLcm());
-		tmp.decrement();
-		innerSlice(tmp);
-		if (getIdeal().getGeneratorCount() < _varCount)
-		  return true;
-	  }
-	  _consumer->consume(_multiply);
-	  return true;
-	}
+    if (getIdeal().getGeneratorCount() == _varCount) {
+      if (getSubtract().isZeroIdeal()) {
+        _lcm.decrement();
+        _multiply.product(_multiply, _lcm);
+      } else {
+        Term tmp(getLcm());
+        tmp.decrement();
+        innerSlice(tmp);
+        if (getIdeal().getGeneratorCount() < _varCount)
+          return true;
+      }
+      _consumer->consume(_multiply);
+      return true;
+    }
 
-	return false;
+    return false;
   }
 
   if (_varCount == 2) {
@@ -99,7 +99,7 @@ bool MsmSlice::baseCase(bool simplified) {
     }
     if (twoNonMaxBaseCase())
       return true;
-    
+
     return false;
   }
 
@@ -123,7 +123,7 @@ bool MsmSlice::simplifyStep() {
   ASSERT(!removeDoubleLcm());
 
   if (applyLowerBound())
-	return true;
+    return true;
 
   pruneSubtract();
 
@@ -132,8 +132,8 @@ bool MsmSlice::simplifyStep() {
 }
 
 void MsmSlice::setToProjOf(const MsmSlice& slice,
-						   const Projection& projection,
-						   TermConsumer* consumer) {
+                           const Projection& projection,
+                           TermConsumer* consumer) {
   ASSERT(consumer != 0);
 
   Slice::setToProjOf(slice, projection);
@@ -145,7 +145,7 @@ bool MsmSlice::innerSlice(const Term& pivot) {
 
   bool changedMuch = Slice::innerSlice(pivot);
   if (!_lcmUpdated)
-	changedMuch = removeDoubleLcm() || changedMuch;
+    changedMuch = removeDoubleLcm() || changedMuch;
 
   ASSERT(getLcm().getSizeOfSupport() < getVarCount() || !removeDoubleLcm());
 
@@ -157,7 +157,7 @@ void MsmSlice::outerSlice(const Term& pivot) {
 
   Slice::outerSlice(pivot);
   if (!_lcmUpdated)
-	removeDoubleLcm();
+    removeDoubleLcm();
 
   ASSERT(!removeDoubleLcm());
 }
@@ -178,9 +178,9 @@ public:
     bool seenMatch = false;
     for (size_t var = 0; var < _lcm.getVarCount(); ++var) {
       if (term[var] == _lcm[var]) {
-		if (seenMatch)
-		  return true;
-		seenMatch = true;
+        if (seenMatch)
+          return true;
+        seenMatch = true;
       }
     }
     return false;
@@ -216,24 +216,24 @@ bool MsmSlice::getLowerBound(Term& bound, size_t var) const {
 
   Ideal::const_iterator stop = getIdeal().end();
   for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
-	Exponent* term = *it;
+    Exponent* term = *it;
     if (term[var] == 0)
       continue;
-        
+
     // Use the fact that terms with a maximal exponent somewhere not
     // at var cannot be a var-label.
     for (size_t var2 = 0; var2 < _varCount; ++var2)
       if (term[var2] == lcm[var2] && var2 != var)
-		goto skip;
-    
-	bound.gcd(bound, *it);
+        goto skip;
+
+    bound.gcd(bound, *it);
   skip:;
   }
 
   ASSERT(_varCount >= 2);
   if (bound[0] == lcm[0] && bound[1] == lcm[1]) {
-	// No possible var-label, so the content is empty.
-	return false;
+    // No possible var-label, so the content is empty.
+    return false;
   }
 
   ASSERT(bound[var] >= 1);
@@ -259,7 +259,7 @@ void MsmSlice::twoVarBaseCase() {
 
   while (true) {
     _lcm[1] = (*it)[1] - 1;
-    
+
     ++it;
     if (it == stop)
       break;
@@ -271,7 +271,7 @@ void MsmSlice::twoVarBaseCase() {
     if (!_subtract.contains(_lcm)) {
       _lcm[0] += _multiply[0];
       _lcm[1] += _multiply[1];
-      
+
       _consumer->consume(_lcm);
     }
   }
@@ -295,45 +295,45 @@ void MsmSlice::oneMoreGeneratorBaseCase() {
   for (size_t var = 0; var < _varCount; ++var) {
     ASSERT((*it)[var] <= 1);
     ASSERT((*it)[var] < getLcm()[var]);
-	msm[var] = getLcm()[var] - 1;
-	_multiply[var] += msm[var];
+    msm[var] = getLcm()[var] - 1;
+    _multiply[var] += msm[var];
   }
 
   for (size_t var = 0; var < _varCount; ++var) {
     if ((*it)[var] == 1) {
-	  msm[var] = 0; // try *it as var-label
+      msm[var] = 0; // try *it as var-label
       if (!getSubtract().contains(msm)) {
-		_multiply[var] -= getLcm()[var] - 1;
-		_consumer->consume(_multiply);
-		_multiply[var] += getLcm()[var] - 1;
+        _multiply[var] -= getLcm()[var] - 1;
+        _consumer->consume(_multiply);
+        _multiply[var] += getLcm()[var] - 1;
       }
-	  msm[var] = getLcm()[var] - 1;
+      msm[var] = getLcm()[var] - 1;
     }
   }
 }
 
 // Helper function for the method twoNonMaxBaseCase.
 bool getTheOnlyTwoNonMax(Ideal::const_iterator it,
-			 const Exponent*& first,
-			 const Exponent*& second,
-			 Ideal::const_iterator end,
-			 const Term& lcm) {
+             const Exponent*& first,
+             const Exponent*& second,
+             Ideal::const_iterator end,
+             const Term& lcm) {
   size_t count = 0;
   for (; it != end; ++it) {
     bool nonMax = true;
     for (size_t var = 0; var < lcm.getVarCount(); ++var) {
       if ((*it)[var] == lcm[var]) {
-	nonMax = false;
-	break;
+    nonMax = false;
+    break;
       }
     }
     if (nonMax) {
       if (count == 0)
-	first = *it;
+    first = *it;
       else if (count == 1)
-	second = *it;
+    second = *it;
       else
-	return false;
+    return false;
       ++count;
     }
   }
@@ -362,10 +362,10 @@ bool MsmSlice::twoNonMaxBaseCase() {
 
     for (size_t var2 = 0; var2 < _varCount; ++var2) {
       if (var1 == var2 || nonMax2[var2] == 0)
-		continue;
+        continue;
       if (nonMax2[var2] <= nonMax1[var2])
-		continue;
-      
+        continue;
+
       // Use tmp to record those variables for which labels have been
       // found. If some variable has no label, then we are not dealing
       // with an actual maximal standard monomial.
@@ -373,26 +373,26 @@ bool MsmSlice::twoNonMaxBaseCase() {
       tmp[var1] = true;
       tmp[var2] = true;
       for (Ideal::const_iterator it = getIdeal().begin(); it != stop; ++it) {
-		if ((*it)[var1] >= nonMax1[var1] ||
-			(*it)[var2] >= nonMax2[var2])
-		  continue;
+        if ((*it)[var1] >= nonMax1[var1] ||
+            (*it)[var2] >= nonMax2[var2])
+          continue;
 
-		for (size_t var = 0; var < lcm.getVarCount(); ++var) {
-		  if ((*it)[var] == lcm[var]) {
-			tmp[var] = true;
-			break;
-		  }
-		}
+        for (size_t var = 0; var < lcm.getVarCount(); ++var) {
+          if ((*it)[var] == lcm[var]) {
+            tmp[var] = true;
+            break;
+          }
+        }
       }
 
       if (tmp.getSizeOfSupport() < _varCount)
-		continue;
-      
+        continue;
+
       msm[var1] = nonMax1[var1] - 1;
       msm[var2] = nonMax2[var2] - 1;
       if (!getSubtract().contains(msm)) {
-		tmp.product(msm, _multiply);
-		_consumer->consume(tmp);
+        tmp.product(msm, _multiply);
+        _consumer->consume(tmp);
       }
       msm[var2] = lcm[var2] - 1;
       msm[var1] = lcm[var1] - 1;

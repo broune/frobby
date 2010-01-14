@@ -94,11 +94,11 @@ mpz_class& BigPolynomial::getLastCoef() {
 
 void BigPolynomial::renameVars(const VarNames& names) {
   ASSERT(names.getVarCount() == _names.getVarCount());
-  _names = names;  
+  _names = names;
 }
 
 void BigPolynomial::add(const mpz_class& coef,
-						const vector<mpz_class> term) {
+                        const vector<mpz_class> term) {
   ASSERT(term.size() == getVarCount());
 
   _coefTerms.resize(_coefTerms.size() + 1);
@@ -107,8 +107,8 @@ void BigPolynomial::add(const mpz_class& coef,
 }
 
 void BigPolynomial::add(const mpz_class& coef,
-						const Term& term,
-						const TermTranslator& translator) {
+                        const Term& term,
+                        const TermTranslator& translator) {
   ASSERT(term.getVarCount() == getVarCount());
   ASSERT(translator.getVarCount() == getVarCount());
 
@@ -118,7 +118,7 @@ void BigPolynomial::add(const mpz_class& coef,
   vector<mpz_class>& bigTerm = _coefTerms.back().term;
   bigTerm.reserve(term.getVarCount());
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	bigTerm.push_back(translator.getExponent(var, term));
+    bigTerm.push_back(translator.getExponent(var, term));
 }
 
 bool BigPolynomial::operator==(const BigPolynomial& poly) const {
@@ -138,21 +138,21 @@ void BigPolynomial::print(FILE* file) const {
 void BigPolynomial::print(ostream& out) const {
   out << "/---- BigPolynomial of " << _coefTerms.size() << " terms:\n";
   for (vector<BigCoefTerm>::const_iterator it = _coefTerms.begin();
-	   it != _coefTerms.end(); ++it) {
-	out << ' ' << it->coef << "  ";
-	for (vector<mpz_class>::const_iterator entry = it->term.begin();
-		 entry != it->term.end(); ++entry)
-	  out << ' ' << *entry;
-	out << '\n';
+       it != _coefTerms.end(); ++it) {
+    out << ' ' << it->coef << "  ";
+    for (vector<mpz_class>::const_iterator entry = it->term.begin();
+         entry != it->term.end(); ++entry)
+      out << ' ' << *entry;
+    out << '\n';
   }
-  out << "----/ End of list.\n";  
+  out << "----/ End of list.\n";
 }
 
 bool BigPolynomial::compareCoefTermsReverseLex(const BigCoefTerm& a,
-											   const BigCoefTerm& b) {
+                                               const BigCoefTerm& b) {
   for (size_t var = 0; var < a.term.size(); ++var)
-	if (a.term[var] != b.term[var])
-	  return a.term[var] > b.term[var];
+    if (a.term[var] != b.term[var])
+      return a.term[var] > b.term[var];
   return a.coef < b.coef;
 }
 

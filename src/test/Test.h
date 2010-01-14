@@ -33,7 +33,7 @@ public:
   virtual ~Test();
 
   /** Makes the visitor visit this object as per the Visitor
-	  Pattern.
+      Pattern.
   */
   virtual bool accept(TestVisitor& visitor) = 0;
 

@@ -39,29 +39,29 @@ void DebugStrategy::run(const Ideal& ideal) {
 }
 
 bool DebugStrategy::processSlice(TaskEngine& tasks, auto_ptr<Slice> slice) {
-  fputs("DEBUG: Processing slice.\n", _out);  
+  fputs("DEBUG: Processing slice.\n", _out);
   slice->print(stderr);
   bool wasBaseCase = _strategy->processSlice(tasks, slice);
   if (wasBaseCase)
-	fputs("DEBUG: Determined that slice is base case.\n", _out);
+    fputs("DEBUG: Determined that slice is base case.\n", _out);
   else
-	fputs("DEBUG: Determined that slice is not base case.\n", _out);
+    fputs("DEBUG: Determined that slice is not base case.\n", _out);
   return wasBaseCase;
 }
 
 void DebugStrategy::setUseIndependence(bool use) {
   if (use)
-	fputs("DEBUG: Turning on independence splits.", _out);
+    fputs("DEBUG: Turning on independence splits.", _out);
   else
-	fputs("DEBUG: Turning off independence splits.", _out);
+    fputs("DEBUG: Turning off independence splits.", _out);
   _strategy->setUseIndependence(use);
 }
 
 void DebugStrategy::setUseSimplification(bool use) {
   if (use)
-	fputs("DEBUG: Turning on simplification.", _out);
+    fputs("DEBUG: Turning on simplification.", _out);
   else
-	fputs("DEBUG: Turning off simplification.", _out);
+    fputs("DEBUG: Turning off simplification.", _out);
   _strategy->setUseSimplification(use);
 }
 

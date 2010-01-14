@@ -30,25 +30,25 @@ class BigattiPivotStrategy {
   virtual ~BigattiPivotStrategy();
 
   /** Returns the pivot of a pivot split of state. The state is not
-	  changed mathematically, but e.g. the generators of the ideal may be
-	  permuted. The returned object will be valid until the next
-	  non-const method on this object is called, such as getPivot or a
-	  destructor. */
+      changed mathematically, but e.g. the generators of the ideal may be
+      permuted. The returned object will be valid until the next
+      non-const method on this object is called, such as getPivot or a
+      destructor. */
   virtual const Term& getPivot(BigattiState& state) = 0;
 
   /** Returns the name of the strategy. */
   virtual const char* getName() const = 0;
 
   /** Returns the strategy whose name has the given prefix. This
-	  function is the only way to create a BigattiPivotStrategy.
+      function is the only way to create a BigattiPivotStrategy.
 
-	  A pivot p is widened by replacing it by
-	  \f$\gcd(\min(I)\cap\langle p\rangle/f$. This may be an
-	  improvement for the state with colon while being almost as good
-	  for the state with add.
+      A pivot p is widened by replacing it by
+      \f$\gcd(\min(I)\cap\langle p\rangle/f$. This may be an
+      improvement for the state with colon while being almost as good
+      for the state with add.
   */
   static auto_ptr<BigattiPivotStrategy> createStrategy
-	(const string& prefix, bool widen);
+    (const string& prefix, bool widen);
 
  protected:
   BigattiPivotStrategy();

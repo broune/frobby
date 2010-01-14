@@ -53,11 +53,11 @@ void SatBinomIdeal::print(FILE* out) const {
 void SatBinomIdeal::print(ostream& out) const {
   out << "/---- SatBinomIdeal of " << _gens.size() << " generators:\n";
   for (vector<vector<mpz_class> >::const_iterator it = _gens.begin();
-	   it != _gens.end(); ++it) {
-	for (vector<mpz_class>::const_iterator entry = it->begin();
-		 entry != it->end(); ++entry)
-	  out << *entry << ' ';
-	out << '\n';
+       it != _gens.end(); ++it) {
+    for (vector<mpz_class>::const_iterator entry = it->begin();
+         entry != it->end(); ++entry)
+      out << *entry << ' ';
+    out << '\n';
   }
   out << "----/ End of list.\n";
 }
@@ -93,22 +93,22 @@ void SatBinomIdeal::reserve(size_t size) {
 void SatBinomIdeal::removeGeneratorsWithLeadingZero() {
   size_t gen = 0;
   while (gen < getGeneratorCount()) {
-	if (getGenerator(gen)[0] == 0) {
-	  _gens[gen] = _gens.back();
-	  _gens.pop_back();
-	} else
-	  ++gen;
+    if (getGenerator(gen)[0] == 0) {
+      _gens[gen] = _gens.back();
+      _gens.pop_back();
+    } else
+      ++gen;
   }
 }
 
 void SatBinomIdeal::removeGeneratorsWithoutLeadingZero() {
   size_t gen = 0;
   while (gen < getGeneratorCount()) {
-	if (getGenerator(gen)[0] != 0) {
-	  _gens[gen] = _gens.back();
-	  _gens.pop_back();
-	} else
-	  ++gen;
+    if (getGenerator(gen)[0] != 0) {
+      _gens[gen] = _gens.back();
+      _gens.pop_back();
+    } else
+      ++gen;
   }
 }
 
@@ -117,10 +117,10 @@ void SatBinomIdeal::getInitialIdeal(BigIdeal& ideal) const {
   ideal.reserve(getGeneratorCount());
 
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
-	ideal.newLastTerm();
-	for (size_t var = 0; var < getVarCount(); ++var)
-	  if (getGenerator(gen)[var] > 0)
-		ideal.getLastTermExponentRef(var) = getGenerator(gen)[var];
+    ideal.newLastTerm();
+    for (size_t var = 0; var < getVarCount(); ++var)
+      if (getGenerator(gen)[var] > 0)
+        ideal.getLastTermExponentRef(var) = getGenerator(gen)[var];
   }
 }
 
@@ -137,9 +137,9 @@ void SatBinomIdeal::newLastTerm() {
 
 bool SatBinomIdeal::hasZeroEntry() const {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	for (size_t var = 0; var < getVarCount(); ++var)
-	  if (getGenerator(gen)[var] == 0)
-		return true;
+    for (size_t var = 0; var < getVarCount(); ++var)
+      if (getGenerator(gen)[var] == 0)
+        return true;
   return false;
 }
 
@@ -147,31 +147,31 @@ bool SatBinomIdeal::initialIdealIsWeaklyGeneric() const {
   vector<mpz_class> v(getVarCount());
 
   for (size_t gen1 = 0; gen1 < getGeneratorCount(); ++gen1) {
-	for (size_t gen2 = gen1 + 1; gen2 < getGeneratorCount(); ++gen2) {
-	  const vector<mpz_class>& g1 = getGenerator(gen1);
-	  const vector<mpz_class>& g2 = getGenerator(gen2);
+    for (size_t gen2 = gen1 + 1; gen2 < getGeneratorCount(); ++gen2) {
+      const vector<mpz_class>& g1 = getGenerator(gen1);
+      const vector<mpz_class>& g2 = getGenerator(gen2);
 
-	  // Skip if g1 and g2 are different in each entry.
-	  bool sharesEntry = false;
-	  for (size_t var = 0; var < getVarCount(); ++var) {
-		if (g1[var] == g2[var] && g1[var] > 0) {
-		  sharesEntry = true;
-		  break;
-		}
-	  }
-	  if (!sharesEntry)
-		continue;
+      // Skip if g1 and g2 are different in each entry.
+      bool sharesEntry = false;
+      for (size_t var = 0; var < getVarCount(); ++var) {
+        if (g1[var] == g2[var] && g1[var] > 0) {
+          sharesEntry = true;
+          break;
+        }
+      }
+      if (!sharesEntry)
+        continue;
 
-	  if (isPointFreeBody(g1, g2))
-		return false;
-	}
+      if (isPointFreeBody(g1, g2))
+        return false;
+    }
   }
 
   return true;
 }
 
 bool SatBinomIdeal::isPointFreeBody(const vector<mpz_class>& a,
-									const vector<mpz_class>& b) const {
+                                    const vector<mpz_class>& b) const {
   ASSERT(a.size() == getVarCount());
   ASSERT(b.size() == getVarCount());
 
@@ -179,10 +179,10 @@ bool SatBinomIdeal::isPointFreeBody(const vector<mpz_class>& a,
 
   // Set rhs to max(0,g1,g1+g2)-1.
   for (size_t var = 0; var < getVarCount(); ++var) {
-	rhs[var] = a[var] > b[var] ? a[var] : b[var];
-	if (rhs[var] < 0)
-	  rhs[var] = 0;
-	rhs[var] -= 1;
+    rhs[var] = a[var] > b[var] ? a[var] : b[var];
+    if (rhs[var] < 0)
+      rhs[var] = 0;
+    rhs[var] -= 1;
   }
 
   return !isDominating(rhs);
@@ -193,17 +193,17 @@ void SatBinomIdeal::getDoubleTriangleCount(mpz_class& count) const {
 
   count = 0;
   for (size_t gen1 = 0; gen1 < getGeneratorCount(); ++gen1) {
-	for (size_t gen2 = gen1 + 1; gen2 < getGeneratorCount(); ++gen2) {
-	  const vector<mpz_class>& g1 = getGenerator(gen1);
-	  const vector<mpz_class>& g2 = getGenerator(gen2);
+    for (size_t gen2 = gen1 + 1; gen2 < getGeneratorCount(); ++gen2) {
+      const vector<mpz_class>& g1 = getGenerator(gen1);
+      const vector<mpz_class>& g2 = getGenerator(gen2);
 
-	  // Set sum = g1 + g2.
-	  for (size_t var = 0; var < getVarCount(); ++var)
-		sum[var] = g1[var] + g2[var];
+      // Set sum = g1 + g2.
+      for (size_t var = 0; var < getVarCount(); ++var)
+        sum[var] = g1[var] + g2[var];
 
-	  if (isPointFreeBody(g1, sum) && isPointFreeBody(g2, sum))
-		++count;
-	}
+      if (isPointFreeBody(g1, sum) && isPointFreeBody(g2, sum))
+        ++count;
+    }
   }
 }
 
@@ -219,15 +219,15 @@ SatBinomIdeal& SatBinomIdeal::operator=(const SatBinomIdeal& ideal) {
 
 bool SatBinomIdeal::isDominating(const vector<mpz_class>& v) const {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
-	bool dom = true;
-	for (size_t var = 0; var < getVarCount(); ++var) {
-	  if (v[var] < getGenerator(gen)[var]) {
-		dom = false;
-		break;
-	  }
-	}
-	if (dom)
-	  return true;
+    bool dom = true;
+    for (size_t var = 0; var < getVarCount(); ++var) {
+      if (v[var] < getGenerator(gen)[var]) {
+        dom = false;
+        break;
+      }
+    }
+    if (dom)
+      return true;
   }
   return false;
 }
@@ -235,8 +235,8 @@ bool SatBinomIdeal::isDominating(const vector<mpz_class>& v) const {
 bool SatBinomIdeal::isGenerator
 (const vector<mpz_class>& v) const {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	if (getGenerator(gen) == v)
-	  return true;
+    if (getGenerator(gen) == v)
+      return true;
   return false;
 }
 
@@ -244,6 +244,6 @@ void SatBinomIdeal::projectVar(size_t var) {
   ASSERT(var < getVarCount());
 
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	_gens[gen].erase(_gens[gen].begin() + var);
+    _gens[gen].erase(_gens[gen].begin() + var);
   _names.projectVar(var);
 }

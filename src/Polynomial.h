@@ -48,10 +48,10 @@ class Polynomial {
 
  private:
   struct CoefTerm {
-	bool operator<(const CoefTerm& coefTerm) const;
+    bool operator<(const CoefTerm& coefTerm) const;
 
-	mpz_class coef;
-	Term term;
+    mpz_class coef;
+    Term term;
   };
 
   vector<CoefTerm> _terms;

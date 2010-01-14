@@ -30,10 +30,10 @@ class SatBinomIdeal;
 class SatBinomConsumer;
 
 /** A facade for input and output of mathematical objects.
-	
+
     @TODO: Consider letting Scanner play the role of IOFacade.
-	@ingroup Facade
-	@ingroup IO
+    @ingroup Facade
+    @ingroup IO
 */
 class IOFacade : private Facade {
  public:
@@ -63,18 +63,18 @@ class IOFacade : private Facade {
   void writeIdeal(const BigIdeal& ideal, IOHandler* handler, FILE* out);
 
   void writeIdeals(const vector<BigIdeal*>& ideals,
-				   const VarNames& names,
-				   IOHandler* handler,
-				   FILE* out);
+                   const VarNames& names,
+                   IOHandler* handler,
+                   FILE* out);
 
   void readPolynomial(Scanner& in, BigPolynomial& polynomial);
   void writePolynomial(const BigPolynomial& polynomial,
-					   IOHandler* handler,
-					   FILE* out);
+                       IOHandler* handler,
+                       FILE* out);
   void writeTerm(const vector<mpz_class>& term,
-				 const VarNames& names,
-				 IOHandler* handler,
-				 FILE* out);
+                 const VarNames& names,
+                 IOHandler* handler,
+                 FILE* out);
 
   void readFrobeniusInstance(Scanner& in, vector<mpz_class>& instance);
   void readFrobeniusInstanceWithGrobnerBasis
@@ -82,7 +82,7 @@ class IOFacade : private Facade {
   void writeFrobeniusInstance(FILE* out, vector<mpz_class>& instance);
 
   bool readAlexanderDualInstance
-	(Scanner& in, BigIdeal& ideal, vector<mpz_class>& term);
+    (Scanner& in, BigIdeal& ideal, vector<mpz_class>& term);
 
   void readVector(Scanner& in, vector<mpz_class>& v, size_t integerCount);
 

@@ -29,35 +29,35 @@ namespace IO {
   public:
     IdealWriter(FILE* out);
 
-	virtual void consumeRing(const VarNames& names);
+    virtual void consumeRing(const VarNames& names);
 
-	virtual void beginConsumingList();
-	virtual void beginConsuming();
-	virtual void consume(const Term& term, const TermTranslator& translator);
-	virtual void consume(const vector<mpz_class>& term);
-	virtual void doneConsuming();
-	virtual void doneConsumingList();
+    virtual void beginConsumingList();
+    virtual void beginConsuming();
+    virtual void consume(const Term& term, const TermTranslator& translator);
+    virtual void consume(const vector<mpz_class>& term);
+    virtual void doneConsuming();
+    virtual void doneConsumingList();
 
-	virtual void consume(const BigIdeal& ideal);
+    virtual void consume(const BigIdeal& ideal);
 
-	FILE* getFile() {return _out;}
-	const VarNames& getNames() {return _names;}
+    FILE* getFile() {return _out;}
+    const VarNames& getNames() {return _names;}
 
   private:
-	virtual void doWriteHeader(bool firstIdeal, size_t generatorCount);
-	virtual void doWriteHeader(bool firstIdeal) = 0;
-	virtual void doWriteTerm(const Term& term,
-							 const TermTranslator& translator,
-							 bool firstGenerator) = 0;
-	virtual void doWriteTerm(const vector<mpz_class>& term,
-							 bool firstGenerator) = 0;
-	virtual void doWriteFooter(bool wasZeroIdeal) = 0;
-	virtual void doWriteEmptyList() = 0;
+    virtual void doWriteHeader(bool firstIdeal, size_t generatorCount);
+    virtual void doWriteHeader(bool firstIdeal) = 0;
+    virtual void doWriteTerm(const Term& term,
+                             const TermTranslator& translator,
+                             bool firstGenerator) = 0;
+    virtual void doWriteTerm(const vector<mpz_class>& term,
+                             bool firstGenerator) = 0;
+    virtual void doWriteFooter(bool wasZeroIdeal) = 0;
+    virtual void doWriteEmptyList() = 0;
 
-	FILE* const _out;
-	bool _firstIdeal;
-	bool _firstGenerator;
-	VarNames _names;
+    FILE* const _out;
+    bool _firstIdeal;
+    bool _firstGenerator;
+    VarNames _names;
   };
 }
 

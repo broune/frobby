@@ -22,7 +22,7 @@
 
 class BigIdeal;
 
-/** A facade for random and other kinds of data. 
+/** A facade for random and other kinds of data.
 
     @ingroup Facade
 */
@@ -36,16 +36,16 @@ class GenerateDataFacade : private Facade {
   void generateTreeIdeal(BigIdeal& ideal, unsigned int varCount);
 
   void generateEdgeIdeal
-	(BigIdeal& ideal, size_t varCount, size_t generatorCount);
+    (BigIdeal& ideal, size_t varCount, size_t generatorCount);
 
   void generateIdeal(BigIdeal& ideal,
-					 size_t exponentRange,
-					 size_t varCount,
-					 size_t generatorCount);
+                     size_t exponentRange,
+                     size_t varCount,
+                     size_t generatorCount);
 
   void generateFrobeniusInstance(vector<mpz_class>& instance,
-								 size_t entryCount,
-								 const mpz_class& maxEntry);
+                                 size_t entryCount,
+                                 const mpz_class& maxEntry);
 };
 
 #endif

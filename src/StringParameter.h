@@ -24,8 +24,8 @@
 class StringParameter : public Parameter {
 public:
   StringParameter(const string& name,
-				  const string& description,
-				  const string& defaultValue);
+                  const string& description,
+                  const string& defaultValue);
 
   const string& getValue() const {return _value;}
   void setValue(const string& value) {_value = value;}

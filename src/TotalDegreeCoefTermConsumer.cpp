@@ -23,7 +23,7 @@
 
 TotalDegreeCoefTermConsumer::
 TotalDegreeCoefTermConsumer(auto_ptr<CoefBigTermConsumer> consumer,
-							const TermTranslator& translator):
+                            const TermTranslator& translator):
   _consumer(*consumer),
   _consumerOwner(consumer),
   _translator(translator) {
@@ -32,7 +32,7 @@ TotalDegreeCoefTermConsumer(auto_ptr<CoefBigTermConsumer> consumer,
 
 TotalDegreeCoefTermConsumer::
 TotalDegreeCoefTermConsumer(CoefBigTermConsumer& consumer,
-							const TermTranslator& translator):
+                            const TermTranslator& translator):
   _consumer(consumer),
   _translator(translator) {
 }
@@ -46,15 +46,15 @@ void TotalDegreeCoefTermConsumer::beginConsuming() {
 }
 
 void TotalDegreeCoefTermConsumer::consume(const mpz_class& coef,
-										  const Term& term) {
+                                          const Term& term) {
   ASSERT(term.getVarCount() == _translator.getVarCount());
   if (coef == 0)
-	return;
+    return;
 
   // Compute total degree using _tmp.
   _tmp = 0;
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	_tmp += _translator.getExponent(var, term);
+    _tmp += _translator.getExponent(var, term);
 
   _poly.add(coef, _tmp);
 }

@@ -25,9 +25,9 @@ class Parameter;
 class Action {
  public:
   Action(const char* name,
-		 const char* shortDescription,
-		 const char* description,
-		 bool acceptsNonParameter);
+         const char* shortDescription,
+         const char* description,
+         bool acceptsNonParameter);
   virtual ~Action();
 
   const char* getName() const;
@@ -42,12 +42,12 @@ class Action {
   virtual void obtainParameters(vector<Parameter*>& parameters);
 
   virtual void parseCommandLine(unsigned int tokenCount,
-								const char** tokens);
+                                const char** tokens);
 
   virtual void perform() = 0;
 
   /** Returns whether this action should be shown to the user by the
-	help action.*/
+    help action.*/
   virtual bool displayAction() const;
 
   const Parameter& getParam(const string& name) const;

@@ -93,8 +93,8 @@ template<class AbstractProduct>
 auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
 createNoThrow(const string& name) const {
   for (const_iterator it = _pairs.begin(); it != _pairs.end(); ++it)
-	if (it->first == name)
-	  return it->second();
+    if (it->first == name)
+      return it->second();
   return auto_ptr<AbstractProduct>();
 }
 
@@ -108,8 +108,8 @@ template<class AbstractProduct>
 void NameFactory<AbstractProduct>::
 getNamesWithPrefix(const string& prefix, vector<string>& names) const {
   for (const_iterator it = _pairs.begin(); it != _pairs.end(); ++it)
-	if (it->first.compare(0, prefix.size(), prefix) == 0)
-	  names.push_back(it->first);
+    if (it->first.compare(0, prefix.size(), prefix) == 0)
+      names.push_back(it->first);
   sort(names.begin(), names.end());
 }
 
@@ -126,12 +126,12 @@ string NameFactory<AbstractProduct>::getAbstractProductName() const {
 template<class ConcreteProduct, class AbstractProduct>
 void nameFactoryRegister(NameFactory<AbstractProduct>& factory) {
   struct HoldsFunction {
-	static auto_ptr<AbstractProduct> createConcreteProduct() {
-	  return auto_ptr<AbstractProduct>(new ConcreteProduct());
-	}
+    static auto_ptr<AbstractProduct> createConcreteProduct() {
+      return auto_ptr<AbstractProduct>(new ConcreteProduct());
+    }
   };
   factory.registerProduct(ConcreteProduct::staticGetName(),
-						  HoldsFunction::createConcreteProduct);
+                          HoldsFunction::createConcreteProduct);
 }
 
 template<class AbstractProduct>
@@ -147,22 +147,22 @@ string getUniqueNameWithPrefix
   factory.getNamesWithPrefix(prefix, names);
 
   if (find(names.begin(), names.end(), prefix) != names.end()) {
-	names.clear();
-	names.push_back(prefix);
+    names.clear();
+    names.push_back(prefix);
   }
 
   if (names.empty()) {
-	throwError<UnknownNameException>
-	  ("No " + factory.getAbstractProductName() +
-	   " has the prefix \"" + prefix + "\".");
+    throwError<UnknownNameException>
+      ("No " + factory.getAbstractProductName() +
+       " has the prefix \"" + prefix + "\".");
   }
 
   if (names.size() >= 2) {
-	string errorMsg = "More than one " + factory.getAbstractProductName() +
-	  " has prefix \"" + prefix + "\":\n ";
-	for (size_t name = 0; name < names.size(); ++name)
-	  errorMsg += ' ' + names[name];
-	throwError<AmbiguousNameException>(errorMsg);
+    string errorMsg = "More than one " + factory.getAbstractProductName() +
+      " has prefix \"" + prefix + "\":\n ";
+    for (size_t name = 0; name < names.size(); ++name)
+      errorMsg += ' ' + names[name];
+    throwError<AmbiguousNameException>(errorMsg);
   }
 
   ASSERT(names.size() == 1);

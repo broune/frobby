@@ -37,38 +37,38 @@ SplitStrategy::~SplitStrategy() {
 class SplitStrategyCommon : public SplitStrategy {
 public:
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	ASSERT(false);
-	reportInternalError("Requested pivot split of non-pivot split strategy.\n");
+    ASSERT(false);
+    reportInternalError("Requested pivot split of non-pivot split strategy.\n");
   }
 
   virtual void getPivot(Term& pivot, Slice& slice, const TermGrader& grader) const {
-	getPivot(pivot, slice);
+    getPivot(pivot, slice);
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
-	ASSERT(false);
-	reportInternalError("Requested label split of non-label split strategy.");
-	return 0; // To avoid spurious warnings from static analyses.
+    ASSERT(false);
+    reportInternalError("Requested label split of non-label split strategy.");
+    return 0; // To avoid spurious warnings from static analyses.
   }
 
   virtual bool isPivotSplit() const {
-	return false;
+    return false;
   }
 
   virtual bool isLabelSplit() const {
-	return false;
+    return false;
   }
 
 protected:
   Exponent getMedianPositiveExponentOf(Slice& slice, size_t var) const {
-	slice.singleDegreeSortIdeal(var);
-	Ideal::const_iterator end = slice.getIdeal().end();
-	Ideal::const_iterator begin = slice.getIdeal().begin();
-	while ((*begin)[var] == 0) {
-	  ++begin;
-	  ASSERT(begin != end);
-	}
-	return (*(begin + (distance(begin, end) ) / 2))[var];
+    slice.singleDegreeSortIdeal(var);
+    Ideal::const_iterator end = slice.getIdeal().end();
+    Ideal::const_iterator begin = slice.getIdeal().begin();
+    while ((*begin)[var] == 0) {
+      ++begin;
+      ASSERT(begin != end);
+    }
+    return (*(begin + (distance(begin, end) ) / 2))[var];
   }
 
   // Returns the variable that divides the most minimal generators of
@@ -76,26 +76,26 @@ protected:
   // that variable.
   mutable Term coVariableForGetBestVar;
   size_t getBestVar(const Slice& slice) const {
-	Term& co = coVariableForGetBestVar;
-	co.reset(slice.getVarCount());
-	slice.getIdeal().getSupportCounts(co);
+    Term& co = coVariableForGetBestVar;
+    co.reset(slice.getVarCount());
+    slice.getIdeal().getSupportCounts(co);
 
-	const Term& lcm = slice.getLcm();
-	for (size_t var = 0; var < slice.getVarCount(); ++var)
-	  if (lcm[var] <= 1)
-		co[var] = 0;
+    const Term& lcm = slice.getLcm();
+    for (size_t var = 0; var < slice.getVarCount(); ++var)
+      if (lcm[var] <= 1)
+        co[var] = 0;
 
-	ASSERT(!co.isIdentity());
+    ASSERT(!co.isIdentity());
 
-	Exponent maxCount = co[co.getFirstMaxExponent()];
-	for (size_t var = 0; var < slice.getVarCount(); ++var)
-	  if (co[var] < maxCount)
-		co[var] = 0;
+    Exponent maxCount = co[co.getFirstMaxExponent()];
+    for (size_t var = 0; var < slice.getVarCount(); ++var)
+      if (co[var] < maxCount)
+        co[var] = 0;
 
-	// Choose the middle variable among those that are best. This
-	// is better at avoiding a bad pattern than just choosing the
-	// first one.
-	return co.getMiddleNonZeroExponent();
+    // Choose the middle variable among those that are best. This
+    // is better at avoiding a bad pattern than just choosing the
+    // first one.
+    return co.getMiddleNonZeroExponent();
   }
 };
 
@@ -103,31 +103,31 @@ class LabelSplit : public SplitStrategyCommon {
 protected:
   mutable Term _counts;
   void setCounts(const Slice& slice) const {
-	_counts.reset(slice.getVarCount());
-	slice.getIdeal().getSupportCounts(_counts);	
+    _counts.reset(slice.getVarCount());
+    slice.getIdeal().getSupportCounts(_counts);
   }
 
   mutable Term _oneCounts;
   void setOneCounts(const Slice& slice) const {
-	ASSERT(!const_cast<Slice&>(slice).adjustMultiply());
-	ASSERT(!const_cast<Slice&>(slice).baseCase(false));
-	// For each variable, count number of terms with exponent equal to 1,
-	// not counting pure powers.
-	_oneCounts.reset(slice.getVarCount());
+    ASSERT(!const_cast<Slice&>(slice).adjustMultiply());
+    ASSERT(!const_cast<Slice&>(slice).baseCase(false));
+    // For each variable, count number of terms with exponent equal to 1,
+    // not counting pure powers.
+    _oneCounts.reset(slice.getVarCount());
 
-	Ideal::const_iterator end = slice.getIdeal().end();
-	for (Ideal::const_iterator it = slice.getIdeal().begin();
-		 it != end; ++it) {
-	  if (Term::getSizeOfSupport(*it, slice.getVarCount()) == 1)
-		continue; // Not counting pure powers.
-	  for (size_t var = 0; var < slice.getVarCount(); ++var)
-		if ((*it)[var] == 1)
-		  _oneCounts[var] += 1;
-	}
+    Ideal::const_iterator end = slice.getIdeal().end();
+    for (Ideal::const_iterator it = slice.getIdeal().begin();
+         it != end; ++it) {
+      if (Term::getSizeOfSupport(*it, slice.getVarCount()) == 1)
+        continue; // Not counting pure powers.
+      for (size_t var = 0; var < slice.getVarCount(); ++var)
+        if ((*it)[var] == 1)
+          _oneCounts[var] += 1;
+    }
   }
 
   virtual bool isLabelSplit() const {
-	return true;
+    return true;
   }
 };
 
@@ -135,16 +135,16 @@ protected:
 class MaxLabelSplit : public LabelSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "maxlabel";
+    return "maxlabel";
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
-	setCounts(slice);
-	return _counts.getFirstMaxExponent();
+    setCounts(slice);
+    return _counts.getFirstMaxExponent();
   }
 };
 
@@ -152,21 +152,21 @@ public:
 class VarLabelSplit : public LabelSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "varlabel";
+    return "varlabel";
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
-	setOneCounts(slice);
-	for (size_t var = 0; ; ++var) {
-		ASSERT(var < slice.getVarCount());
-		if (_oneCounts[var] > 0)
-		  return var;
-	  }
-	}
+    setOneCounts(slice);
+    for (size_t var = 0; ; ++var) {
+        ASSERT(var < slice.getVarCount());
+        if (_oneCounts[var] > 0)
+          return var;
+      }
+    }
 };
 
 // Among those variables with least number of exponents equal to one,
@@ -174,280 +174,280 @@ public:
 class MinLabelSplit : public LabelSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "minlabel";
+    return "minlabel";
   }
 
   virtual size_t getLabelSplitVariable(const Slice& slice) const {
-	setCounts(slice);
-	setOneCounts(slice);
+    setCounts(slice);
+    setOneCounts(slice);
 
-	// Zero those variables of _counts that have more than the least number
-	// of exponent 1 minimal generators.
-	size_t mostGeneric = 0;
-	for (size_t var = 1; var < slice.getVarCount(); ++var)
-	  if (mostGeneric == 0 ||
-		  (mostGeneric > _oneCounts[var] && _oneCounts[var] > 0))
-		mostGeneric = _oneCounts[var];
-	for (size_t var = 0; var < slice.getVarCount(); ++var)
-	  if (_oneCounts[var] != mostGeneric)
-		_counts[var] = 0;
+    // Zero those variables of _counts that have more than the least number
+    // of exponent 1 minimal generators.
+    size_t mostGeneric = 0;
+    for (size_t var = 1; var < slice.getVarCount(); ++var)
+      if (mostGeneric == 0 ||
+          (mostGeneric > _oneCounts[var] && _oneCounts[var] > 0))
+        mostGeneric = _oneCounts[var];
+    for (size_t var = 0; var < slice.getVarCount(); ++var)
+      if (_oneCounts[var] != mostGeneric)
+        _counts[var] = 0;
 
-	return _counts.getFirstMaxExponent();
+    return _counts.getFirstMaxExponent();
   }
 };
 
 class PivotSplit : public SplitStrategyCommon {
 public:
   virtual bool isPivotSplit() const {
-	return true;
+    return true;
   }
 };
 
 class MinimumSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "minimum";
+    return "minimum";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	size_t var = getBestVar(slice);
-	pivot.setToIdentity();
-	pivot[var] = 1;
+    size_t var = getBestVar(slice);
+    pivot.setToIdentity();
+    pivot[var] = 1;
   }
 };
 
 class MedianSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "median";
+    return "median";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	size_t var = getBestVar(slice);
+    size_t var = getBestVar(slice);
 
-	pivot.setToIdentity();
-	pivot[var] = getMedianPositiveExponentOf(slice, var);
-	if (pivot[var] == slice.getLcm()[var])
-	  pivot[var] -= 1;
+    pivot.setToIdentity();
+    pivot[var] = getMedianPositiveExponentOf(slice, var);
+    if (pivot[var] == slice.getLcm()[var])
+      pivot[var] -= 1;
   }
 };
 
 class MaximumSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "maximum";
+    return "maximum";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	size_t var = getBestVar(slice);
-	pivot.setToIdentity();
-	pivot[var] = slice.getLcm()[var] - 1;
+    size_t var = getBestVar(slice);
+    pivot.setToIdentity();
+    pivot[var] = slice.getLcm()[var] - 1;
   }
 };
 
 class IndependencePivotSplit : public MedianSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "indep";
+    return "indep";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	if (slice.getVarCount() == 1) {
-	  MedianSplit::getPivot(pivot, slice);
-	  return;
-	}
+    if (slice.getVarCount() == 1) {
+      MedianSplit::getPivot(pivot, slice);
+      return;
+    }
 
-	for (int attempts = 0; attempts < 10; ++attempts) {
-	  // Pick two distinct variables.
-	  size_t var1 = rand() % slice.getVarCount();
-	  size_t var2 = rand() % (slice.getVarCount() - 1);
-	  if (var2 >= var1)
-		++var2;
+    for (int attempts = 0; attempts < 10; ++attempts) {
+      // Pick two distinct variables.
+      size_t var1 = rand() % slice.getVarCount();
+      size_t var2 = rand() % (slice.getVarCount() - 1);
+      if (var2 >= var1)
+        ++var2;
 
-	  // Make pivot as big as it can be while making var1 and var2
-	  // independent of each other.
-	  bool first = true;
-	  Ideal::const_iterator end = slice.getIdeal().end();
-	  for (Ideal::const_iterator it = slice.getIdeal().begin();
-		   it != end; ++it) {
-		if ((*it)[var1] == 0 || (*it)[var2] == 0)
-		  continue;
+      // Make pivot as big as it can be while making var1 and var2
+      // independent of each other.
+      bool first = true;
+      Ideal::const_iterator end = slice.getIdeal().end();
+      for (Ideal::const_iterator it = slice.getIdeal().begin();
+           it != end; ++it) {
+        if ((*it)[var1] == 0 || (*it)[var2] == 0)
+          continue;
 
-		if (first)
-		  pivot = *it;
-		else {
-		  for (size_t var = 0; var < slice.getVarCount(); ++var)
-			if (pivot[var] >= (*it)[var])
-			  pivot[var] = (*it)[var] - 1;
-		}
-	  }
+        if (first)
+          pivot = *it;
+        else {
+          for (size_t var = 0; var < slice.getVarCount(); ++var)
+            if (pivot[var] >= (*it)[var])
+              pivot[var] = (*it)[var] - 1;
+        }
+      }
 
-	  if (!first && !pivot.isIdentity())
-		return;
-	}
+      if (!first && !pivot.isIdentity())
+        return;
+    }
 
-	MedianSplit::getPivot(pivot, slice);
+    MedianSplit::getPivot(pivot, slice);
   }
 };
 
 class GcdSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "gcd";
+    return "gcd";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	size_t var = getBestVar(slice);
+    size_t var = getBestVar(slice);
 
-	size_t nonDivisibleCount = 0;
-	Ideal::const_iterator end = slice.getIdeal().end();
-	for (Ideal::const_iterator it = slice.getIdeal().begin();
-		 it != end; ++it)
-	  if ((*it)[var] >= 2)
-		++nonDivisibleCount;
+    size_t nonDivisibleCount = 0;
+    Ideal::const_iterator end = slice.getIdeal().end();
+    for (Ideal::const_iterator it = slice.getIdeal().begin();
+         it != end; ++it)
+      if ((*it)[var] >= 2)
+        ++nonDivisibleCount;
 
-	for (int i = 0; i < 3; ++i) {
-	  size_t selected = rand() % nonDivisibleCount;
-	  for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
-		ASSERT(it != end);
-		if ((*it)[var] < 2)
-		  continue;
+    for (int i = 0; i < 3; ++i) {
+      size_t selected = rand() % nonDivisibleCount;
+      for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
+        ASSERT(it != end);
+        if ((*it)[var] < 2)
+          continue;
 
-		if (selected == 0) {
-		  if (i == 0)
-			pivot = *it;
-		  else
-			pivot.gcd(pivot, *it);
-		  break;
-		}
-		--selected;
-	  }
-	}
+        if (selected == 0) {
+          if (i == 0)
+            pivot = *it;
+          else
+            pivot.gcd(pivot, *it);
+          break;
+        }
+        --selected;
+      }
+    }
 
-	pivot.decrement();
+    pivot.decrement();
   }
 };
 
 class MinGenSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "mingen";
+    return "mingen";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	size_t nonSquareFreeCount = 0;
-	Ideal::const_iterator end = slice.getIdeal().end();
-	for (Ideal::const_iterator it = slice.getIdeal().begin();
-		 it != end; ++it)
-	  if (!Term::isSquareFree(*it, slice.getVarCount()))
-		++nonSquareFreeCount;
-	
-	size_t selected = rand() % nonSquareFreeCount;
-	for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
-	  ASSERT(it != end);
-	  if (Term::isSquareFree(*it, slice.getVarCount()))
-		continue;
-	  
-	  if (selected == 0) {
-		pivot = *it;
-		break;
-	  }
-	  --selected;
-	}
-	
-	pivot.decrement();
+    size_t nonSquareFreeCount = 0;
+    Ideal::const_iterator end = slice.getIdeal().end();
+    for (Ideal::const_iterator it = slice.getIdeal().begin();
+         it != end; ++it)
+      if (!Term::isSquareFree(*it, slice.getVarCount()))
+        ++nonSquareFreeCount;
+
+    size_t selected = rand() % nonSquareFreeCount;
+    for (Ideal::const_iterator it = slice.getIdeal().begin(); ; ++it) {
+      ASSERT(it != end);
+      if (Term::isSquareFree(*it, slice.getVarCount()))
+        continue;
+
+      if (selected == 0) {
+        pivot = *it;
+        break;
+      }
+      --selected;
+    }
+
+    pivot.decrement();
   }
 };
 
 class DegreeSplit : public PivotSplit {
 public:
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "degree";
+    return "degree";
   }
 
   virtual void getPivot(Term& pivot, Slice& slice) const {
-	reportInternalError("Called getPivot directly on FrobeniusSplit.");
+    reportInternalError("Called getPivot directly on FrobeniusSplit.");
   }
 
   virtual void getPivot(Term& pivot, Slice& slice, const TermGrader& grader) const {
-	const Term& lcm = slice.getLcm();
+    const Term& lcm = slice.getLcm();
 
-	// TODO: pick a middle variable in case of ties.
+    // TODO: pick a middle variable in case of ties.
 
-	_maxDiff = -1;
-	size_t maxOffset = 0u;
-	for (size_t var = 0; var < slice.getVarCount(); ++var) {
-	  if (lcm[var] <= 1)
-		continue;
+    _maxDiff = -1;
+    size_t maxOffset = 0u;
+    for (size_t var = 0; var < slice.getVarCount(); ++var) {
+      if (lcm[var] <= 1)
+        continue;
 
-	  Exponent base = slice.getMultiply()[var];
-	  Exponent mid = base + lcm[var] / 2;
+      Exponent base = slice.getMultiply()[var];
+      Exponent mid = base + lcm[var] / 2;
 
-	  // We could be looking at an added pure power whose exponent is
-	  // defined to have degree 0. We don't want to look at that.
-	  if (mid == grader.getMaxExponent(var) && mid > base)
-		--mid;
+      // We could be looking at an added pure power whose exponent is
+      // defined to have degree 0. We don't want to look at that.
+      if (mid == grader.getMaxExponent(var) && mid > base)
+        --mid;
 
-	  _diff = grader.getGrade(var, mid) - grader.getGrade(var, base);
-		
-	  if (grader.getGradeSign(var) < 0)
-		_diff = -_diff;
-	  
-	  ASSERT(_diff >= 0 || base == mid);
+      _diff = grader.getGrade(var, mid) - grader.getGrade(var, base);
 
-	  if (_diff > _maxDiff) {
-		maxOffset = var;
-		_maxDiff = _diff;
-	  }
-	}
+      if (grader.getGradeSign(var) < 0)
+        _diff = -_diff;
 
-	pivot.setToIdentity();
-	pivot[maxOffset] = lcm[maxOffset] / 2;
+      ASSERT(_diff >= 0 || base == mid);
+
+      if (_diff > _maxDiff) {
+        maxOffset = var;
+        _maxDiff = _diff;
+      }
+    }
+
+    pivot.setToIdentity();
+    pivot[maxOffset] = lcm[maxOffset] / 2;
   }
 
 private:
   /** This is member variable used by getPivot. It has been made a
-	  field of the object to avoid having to reinitialize the object with
-	  each call.
-  */ 
+      field of the object to avoid having to reinitialize the object with
+      each call.
+  */
   mutable mpz_class _maxDiff;
 
   /** This is member variable used by getPivot. It has been made a
-	  field of the object to avoid having to reinitialize the object with
-	  each call.
-  */ 
+      field of the object to avoid having to reinitialize the object with
+      each call.
+  */
   mutable mpz_class _diff;
 };
 
@@ -457,18 +457,18 @@ private:
 class DeprecatedFrobeniusSplit : public DegreeSplit {
 public:
   DeprecatedFrobeniusSplit() {
-	displayNote
-	  ("The split selection strategy \"frob\" is deprecated and will be "
-	   "removed in a future version of Frobby. Use the name \"degree\" "
-	   "to achieve the same thing.");
+    displayNote
+      ("The split selection strategy \"frob\" is deprecated and will be "
+       "removed in a future version of Frobby. Use the name \"degree\" "
+       "to achieve the same thing.");
   }
 
   virtual const char* getName() const {
-	return staticGetName();
+    return staticGetName();
   }
 
   static const char* staticGetName() {
-	return "frob";
+    return "frob";
   }
 };
 
@@ -476,21 +476,21 @@ namespace {
   typedef NameFactory<SplitStrategy> SplitFactory;
 
   SplitFactory getSplitFactory() {
-	SplitFactory factory("Slice split strategy");
+    SplitFactory factory("Slice split strategy");
 
-	nameFactoryRegister<MaxLabelSplit>(factory);
-	nameFactoryRegister<MinLabelSplit>(factory);
-	nameFactoryRegister<VarLabelSplit>(factory);
-	nameFactoryRegister<MinimumSplit>(factory);
-	nameFactoryRegister<MedianSplit>(factory);
-	nameFactoryRegister<MaximumSplit>(factory);
-	nameFactoryRegister<MinGenSplit>(factory);
-	nameFactoryRegister<IndependencePivotSplit>(factory);
-	nameFactoryRegister<GcdSplit>(factory);
-	nameFactoryRegister<DegreeSplit>(factory);
-	nameFactoryRegister<DeprecatedFrobeniusSplit>(factory);
+    nameFactoryRegister<MaxLabelSplit>(factory);
+    nameFactoryRegister<MinLabelSplit>(factory);
+    nameFactoryRegister<VarLabelSplit>(factory);
+    nameFactoryRegister<MinimumSplit>(factory);
+    nameFactoryRegister<MedianSplit>(factory);
+    nameFactoryRegister<MaximumSplit>(factory);
+    nameFactoryRegister<MinGenSplit>(factory);
+    nameFactoryRegister<IndependencePivotSplit>(factory);
+    nameFactoryRegister<GcdSplit>(factory);
+    nameFactoryRegister<DegreeSplit>(factory);
+    nameFactoryRegister<DeprecatedFrobeniusSplit>(factory);
 
-	return factory;
+    return factory;
   }
 }
 

@@ -31,7 +31,7 @@ PolyTransformAction::PolyTransformAction():
  "number of parameters allow to transform the input polynomial in "
  "various ways.",
  false),
-  
+
   _io(DataType::getPolynomialType(), DataType::getPolynomialType()),
 
   _canonicalize
@@ -65,9 +65,9 @@ void PolyTransformAction::perform() {
 
   PolynomialFacade polyFacade(_printActions);
   if (_canonicalize)
-	polyFacade.sortVariables(polynomial);
+    polyFacade.sortVariables(polynomial);
   if (_sortTerms || _canonicalize)
-	polyFacade.sortTerms(polynomial);
+    polyFacade.sortTerms(polynomial);
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();
   facade.writePolynomial(polynomial, output.get(), stdout);

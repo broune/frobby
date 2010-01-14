@@ -31,44 +31,44 @@ TranslatedIdealComparator(TermTranslator& translator):
 namespace IdealComparatorHelpers {
   template<class MyIdeal, class MyTermCompare>
   bool idealLessThanImpl(const MyIdeal& a,
-						 const MyIdeal& b,
-						 const MyTermCompare& predicate) {
-	ASSERT(a.getVarCount() == b.getVarCount());
+                         const MyIdeal& b,
+                         const MyTermCompare& predicate) {
+    ASSERT(a.getVarCount() == b.getVarCount());
 
-	for (size_t term = 0; term < a.getGeneratorCount(); ++term) {
-	  if (term == b.getGeneratorCount())
-		return true;
-	  
-	  if (predicate(a[term], b[term]))
-		return true;
-	  if (predicate(b[term], a[term]))
-		return false;
-	}
-	ASSERT(a.getGeneratorCount() <= b.getGeneratorCount());
+    for (size_t term = 0; term < a.getGeneratorCount(); ++term) {
+      if (term == b.getGeneratorCount())
+        return true;
 
-	return false;
+      if (predicate(a[term], b[term]))
+        return true;
+      if (predicate(b[term], a[term]))
+        return false;
+    }
+    ASSERT(a.getGeneratorCount() <= b.getGeneratorCount());
+
+    return false;
   }
 
   bool idealLessThan(const BigIdeal& a, const BigIdeal& b) {
-	if (a.getNames() < b.getNames())
-	  return true;
-	if (b.getNames() < a.getNames())
-	  return false;
+    if (a.getNames() < b.getNames())
+      return true;
+    if (b.getNames() < a.getNames())
+      return false;
 
-	return idealLessThanImpl(a, b, BigIdeal::bigTermCompare);
+    return idealLessThanImpl(a, b, BigIdeal::bigTermCompare);
   }
 
   bool idealLessThan(const Ideal& a, const Ideal& b) {
-	ASSERT(a.getVarCount() == b.getVarCount());
+    ASSERT(a.getVarCount() == b.getVarCount());
 
-	return idealLessThanImpl(a, b, ReverseLexComparator(a.getVarCount()));
+    return idealLessThanImpl(a, b, ReverseLexComparator(a.getVarCount()));
   }
 
   bool idealLessThan(const Ideal& a, const Ideal& b,
-					 TermTranslator& translator) {
-	ASSERT(a.getVarCount() == translator.getVarCount());
-	ASSERT(b.getVarCount() == translator.getVarCount());
+                     TermTranslator& translator) {
+    ASSERT(a.getVarCount() == translator.getVarCount());
+    ASSERT(b.getVarCount() == translator.getVarCount());
 
-	return idealLessThanImpl(a, b, TranslatedReverseLexComparator(translator));
+    return idealLessThanImpl(a, b, TranslatedReverseLexComparator(translator));
   }
 }

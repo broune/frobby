@@ -31,12 +31,12 @@ void TestSuite::add(Test* test) {
 
 namespace {
   /** Follows pointers before comparing values. Helper function for
-	  TestSuite::sortTests.
+      TestSuite::sortTests.
    */
   bool comparePointedToValue(const Test* a, const Test* b) {
-	ASSERT(a != 0);
-	ASSERT(b != 0);
-	return *a < *b;
+    ASSERT(a != 0);
+    ASSERT(b != 0);
+    return *a < *b;
   }
 }
 

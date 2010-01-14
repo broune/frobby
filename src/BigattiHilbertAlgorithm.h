@@ -36,10 +36,10 @@ public:
    lifetime of this object.
   */
   BigattiHilbertAlgorithm(auto_ptr<Ideal> ideal,
-						  const TermTranslator& translator,
-						  const BigattiParams& params,
-						  auto_ptr<BigattiPivotStrategy> pivot,
-						  CoefBigTermConsumer& consumer);
+                          const TermTranslator& translator,
+                          const BigattiParams& params,
+                          auto_ptr<BigattiPivotStrategy> pivot,
+                          CoefBigTermConsumer& consumer);
 
   void setPrintStatistics(bool value);
   void setPrintDebug(bool value);
@@ -50,27 +50,27 @@ public:
   void run();
 
 private:
-	void processState(auto_ptr<BigattiState> state);
-	void getPivot(BigattiState& state, size_t& var, Exponent& e);
-	void simplify(BigattiState& state);
+    void processState(auto_ptr<BigattiState> state);
+    void getPivot(BigattiState& state, size_t& var, Exponent& e);
+    void simplify(BigattiState& state);
 
-	void freeState(auto_ptr<BigattiState> state);
+    void freeState(auto_ptr<BigattiState> state);
 
-	size_t _varCount;
-	const TermTranslator& _translator;
-	CoefBigTermConsumer* _consumer;
-	TaskEngine _tasks;
-	ObjectCache<BigattiState> _stateCache;
+    size_t _varCount;
+    const TermTranslator& _translator;
+    CoefBigTermConsumer* _consumer;
+    TaskEngine _tasks;
+    ObjectCache<BigattiState> _stateCache;
 
-	Term _tmp_processState_pivot;
-	Term _tmp_simplify_gcd;
+    Term _tmp_processState_pivot;
+    Term _tmp_simplify_gcd;
 
     BigattiBaseCase _baseCase;
 
-	auto_ptr<BigattiPivotStrategy>  _pivot;
+    auto_ptr<BigattiPivotStrategy>  _pivot;
 
-	bool _computeUnivariate;
-	BigattiParams _params;
+    bool _computeUnivariate;
+    BigattiParams _params;
 
     friend class BigattiState;
 };

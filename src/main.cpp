@@ -26,17 +26,17 @@
 #include <cstdlib>
 
 /** This function runs the Frobby console interface. the ::main
-	function calls this function after having set up DEBUG-specific
-	things, catching exceptions, setting the random seed and so on.
+    function calls this function after having set up DEBUG-specific
+    things, catching exceptions, setting the random seed and so on.
 */
 int frobbyMain(int argc, const char** argv) {
   string prefix;
   if (argc > 1) {
-	prefix = argv[1];
-	--argc;
-	++argv;
+    prefix = argv[1];
+    --argc;
+    ++argv;
   } else
-	prefix = "help";
+    prefix = "help";
 
   const auto_ptr<Action> action(Action::createActionWithPrefix(prefix));
   action->parseCommandLine(argc - 1, argv + 1);
@@ -50,8 +50,8 @@ int frobbyMain(int argc, const char** argv) {
 */
 void frobbyTerminate() {
   fputs("INTERNAL ERROR: Something caused terminate() to be called. "
-		"This should never happen.\nPlease contact the Frobby developers.\n",
-		stderr);
+        "This should never happen.\nPlease contact the Frobby developers.\n",
+        stderr);
   fflush(stderr);
   ASSERT(false);
   abort();
@@ -62,61 +62,61 @@ void frobbyTerminate() {
 */
 void frobbyUnexpected() {
   fputs("INTERNAL ERROR: Something caused unexpected() to be called. "
-		"This should never happen.\nPlease contact the Frobby developers.\n",
-		stderr);
+        "This should never happen.\nPlease contact the Frobby developers.\n",
+        stderr);
   fflush(stderr);
   ASSERT(false);
   abort();
 }
 
 /** This function is the entry point for Frobby as a console
-	program. It does some DEBUG-specific things, sets the random seed
-	and so on before calling ::frobbyMain.
+    program. It does some DEBUG-specific things, sets the random seed
+    and so on before calling ::frobbyMain.
 */
 int main(int argc, const char** argv) {
   try {
-	set_terminate(frobbyTerminate);
-	set_unexpected(frobbyUnexpected);
+    set_terminate(frobbyTerminate);
+    set_unexpected(frobbyUnexpected);
 
-	srand((unsigned int)time(0) +
+    srand((unsigned int)time(0) +
 #ifdef __GNUC__ // Only GCC defines this macro.
-		  (unsigned int)getpid() +
+          (unsigned int)getpid() +
 #endif
-		  (unsigned int)clock());
+          (unsigned int)clock());
 
 #ifdef PROFILE
-	fputs("This is a PROFILE build of Frobby. It is therefore SLOW.\n",
-		  stderr);
+    fputs("This is a PROFILE build of Frobby. It is therefore SLOW.\n",
+          stderr);
 #endif
 #ifdef DEBUG
-	fputs("This is a DEBUG build of Frobby. It is therefore SLOW.\n",
-		  stderr);
+    fputs("This is a DEBUG build of Frobby. It is therefore SLOW.\n",
+          stderr);
 #endif
 
 #ifdef DEBUG
-	return DebugAllocator::getSingleton().runDebugMain(argc, argv);
+    return DebugAllocator::getSingleton().runDebugMain(argc, argv);
 #else
-	return frobbyMain(argc, argv);
+    return frobbyMain(argc, argv);
 #endif
   } catch (const bad_alloc&) {
-	displayError("Ran out of memory.");
-	return ExitCodeOutOfMemory;
+    displayError("Ran out of memory.");
+    return ExitCodeOutOfMemory;
   } catch (const InternalFrobbyException& e) {
-	displayException(e);
-	return ExitCodeInternalError;
+    displayException(e);
+    return ExitCodeInternalError;
   } catch (const FrobbyException& e) {
-	displayException(e);
-	return ExitCodeError;
+    displayException(e);
+    return ExitCodeError;
   } catch (...) {
-	try {
-	  throw;
-	} catch (const exception& e) {
-	  try {
-		displayError(e.what());
-	  } catch (...) {
-	  }
-	} catch (...) {
-	}
-	return ExitCodeUnknownError;
+    try {
+      throw;
+    } catch (const exception& e) {
+      try {
+        displayError(e.what());
+      } catch (...) {
+      }
+    } catch (...) {
+    }
+    return ExitCodeUnknownError;
   }
 }

@@ -29,8 +29,8 @@ template<>
 class FrobbyHash<mpz_class> {
  public:
   size_t operator()(const mpz_class& i) const {
-	// The constant is a prime. This method needs to be improved.
-	return mpz_fdiv_ui(i.get_mpz_t(), 2106945901u);
+    // The constant is a prime. This method needs to be improved.
+    return mpz_fdiv_ui(i.get_mpz_t(), 2106945901u);
   }
 };
 
@@ -46,7 +46,7 @@ class UniHashPolynomial {
 
   /** Add coef*t^exponent to the polynomial. */
   void add(int coef, size_t exponent);
-  
+
   /** Add coef*t^exponent to the polynomial. */
   void add(const mpz_class& coef, const mpz_class& exponent);
 

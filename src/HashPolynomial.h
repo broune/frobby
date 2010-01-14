@@ -31,7 +31,7 @@ template<>
 class FrobbyHash<Term> {
  public:
   size_t operator()(const Term& t) const {
-	return t.getHashCode();
+    return t.getHashCode();
   }
 };
 
@@ -53,8 +53,8 @@ class HashPolynomial {
   void add(bool plus, const Term& term);
 
   void feedTo(const TermTranslator& translator,
-			  CoefBigTermConsumer& consumer,
-			  bool inCanonicalOrder) const;
+              CoefBigTermConsumer& consumer,
+              bool inCanonicalOrder) const;
 
   size_t getTermCount() const;
 

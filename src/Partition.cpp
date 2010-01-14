@@ -29,7 +29,7 @@ Partition::Partition(const Partition& partition):
   _setCount(partition._setCount) {
   _partitions = new int[_size];
   std::copy(partition._partitions,
-			partition._partitions + _size, _partitions);
+            partition._partitions + _size, _partitions);
 }
 
 Partition::~Partition() {
@@ -89,9 +89,9 @@ size_t Partition::getSetSize(size_t set) const {
   for (size_t i = 0; i < _size; ++i) {
     if (i == getRoot(i)) {
       if (set == 0) {
-		ASSERT(_partitions[i] < 0);
-		return -(_partitions[i] + 1); // +1 to offset the initial -1
-	  }
+        ASSERT(_partitions[i] < 0);
+        return -(_partitions[i] + 1); // +1 to offset the initial -1
+      }
       --set;
     }
   }

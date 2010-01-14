@@ -27,25 +27,25 @@ namespace fplll {
     vector<vector<mpz_class> > tmp;
 
     scanner.expect('[');
-	while (!scanner.match(']')) {
+    while (!scanner.match(']')) {
       scanner.expect('[');
       tmp.resize(tmp.size() + 1);
-	  while (!scanner.match(']')) {
-		mpz_class integer;
-		scanner.readInteger(integer);
-		tmp.back().push_back(integer);
+      while (!scanner.match(']')) {
+        mpz_class integer;
+        scanner.readInteger(integer);
+        tmp.back().push_back(integer);
       }
 
       if (tmp.front().size() != tmp.back().size()) {
-		FrobbyStringStream errorMsg;
-		errorMsg << "Row 1 has "
-				 << tmp.front().size()
-				 << " entries, while row "
-				 << tmp.size()
-				 << " has "
-				 << tmp.back().size()
-				 << " entries.";
-		reportSyntaxError(scanner, errorMsg);
+        FrobbyStringStream errorMsg;
+        errorMsg << "Row 1 has "
+                 << tmp.front().size()
+                 << " entries, while row "
+                 << tmp.size()
+                 << " has "
+                 << tmp.back().size()
+                 << " entries.";
+        reportSyntaxError(scanner, errorMsg);
       }
     }
 
@@ -55,7 +55,7 @@ namespace fplll {
     for (unsigned int i = 0; i < tmp.size(); ++i) {
       basis.newLastTerm();
       for (unsigned int j = 0; j < tmp[i].size(); ++j)
-		basis.getLastTermExponentRef(j) = tmp[i][j];
+        basis.getLastTermExponentRef(j) = tmp[i][j];
     }
   }
 
@@ -65,8 +65,8 @@ namespace fplll {
       fputs(" [", out);
       const char* prefix = "";
       for (unsigned int j = 0; j < basis[i].size(); ++j) {
-		gmp_fprintf(out, "%s%Zd", prefix, basis[i][j].get_mpz_t());
-		prefix = " ";
+        gmp_fprintf(out, "%s%Zd", prefix, basis[i][j].get_mpz_t());
+        prefix = " ";
       }
       fputs("]\n", out);
     }

@@ -23,62 +23,62 @@
 
 namespace IO {
   IdealWriter::IdealWriter(FILE* out):
-	_out(out),
-	_firstIdeal(true),
-	_firstGenerator(true) {
+    _out(out),
+    _firstIdeal(true),
+    _firstGenerator(true) {
   }
 
   void IdealWriter::consumeRing(const VarNames& names) {
-	if (_names != names) {
-	  _names = names;
-	  _firstIdeal = true;
-	}
+    if (_names != names) {
+      _names = names;
+      _firstIdeal = true;
+    }
   }
 
   void IdealWriter::beginConsumingList() {
-	_firstIdeal = true;
+    _firstIdeal = true;
   }
 
   void IdealWriter::beginConsuming() {
-	_firstGenerator = true;
-	doWriteHeader(_firstIdeal);
+    _firstGenerator = true;
+    doWriteHeader(_firstIdeal);
   }
 
   void IdealWriter::consume(const Term& term, const TermTranslator& translator) {
-	ASSERT(term.getVarCount() == _names.getVarCount());
-	bool firstGenerator = _firstGenerator; // To get tail recursion.
-	_firstGenerator = false;
-	doWriteTerm(term, translator, firstGenerator);
+    ASSERT(term.getVarCount() == _names.getVarCount());
+    bool firstGenerator = _firstGenerator; // To get tail recursion.
+    _firstGenerator = false;
+    doWriteTerm(term, translator, firstGenerator);
   }
 
   void IdealWriter::consume(const vector<mpz_class>& term) {
-	ASSERT(term.size() == _names.getVarCount());
-	bool firstGenerator = _firstGenerator; // To get tail recursion.
-	_firstGenerator = false;
-	doWriteTerm(term, firstGenerator);
+    ASSERT(term.size() == _names.getVarCount());
+    bool firstGenerator = _firstGenerator; // To get tail recursion.
+    _firstGenerator = false;
+    doWriteTerm(term, firstGenerator);
   }
 
   void IdealWriter::doneConsuming() {
-	_firstIdeal = false;
-	doWriteFooter(_firstGenerator);
+    _firstIdeal = false;
+    doWriteFooter(_firstGenerator);
   }
 
   void IdealWriter::doneConsumingList() {
-	if (_firstIdeal)
-	  doWriteEmptyList();
+    if (_firstIdeal)
+      doWriteEmptyList();
   }
 
   void IdealWriter::consume(const BigIdeal& ideal) {
-	consumeRing(ideal.getNames());
-	_firstGenerator = true;
-	doWriteHeader(_firstIdeal, ideal.getGeneratorCount());
+    consumeRing(ideal.getNames());
+    _firstGenerator = true;
+    doWriteHeader(_firstIdeal, ideal.getGeneratorCount());
 
-	for (size_t term = 0; term < ideal.getGeneratorCount(); ++term)
-	  consume(ideal.getTerm(term));
-	doneConsuming();
+    for (size_t term = 0; term < ideal.getGeneratorCount(); ++term)
+      consume(ideal.getTerm(term));
+    doneConsuming();
   }
 
   void IdealWriter::doWriteHeader(bool firstIdeal, size_t generatorCount) {
-	doWriteHeader(firstIdeal);
+    doWriteHeader(firstIdeal);
   }
 }

@@ -26,7 +26,7 @@ void CoefBigTermConsumer::consume(const mpz_class& coef, const Term& term) {
   vector<mpz_class> bigTerm;
   bigTerm.reserve(term.getVarCount());
   for (size_t var = 0; var < term.getVarCount(); ++var)
-	bigTerm.push_back(term[var]);
+    bigTerm.push_back(term[var]);
   consume(coef, bigTerm);
 }
 
@@ -34,6 +34,6 @@ void CoefBigTermConsumer::consume(const BigPolynomial& poly) {
   consumeRing(poly.getNames());
   beginConsuming();
   for (size_t index = 0; index < poly.getTermCount(); ++index)
-	consume(poly.getCoef(index), poly.getTerm(index));
+    consume(poly.getCoef(index), poly.getTerm(index));
   doneConsuming();
 }

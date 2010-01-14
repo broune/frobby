@@ -22,8 +22,8 @@
 #include "Term.h"
 
 CanonicalTermConsumer::CanonicalTermConsumer(auto_ptr<TermConsumer> consumer,
-											 size_t varCount,
-											 TermTranslator* translator):
+                                             size_t varCount,
+                                             TermTranslator* translator):
   _varCount(varCount),
   _storingList(false),
   _ideals(),
@@ -60,9 +60,9 @@ void CanonicalTermConsumer::consume(const Term& term) {
 
 void CanonicalTermConsumer::doneConsuming() {
   if (!_storingList) {
-	ASSERT(_ideals.size() == 1);
-	passLastIdeal();
-	ASSERT(_ideals.empty());
+    ASSERT(_ideals.size() == 1);
+    passLastIdeal();
+    ASSERT(_ideals.empty());
   }
 }
 
@@ -71,21 +71,21 @@ void CanonicalTermConsumer::doneConsumingList() {
 
   vector<Ideal*>::iterator end = _ideals.end();
   for (vector<Ideal*>::iterator it = _ideals.begin(); it != end; ++it)
-	canonicalizeIdeal(**it);
+    canonicalizeIdeal(**it);
 
   // We are sorting in reverse because we are processing the ideals from
   // the back, so they get passed on in the correct order.
   if (_translator == 0) {
-	IdealComparator comparator;
-	sort(_ideals.rbegin(), _ideals.rend(), comparator);
+    IdealComparator comparator;
+    sort(_ideals.rbegin(), _ideals.rend(), comparator);
   } else {
-	TranslatedIdealComparator comparator(*_translator);
-	sort(_ideals.rbegin(), _ideals.rend(), comparator);
+    TranslatedIdealComparator comparator(*_translator);
+    sort(_ideals.rbegin(), _ideals.rend(), comparator);
   }
 
   _consumer->beginConsumingList();
   while (!_ideals.empty())
-	passLastIdeal();
+    passLastIdeal();
   _consumer->doneConsumingList();
 }
 
@@ -102,8 +102,8 @@ void CanonicalTermConsumer::passLastIdeal() {
   Term tmp(_varCount);
   Ideal::const_iterator end = ideal->end();
   for (Ideal::const_iterator it = ideal->begin(); it != end; ++it) {
-	tmp = *it;
-	_consumer->consume(tmp);
+    tmp = *it;
+    _consumer->consume(tmp);
   }
   ideal.reset(0);
 
@@ -112,9 +112,9 @@ void CanonicalTermConsumer::passLastIdeal() {
 
 void CanonicalTermConsumer::canonicalizeIdeal(Ideal& ideal) {
   if (_translator == 0)
-	ideal.sortReverseLex();
+    ideal.sortReverseLex();
   else {
-	TranslatedReverseLexComparator comparator(*_translator);
-	sort(ideal.begin(), ideal.end(), comparator);
+    TranslatedReverseLexComparator comparator(*_translator);
+    sort(ideal.begin(), ideal.end(), comparator);
   }
 }

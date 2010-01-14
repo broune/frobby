@@ -54,23 +54,23 @@ void AlexanderDualAction::perform() {
   bool pointSpecified;
 
   {
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
+    Scanner in(_io.getInputFormat(), stdin);
+    _io.autoDetectInputFormat(in);
+    _io.validateFormats();
 
-	IOFacade ioFacade(_printActions);
-	pointSpecified = ioFacade.readAlexanderDualInstance(in, ideal, point);
-	in.expectEOF();
+    IOFacade ioFacade(_printActions);
+    pointSpecified = ioFacade.readAlexanderDualInstance(in, ideal, point);
+    in.expectEOF();
   }
 
   auto_ptr<BigTermConsumer> output =
-	_io.createOutputHandler()->createIdealWriter(stdout);
+    _io.createOutputHandler()->createIdealWriter(stdout);
   SliceFacade facade(params, ideal, *output);
 
   if (pointSpecified)
-	facade.computeAlexanderDual(point);
+    facade.computeAlexanderDual(point);
   else
-	facade.computeAlexanderDual();
+    facade.computeAlexanderDual();
 }
 
 const char* AlexanderDualAction::staticGetName() {

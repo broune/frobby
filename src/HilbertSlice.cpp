@@ -27,8 +27,8 @@ HilbertSlice::HilbertSlice(HilbertStrategy& strategy):
 }
 
 HilbertSlice::HilbertSlice(HilbertStrategy& strategy,
-						   const Ideal& ideal, const Ideal& subtract,
-						   const Term& multiply, CoefTermConsumer* consumer):
+                           const Ideal& ideal, const Ideal& subtract,
+                           const Term& multiply, CoefTermConsumer* consumer):
   Slice(strategy, ideal, subtract, multiply),
   _consumer(consumer) {
   ASSERT(consumer != 0);
@@ -42,10 +42,10 @@ bool HilbertSlice::baseCase(bool simplified) {
     return true;
 
   if (!getLcm().isSquareFree())
-	return false;
+    return false;
 
   if (_varCount == 0)
-	return true;
+    return true;
 
   // TODO: find a way other than static to use the same basecase
   // object every time, instead of allocating a new one. This provides
@@ -57,7 +57,7 @@ bool HilbertSlice::baseCase(bool simplified) {
   const mpz_class& coef = basecase.getLastCoefficient();
 
   if (coef != 0)
-	_consumer->consume(coef, getMultiply());
+    _consumer->consume(coef, getMultiply());
   clearIdealAndSubtract();
   return true;
 }
@@ -72,15 +72,15 @@ Slice& HilbertSlice::operator=(const Slice& slice) {
 
 bool HilbertSlice::simplifyStep() {
   if (applyLowerBound())
-	return true;
+    return true;
 
   pruneSubtract();
   return false;
 }
 
 void HilbertSlice::setToProjOf(const Slice& slice,
-							   const Projection& projection,
-							   CoefTermConsumer* consumer) {
+                               const Projection& projection,
+                               CoefTermConsumer* consumer) {
   ASSERT(consumer != 0);
 
   Slice::setToProjOf(slice, projection);

@@ -42,8 +42,8 @@ class SliceParameters : public ParameterGroup {
    @param supportBigattiAlgorithm Adjust messages
   */
   SliceParameters(bool exposeBoundParams = false,
-				  bool exposeIndependenceParam = true,
-				  bool supportBigattiAlgorithm = false);
+                  bool exposeIndependenceParam = true,
+                  bool supportBigattiAlgorithm = false);
 
   /** Set the value of the independence split option. This is useful
    for setting the default value before parsing the user-supplied

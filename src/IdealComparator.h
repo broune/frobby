@@ -60,7 +60,7 @@ namespace IdealComparatorHelpers {
   bool idealLessThan(const BigIdeal& a, const BigIdeal& b);
   bool idealLessThan(const Ideal& a, const Ideal& b);
   bool idealLessThan(const Ideal& a, const Ideal& b,
-					 TermTranslator& translator);
+                     TermTranslator& translator);
 }
 
 inline bool IdealComparator::operator()(const Ideal& a, const Ideal& b) const {
@@ -72,22 +72,22 @@ inline bool IdealComparator::operator()(const Ideal* a, const Ideal* b) const {
 }
 
 inline bool TranslatedIdealComparator::operator()(const Ideal& a,
-												 const Ideal& b) const {
+                                                 const Ideal& b) const {
   return IdealComparatorHelpers::idealLessThan(a, b, _translator);
 }
 
 inline bool TranslatedIdealComparator::operator()(const Ideal* a,
-												 const Ideal* b) const {
+                                                 const Ideal* b) const {
   return IdealComparatorHelpers::idealLessThan(*a, *b, _translator);
 }
 
 inline bool BigIdealComparator::operator()(const BigIdeal& a,
-										  const BigIdeal& b) const {
+                                          const BigIdeal& b) const {
   return IdealComparatorHelpers::idealLessThan(a, b);
 }
 
 inline bool BigIdealComparator::operator()(const BigIdeal* a, const
-										  BigIdeal* b) const {
+                                          BigIdeal* b) const {
   return IdealComparatorHelpers::idealLessThan(*a, *b);
 }
 

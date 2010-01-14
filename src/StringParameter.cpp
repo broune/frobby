@@ -18,8 +18,8 @@
 #include "StringParameter.h"
 
 StringParameter::StringParameter(const string& name,
-								 const string& description,
-								 const string& defaultValue):
+                                 const string& description,
+                                 const string& defaultValue):
   Parameter(name, description),
   _value(defaultValue) {
 }

@@ -68,9 +68,9 @@ void IntersectionAction::perform() {
   idealsDeleter.deleteElements();
 
   if (_canonical) {
-	IdealFacade idealFacade(_printActions);
-	idealFacade.sortVariables(*intersection);
-	idealFacade.sortGenerators(*intersection);
+    IdealFacade idealFacade(_printActions);
+    idealFacade.sortVariables(*intersection);
+    idealFacade.sortGenerators(*intersection);
   }
 
   auto_ptr<IOHandler> output = _io.createOutputHandler();

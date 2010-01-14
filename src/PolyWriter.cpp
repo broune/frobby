@@ -23,49 +23,49 @@
 
 namespace IO {
   PolyWriter::PolyWriter(FILE* out):
-	_out(out),
-	_firstTerm(true) {
+    _out(out),
+    _firstTerm(true) {
   }
 
   void PolyWriter::consumeRing(const VarNames& names) {
-	_names = names;
+    _names = names;
   }
 
   void PolyWriter::beginConsuming() {
-	_firstTerm = true;
-	doWriteHeader();
+    _firstTerm = true;
+    doWriteHeader();
   }
 
   void PolyWriter::consume(const mpz_class& coef,
-							   const Term& term,
-							   const TermTranslator& translator) {
-	ASSERT(term.getVarCount() == _names.getVarCount());
-	bool firstTerm = _firstTerm; // To get tail recursion.
-	_firstTerm = false;
-	doWriteTerm(coef, term, translator, firstTerm);
+                               const Term& term,
+                               const TermTranslator& translator) {
+    ASSERT(term.getVarCount() == _names.getVarCount());
+    bool firstTerm = _firstTerm; // To get tail recursion.
+    _firstTerm = false;
+    doWriteTerm(coef, term, translator, firstTerm);
   }
 
   void PolyWriter::consume(const mpz_class& coef, const vector<mpz_class>& term) {
-	ASSERT(term.size() == _names.getVarCount());
-	bool firstTerm = _firstTerm; // To get tail recursion.
-	_firstTerm = false;
-	doWriteTerm(coef, term, firstTerm);
+    ASSERT(term.size() == _names.getVarCount());
+    bool firstTerm = _firstTerm; // To get tail recursion.
+    _firstTerm = false;
+    doWriteTerm(coef, term, firstTerm);
   }
 
   void PolyWriter::doneConsuming() {
-	doWriteFooter(_firstTerm);
+    doWriteFooter(_firstTerm);
   }
 
   void PolyWriter::consume(const BigPolynomial& poly) {
-	consumeRing(poly.getNames());
-	_firstTerm = true;
-	doWriteHeader(poly.getTermCount());
-	for (size_t index = 0; index < poly.getTermCount(); ++index)
-	  consume(poly.getCoef(index), poly.getTerm(index));
-	doneConsuming();
+    consumeRing(poly.getNames());
+    _firstTerm = true;
+    doWriteHeader(poly.getTermCount());
+    for (size_t index = 0; index < poly.getTermCount(); ++index)
+      consume(poly.getCoef(index), poly.getTerm(index));
+    doneConsuming();
   }
 
   void PolyWriter::doWriteHeader(size_t generatorCount) {
-	doWriteHeader();
+    doWriteHeader();
   }
 }

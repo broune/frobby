@@ -26,14 +26,14 @@ class Minimizer {
 
  public:
   Minimizer(size_t varCount):
-	_varCount(varCount) {}
+    _varCount(varCount) {}
 
   iterator minimize(iterator begin, iterator end) const;
 
   pair<iterator, bool> colonReminimize(iterator begin, iterator end,
-									   const Exponent* colon);
+                                       const Exponent* colon);
   pair<iterator, bool> colonReminimize(iterator begin, iterator end,
-									   size_t var, Exponent exponent);
+                                       size_t var, Exponent exponent);
 
   bool dominatesAny(iterator begin, iterator end, const Exponent* term);
   bool dividesAny(iterator begin, iterator end, const Exponent* term);

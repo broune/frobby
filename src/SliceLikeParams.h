@@ -27,8 +27,8 @@ class SliceLikeParams : public CommonParams {
   SliceLikeParams();
 
   /** Apply simplification to the state of the algorithm when
-	  possible. E.g. slices have a notion of simplification, as does
-	  the Bigatti algorithm. */
+      possible. E.g. slices have a notion of simplification, as does
+      the Bigatti algorithm. */
   bool getUseSimplification() const {return _useSimplification;}
   void useSimplification(bool value) {_useSimplification = value;}
 

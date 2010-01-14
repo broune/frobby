@@ -22,7 +22,7 @@ class BigIdeal;
 
 /** A facade for operations on lattices.
 
-	@ingroup Facade
+    @ingroup Facade
  */
 class LatticeFacade : public Facade {
  public:

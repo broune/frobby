@@ -22,7 +22,7 @@
 #include <sstream>
 
 BigattiState::BigattiState(BigattiHilbertAlgorithm* algorithm,
-						   const Ideal& ideal, const Term& multiply):
+                           const Ideal& ideal, const Term& multiply):
   _algorithm(algorithm),
   _ideal(ideal),
   _multiply(multiply) {
@@ -53,13 +53,13 @@ size_t BigattiState::getVarCount() const {
 
 Exponent BigattiState::getMedianPositiveExponentOf(size_t var) {
   ASSERT(var < getVarCount());
-  
+
   _ideal.singleDegreeSort(var);
   Ideal::const_iterator end = _ideal.end();
   Ideal::const_iterator begin = _ideal.begin();
   while ((*begin)[var] == 0) {
-	++begin;
-	ASSERT(begin != end);
+    ++begin;
+    ASSERT(begin != end);
   }
 
   // This picks the lower median in case of a tie.
@@ -103,5 +103,5 @@ void BigattiState::print(FILE* out) {
 
 void BigattiState::print(ostream& out) {
   out << "BigattiState(multiply: " << _multiply << "\n"
-	  << _ideal << ")\n";
+      << _ideal << ")\n";
 }

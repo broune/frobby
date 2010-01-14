@@ -25,19 +25,19 @@ class VarNames;
 
 /** A facade for intersecting monomial ideals.
 
-	@todo Merge this into IdealFacade.
-	@ingroup Facade
+    @todo Merge this into IdealFacade.
+    @ingroup Facade
  */
 class IntersectFacade : Facade {
  public:
   IntersectFacade(bool printActions);
 
   /** Returns the intersection of ideals. If ideals is empty, then the
-	  whole ring is the intersection, which requires knowing the ring,
-	  and this is what names contains.
+      whole ring is the intersection, which requires knowing the ring,
+      and this is what names contains.
   */
   auto_ptr<BigIdeal> intersect(const vector<BigIdeal*>& ideals,
-							   const VarNames& names);
+                               const VarNames& names);
 };
 
 #endif

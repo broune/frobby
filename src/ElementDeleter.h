@@ -57,42 +57,42 @@ class ElementDeleter {
 
   // Calls deleteElements() and shares its precondition.
   ~ElementDeleter() {
-	deleteElements();
+    deleteElements();
   }
 
   // Call release() to prevent this ElementDeleter from manipulating
   // the container in any way.
   void release() {
-	_container = 0;
+    _container = 0;
   }
 
   // If release has been called, this method does nothing. Otherwise
   // the container must still be valid, and then delete is called on
   // each element of the array and clear is called on the container.
   void deleteElements() {
-	if (_container == 0)
-	  return;
+    if (_container == 0)
+      return;
 
-	// The code below may seem obviously correct, but it is a
-	// non-trivial fact that it works in the face of exceptions.
-	//
-	// First of all, we are allowed to assume that destructors do not
-	// throw exceptions, so the loop will run to completion.
-	//
-	// Normally clear() *can* throw an exception according to the
-	// standard (which is weird), but if the copy constructor and
-	// assignment operator do not throw exceptions, then it does
-	// not. In our case, we require the element type to be a pointer
-	// type, so for this reason only do we know that clear will not
-	// throw an exception. Thus we do not have to worry about leaving
-	// around a container full of invalid pointers if clear() should
-	// throw an exception.
+    // The code below may seem obviously correct, but it is a
+    // non-trivial fact that it works in the face of exceptions.
+    //
+    // First of all, we are allowed to assume that destructors do not
+    // throw exceptions, so the loop will run to completion.
+    //
+    // Normally clear() *can* throw an exception according to the
+    // standard (which is weird), but if the copy constructor and
+    // assignment operator do not throw exceptions, then it does
+    // not. In our case, we require the element type to be a pointer
+    // type, so for this reason only do we know that clear will not
+    // throw an exception. Thus we do not have to worry about leaving
+    // around a container full of invalid pointers if clear() should
+    // throw an exception.
 
-	typename Container::iterator end = _container->end();
-	typename Container::iterator it = _container->begin();
-	for (; it != end; ++it)
-	  delete *it;
-	_container->clear();
+    typename Container::iterator end = _container->end();
+    typename Container::iterator it = _container->begin();
+    for (; it != end; ++it)
+      delete *it;
+    _container->clear();
   }
 
  private:
@@ -140,9 +140,9 @@ void exceptionSafePushBack(Container& container, auto_ptr<Element> pointer) {
 template<class Container, class Element>
 void noThrowPushBack(Container& container, auto_ptr<Element> pointer) throw () {
   try {
-	exceptionSafePushBack(container, pointer);
+    exceptionSafePushBack(container, pointer);
   } catch (const bad_alloc&) {
-	// Ignore the exception.
+    // Ignore the exception.
   }
 }
 

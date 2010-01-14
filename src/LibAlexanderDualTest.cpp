@@ -49,22 +49,22 @@ TEST(AlexanderDual, ExplicitPoint) {
 
 TEST(AlexanderDual, ZeroIdeal) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal(varCount);
-	LibIdealConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal(varCount);
+    LibIdealConsumer consumer((VarNames(varCount)));
 
-	Frobby::alexanderDual(ideal, 0, consumer);
+    Frobby::alexanderDual(ideal, 0, consumer);
 
-	ASSERT_EQ(consumer.getIdeal(), IdealFactory::wholeRing(varCount));
+    ASSERT_EQ(consumer.getIdeal(), IdealFactory::wholeRing(varCount));
   }
 }
 
 TEST(AlexanderDual, WholeRing) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
-	Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
-	LibIdealConsumer consumer((VarNames(varCount)));
+    Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
+    LibIdealConsumer consumer((VarNames(varCount)));
 
-	Frobby::alexanderDual(ideal, 0, consumer);
+    Frobby::alexanderDual(ideal, 0, consumer);
 
-	ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
-  }  
+    ASSERT_EQ(consumer.getIdeal(), IdealFactory::zeroIdeal(varCount));
+  }
 }

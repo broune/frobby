@@ -43,9 +43,9 @@
 #include "DimensionAction.h"
 
 Action::Action(const char* name,
-			   const char* shortDescription,
-			   const char* description,
-			   bool acceptsNonParameterParam):
+               const char* shortDescription,
+               const char* description,
+               bool acceptsNonParameterParam):
   _name(name),
   _shortDescription(shortDescription),
   _description(description),
@@ -62,33 +62,33 @@ namespace {
   typedef NameFactory<Action> ActionFactory;
 
   ActionFactory getActionFactory() {
-	ActionFactory factory("action");
+    ActionFactory factory("action");
 
-	nameFactoryRegister<HilbertAction>(factory);
-	nameFactoryRegister<IrreducibleDecomAction>(factory);
-	nameFactoryRegister<PrimaryDecomAction>(factory);
-	nameFactoryRegister<AlexanderDualAction>(factory);
-	nameFactoryRegister<AssociatedPrimesAction>(factory);
-	nameFactoryRegister<MaximalStandardAction>(factory);	
-	nameFactoryRegister<DimensionAction>(factory);	
-	nameFactoryRegister<OptimizeAction>(factory);
+    nameFactoryRegister<HilbertAction>(factory);
+    nameFactoryRegister<IrreducibleDecomAction>(factory);
+    nameFactoryRegister<PrimaryDecomAction>(factory);
+    nameFactoryRegister<AlexanderDualAction>(factory);
+    nameFactoryRegister<AssociatedPrimesAction>(factory);
+    nameFactoryRegister<MaximalStandardAction>(factory);
+    nameFactoryRegister<DimensionAction>(factory);
+    nameFactoryRegister<OptimizeAction>(factory);
 
-	nameFactoryRegister<TransformAction>(factory);
-	nameFactoryRegister<PolyTransformAction>(factory);
+    nameFactoryRegister<TransformAction>(factory);
+    nameFactoryRegister<PolyTransformAction>(factory);
 
-	nameFactoryRegister<IntersectionAction>(factory);
-	nameFactoryRegister<GenerateIdealAction>(factory);
-	nameFactoryRegister<FrobeniusAction>(factory);
-	nameFactoryRegister<DynamicFrobeniusAction>(factory);
-	nameFactoryRegister<GenerateFrobeniusAction>(factory);
-	nameFactoryRegister<AnalyzeAction>(factory);
-	nameFactoryRegister<LatticeFormatAction>(factory);
-	nameFactoryRegister<LatticeAnalyzeAction>(factory);
+    nameFactoryRegister<IntersectionAction>(factory);
+    nameFactoryRegister<GenerateIdealAction>(factory);
+    nameFactoryRegister<FrobeniusAction>(factory);
+    nameFactoryRegister<DynamicFrobeniusAction>(factory);
+    nameFactoryRegister<GenerateFrobeniusAction>(factory);
+    nameFactoryRegister<AnalyzeAction>(factory);
+    nameFactoryRegister<LatticeFormatAction>(factory);
+    nameFactoryRegister<LatticeAnalyzeAction>(factory);
 
-	nameFactoryRegister<HelpAction>(factory);
-	nameFactoryRegister<TestAction>(factory);
+    nameFactoryRegister<HelpAction>(factory);
+    nameFactoryRegister<TestAction>(factory);
 
-	return factory;
+    return factory;
   }
 }
 
@@ -136,8 +136,8 @@ void Action::parseCommandLine(unsigned int tokenCount, const char** tokens) {
   vector<Parameter*> tmp;
   obtainParameters(tmp);
   for (size_t i = 0; i < tmp.size(); ++i)
-	if (!_params.hasParam(tmp[i]->getName()))
-	  _params.add(*tmp[i]);
+    if (!_params.hasParam(tmp[i]->getName()))
+      _params.add(*tmp[i]);
 
   if (acceptsNonParameter() && tokenCount > 0 && tokens[0][0] != '-') {
     processNonParameter(tokens[0]);

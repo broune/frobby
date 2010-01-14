@@ -26,15 +26,15 @@ size_t Projection::getRangeVarCount() const {
 }
 
 void Projection::reset(const Partition& partition,
-					   int number) {
+                       int number) {
   _offsets.clear();
 
   size_t root = 0xFFFFFFFF;
   for (size_t i = 0; i < partition.getSize(); ++i) {
     if (i == partition.getRoot(i)) {
       if (number == 0) {
-		root = i;
-		break;
+        root = i;
+        break;
       }
       --number;
     }
@@ -88,13 +88,13 @@ size_t Projection::inverseProjectVar(size_t rangeVar) const {
 
 bool Projection::domainVarHasProjection(size_t var) const {
   if (var >= _domainVarHasProjection.size())
-	_domainVarHasProjection.resize(var + 1);
+    _domainVarHasProjection.resize(var + 1);
 
 #ifdef DEBUG
   bool has = false;
   for (size_t rangeVar = 0; rangeVar < _offsets.size(); ++rangeVar)
-	if (var == inverseProjectVar(rangeVar))
-	  has = true;
+    if (var == inverseProjectVar(rangeVar))
+      has = true;
   ASSERT(has == static_cast<bool>(_domainVarHasProjection[var]));
 #endif
 
@@ -116,13 +116,13 @@ void Projection::swap(Projection& projection) {
 void Projection::updateHasProjections() {
   _domainVarHasProjection.clear();
   if (_offsets.empty())
-	return;
+    return;
 
   size_t max = *max_element(_offsets.begin(), _offsets.end());
   _domainVarHasProjection.resize(max + 1);
 
   for (size_t rangeVar = 0; rangeVar < _offsets.size(); ++rangeVar) {
-	ASSERT(inverseProjectVar(rangeVar) < _domainVarHasProjection.size());
-	_domainVarHasProjection[inverseProjectVar(rangeVar)] = true;
+    ASSERT(inverseProjectVar(rangeVar) < _domainVarHasProjection.size());
+    _domainVarHasProjection[inverseProjectVar(rangeVar)] = true;
   }
 }

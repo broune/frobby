@@ -60,7 +60,7 @@ void LibIdealConsumer::idealBegin(size_t varCount) {
 void LibIdealConsumer::consume(mpz_ptr* exponentVector) {
   _ideal.newLastTerm();
   for (size_t var = 0; var < _ideal.getVarCount(); ++var)
-	_ideal.getLastTermRef()[var] = mpz_class(exponentVector[var]);
+    _ideal.getLastTermRef()[var] = mpz_class(exponentVector[var]);
 }
 
 const BigIdeal& LibIdealConsumer::getIdeal() const {
@@ -85,12 +85,12 @@ void LibIdealsConsumer::idealBegin(size_t varCount) {
 void LibIdealsConsumer::consume(mpz_ptr* exponentVector) {
   _ideals.back().newLastTerm();
   for (size_t var = 0; var < _names.getVarCount(); ++var)
-	_ideals.back().getLastTermRef()[var] = mpz_class(exponentVector[var]);
+    _ideals.back().getLastTermRef()[var] = mpz_class(exponentVector[var]);
 }
 
 const vector<BigIdeal>& LibIdealsConsumer::getIdeals() const {
   for (size_t i = 0; i < _ideals.size(); ++i)
-	_ideals[i].sortGenerators();
+    _ideals[i].sortGenerators();
   sort(_ideals.begin(), _ideals.end());
   return _ideals;
 }
@@ -107,7 +107,7 @@ void LibPolynomialConsumer::consume(const mpz_t coef, mpz_ptr* exponentVector) {
   _polynomial.newLastTerm();
   _polynomial.getLastCoef() = mpz_class(coef);
   for (size_t var = 0; var < _polynomial.getVarCount(); ++var)
-	_polynomial.getLastTerm()[var] = mpz_class(exponentVector[var]);
+    _polynomial.getLastTerm()[var] = mpz_class(exponentVector[var]);
 }
 
 const BigPolynomial& LibPolynomialConsumer::getPolynomial() const {

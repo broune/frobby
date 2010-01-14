@@ -21,8 +21,8 @@
 #include "FrobbyStringStream.h"
 
 IntegerParameter::IntegerParameter(const string& name,
-								   const string& description,
-								   unsigned int defaultValue):
+                                   const string& description,
+                                   unsigned int defaultValue):
   Parameter(name, description),
   _value(defaultValue) {
 }
@@ -47,19 +47,19 @@ void IntegerParameter::doProcessArguments(const char** args, size_t argCount) {
   bool ok = true;
   mpz_class integer;
   try {
-	FrobbyStringStream::parseInteger(integer, args[0]);
+    FrobbyStringStream::parseInteger(integer, args[0]);
   } catch (const FrobbyStringStream::NotAnIntegerException&) {
-	ok = false;
+    ok = false;
   }
 
   if (!ok || !integer.fits_uint_p()) {
-	FrobbyStringStream errorMsg;
-	errorMsg << "Option -"
-			 << getName()
-			 << " was given the parameter \""
-			 << args[0]
-			 << "\", which is not an integer in the range [0, 2^31-1].";
-	reportError(errorMsg);
+    FrobbyStringStream errorMsg;
+    errorMsg << "Option -"
+             << getName()
+             << " was given the parameter \""
+             << args[0]
+             << "\", which is not an integer in the range [0, 2^31-1].";
+    reportError(errorMsg);
   }
 
   _value = integer.get_ui();

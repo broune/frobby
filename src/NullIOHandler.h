@@ -30,25 +30,25 @@ namespace IO {
   /** This class ignores the input and discards all output. */
   class NullIOHandler : public IOHandlerImpl {
   public:
-	NullIOHandler();
+    NullIOHandler();
 
-	static const char* staticGetName();
+    static const char* staticGetName();
 
   private:
-	virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
-	virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
+    virtual BigTermConsumer* doCreateIdealWriter(FILE* out);
+    virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-	virtual void doWriteTerm(const vector<mpz_class>& term,
-							 const VarNames& names,
-							 FILE* out);
-	virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
-	virtual void doReadTerm(Scanner& in,
-							const VarNames& names,
-							vector<mpz_class>& term);
-	virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
-	virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
-	virtual bool doHasMoreInput(Scanner& in) const;
+    virtual void doWriteTerm(const vector<mpz_class>& term,
+                             const VarNames& names,
+                             FILE* out);
+    virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadTerm(Scanner& in,
+                            const VarNames& names,
+                            vector<mpz_class>& term);
+    virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
+    virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
+    virtual bool doHasMoreInput(Scanner& in) const;
   };
 }
 

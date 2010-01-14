@@ -20,19 +20,19 @@
 #include "Timer.h"
 
 /** This is the super class of all facades. It offers protected
-	methods that are convenient for derived classes to print out what
-	they are doing and how long it took, and to be able to turn this
-	on and off with a boolean flag.
+    methods that are convenient for derived classes to print out what
+    they are doing and how long it took, and to be able to turn this
+    on and off with a boolean flag.
 
-	@ingroup Facade
+    @ingroup Facade
 
-	@todo Replace this with ActionPrinter using aggregation instead of
-	inheritance.
+    @todo Replace this with ActionPrinter using aggregation instead of
+    inheritance.
 */
 class Facade {
  protected:
   /** Constructs a facade that prints out what it is doing if
-	  printActions is true. */
+      printActions is true. */
   Facade(bool printActions);
   virtual ~Facade();
 
@@ -40,14 +40,14 @@ class Facade {
   void printMessage(const char* message);
 
   /** Prints message to standard error if printing is turned on, and
-	  records the time when the action started. endAction() must be
-	  called in-between two calls to beginAction.
+      records the time when the action started. endAction() must be
+      called in-between two calls to beginAction.
   */
   void beginAction(const char* message);
 
   /** Prints to standard error the time since the last call to
-	  beginAction. endAction() can only be called once after each call
-	  to beginAction.
+      beginAction. endAction() can only be called once after each call
+      to beginAction.
   */
   void endAction();
 
@@ -56,7 +56,7 @@ class Facade {
 
  private:
   /** Keeps track of the time between calls to beginAction() and
-	  endAction().
+      endAction().
   */
   Timer _timer;
 
@@ -65,9 +65,9 @@ class Facade {
 
 #ifdef DEBUG
   /** A debug field to assert if beginAction() is called twice without
-	  a call to endAction() in between, or if endAction() is called
-	  without a preceding call to beginAction() that has not already
-	  been ended.
+      a call to endAction() in between, or if endAction() is called
+      without a preceding call to beginAction() that has not already
+      been ended.
   */
   bool _doingAnAction;
 #endif

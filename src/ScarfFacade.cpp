@@ -31,9 +31,9 @@ ScarfFacade::ScarfFacade(const ScarfParams& params):
   // options before potentially spending a long time reading the
   // input.
   _enumerationOrder =
-	createIdealOrderer(params.getEnumerationOrder());
+    createIdealOrderer(params.getEnumerationOrder());
   _deformationOrder =
-	createIdealOrderer(params.getDeformationOrder());
+    createIdealOrderer(params.getDeformationOrder());
 
   _helper.readIdealAndSetPolyOutput(params);
 }
@@ -45,14 +45,14 @@ void ScarfFacade::computeMultigradedHilbertSeries() {
   beginAction("Computing multigraded Hilbert-Poincare series.");
 
   ScarfHilbertAlgorithm alg(_helper.getTranslator(),
-							_params,
-							_enumerationOrder,
-							_deformationOrder);
+                            _params,
+                            _enumerationOrder,
+                            _deformationOrder);
 
   alg.runGeneric(_helper.getIdeal(),
-				 _helper.getPolyConsumer(),
-				 false,
-				 _params.getProduceCanonicalOutput());
+                 _helper.getPolyConsumer(),
+                 false,
+                 _params.getProduceCanonicalOutput());
 
   endAction();
 }
@@ -61,14 +61,14 @@ void ScarfFacade::computeUnivariateHilbertSeries() {
   beginAction("Computing univariate Hilbert-Poincare series.");
 
   ScarfHilbertAlgorithm alg(_helper.getTranslator(),
-							_params,
-							_enumerationOrder,
-							_deformationOrder);
+                            _params,
+                            _enumerationOrder,
+                            _deformationOrder);
 
   alg.runGeneric(_helper.getIdeal(),
-				 _helper.getPolyConsumer(),
-				 true,
-				 _params.getProduceCanonicalOutput());
+                 _helper.getPolyConsumer(),
+                 true,
+                 _params.getProduceCanonicalOutput());
 
   endAction();
 }

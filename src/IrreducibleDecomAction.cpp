@@ -34,8 +34,8 @@ IrreducibleDecomAction::IrreducibleDecomAction():
  false),
 
   _encode("encode",
-		  "Encode the decomposition as monomials generating an ideal.",
-		  false),
+          "Encode the decomposition as monomials generating an ideal.",
+          false),
 
   _io(DataType::getMonomialIdealType(), DataType::getMonomialIdealType()) {
 }
@@ -51,8 +51,8 @@ void IrreducibleDecomAction::perform() {
   SliceParams params(_params);
   validateSplit(params, true, false);
   const DataType& output = _encode ?
-	DataType::getMonomialIdealType() :
-	DataType::getMonomialIdealListType();
+    DataType::getMonomialIdealType() :
+    DataType::getMonomialIdealListType();
   SliceFacade facade(params, output);
   facade.computeIrreducibleDecomposition(_encode);
 }

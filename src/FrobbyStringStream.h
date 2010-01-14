@@ -50,7 +50,7 @@ class FrobbyStringStream {
   static void parseInteger(mpz_class& integer, const string& str);
   class NotAnIntegerException : public runtime_error {
   public:
-	NotAnIntegerException(const string&);
+    NotAnIntegerException(const string&);
   };
 
  private:

@@ -35,60 +35,60 @@ IOParameters::IOParameters(const DataType& input, const DataType& output):
 
   string defaultOutput;
   if (!_inputType.isNull())
-	defaultOutput = getFormatNameIndicatingToUseInputFormatAsOutputFormat();
+    defaultOutput = getFormatNameIndicatingToUseInputFormatAsOutputFormat();
   else {
-	defaultOutput = IO::Macaulay2IOHandler::staticGetName();
-	ASSERT(createIOHandler(defaultOutput)->supportsOutput(_outputType));
+    defaultOutput = IO::Macaulay2IOHandler::staticGetName();
+    ASSERT(createIOHandler(defaultOutput)->supportsOutput(_outputType));
   }
 
   vector<string> names;
   getIOHandlerNames(names);
   for (vector<string>::const_iterator name = names.begin();
-	   name != names.end(); ++name) {
-	auto_ptr<IOHandler> handler = createIOHandler(*name);
-	ASSERT(handler.get() != 0);
+       name != names.end(); ++name) {
+    auto_ptr<IOHandler> handler = createIOHandler(*name);
+    ASSERT(handler.get() != 0);
 
-	if (handler->supportsInput(_inputType)) {
-	  inputFormats += ' ';
-	  inputFormats += handler->getName();
-	}
-	if (handler->supportsOutput(_outputType)) {
-	  outputFormats += ' ';
-	  outputFormats += handler->getName();
-	}
+    if (handler->supportsInput(_inputType)) {
+      inputFormats += ' ';
+      inputFormats += handler->getName();
+    }
+    if (handler->supportsOutput(_outputType)) {
+      outputFormats += ' ';
+      outputFormats += handler->getName();
+    }
   }
 
   if (!_inputType.isNull()) {
-	string desc =
+    string desc =
       "The format used to read the input. "
-	  "This action supports the formats:\n " + inputFormats + ".\n"
-	  "The format \"" +
-	  getFormatNameIndicatingToGuessTheInputFormat() +
-	  "\" instructs Frobby to guess the format.\n"
-	  "Type 'frobby help io' for more information on input formats.";
+      "This action supports the formats:\n " + inputFormats + ".\n"
+      "The format \"" +
+      getFormatNameIndicatingToGuessTheInputFormat() +
+      "\" instructs Frobby to guess the format.\n"
+      "Type 'frobby help io' for more information on input formats.";
 
-	_inputFormat.reset
-	  (new StringParameter
-	   ("iformat", desc.c_str(),
-		getFormatNameIndicatingToGuessTheInputFormat()));
-	addParameter(_inputFormat.get());
+    _inputFormat.reset
+      (new StringParameter
+       ("iformat", desc.c_str(),
+        getFormatNameIndicatingToGuessTheInputFormat()));
+    addParameter(_inputFormat.get());
   }
 
   if (!output.isNull()) {
-	string desc =
-	  "The format used to write the output. "
-	  "This action supports the formats:\n " + outputFormats + ".\n";
-	if (!_inputType.isNull()) {
-	  desc +=
-		"The format \"" +
-		getFormatNameIndicatingToUseInputFormatAsOutputFormat()
-		+ "\" instructs Frobby to use the input format.\n";
-	}
-	desc += "Type 'frobby help io' for more information on output formats.";
+    string desc =
+      "The format used to write the output. "
+      "This action supports the formats:\n " + outputFormats + ".\n";
+    if (!_inputType.isNull()) {
+      desc +=
+        "The format \"" +
+        getFormatNameIndicatingToUseInputFormatAsOutputFormat()
+        + "\" instructs Frobby to use the input format.\n";
+    }
+    desc += "Type 'frobby help io' for more information on output formats.";
 
-	_outputFormat.reset
-	  (new StringParameter("oformat", desc.c_str(), defaultOutput));
-	addParameter(_outputFormat.get());
+    _outputFormat.reset
+      (new StringParameter("oformat", desc.c_str(), defaultOutput));
+    addParameter(_outputFormat.get());
   }
 }
 
@@ -117,10 +117,10 @@ const string& IOParameters::getOutputFormat() const {
   ASSERT(_outputFormat.get() != 0);
 
   if (!_inputType.isNull() &&
-	  _outputFormat->getValue() ==
-	  getFormatNameIndicatingToUseInputFormatAsOutputFormat()) {
-	ASSERT(_inputFormat.get() != 0);
-	return *_inputFormat;
+      _outputFormat->getValue() ==
+      getFormatNameIndicatingToUseInputFormatAsOutputFormat()) {
+    ASSERT(_inputFormat.get() != 0);
+    return *_inputFormat;
   }
 
   return *_outputFormat;
@@ -143,43 +143,43 @@ void IOParameters::autoDetectInputFormat(Scanner& in) {
   ASSERT(_inputFormat.get() != 0);
 
   if (_inputFormat->getValue() ==
-	  getFormatNameIndicatingToGuessTheInputFormat())
-	*_inputFormat = autoDetectFormat(in);
+      getFormatNameIndicatingToGuessTheInputFormat())
+    *_inputFormat = autoDetectFormat(in);
 
   if (in.getFormat() ==
-	  getFormatNameIndicatingToGuessTheInputFormat())
-	in.setFormat(*_inputFormat);
+      getFormatNameIndicatingToGuessTheInputFormat())
+    in.setFormat(*_inputFormat);
 }
 
 void IOParameters::validateFormats() const {
   IOFacade facade(false);
 
   if (!_inputType.isNull()) {
-	auto_ptr<IOHandler> handler(createIOHandler(getInputFormat()));
-	
-	if (!handler->supportsInput(_inputType)) {
-	  FrobbyStringStream errorMsg;
-	  errorMsg << "The "
-			   << handler->getName()
-			   << " format does not support input of "
-			   << _inputType.getName()
-			   << '.';
-	  reportError(errorMsg);
-	}
+    auto_ptr<IOHandler> handler(createIOHandler(getInputFormat()));
+
+    if (!handler->supportsInput(_inputType)) {
+      FrobbyStringStream errorMsg;
+      errorMsg << "The "
+               << handler->getName()
+               << " format does not support input of "
+               << _inputType.getName()
+               << '.';
+      reportError(errorMsg);
+    }
   }
 
   if (!_outputType.isNull()) {
-	auto_ptr<IOHandler> handler(createIOHandler(getOutputFormat()));
-	/*
-	if (!handler->supportsOutput(_outputType)) {
-	  FrobbyStringStream errorMsg;
-	  errorMsg << "The "
-			   << handler->getName()
-			   << " format does not support output of "
-			   << _outputType.getName()
-			   << '.';
-	  reportError(errorMsg);
-	}
-	*/
+    auto_ptr<IOHandler> handler(createIOHandler(getOutputFormat()));
+    /*
+    if (!handler->supportsOutput(_outputType)) {
+      FrobbyStringStream errorMsg;
+      errorMsg << "The "
+               << handler->getName()
+               << " format does not support output of "
+               << _outputType.getName()
+               << '.';
+      reportError(errorMsg);
+    }
+    */
   }
 }

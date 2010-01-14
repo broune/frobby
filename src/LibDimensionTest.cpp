@@ -27,16 +27,16 @@ TEST_SUITE2(LibraryInterface, DimensionAndCodimension)
 namespace {
   /** Helper function for tests of Frobby::dimension. */
   mpz_class dimension(const BigIdeal& ideal) {
-	mpz_class dim;
-	Frobby::dimension(toLibIdeal(ideal), dim.get_mpz_t());
-	return dim;
+    mpz_class dim;
+    Frobby::dimension(toLibIdeal(ideal), dim.get_mpz_t());
+    return dim;
   }
 
   /** Helper function for tests of Frobby::codimension. */
   mpz_class codimension(const BigIdeal& ideal) {
-	mpz_class codim;
-	Frobby::codimension(toLibIdeal(ideal), codim.get_mpz_t());
-	return codim;
+    mpz_class codim;
+    Frobby::codimension(toLibIdeal(ideal), codim.get_mpz_t());
+    return codim;
   }
 }
 

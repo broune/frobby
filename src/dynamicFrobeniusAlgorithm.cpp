@@ -37,9 +37,9 @@ mpz_class dynamicFrobeniusAlgorithm(const vector<mpz_class>& numbers) {
 
     for (size_t i = 0; i < numbers.size(); ++i) {
       if (representable.find(number - numbers[i]) !=
-	  representable.end()) {
-	isNumberRepresentable = true;
-	break;
+      representable.end()) {
+    isNumberRepresentable = true;
+    break;
       }
     }
 

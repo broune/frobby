@@ -45,8 +45,8 @@ class CliParams {
 
   void parseCommandLine(unsigned int tokenCount, const char** tokens);
   void processOption(const string& optionName,
-					 const char** params,
-					 unsigned int paramCount);
+                     const char** params,
+                     unsigned int paramCount);
 
  private:
   vector<Parameter*> _params;

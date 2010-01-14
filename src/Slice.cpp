@@ -31,7 +31,7 @@ Slice::Slice(SliceStrategy& strategy):
 }
 
 Slice::Slice(SliceStrategy& strategy,
-			 const Ideal& ideal, const Ideal& subtract, const Term& multiply):
+             const Ideal& ideal, const Ideal& subtract, const Term& multiply):
   _ideal(ideal),
   _subtract(subtract),
   _multiply(multiply),
@@ -53,7 +53,7 @@ const Term& Slice::getLcm() const {
 #ifdef DEBUG
   if (_lcmUpdated) {
     Term tmp(_varCount);
-	_ideal.getLcm(tmp);
+    _ideal.getLcm(tmp);
     ASSERT(tmp == _lcm);
   }
 #endif
@@ -81,7 +81,7 @@ Slice& Slice::operator=(const Slice& slice) {
   _multiply = slice._multiply;
   _lcm = slice._lcm;
   _lcmUpdated = slice._lcmUpdated;
-  _lowerBoundHint = slice._lowerBoundHint;  
+  _lowerBoundHint = slice._lowerBoundHint;
 
   return *this;
 }
@@ -117,8 +117,8 @@ bool Slice::innerSlice(const Term& pivot) {
   bool subtractChanged = _subtract.colonReminimize(pivot);
   bool changed = idealChanged || subtractChanged;
   if (changed) {
-	normalize();
-	_lowerBoundHint = pivot.getFirstNonZeroExponent();
+    normalize();
+    _lowerBoundHint = pivot.getFirstNonZeroExponent();
   }
 
   if (_ideal.getGeneratorCount() == count)
@@ -153,7 +153,7 @@ public:
   bool operator()(const Exponent* term) {
     return Term::strictlyDivides(_term, term, _varCount);
   }
-  
+
 private:
   const Exponent* _term;
   size_t _varCount;
@@ -162,26 +162,26 @@ private:
 bool Slice::adjustMultiply() {
   bool changed = false;
   while (true) {
-	Term lowerBound(_varCount);
+    Term lowerBound(_varCount);
 
-	Ideal::const_iterator end = getIdeal().end();
-	for (Ideal::const_iterator it = getIdeal().begin(); it != end; ++it) {
-	  for (size_t var = 0; var < _varCount; ++var) {
-		if ((*it)[var] == 0)
-		  continue;
-		if (lowerBound[var] == 0 || lowerBound[var] > (*it)[var])
-		  lowerBound[var] = (*it)[var];
-	  }
-	}
-	lowerBound.decrement();
+    Ideal::const_iterator end = getIdeal().end();
+    for (Ideal::const_iterator it = getIdeal().begin(); it != end; ++it) {
+      for (size_t var = 0; var < _varCount; ++var) {
+        if ((*it)[var] == 0)
+          continue;
+        if (lowerBound[var] == 0 || lowerBound[var] > (*it)[var])
+          lowerBound[var] = (*it)[var];
+      }
+    }
+    lowerBound.decrement();
 
-	if (lowerBound.isIdentity())
-	  break;
+    if (lowerBound.isIdentity())
+      break;
 
-	changed = true;
-	bool sawRealChange = innerSlice(lowerBound);
-	if (!sawRealChange)
-	  break;
+    changed = true;
+    bool sawRealChange = innerSlice(lowerBound);
+    if (!sawRealChange)
+      break;
   }
   return changed;
 }
@@ -220,33 +220,33 @@ void Slice::setToProjOf
 
   Ideal::const_iterator stop = slice.getIdeal().end();
   for (Ideal::const_iterator it = slice.getIdeal().begin();
-	   it != stop; ++it) {
+       it != stop; ++it) {
 
     size_t var = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
-	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
-	  // Use _lcm as temporary.
-	  projection.project(_lcm, *it);
-	  _ideal.insert(_lcm);
-	}
+    if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
+      // Use _lcm as temporary.
+      projection.project(_lcm, *it);
+      _ideal.insert(_lcm);
+    }
   }
 
   stop = slice.getSubtract().end();
   for (Ideal::const_iterator it = slice.getSubtract().begin();
-	   it != stop; ++it) {
+       it != stop; ++it) {
 
     size_t var = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
-	if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
-	  projection.project(_lcm, *it);
-	  getSubtract().insert(_lcm);
-	}
+    if (var == slice.getVarCount() || projection.domainVarHasProjection(var)) {
+      projection.project(_lcm, *it);
+      getSubtract().insert(_lcm);
+    }
   }
 
   projection.project(getMultiply(), slice.getMultiply());
   if (slice._lcmUpdated) {
-	projection.project(_lcm, slice._lcm);
-	_lcmUpdated = true;
+    projection.project(_lcm, slice._lcm);
+    _lcmUpdated = true;
   } else
-	_lcmUpdated = false;
+    _lcmUpdated = false;
 }
 
 void Slice::swap(Slice& slice) {
@@ -263,18 +263,18 @@ namespace {
   /** This is a helper class for Slice::pruneSubtract(). */
   class PruneSubtractPredicate {
   public:
-	PruneSubtractPredicate(const Ideal& ideal, const Term& lcm):
-	  _ideal(ideal), _lcm(lcm) {}
+    PruneSubtractPredicate(const Ideal& ideal, const Term& lcm):
+      _ideal(ideal), _lcm(lcm) {}
 
-	bool operator()(const Exponent* term) {
-	  return
-		!Term::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
-		_ideal.contains(term);
-	}
-  
+    bool operator()(const Exponent* term) {
+      return
+        !Term::strictlyDivides(term, _lcm, _lcm.getVarCount()) ||
+        _ideal.contains(term);
+    }
+
   private:
-	const Ideal& _ideal;
-	const Term& _lcm;
+    const Ideal& _ideal;
+    const Term& _lcm;
   };
 }
 
@@ -290,7 +290,7 @@ bool Slice::applyLowerBound() {
   if (_ideal.getGeneratorCount() == 0)
     return false;
   if (getVarCount() == 1)
-	return adjustMultiply();
+    return adjustMultiply();
 
   bool changed = false;
   size_t stepsWithNoChange = 0;
@@ -303,13 +303,13 @@ bool Slice::applyLowerBound() {
       return true;
     }
 
-	if (!bound.isIdentity()) {
-	  changed = true;
-	  if (innerSlice(bound))
-		stepsWithNoChange = 0;
-	  else
-		++stepsWithNoChange;
-	} else
+    if (!bound.isIdentity()) {
+      changed = true;
+      if (innerSlice(bound))
+        stepsWithNoChange = 0;
+      else
+        ++stepsWithNoChange;
+    } else
       ++stepsWithNoChange;
 
     var = (var + 1) % _varCount;

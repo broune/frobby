@@ -24,8 +24,8 @@
 class BoolParameter : public Parameter {
 public:
   BoolParameter(const string& name,
-				const string& description,
-				bool defaultValue);
+                const string& description,
+                bool defaultValue);
 
   bool getValue() const {return _value;}
   void setValue(bool value) {_value = value;}

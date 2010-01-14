@@ -23,9 +23,9 @@ TEST_SUITE(TermTranslator)
 TEST(TermTranslator, IdentityConstructor) {
   TermTranslator translator(3, 10);
   ASSERT_EQ(translator.toString(),
-			"TermTranslator(\n"
-			" var 1: 0 1 2 3 4 5 6 7 8 9 0\n"
-			" var 2: 0 1 2 3 4 5 6 7 8 9 0\n"
-			" var 3: 0 1 2 3 4 5 6 7 8 9 0\n"
-			")\n");
+            "TermTranslator(\n"
+            " var 1: 0 1 2 3 4 5 6 7 8 9 0\n"
+            " var 2: 0 1 2 3 4 5 6 7 8 9 0\n"
+            " var 3: 0 1 2 3 4 5 6 7 8 9 0\n"
+            ")\n");
 }

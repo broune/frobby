@@ -24,37 +24,37 @@
 namespace IO {
   class PolyWriter : public CoefBigTermConsumer {
   public:
-	PolyWriter(FILE* out);
+    PolyWriter(FILE* out);
 
-	virtual void consumeRing(const VarNames& names);
+    virtual void consumeRing(const VarNames& names);
 
-	virtual void beginConsuming();
-	virtual void consume(const mpz_class& coef,
-						 const Term& term,
-						 const TermTranslator& translator);
-	virtual void consume(const mpz_class& coef, const vector<mpz_class>& term);
-	virtual void doneConsuming();
+    virtual void beginConsuming();
+    virtual void consume(const mpz_class& coef,
+                         const Term& term,
+                         const TermTranslator& translator);
+    virtual void consume(const mpz_class& coef, const vector<mpz_class>& term);
+    virtual void doneConsuming();
 
-	virtual void consume(const BigPolynomial& poly);
+    virtual void consume(const BigPolynomial& poly);
 
-	FILE* getFile() {return _out;}
-	const VarNames& getNames() const {return _names;}
+    FILE* getFile() {return _out;}
+    const VarNames& getNames() const {return _names;}
 
   private:
-	virtual void doWriteHeader(size_t generatorCount);
-	virtual void doWriteHeader() = 0;
-	virtual void doWriteTerm(const mpz_class& coef,
-							 const Term& term,
-							 const TermTranslator& translator,
-							 bool firstGenerator) = 0;
-	virtual void doWriteTerm(const mpz_class& coef,
-							 const vector<mpz_class>& term,
-							 bool firstGenerator) = 0;
-	virtual void doWriteFooter(bool wasZero) = 0;
+    virtual void doWriteHeader(size_t generatorCount);
+    virtual void doWriteHeader() = 0;
+    virtual void doWriteTerm(const mpz_class& coef,
+                             const Term& term,
+                             const TermTranslator& translator,
+                             bool firstGenerator) = 0;
+    virtual void doWriteTerm(const mpz_class& coef,
+                             const vector<mpz_class>& term,
+                             bool firstGenerator) = 0;
+    virtual void doWriteFooter(bool wasZero) = 0;
 
-	FILE* const _out;
-	bool _firstTerm;
-	VarNames _names;
+    FILE* const _out;
+    bool _firstTerm;
+    VarNames _names;
   };
 }
 

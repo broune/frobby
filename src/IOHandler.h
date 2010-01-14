@@ -48,14 +48,14 @@ class IOHandler {
   void readIdeals(Scanner& in, BigTermConsumer& consumer);
 
   void readTerm
-	(Scanner& in, const VarNames& names, vector<mpz_class>& term);
+    (Scanner& in, const VarNames& names, vector<mpz_class>& term);
 
   void readPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
   void readSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 
   void writeTerm
-	(const vector<mpz_class>& term, const VarNames& names, FILE* out);
+    (const vector<mpz_class>& term, const VarNames& names, FILE* out);
 
   bool hasMoreInput(Scanner& in) const;
 
@@ -80,13 +80,13 @@ class IOHandler {
   virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer) = 0;
   virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer) = 0;
   virtual void doReadTerm(Scanner& in,
-						  const VarNames& names,
-						  vector<mpz_class>& term) = 0;
+                          const VarNames& names,
+                          vector<mpz_class>& term) = 0;
   virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer) = 0;
   virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) = 0;
   virtual void doWriteTerm(const vector<mpz_class>& term,
-						   const VarNames& names,
-						   FILE* out) = 0;
+                           const VarNames& names,
+                           FILE* out) = 0;
   virtual bool doHasMoreInput(Scanner& in) const = 0;
 
   virtual bool doSupportsInput(const DataType& type) const = 0;

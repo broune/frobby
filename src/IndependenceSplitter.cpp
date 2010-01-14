@@ -36,14 +36,14 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
   for (Ideal::const_iterator it = slice.getIdeal().begin();
        it != stop; ++it) {
     size_t first = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
-	if (first == slice.getVarCount())
-	  return false;
-	_partition.addToSet(first);
+    if (first == slice.getVarCount())
+      return false;
+    _partition.addToSet(first);
     for (size_t var = first + 1; var < slice.getVarCount(); ++var)
       if ((*it)[var] > 0)
-		if (_partition.join(first, var))
-		  if (_partition.getSetCount() == 1)
-			return false;
+        if (_partition.join(first, var))
+          if (_partition.getSetCount() == 1)
+            return false;
   }
 
   stop = slice.getSubtract().end();
@@ -52,7 +52,7 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
     size_t first = Term::getFirstNonZeroExponent(*it, slice.getVarCount());
     for (size_t var = first + 1; var < slice.getVarCount(); ++var)
       if ((*it)[var] > 0)
-		_partition.join(first, var);
+        _partition.join(first, var);
   }
 
   size_t childCount = _partition.getSetCount();
@@ -62,34 +62,34 @@ bool IndependenceSplitter::analyze(const Slice& slice) {
 
   size_t hasTwo = 0;
   for (size_t i = 0; i < childCount; ++i)
-	if (_partition.getSetSize(i) >= 2)
-	  ++hasTwo;
+    if (_partition.getSetSize(i) >= 2)
+      ++hasTwo;
   if (hasTwo < 2)
-	return false;
+    return false;
 
   if (_partition.getSetCount() > 2) {
-	size_t maxSet = 0;
-	for (size_t set = 1; set < _partition.getSize(); ++set)
-	  if (_partition.getSizeOfClassOf(set) >
-		  _partition.getSizeOfClassOf(maxSet))
-		maxSet = _partition.getRoot(set);
+    size_t maxSet = 0;
+    for (size_t set = 1; set < _partition.getSize(); ++set)
+      if (_partition.getSizeOfClassOf(set) >
+          _partition.getSizeOfClassOf(maxSet))
+        maxSet = _partition.getRoot(set);
 
-	size_t nonMaxSet = 0;
-	for (size_t set = 0; set < _partition.getSize(); ++set)
-	  if (_partition.getRoot(maxSet) != _partition.getRoot(set))
-		nonMaxSet = set;
-	ASSERT(_partition.getRoot(maxSet) != _partition.getRoot(nonMaxSet));
+    size_t nonMaxSet = 0;
+    for (size_t set = 0; set < _partition.getSize(); ++set)
+      if (_partition.getRoot(maxSet) != _partition.getRoot(set))
+        nonMaxSet = set;
+    ASSERT(_partition.getRoot(maxSet) != _partition.getRoot(nonMaxSet));
 
-	for (size_t set = 0; set < _partition.getSize(); ++set)
-	  if (_partition.getRoot(set) != _partition.getRoot(maxSet))
-		_partition.join(set, nonMaxSet);
+    for (size_t set = 0; set < _partition.getSize(); ++set)
+      if (_partition.getRoot(set) != _partition.getRoot(maxSet))
+        _partition.join(set, nonMaxSet);
   }
   ASSERT(_partition.getSetCount() == 2);
 
   if (_partition.getSetSize(0) > _partition.getSetSize(1))
-	_bigSet = 0;
+    _bigSet = 0;
   else
-	_bigSet = 1;
+    _bigSet = 1;
 
   return true;
 }

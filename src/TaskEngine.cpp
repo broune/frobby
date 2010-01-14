@@ -27,8 +27,8 @@ TaskEngine::TaskEngine():
 
 TaskEngine::~TaskEngine() {
   while (!_tasks.empty()) {
-	dispose(_tasks.back());
-	_tasks.pop_back();
+    dispose(_tasks.back());
+    _tasks.pop_back();
   }
 }
 
@@ -36,12 +36,12 @@ void TaskEngine::addTask(Task* task) {
   ASSERT(task != 0);
 
   try {
-	_tasks.push_back(task);
+    _tasks.push_back(task);
   } catch (...) {
-	// We should only get an exception if insertion failed.
-	ASSERT(_tasks.empty() || _tasks.back() != task);
-	dispose(task);
-	throw;
+    // We should only get an exception if insertion failed.
+    ASSERT(_tasks.empty() || _tasks.back() != task);
+    dispose(task);
+    throw;
   }
 
   ++_totalTasksEver;
@@ -49,7 +49,7 @@ void TaskEngine::addTask(Task* task) {
 
 bool TaskEngine::runNextTask() {
   if (_tasks.empty())
-	return false;
+    return false;
 
   Task* task = _tasks.back();
   _tasks.pop_back();
@@ -60,7 +60,7 @@ bool TaskEngine::runNextTask() {
 
 void TaskEngine::runTasks() {
   while (runNextTask())
-	;
+    ;
 }
 
 size_t TaskEngine::getTotalTasksEver() {
@@ -71,10 +71,10 @@ void TaskEngine::dispose(Task* task) {
   ASSERT(task != 0);
 
   try {
-	task->dispose();
+    task->dispose();
   } catch (...) {
-	displayInternalError("Task::dispose() threw an exception.");
-	ASSERT(false);
-	throw; // Lesser evil compared to ignoring the exception.
+    displayInternalError("Task::dispose() threw an exception.");
+    ASSERT(false);
+    throw; // Lesser evil compared to ignoring the exception.
   }
 }

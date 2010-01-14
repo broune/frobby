@@ -51,7 +51,7 @@ class BigPolynomial {
 
   void add(const mpz_class& coef, const vector<mpz_class> term);
   void add(const mpz_class& coef, const Term& term,
-		   const TermTranslator& translator);
+           const TermTranslator& translator);
 
   bool operator==(const BigPolynomial& poly) const;
 
@@ -60,16 +60,16 @@ class BigPolynomial {
 
  private:
   struct BigCoefTerm {
-	mpz_class coef;
-	vector<mpz_class> term;
+    mpz_class coef;
+    vector<mpz_class> term;
 
-	bool operator==(const BigCoefTerm& coefTerm) const;
+    bool operator==(const BigCoefTerm& coefTerm) const;
   };
   typedef vector<BigCoefTerm>::iterator iterator;
   typedef vector<BigCoefTerm>::const_iterator const_iterator;
 
   static bool compareCoefTermsReverseLex
-	(const BigCoefTerm& a, const BigCoefTerm& b);
+    (const BigCoefTerm& a, const BigCoefTerm& b);
 
   VarNames _names;
   vector<BigCoefTerm> _coefTerms;

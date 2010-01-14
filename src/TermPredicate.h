@@ -27,27 +27,27 @@ class TermPredicate {
   virtual ~TermPredicate();
 
   bool operator()(const Term& a, const Term& b) const {
-	ASSERT(a.getVarCount() == getVarCount());
-	ASSERT(b.getVarCount() == getVarCount());
-	return doPredicate(a.begin(), b.begin());
+    ASSERT(a.getVarCount() == getVarCount());
+    ASSERT(b.getVarCount() == getVarCount());
+    return doPredicate(a.begin(), b.begin());
   }
 
   bool operator()(const Term& a, const Exponent* b) const {
-	ASSERT(a.getVarCount() == getVarCount());
-	ASSERT(b != 0 || getVarCount() == 0);
-	return doPredicate(a.begin(), b);
+    ASSERT(a.getVarCount() == getVarCount());
+    ASSERT(b != 0 || getVarCount() == 0);
+    return doPredicate(a.begin(), b);
   }
 
   bool operator()(const Exponent* a, const Term& b) const {
-	ASSERT(b.getVarCount() == getVarCount());
-	ASSERT(a != 0 || getVarCount() == 0);
-	return doPredicate(a, b.begin());
+    ASSERT(b.getVarCount() == getVarCount());
+    ASSERT(a != 0 || getVarCount() == 0);
+    return doPredicate(a, b.begin());
   }
 
   bool operator()(const Exponent* a, const Exponent* b) const {
-	ASSERT(a != 0 || getVarCount() == 0);
-	ASSERT(b != 0 || getVarCount() == 0);
-	return doPredicate(a, b);
+    ASSERT(a != 0 || getVarCount() == 0);
+    ASSERT(b != 0 || getVarCount() == 0);
+    return doPredicate(a, b);
   }
 
   size_t getVarCount() const {return _varCount;}
@@ -72,7 +72,7 @@ class StlTermPredicate {
 
 /** Returns the predicate whose name has the given prefix. */
 auto_ptr<TermPredicate> createTermPredicate(const string& prefix,
-											size_t varCount = 0);
+                                            size_t varCount = 0);
 
 
 /** Indicates how a relates to b according to the lexicographic term
@@ -102,8 +102,8 @@ class LexComparator : public TermPredicate {
 
   private:
   virtual bool doPredicate(const Exponent* a,
-						   const Exponent* b) const {
-	return lexCompare(a, b, getVarCount()) < 0;
+                           const Exponent* b) const {
+    return lexCompare(a, b, getVarCount()) < 0;
   }
 };
 
@@ -116,8 +116,8 @@ class ReverseLexComparator : public TermPredicate {
 
   private:
   virtual bool doPredicate(const Exponent* a,
-						   const Exponent* b) const {
-	return reverseLexCompare(a, b, getVarCount()) < 0;
+                           const Exponent* b) const {
+    return reverseLexCompare(a, b, getVarCount()) < 0;
   }
 };
 
@@ -129,8 +129,8 @@ class SingleDegreeComparator : public TermPredicate {
 
  private:
   virtual bool doPredicate(const Exponent* a,
-						   const Exponent* b) const {
-	return a[_var] < b[_var];
+                           const Exponent* b) const {
+    return a[_var] < b[_var];
   }
 
   size_t _var;
@@ -144,8 +144,8 @@ class ReverseSingleDegreeComparator : public TermPredicate {
 
  private:
   virtual bool doPredicate(const Exponent* a,
-						   const Exponent* b) const {
-	return a[_var] > b[_var];
+                           const Exponent* b) const {
+    return a[_var] > b[_var];
   }
 
   size_t _var;
@@ -155,11 +155,11 @@ class ReverseSingleDegreeComparator : public TermPredicate {
 class EqualsPredicate : public TermPredicate {
  public:
   EqualsPredicate(size_t varCount = 0);
-  
+
  private:
   virtual bool doPredicate(const Exponent* a,
-						   const Exponent* b) const {
-	return equals(a, b, getVarCount());
+                           const Exponent* b) const {
+    return equals(a, b, getVarCount());
   }
 };
 

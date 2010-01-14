@@ -30,7 +30,7 @@ VarNames::VarNames(size_t varCount) {
     FrobbyStringStream out;
     out << 'x' << (i + 1);
     addVar(out);
-  }    
+  }
 }
 
 VarNames::VarNames(const VarNames& names) {
@@ -45,46 +45,46 @@ bool VarNames::addVar(const string& name) {
   ASSERT(name != "");
 
   pair<VarNameMap::iterator, bool> p =_nameToIndex.insert
-	(make_pair(name, _indexToName.size()));
+    (make_pair(name, _indexToName.size()));
   if (!p.second) {
-	ASSERT(contains(name));
-	return false;
+    ASSERT(contains(name));
+    return false;
   }
 
   try {
-	_indexToName.push_back(&(p.first->first)); // TODO: fix to vector of iters
+    _indexToName.push_back(&(p.first->first)); // TODO: fix to vector of iters
   } catch (...) {
-	_nameToIndex.erase(p.first);
-	throw;
+    _nameToIndex.erase(p.first);
+    throw;
   }
 
   if (getVarCount() == getInvalidIndex())
-	reportError("Too many variable names");
+    reportError("Too many variable names");
 
   ASSERT(contains(name));
   return true;
 }
 
 void VarNames::addVarSyntaxCheckUnique(const Scanner& in,
-									   const string& name) {
+                                       const string& name) {
   if (!addVar(name))
-	reportSyntaxError(in, "The variable " + name + " is declared twice.");
+    reportSyntaxError(in, "The variable " + name + " is declared twice.");
   ASSERT(contains(name));
 }
 
 bool VarNames::operator<(const VarNames& names) const {
   return lexicographical_compare(_indexToName.begin(),
-								 _indexToName.end(),
-								 names._indexToName.begin(),
-								 names._indexToName.end(),
-								 compareNames);
+                                 _indexToName.end(),
+                                 names._indexToName.begin(),
+                                 names._indexToName.end(),
+                                 compareNames);
 }
 
 size_t VarNames::getIndex(const string& name) const {
   VarNameMap::const_iterator it = _nameToIndex.find(name);
   if (it == _nameToIndex.end())
     return getInvalidIndex();
-  else	
+  else
     return it->second;
 }
 
@@ -99,7 +99,7 @@ bool VarNames::namesAreDefault() const {
 
 const string& VarNames::getName(size_t index) const {
   ASSERT(index < _indexToName.size());
-  
+
   return *(_indexToName[index]);
 }
 
@@ -118,12 +118,12 @@ bool VarNames::empty() const {
 
 VarNames& VarNames::operator=(const VarNames& names) {
   if (this != &names) {
-	clear();
+    clear();
 
-	_indexToName.reserve(names.getVarCount());
+    _indexToName.reserve(names.getVarCount());
 
-	for (size_t var = 0; var < names.getVarCount(); ++var)
-	  addVar(names.getName(var));
+    for (size_t var = 0; var < names.getVarCount(); ++var)
+      addVar(names.getName(var));
   }
 
   return *this;
@@ -131,11 +131,11 @@ VarNames& VarNames::operator=(const VarNames& names) {
 
 bool VarNames::operator==(const VarNames& names) const {
   if (getVarCount() != names.getVarCount())
-	return false;
+    return false;
 
   for (size_t var = 0; var < getVarCount(); ++var)
-	if (getName(var) != names.getName(var))
-	  return false;
+    if (getName(var) != names.getName(var))
+      return false;
 
   return true;
 }
@@ -147,12 +147,12 @@ bool VarNames::operator!=(const VarNames& names) const {
 void VarNames::swapVariables(size_t a, size_t b) {
   ASSERT(a < getVarCount());
   ASSERT(b < getVarCount());
-  
+
   ASSERT(_nameToIndex[*_indexToName[a]] == a);
   ASSERT(_nameToIndex[*_indexToName[b]] == b);
 
   if (a == b)
-	return;
+    return;
 
   std::swap(_indexToName[a], _indexToName[b]);
   _nameToIndex[*_indexToName[a]] = a;
@@ -167,8 +167,8 @@ void VarNames::projectVar(size_t index) {
 
   VarNames names;
   for (size_t var = 0; var < getVarCount(); ++var)
-	if (var != index)
-	  names.addVar(getName(var));
+    if (var != index)
+      names.addVar(getName(var));
   *this = names;
 }
 
@@ -176,8 +176,8 @@ void VarNames::toString(string& str) const {
   str.clear();
   for (size_t i = 0; i < getVarCount(); ++i) {
     if (i != 0)
-	  str += ", ";
-	str += getName(i);
+      str += ", ";
+    str += getName(i);
   }
 }
 

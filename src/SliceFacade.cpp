@@ -53,8 +53,8 @@ SliceFacade::SliceFacade(const SliceParams& params, const DataType& output):
 }
 
 SliceFacade::SliceFacade(const SliceParams& params,
-						 const BigIdeal& ideal,
-						 BigTermConsumer& consumer):
+                         const BigIdeal& ideal,
+                         BigTermConsumer& consumer):
   Facade(params.getPrintActions()),
   _params(params) {
   _split = SplitStrategy::createStrategy(params.getSplit().c_str());
@@ -62,8 +62,8 @@ SliceFacade::SliceFacade(const SliceParams& params,
 }
 
 SliceFacade::SliceFacade(const SliceParams& params,
-						 const BigIdeal& ideal,
-						 CoefBigTermConsumer& consumer):
+                         const BigIdeal& ideal,
+                         CoefBigTermConsumer& consumer):
   Facade(params.getPrintActions()),
   _params(params) {
   _split = SplitStrategy::createStrategy(params.getSplit().c_str());
@@ -93,7 +93,7 @@ void SliceFacade::computeUnivariateHilbertSeries() {
   beginAction("Computing univariate Hilbert-Poincare series.");
 
   auto_ptr<CoefTermConsumer> consumer =
-	_common.makeToUnivariatePolyConsumer();
+    _common.makeToUnivariatePolyConsumer();
 
   consumer->consumeRing(_common.getNames());
   consumer->beginConsuming();
@@ -113,11 +113,11 @@ mpz_class SliceFacade::computeDimension(bool codimension) {
   ASSERT(isFirstComputation());
 
   if (_common.getIdeal().containsIdentity()) {
-	if (codimension) {
-	  // convert to mpz_class before increment to ensure no overflow.
-	  return mpz_class(_common.getIdeal().getVarCount()) + 1;
-	} else
-	  return -1;
+    if (codimension) {
+      // convert to mpz_class before increment to ensure no overflow.
+      return mpz_class(_common.getIdeal().getVarCount()) + 1;
+    } else
+      return -1;
   }
 
   // todo: inline?
@@ -134,15 +134,15 @@ mpz_class SliceFacade::computeDimension(bool codimension) {
 #ifdef DEBUG
   // Only define hasComponents when DEBUG is defined since otherwise
   // GCC will warn about hasComponents not being used.
-  bool hasComponents = 
+  bool hasComponents =
 #endif
-	solveIrreducibleDecompositionProgram(v, minusCodimension, false);
+    solveIrreducibleDecompositionProgram(v, minusCodimension, false);
   ASSERT(hasComponents);
 
   if (codimension)
-	return -minusCodimension;
+    return -minusCodimension;
   else
-	return v.size() + minusCodimension;
+    return v.size() + minusCodimension;
 }
 
 void SliceFacade::computePrimaryDecomposition() {
@@ -152,12 +152,12 @@ void SliceFacade::computePrimaryDecomposition() {
 
   Ideal irreducibleDecom(varCount);
   {
-	DecomRecorder recorder(&irreducibleDecom);
-	produceEncodedIrrDecom(recorder);
+    DecomRecorder recorder(&irreducibleDecom);
+    produceEncodedIrrDecom(recorder);
   }
 
   beginAction
-	("Computing primary decomposition from irreducible decomposition.");
+    ("Computing primary decomposition from irreducible decomposition.");
 
   // Do intersection of each component also using irreducible
   // decomposition of the dual. We can't use the Alexander dual
@@ -173,7 +173,7 @@ void SliceFacade::computePrimaryDecomposition() {
   irreducibleDecom.sortReverseLex();
 
   Term lcm(varCount);
-  irreducibleDecom.getLcm(lcm); 
+  irreducibleDecom.getLcm(lcm);
 
   Term tmp(varCount);
   Term support(varCount);
@@ -191,32 +191,32 @@ void SliceFacade::computePrimaryDecomposition() {
   Ideal::const_iterator stop = irreducibleDecom.end();
   Ideal::const_iterator it = irreducibleDecom.begin();
   while (it != stop) {
-	// Get all vectors with same support.
-	support = *it;
-	do {
-	  tmp.encodedDual(*it, lcm);
-	  primaryComponentDual.insert(tmp);
-	  ++it;
-	} while (it != stop && support.hasSameSupport(*it));
-	ASSERT(!primaryComponentDual.isZeroIdeal());
-	
-	_common.getTranslator().addPurePowersAtInfinity(primaryComponentDual);
-	{
-	  MsmStrategy strategy(&recorder, _split.get());
-	  runSliceAlgorithmWithOptions(strategy);
-	}
-	_common.getTranslator().setInfinityPowersToZero(primaryComponent);
+    // Get all vectors with same support.
+    support = *it;
+    do {
+      tmp.encodedDual(*it, lcm);
+      primaryComponentDual.insert(tmp);
+      ++it;
+    } while (it != stop && support.hasSameSupport(*it));
+    ASSERT(!primaryComponentDual.isZeroIdeal());
 
-	consumer->beginConsuming();
-	for (Ideal::const_iterator dualTerm = primaryComponent.begin();
-		 dualTerm != primaryComponent.end(); ++dualTerm) {
-	  tmp.encodedDual(*dualTerm, lcm);
-	  consumer->consume(tmp);
-	}
-	consumer->doneConsuming();
+    _common.getTranslator().addPurePowersAtInfinity(primaryComponentDual);
+    {
+      MsmStrategy strategy(&recorder, _split.get());
+      runSliceAlgorithmWithOptions(strategy);
+    }
+    _common.getTranslator().setInfinityPowersToZero(primaryComponent);
 
-	primaryComponent.clear();
-	primaryComponentDual.clear();
+    consumer->beginConsuming();
+    for (Ideal::const_iterator dualTerm = primaryComponent.begin();
+         dualTerm != primaryComponent.end(); ++dualTerm) {
+      tmp.encodedDual(*dualTerm, lcm);
+      consumer->consume(tmp);
+    }
+    consumer->doneConsuming();
+
+    primaryComponent.clear();
+    primaryComponentDual.clear();
   }
 
   consumer->doneConsumingList();
@@ -254,12 +254,12 @@ void SliceFacade::computeAlexanderDual(const vector<mpz_class>& point) {
   getLcmOfIdeal(lcm);
 
   for (size_t var = 0; var < lcm.size(); ++var) {
-	if (lcm[var] > point[var]) {
-	  endAction();
-	  reportError
-		("The specified point to dualize on is not divisible by the "
-		 "least common multiple of the minimal generators of the ideal.");
-	}
+    if (lcm[var] > point[var]) {
+      endAction();
+      reportError
+        ("The specified point to dualize on is not divisible by the "
+         "least common multiple of the minimal generators of the ideal.");
+    }
   }
   endAction();
 
@@ -289,26 +289,26 @@ void SliceFacade::computeAssociatedPrimes() {
   // Obtain generators of radical from irreducible decomposition.
   Ideal radical(varCount);
   {
-	Ideal decom(varCount);
-	DecomRecorder recorder(&decom);
-	produceEncodedIrrDecom(recorder);
+    Ideal decom(varCount);
+    DecomRecorder recorder(&decom);
+    produceEncodedIrrDecom(recorder);
 
-	beginAction("Computing associated primes from irreducible decomposition.");
+    beginAction("Computing associated primes from irreducible decomposition.");
 
-	Term tmp(varCount);
-	Ideal::const_iterator stop = decom.end();
-	for (Ideal::const_iterator it = decom.begin(); it != stop; ++it) {
-	  for (size_t var = 0; var < varCount; ++var) {
-		// We cannot just check whether (*it)[var] == 0, since the
-		// added fake pure powers map to zero but are not themselves
-		// zero.
-		if (_common.getTranslator().getExponent(var, (*it)[var]) == 0)
-		  tmp[var] = 0;
-		else
-		  tmp[var] = 1;
-	  }
-	  radical.insert(tmp);
-	}
+    Term tmp(varCount);
+    Ideal::const_iterator stop = decom.end();
+    for (Ideal::const_iterator it = decom.begin(); it != stop; ++it) {
+      for (size_t var = 0; var < varCount; ++var) {
+        // We cannot just check whether (*it)[var] == 0, since the
+        // added fake pure powers map to zero but are not themselves
+        // zero.
+        if (_common.getTranslator().getExponent(var, (*it)[var]) == 0)
+          tmp[var] = 0;
+        else
+          tmp[var] = 1;
+      }
+      radical.insert(tmp);
+    }
   }
 
   radical.removeDuplicates();
@@ -323,8 +323,8 @@ void SliceFacade::computeAssociatedPrimes() {
   Term tmp(varCount);
   Ideal::const_iterator stop = radical.end();
   for (Ideal::const_iterator it = radical.begin(); it != stop; ++it) {
-	tmp = *it;
-	consumer->consume(tmp);
+    tmp = *it;
+    consumer->consume(tmp);
   }
   consumer->doneConsuming();
 
@@ -340,7 +340,7 @@ bool SliceFacade::solveIrreducibleDecompositionProgram
 
   beginAction("Preparing to solve optimization program.");
   if (!_common.getIdeal().containsIdentity())
-	_common.addPurePowersAtInfinity();
+    _common.addPurePowersAtInfinity();
   endAction();
 
   return solveProgram(grading, optimalValue, reportAllSolutions);
@@ -371,41 +371,41 @@ void SliceFacade::produceEncodedIrrDecom(TermConsumer& consumer) {
 }
 
 bool SliceFacade::solveProgram(const vector<mpz_class>& grading,
-							   mpz_class& optimalValue,
-							   bool reportAllSolutions) {
+                               mpz_class& optimalValue,
+                               bool reportAllSolutions) {
   ASSERT(isFirstComputation());
   ASSERT(grading.size() == _common.getIdeal().getVarCount());
 
   if (_params.getUseIndependenceSplits()) {
-	displayNote
-	  ("Turning off Independence splits as they are not supported\n"
-	   "for optimization.");
-	_params.useIndependenceSplits(false);
+    displayNote
+      ("Turning off Independence splits as they are not supported\n"
+       "for optimization.");
+    _params.useIndependenceSplits(false);
   }
 
   if (_params.getUseBoundSimplification() &&
-	  !_params.getUseBoundElimination()) {
-	displayNote
-	  ("Bound simplification requires using the bound to eliminate\n"
-	   "non-improving slices, which has been turned off. Am now turning\n"
-	   "this on.");
-	_params.useBoundElimination(true);			   
+      !_params.getUseBoundElimination()) {
+    displayNote
+      ("Bound simplification requires using the bound to eliminate\n"
+       "non-improving slices, which has been turned off. Am now turning\n"
+       "this on.");
+    _params.useBoundElimination(true);
   }
 
   beginAction("Solving optimization program.");
 
   OptimizeStrategy::BoundSetting boundSetting;
   if (_params.getUseBoundSimplification()) {
-	ASSERT(_params.getUseBoundElimination());
-	boundSetting = OptimizeStrategy::UseBoundToEliminateAndSimplify;
+    ASSERT(_params.getUseBoundElimination());
+    boundSetting = OptimizeStrategy::UseBoundToEliminateAndSimplify;
   } else if (_params.getUseBoundElimination())
-	boundSetting = OptimizeStrategy::UseBoundToEliminate;
+    boundSetting = OptimizeStrategy::UseBoundToEliminate;
   else
-	boundSetting = OptimizeStrategy::DoNotUseBound;
+    boundSetting = OptimizeStrategy::DoNotUseBound;
 
   TermGrader grader(grading, _common.getTranslator());
   OptimizeStrategy strategy
-	(grader, _split.get(), reportAllSolutions, boundSetting);
+    (grader, _split.get(), reportAllSolutions, boundSetting);
   runSliceAlgorithmWithOptions(strategy);
 
   endAction();
@@ -417,10 +417,10 @@ bool SliceFacade::solveProgram(const vector<mpz_class>& grading,
   consumer->consume(solution);
 
   if (solution.isZeroIdeal())
-	return false;
+    return false;
   else {
-	optimalValue = strategy.getMaximalValue();
-	return true;  
+    optimalValue = strategy.getMaximalValue();
+    return true;
   }
 }
 
@@ -437,12 +437,12 @@ void SliceFacade::takeRadical() {
   Term lcm(_common.getIdeal().getVarCount());
   _common.getIdeal().getLcm(lcm);
   if (lcm.isSquareFree())
-	skip = true;
+    skip = true;
 
   if (!skip) {
-	_common.getTranslator().setInfinityPowersToZero(_common.getIdeal());
-	_common.getIdeal().takeRadicalNoMinimize();
-	_common.getIdeal().minimize();
+    _common.getTranslator().setInfinityPowersToZero(_common.getIdeal());
+    _common.getIdeal().takeRadicalNoMinimize();
+    _common.getIdeal().minimize();
   }
 
   setToZeroOne(_common.getTranslator());
@@ -459,7 +459,7 @@ void SliceFacade::getLcmOfIdeal(vector<mpz_class>& bigLcm) {
   bigLcm.clear();
   bigLcm.reserve(_common.getIdeal().getVarCount());
   for (size_t var = 0; var < _common.getIdeal().getVarCount(); ++var)
-	bigLcm.push_back(_common.getTranslator().getExponent(var, lcm));
+    bigLcm.push_back(_common.getTranslator().getExponent(var, lcm));
 }
 
 void SliceFacade::runSliceAlgorithmWithOptions(SliceStrategy& strategy) {
@@ -471,16 +471,16 @@ void SliceFacade::runSliceAlgorithmWithOptions(SliceStrategy& strategy) {
 
   auto_ptr<SliceStrategy> debugStrategy;
   if (_params.getPrintDebug()) {
-	debugStrategy.reset
-	  (new DebugStrategy(strategyWithOptions, stderr));
-	strategyWithOptions = debugStrategy.get();
+    debugStrategy.reset
+      (new DebugStrategy(strategyWithOptions, stderr));
+    strategyWithOptions = debugStrategy.get();
   }
 
   auto_ptr<SliceStrategy> statisticsStrategy;
   if (_params.getPrintStatistics()) {
-	statisticsStrategy.reset
-	  (new StatisticsStrategy(strategyWithOptions, stderr));
-	strategyWithOptions = statisticsStrategy.get();
+    statisticsStrategy.reset
+      (new StatisticsStrategy(strategyWithOptions, stderr));
+    strategyWithOptions = statisticsStrategy.get();
   }
 
   ASSERT(strategyWithOptions != 0);

@@ -23,7 +23,7 @@
 #include "error.h"
 
 IO::IOHandlerCommon::IOHandlerCommon(const char* formatName,
-									 const char* formatDescription):
+                                     const char* formatDescription):
   IOHandlerImpl(formatName, formatDescription) {
 }
 
@@ -36,14 +36,14 @@ bool IO::IOHandlerCommon::peekRing(Scanner& in) {
 }
 
 void IO::IOHandlerCommon::readBareIdeal(Scanner& in,
-										const VarNames& names,
-										BigTermConsumer& consumer) {
+                                        const VarNames& names,
+                                        BigTermConsumer& consumer) {
   doReadBareIdeal(in, names, consumer);
 }
 
 void IO::IOHandlerCommon::readBarePolynomial(Scanner& in,
-											const VarNames& names,
-											CoefBigTermConsumer& consumer) {
+                                            const VarNames& names,
+                                            CoefBigTermConsumer& consumer) {
   doReadBarePolynomial(in, names, consumer);
 }
 
@@ -57,33 +57,33 @@ void IO::IOHandlerCommon::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
   VarNames names;
   readRing(in, names);
   if (!hasMoreInput(in)) {
-	consumer.consumeRing(names);
-	return;
+    consumer.consumeRing(names);
+    return;
   }
   readBareIdeal(in, names, consumer);
 
   while (hasMoreInput(in)) {
-	if (peekRing(in))
-	  readRing(in, names);
-	readBareIdeal(in, names, consumer);
+    if (peekRing(in))
+      readRing(in, names);
+    readBareIdeal(in, names, consumer);
   }
 }
 
 void IO::IOHandlerCommon::doReadPolynomial(Scanner& in,
-										  CoefBigTermConsumer& consumer) {
+                                          CoefBigTermConsumer& consumer) {
   VarNames names;
   readRing(in, names);
   readBarePolynomial(in, names, consumer);
 }
 
 void IO::IOHandlerCommon::doReadBarePolynomial(Scanner& in,
-											  const VarNames& names,
-											  CoefBigTermConsumer& consumer) {
+                                              const VarNames& names,
+                                              CoefBigTermConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
 void IO::IOHandlerCommon::doReadBareIdeal(Scanner& in,
-										  const VarNames& names,
-										  BigTermConsumer& consumer) {
+                                          const VarNames& names,
+                                          BigTermConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
