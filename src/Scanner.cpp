@@ -51,9 +51,9 @@ Scanner::Scanner(const string& formatName, FILE* in):
   _tmpString(0),
   _tmpStringCapacity(16),
   _formatName(formatName) {
-  _tmpString = new char[16];
   if (getFormat() == getFormatNameIndicatingToGuessTheInputFormat())
     setFormat(autoDetectFormat(*this));
+  _tmpString = new char[16];
 }
 
 Scanner::~Scanner() {
