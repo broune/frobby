@@ -43,6 +43,10 @@ namespace {
   }
 }
 
+CliParams::CliParams():
+  _paramsDeleter(_ownedParams) {
+}
+
 void CliParams::parseCommandLine(unsigned int tokenCount, const char** tokens) {
   ParamNames names = getParamNames(_params);
 
@@ -83,8 +87,9 @@ void CliParams::processOption(const string& optionName,
 
 void CliParams::add(auto_ptr<Parameter> param) {
   ASSERT(!hasParam(param->getName()));
-  // TODO: take over ownership
-  add(*param.release());
+  Parameter& paramRef = *param;
+  exceptionSafePushBack(_ownedParams, param);
+  add(paramRef);
 }
 
 void CliParams::add(Parameter& param) {

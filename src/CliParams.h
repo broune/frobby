@@ -30,6 +30,8 @@ class CliParams {
   typedef vector<Parameter*>::iterator iterator;
   typedef vector<Parameter*>::const_iterator const_iterator;
 
+  CliParams();
+
   const_iterator begin() const {return _params.begin();}
   const_iterator end() const {return _params.end();}
 
@@ -50,7 +52,8 @@ class CliParams {
 
  private:
   vector<Parameter*> _params;
-  //ElementDeleter _paramsDeleter; TODO: reinstate
+  vector<Parameter*> _ownedParams;
+  ElementDeleter<vector<Parameter*> > _paramsDeleter;
 };
 
 bool getBool(const CliParams& params, const string& name);
