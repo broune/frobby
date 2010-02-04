@@ -353,8 +353,6 @@ public:
         _term[var] = _zero.get_mpz_t();
       }
     }
-    if (isIdentity)
-      _consumer->consume(&*(_term.begin()));
 
     _consumer->idealEnd();
   }
@@ -382,15 +380,6 @@ bool Frobby::irreducibleDecompositionAsMonomials(const Ideal& ideal,
   if (bigIdeal.getGeneratorCount() == 0)
     return false;
 
-  // The SliceFacade outputs an ideal containing the identity when
-  // given one as input. That behavior differs from the contract of
-  // this method, so that case needs to be handled here.
-  if (bigIdeal.containsIdentity()) {
-    consumer.idealBegin(bigIdeal.getVarCount());
-    consumer.idealEnd();
-    return true;
-  }
-
   ExternalIdealConsumerWrapper wrappedConsumer
     (&consumer, bigIdeal.getVarCount());
   SliceParams params;
@@ -398,6 +387,18 @@ bool Frobby::irreducibleDecompositionAsMonomials(const Ideal& ideal,
 
   facade.computeIrreducibleDecomposition(true);
   return true;
+}
+
+void Frobby::primaryDecomposition(const Ideal& ideal,
+								  IdealConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+
+  ExternalIdealConsumerWrapper wrappedConsumer
+    (&consumer, bigIdeal.getVarCount());
+  SliceParams params;
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
+
+  facade.computePrimaryDecomposition();
 }
 
 void Frobby::maximalStandardMonomials(const Ideal& ideal,
@@ -445,4 +446,16 @@ void Frobby::dimension(const Ideal& ideal, mpz_t dim) {
   IdealFacade facade(false);
   mpz_class dimen = facade.computeDimension(bigIdeal, false);
   mpz_set(dim, dimen.get_mpz_t());
+}
+
+void Frobby::associatedPrimes(const Ideal& ideal, IdealConsumer& consumer) {
+  const BigIdeal& bigIdeal = FrobbyImpl::FrobbyIdealHelper::getIdeal(ideal);
+  IrreducibleIdealDecoder decodingConsumer(&consumer);
+
+  ExternalIdealConsumerWrapper wrappedConsumer
+    (&decodingConsumer, bigIdeal.getVarCount());
+  SliceParams params;
+  SliceFacade facade(params, bigIdeal, wrappedConsumer);
+
+  facade.computeAssociatedPrimes();
 }

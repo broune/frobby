@@ -26,7 +26,7 @@
 
 TEST_SUITE2(LibraryInterface, IrreducibleDecom)
 
-TEST(IrreducibleDecom, Typical) {
+TEST(IrreducibleDecom, TypicalEncoded) {
   Frobby::Ideal ideal = toLibIdeal(IdealFactory::xx_yy_xz_yz());
   LibIdealConsumer consumer(IdealFactory::ring_xyzt());
 
@@ -38,7 +38,7 @@ TEST(IrreducibleDecom, Typical) {
   ASSERT_TRUE(consumer.hasAnyOutput());
 }
 
-TEST(IrreducibleDecom, TypicalEncoded) {
+TEST(IrreducibleDecom, Typical) {
   Frobby::Ideal ideal = toLibIdeal(IdealFactory::xx_yy_xz_yz());
   LibIdealsConsumer consumer(IdealFactory::ring_xyzt());
 
@@ -47,7 +47,7 @@ TEST(IrreducibleDecom, TypicalEncoded) {
   ASSERT_EQ(consumer.getIdeals(), IdealFactory::irrdecom_xx_yy_xz_yz());
 }
 
-TEST(IrreducibleDecom, ZeroIdeal) {
+TEST(IrreducibleDecom, ZeroIdealEncoded) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
     Frobby::Ideal frobbyInputIdeal(varCount);
     LibIdealConsumer consumer((VarNames(varCount)));
@@ -60,7 +60,7 @@ TEST(IrreducibleDecom, ZeroIdeal) {
   }
 }
 
-TEST(IrreducibleDecom, ZeroIdealEncoded) {
+TEST(IrreducibleDecom, ZeroIdeal) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
     Frobby::Ideal frobbyInputIdeal(varCount);
     LibIdealsConsumer consumer((VarNames(varCount)));
@@ -73,7 +73,7 @@ TEST(IrreducibleDecom, ZeroIdealEncoded) {
   }
 }
 
-TEST(IrreducibleDecom, WholeRing) {
+TEST(IrreducibleDecom, WholeRingEncoded) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
     Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
     LibIdealConsumer consumer((VarNames(varCount)));
@@ -87,7 +87,7 @@ TEST(IrreducibleDecom, WholeRing) {
   }
 }
 
-TEST(IrreducibleDecom, WholeRingEncoded) {
+TEST(IrreducibleDecom, WholeRing) {
   for (size_t varCount = 0; varCount <= 3; ++varCount) {
     Frobby::Ideal ideal = toLibIdeal(IdealFactory::wholeRing(varCount));
     LibIdealsConsumer consumer((VarNames(varCount)));
