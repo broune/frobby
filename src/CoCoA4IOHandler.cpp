@@ -352,7 +352,7 @@ namespace IO {
 
     size_t var;
     in.readSizeT(var);
-    if (var > term.size()) {
+    if (var == 0 || var > term.size()) {
       FrobbyStringStream errorMsg;
       errorMsg << "There is no variable x[" << var << "].";
       reportSyntaxError(in, errorMsg);
