@@ -52,7 +52,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   IOHandlerImpl.cpp IdealWriter.cpp PolyWriter.cpp IOHandlerCommon.cpp	\
   CommonParamsHelper.cpp ActionPrinter.cpp ScarfHilbertAlgorithm.cpp	\
   ScarfFacade.cpp Deformer.cpp IdealTree.cpp TermPredicate.cpp			\
-  ScarfParams.cpp IdealOrderer.cpp TermExtra.cpp display.cpp
+  ScarfParams.cpp IdealOrderer.cpp TermExtra.cpp display.cpp			\
+  LibPrimaryDecomTest.cpp LibAssociatedPrimesTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -131,7 +132,7 @@ objs    = $(patsubst %.cpp, $(outdir)%.o, $(rawSources))
 
 # ***** Compilation
 
-.PHONY: all depend clean bin/$(program) test library distribution clear
+.PHONY: all depend clean bin/$(program) test library distribution clear fixspace
 
 all: bin/$(program) $(outdir)$(program)
 
@@ -288,20 +289,8 @@ tidy:
 	find .|grep -x ".*~\|.*/\#.*\#|.*\.stackdump\|gmon\.out\|.*\.orig\|.*/core\|core"|xargs rm -f
 
 # Fixes various white space related issues.
-#  - Remove trailing blank lines from files
-#  - Remove trailing white space from lines in files
-#  - Replace tabs with spaces with a tab-space of 4
-#  - Convert Windows-style line endigns to Unix-style ones
 fixspace:
-	for f in `find src/ doc/ -type f`; do \
-	  echo $$f; \
-	  sed -e :a -e '/^\n*$$/{$$d;N;ba' -e '}' < $$f | \
-	    sed 's/[[:blank:]]*$$//g' | \
-	    expand --tabs=4| \
-	    dos2unix > frobbySpaceTmp__; \
-	  mv frobbySpaceTmp__ $$f; \
-	done; \
-	find test/|xargs find;
+	find src/ doc/ -type f|xargs ./fixspace;
 
 commit: test
 	echo
