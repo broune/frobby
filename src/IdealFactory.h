@@ -40,6 +40,9 @@ class IdealFactory {
   /** Returns \f$\ideal{x, y}\f$. */
   static BigIdeal x_y();
 
+  /** Returns \f$\ideal{x, y, z}\f$. */
+  static BigIdeal x_y_z();
+
   /** Returns \f$\ideal{x*y*z^3, x^2y^2}\f$. */
   static BigIdeal xyzzz_xxyy();
 
@@ -76,6 +79,10 @@ class IdealFactory {
   /** Returns the irreducible decomposition of \f$\ideal{x^2, y^2,
    x*z, y*z}\f$. */
   static vector<BigIdeal> irrdecom_xx_yy_xz_yz();
+
+  /** Returns the associated primes of \f$\ideal{x^2, y^2, x*z,
+   y*z}\f$. */
+  static vector<BigIdeal> assoprimes_xx_yy_xz_yz();
 
   /** Returns a vector representing \f$x^(a,b,c,d)\f$. */
   static vector<mpz_class> makeTerm(int a, int b, int c, int d);

@@ -291,7 +291,27 @@ namespace Frobby {
       @param codim This mpz_t must be initialized before calling this
       function. It will be set to the dimension.
    */
-  void dimension(const Ideal& ideal, mpz_t codim);
+  void dimension(const Ideal& ideal, mpz_t dim);
+
+  /** Compute the canonical primary decomposition of a monomial ideal.
+
+   This is defined as the primary decomposition where each primary
+   component is the intersection of the irreducible components with
+   that same support. I.e. the set of irreducible components of the
+   canonical primary components are precisely the irreducible
+   components of the ideal itself. So each canonical primary component
+   has as few irreducible components as possible. This is not true of
+   just any primary decomposition.
+
+   Each canonical primary component is provided to the consumer as a
+   separate ideal in an arbitrary order.
+  */
+  void primaryDecomposition(const Ideal& ideal, IdealConsumer& consumer);
+
+  /** Compute the associated primes of the ideal.
+
+   The prime ideals are passed to the consumer in arbitrary order. */
+  void associatedPrimes(const Ideal& ideal, IdealConsumer& consumer);
 }
 
 #endif

@@ -46,6 +46,15 @@ BigIdeal IdealFactory::x_y() {
   return ideal;
 }
 
+BigIdeal IdealFactory::x_y_z() {
+  BigIdeal ideal(ring_xyzt());
+  ideal.insert(makeTerm(1, 0, 0, 0));
+  ideal.insert(makeTerm(0, 1, 0, 0));
+  ideal.insert(makeTerm(0, 0, 1, 0));
+  ideal.sortGenerators();
+  return ideal;
+}
+
 BigIdeal IdealFactory::xyzzz_xxyy() {
   BigIdeal ideal(ring_xyzt());
   ideal.insert(makeTerm(1, 1, 3, 0));
@@ -125,6 +134,14 @@ vector<BigIdeal> IdealFactory::irrdecom_xx_yy_xz_yz() {
   vector<BigIdeal> ideals;
   ideals.push_back(x_y());
   ideals.push_back(xx_yy_z());
+  sort(ideals.begin(), ideals.end());
+  return ideals;
+}
+
+vector<BigIdeal> IdealFactory::assoprimes_xx_yy_xz_yz() {
+  vector<BigIdeal> ideals;
+  ideals.push_back(x_y());
+  ideals.push_back(x_y_z());
   sort(ideals.begin(), ideals.end());
   return ideals;
 }

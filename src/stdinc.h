@@ -79,6 +79,7 @@ void operator delete[](void* s, const char* file, size_t line);
 
 typedef unsigned int Exponent;
 
+/** @todo: move this elsewhere. */
 namespace constants {
-  extern const char* version;
+  extern const char* const version;
 }
