@@ -30,7 +30,7 @@ class ScarfParams : public CommonParams {
 
   /** Returns true if deforming to a strongly generic ideal. Returns
    false otherwise. */
-  const bool getDeformToStronglyGeneric() const {return _deformStrong;}
+  bool getDeformToStronglyGeneric() const {return _deformStrong;}
   void setDeformToStronglyGeneric(bool value) {_deformStrong = value;}
 
   /** Returns the name of the enumeration ordering. */
