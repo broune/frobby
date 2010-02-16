@@ -32,6 +32,9 @@
 #include <set>
 #include <sstream>
 
+/** @todo: do not use cout */
+#include <iostream>
+
 namespace {
   void printTriangles(const SatBinomIdeal& ideal) {
 	map<string, string> tris;
