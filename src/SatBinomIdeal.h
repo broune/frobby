@@ -22,6 +22,7 @@
 #include <vector>
 
 class BigIdeal;
+class Matrix;
 
 /// Represents a saturated binomial ideal.
 class SatBinomIdeal {
@@ -93,6 +94,8 @@ class SatBinomIdeal {
   void projectVar(size_t var);
 
   SatBinomIdeal& operator=(const SatBinomIdeal& ideal);
+
+  void getMatrix(Matrix& matrix) const;
 
  private:
   vector<vector<mpz_class> > _gens;

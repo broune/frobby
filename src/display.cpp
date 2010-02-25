@@ -61,7 +61,7 @@ namespace {
             word += _msg[_pos];
             ++_pos;
           }
-          ASSERT(!word.empty());
+          ASSERT(!0word.empty());
           printWord(word);
         }
 

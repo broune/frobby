@@ -18,6 +18,7 @@
 #include "SatBinomIdeal.h"
 
 #include "BigIdeal.h"
+#include "Matrix.h"
 
 #include <sstream>
 
@@ -246,4 +247,11 @@ void SatBinomIdeal::projectVar(size_t var) {
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
     _gens[gen].erase(_gens[gen].begin() + var);
   _names.projectVar(var);
+}
+
+void SatBinomIdeal::getMatrix(Matrix& matrix) const {
+  matrix.resize(getGeneratorCount(), getVarCount());
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	for (size_t var = 0; var < getVarCount(); ++var)
+	  matrix(gen, var) = _gens[gen][var];
 }

@@ -53,7 +53,8 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   CommonParamsHelper.cpp ActionPrinter.cpp ScarfHilbertAlgorithm.cpp	\
   ScarfFacade.cpp Deformer.cpp IdealTree.cpp TermPredicate.cpp			\
   ScarfParams.cpp IdealOrderer.cpp TermExtra.cpp display.cpp			\
-  LibPrimaryDecomTest.cpp LibAssociatedPrimesTest.cpp
+  LibPrimaryDecomTest.cpp LibAssociatedPrimesTest.cpp Matrix.cpp		\
+  MatrixTest.cpp BigIntVector.cpp ColumnPrinter.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

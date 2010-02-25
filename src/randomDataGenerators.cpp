@@ -242,7 +242,7 @@ void generateRandomFrobeniusInstance(vector<mpz_class>& instance,
 
   gmp_randclass random(gmp_randinit_default);
 
-  // TODO: preserve state across calls.
+  /// @todo: preserve state across calls.
   random.seed((unsigned long)time(0) +
 #ifdef __GNUC__ // Only GCC defines this macro.
               (unsigned long)getpid() +
