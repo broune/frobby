@@ -88,7 +88,7 @@ void assertEqualFailed(const char* a, const char* b,
                        const char* testName, const char* file, size_t line) {
   stringstream msg;
   msg << "Expected " << aString << " == " << bString << ", but\n"
-      << "the  left hand side was equal to " << a << ", while\n"
-      << "the right hand side was equal to " << b << ".\n";
+      << "the  left hand side was equal to\n" << a << "\nwhile "
+      << "the right hand side was equal to\n" << b << "\n";
   assertFailed(msg.str().c_str(), testName, file, line);
 }

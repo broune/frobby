@@ -27,6 +27,8 @@
 #include "TermTranslator.h"
 #include "TranslatingTermConsumer.h"
 #include "DebugStrategy.h"
+#include "Matrix.h"
+#include "ColumnPrinter.h"
 
 #include <algorithm>
 #include <set>
@@ -36,7 +38,63 @@
 #include <iostream>
 
 namespace {
-  void printTriangles(const SatBinomIdeal& ideal) {
+  void printIndentedMatrix(const Matrix& matrix) {
+	ColumnPrinter pr;
+	pr.setPrefix("  ");
+	print(pr, matrix);
+
+	fputc('\n', stdout);
+	print(stdout, pr);
+	fputc('\n', stdout);
+  }
+
+  void printNullSpace(const Matrix& matrix) {
+	Matrix nullSpaceBasis;
+	nullSpace(nullSpaceBasis, matrix);
+	transpose(nullSpaceBasis, nullSpaceBasis);
+
+	fputs("The right null space is spanned by the rows of\n",
+		  stdout);
+	printIndentedMatrix(nullSpaceBasis);
+  }
+
+  void printNeighbors(const SatBinomIdeal& ideal, const Matrix& matrix) {
+	ColumnPrinter pr;
+
+	pr.addColumn(true, " ");
+	for (size_t i = 0; i < ideal.getGeneratorCount(); ++i)
+	  pr[0] << 'g' << i << ":\n";
+
+	{
+	  Matrix idealMatrix;
+	  ideal.getMatrix(idealMatrix);
+
+	  pr.addColumn(true, " y=");
+	  print(pr, idealMatrix);
+
+	  pr.addColumn(true, ",  h=");
+
+	  Matrix transposedIdealMatrix;
+	  transpose(transposedIdealMatrix, idealMatrix);
+
+	  Matrix transposedMatrix;
+	  transpose(transposedMatrix, matrix);
+
+	  Matrix transposedHSpace;
+	  solve(transposedHSpace, transposedMatrix, transposedIdealMatrix);
+	  
+	  Matrix hSpace;
+	  transpose(hSpace, transposedHSpace);
+	  print(pr, hSpace);
+	}
+
+	fprintf(stdout, "The %u neighbors in y-space and h-space are\n",
+			(unsigned int)ideal.getGeneratorCount());
+	print(stdout, pr);
+	fputc('\n', stdout);
+  }
+
+  void printTriangles(const SatBinomIdeal& ideal, const Matrix& matrix) {
 	map<string, string> tris;
 	set<string> sums;
 	vector<mpz_class> sum(ideal.getVarCount());
@@ -67,23 +125,18 @@ namespace {
 	}
 
 	if (ideal.hasZeroEntry())
-	  cout << "The ideal is not generic.\n";
+	  cout << "A neighbor has a zero entry.\n";
 	else
-	  cout << "The ideal is generic.\n";
+	  cout << "No neighbor has a zero entry.\n";
 	size_t sumCount =
 	  (ideal.getGeneratorCount() * (ideal.getGeneratorCount() - 1)) / 2;
-	cout << "There are " << sums.size() << " distinct sums out of "
+	cout << "There are " << ideal.getGeneratorCount() << " neighbors.\n";
+	cout << "There are " << sums.size() << " distinct neighbor sums out of "
 		 << sumCount << ".\n";
 	cout << "There are " << tris.size() << " distinct double triangle sums.\n";\
 	cout << "There are " << count << " double triangles.\n\n";
 
-	cout << "The " << ideal.getGeneratorCount() << " neighbors are:\n";
-	for (size_t g = 0; g < ideal.getGeneratorCount(); ++g) {
-	  cout << " g" << g << ": ";
-	  for (size_t var = 0; var < ideal.getVarCount(); ++var)
-		cout << '\t' << ideal.getGenerator(g)[var];
-	  cout << '\n';
-	}
+	printNeighbors(ideal, matrix);
 
 	cout << "\n\nThe " << count << " double triangles, grouped by sum:\n\n";
 
@@ -122,24 +175,23 @@ void LatticeAnalyzeAction::perform() {
   SatBinomIdeal ideal;
   ioFacade.readSatBinomIdeal(in, ideal);
 
-  bool generic = ideal.hasZeroEntry();
+  Matrix matrix;
+  {
+	SatBinomIdeal matrixIdeal;
+	ioFacade.readSatBinomIdeal(in, matrixIdeal);
+	matrixIdeal.getMatrix(matrix);
+  }
 
   mpz_class triCount;
   ideal.getDoubleTriangleCount(triCount);
-  fprintf(stdout, "%u neighbors, ", (unsigned int)ideal.getGeneratorCount());
-  gmp_fprintf(stdout, "%Zd double triangles, ", triCount.get_mpz_t());
 
-  if (!generic)
-    fputs("generic.\n", stdout);
-  else
-    fputs("not generic.\n", stdout);
+  cout << "Analysis of the "
+	   << matrix.getRowCount() << " by " << matrix.getColCount() 
+	   << " matrix\n";
+  printIndentedMatrix(matrix);
+  printNullSpace(matrix);
 
-  printTriangles(ideal);
-
-  if (triCount == 0)
-    exit(1);
-  if (generic)
-    exit(2);
+  printTriangles(ideal, matrix);
 }
 
 const char* LatticeAnalyzeAction::staticGetName() {
