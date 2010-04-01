@@ -55,6 +55,9 @@ class IdealFacade : private Facade {
                              bool codimension = false,
                              bool squareFreeAndMinimal = false);
 
+  /** @todo: describe */
+  mpz_class computeEuler(const BigIdeal& ideal);
+
   // Take the product of the minimal generators of each ideal, and add
   // the resulting monomials as generators of ideal. Requires that
   // each ideal have the same names, including ideal.
