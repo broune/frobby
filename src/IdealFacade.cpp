@@ -27,6 +27,7 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 #include "SizeMaxIndepSetAlg.h"
+#include "HilbertBaseCase.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -58,6 +59,37 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
   bigIdeal.insert(ideal, translator);
 
   endAction();
+}
+
+mpz_class IdealFacade::computeEuler(const BigIdeal& bigIdeal) {
+  beginAction("Computing Euler characteristic.");
+
+  size_t varCount = bigIdeal.getVarCount();
+  size_t genCount = bigIdeal.getGeneratorCount();
+
+  Ideal radical(varCount);
+  Term tmp(varCount);
+  for (size_t term = 0; term < genCount; ++term) {
+    for (size_t var = 0; var < varCount; ++var) {
+      if (bigIdeal[term][var] == 0)
+        tmp[var] = 0;
+      else if (bigIdeal[term][var] == 1)
+        tmp[var] = 1;
+	  else
+		reportError("Input ideal is not square free.");
+    }
+    radical.insert(tmp);
+  }
+
+  //if (!squareFreeAndMinimal)
+  //  radical.minimize();
+
+  HilbertBasecase basecase;
+  basecase.computeCoefficient(radical);
+  mpz_class euler = basecase.getLastCoefficient();
+
+  endAction();
+  return euler;
 }
 
 mpz_class IdealFacade::computeDimension(const BigIdeal& bigIdeal,

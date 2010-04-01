@@ -41,6 +41,7 @@
 #include "MaximalStandardAction.h"
 #include "LatticeAnalyzeAction.h"
 #include "DimensionAction.h"
+#include "EulerAction.h"
 
 Action::Action(const char* name,
                const char* shortDescription,
@@ -65,6 +66,7 @@ namespace {
     ActionFactory factory("action");
 
     nameFactoryRegister<HilbertAction>(factory);
+    nameFactoryRegister<EulerAction>(factory);
     nameFactoryRegister<IrreducibleDecomAction>(factory);
     nameFactoryRegister<PrimaryDecomAction>(factory);
     nameFactoryRegister<AlexanderDualAction>(factory);
