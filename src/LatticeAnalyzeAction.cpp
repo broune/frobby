@@ -33,6 +33,8 @@
 #include <algorithm>
 #include <set>
 #include <sstream>
+#include <limits>
+#include <fstream>
 
 /** @todo: do not use cout */
 #include <iostream>
@@ -144,6 +146,35 @@ namespace {
 		 it != tris.end(); ++it)
 	  cout << it->first << it->second << '\n';
   }
+
+  void writeScarfGarph(const SatBinomIdeal& ideal) {
+	ofstream out("graph.dot");
+	out << "digraph G {\n" << flush;
+	for (size_t gen1 = 0; gen1 < ideal.getGeneratorCount(); ++gen1) {
+	  size_t gen2 = ideal.getInteriorEdgeFrom(gen1);
+	  out << "  g" << gen1 << " [label=\"g" << gen1;
+	  if (gen2 == numeric_limits<size_t>::max()) {
+		out << " (no interior pair)\"];\n";
+		continue;
+	  }
+
+	  const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
+	  const vector<mpz_class>& g2 = ideal.getGenerator(gen2);
+
+	  out << ", g" << gen2 << "\\n" << g1[0] << '\"';
+
+	  vector<mpz_class> sum(g1.size());
+	  for (size_t var = 0; var < g1.size(); ++var)
+		sum[var] = g1[var] + g2[var];
+
+	  if (ideal.isPointFreeBody(g1, sum))
+		out << ",shape=box";
+
+	  out << "];\n";
+	  out << "  g" << gen1 << " -> g" << gen2 << ";\n";	
+	}
+	out << "}\n";
+  }
 }
 
 LatticeAnalyzeAction::LatticeAnalyzeAction():
@@ -174,7 +205,7 @@ void LatticeAnalyzeAction::perform() {
   IOFacade ioFacade(_printActions);
   SatBinomIdeal ideal;
   ioFacade.readSatBinomIdeal(in, ideal);
-
+  
   Matrix matrix;
   {
 	SatBinomIdeal matrixIdeal;
@@ -192,6 +223,8 @@ void LatticeAnalyzeAction::perform() {
   printNullSpace(matrix);
 
   printTriangles(ideal, matrix);
+
+  writeScarfGarph(ideal);
 }
 
 const char* LatticeAnalyzeAction::staticGetName() {

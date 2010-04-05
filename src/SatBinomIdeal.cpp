@@ -21,6 +21,7 @@
 #include "Matrix.h"
 
 #include <sstream>
+#include <limits>
 
 SatBinomIdeal::SatBinomIdeal() {
 }
@@ -187,6 +188,40 @@ bool SatBinomIdeal::isPointFreeBody(const vector<mpz_class>& a,
   }
 
   return !isDominating(rhs);
+}
+
+bool SatBinomIdeal::isInterior(const vector<mpz_class>& a,
+							   const vector<mpz_class>& b) const {
+  ASSERT(a.size() == b.size());
+
+  if (!isPointFreeBody(a, b))
+	return false;
+
+  for (size_t var = 1; var < a.size(); ++var)
+	if (a[var] <= 0 && b[var] <= 0)
+	  return false;
+  return true;
+}
+
+size_t SatBinomIdeal::getInteriorEdgeFrom(size_t a) const {
+  size_t edge = numeric_limits<size_t>::max();
+  const vector<mpz_class> aa = getGenerator(a);
+  if (isInterior(aa, aa))
+	return edge;
+
+  for (size_t b = 0; b < getGeneratorCount(); ++b) {
+	const vector<mpz_class> bb = getGenerator(b);
+	if (isInterior(bb, bb))
+	  continue;
+	vector<mpz_class> sum(aa.size());
+	for (size_t var = 0; var < aa.size(); ++var)
+	  sum[var] = aa[var] + bb[var];
+	if (isInterior(bb, sum)) {
+	  //ASSERT(edge == numeric_limits<size_t>::max());
+	  edge = b;
+	}
+  }
+  return edge;
 }
 
 void SatBinomIdeal::getDoubleTriangleCount(mpz_class& count) const {
