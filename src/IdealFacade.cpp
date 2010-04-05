@@ -64,6 +64,9 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
 mpz_class IdealFacade::computeEuler(const BigIdeal& bigIdeal) {
   beginAction("Computing Euler characteristic.");
 
+  if (bigIdeal.getVarCount() == 0)
+	return bigIdeal.getGeneratorCount() == 0 ? 0 : -1;
+
   size_t varCount = bigIdeal.getVarCount();
   size_t genCount = bigIdeal.getGeneratorCount();
 
@@ -82,7 +85,7 @@ mpz_class IdealFacade::computeEuler(const BigIdeal& bigIdeal) {
   }
 
   //if (!squareFreeAndMinimal)
-  //  radical.minimize();
+  radical.minimize();
 
   HilbertBasecase basecase;
   basecase.computeCoefficient(radical);

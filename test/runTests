@@ -9,7 +9,7 @@ fi
 
 TIMEFORMAT=$' (%2lR real)'
 
-normalTests="hilbert_deform hilbert_bigatti hilbert_slice irrdecom \
+normalTests="euler hilbert_deform hilbert_bigatti hilbert_slice irrdecom \
              dimension primdecom intersect assoprimes minimize \
              alexdual radical frob maxstandard optimize"
 
@@ -39,6 +39,10 @@ for t in $normalTests; do
   runNormalTests $t commonIdeals
 
   runNormalTests $t frob
+
+  if [ "$t" == "euler" ]; then
+    runNormalTests $t bigIdeals
+  fi
 
   if [ -e "$t" ]; then
     runNormalTests $t $t
