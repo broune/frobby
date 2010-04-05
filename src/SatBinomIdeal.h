@@ -79,10 +79,18 @@ class SatBinomIdeal {
   /// {0,b,a+b} are both interior point-free bodies.
   void getDoubleTriangleCount(mpz_class& count) const;
 
-  /// Returns true if the smallest body containing zero, a and b has a
-  /// generator in its interior.
+  /// Returns true if the smallest body containing zero, a and b has
+  /// no generator in its interior.
   bool isPointFreeBody(const vector<mpz_class>& a,
                        const vector<mpz_class>& b) const;
+
+  /** Returns true if max(0,a,b) is strictly positive in every element. */
+  bool isInterior(const vector<mpz_class>& a,
+				  const vector<mpz_class>& b) const;
+
+  /** Returns a b such that {b,a+b} is an interior edge of
+	  Top. Otherwise returns numeric_limits<size_t>::max(). */
+  size_t getInteriorEdgeFrom(size_t a) const;
 
   /// Returns true if any generator, considered as an integer vector,
   /// is dominated by v.
