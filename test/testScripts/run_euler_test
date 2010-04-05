@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+frobby=../../bin/frobby
+testhelper=../testScripts/testhelper
+test="$1"
+tmpFile=/tmp/frobbyEulerRadicalTmp
+shift
+
+if [ "$1" = "_full" ];
+then
+  shift;
+fi
+
+$frobby transform -radical < $test.test > $tmpFile  \
+  2> /dev/null
+$testhelper euler $tmpFile $test.euler $*
+if [ $? != 0 ]; then exit 1; fi
+
+rm $tmpFile
