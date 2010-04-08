@@ -31,7 +31,7 @@ TransformAction::TransformAction():
   Action
 (staticGetName(),
  "Change the representation of the input ideal.",
- "By default, transform simply writes the input ideals to output. A\n"
+ "By default, transform simply writes the input ideals to output. A "
  "number of parameters allow to transform the input ideal in various ways.",
  false),
 
@@ -64,7 +64,7 @@ TransformAction::TransformAction():
 
   _radical
   ("radical",
-   "Take the radical of the generators. Combine this with -minimize to\n"
+   "Take the radical of the generators. Combine this with -minimize to "
    "get rid of any non-minimal ones.",
    false),
 
@@ -73,18 +73,23 @@ TransformAction::TransformAction():
    "Replace each ideal with the product of its generators.",
    false),
 
-_addPurePowers
-("addPurePowers",
- "Adds a pure power for each variable that does not already have a pure "
- "power\nin the ideal. Each exponent is chosen to be one larger than the "
- "maximal\nexponent of that variable that appears in the ideal.",
- false),
+  _addPurePowers
+  ("addPurePowers",
+   "Adds a pure power for each variable that does not already have a pure "
+   "power in the ideal. Each exponent is chosen to be one larger than the "
+   "maximal exponent of that variable that appears in the ideal.",
+   false),
 
-_projectVar
-("projectVar",
- "Project away the i'th variable counting from 1. No action is taken "
- "for a\nvalue of 0 or more than the number of variables in the ring.",
- 0) {
+  _trimVariables
+  ("trimVariables",
+   "Remove variables that divide none of the generators.",
+   false),
+
+  _projectVar
+  ("projectVar",
+   "Project away the i'th variable counting from 1. No action is taken "
+   "for a value of 0 or more than the number of variables in the ring.",
+   0) {
 }
 
 void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
@@ -97,6 +102,7 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_radical);
   parameters.push_back(&_product);
   parameters.push_back(&_addPurePowers);
+  parameters.push_back(&_trimVariables);
   parameters.push_back(&_projectVar);
   Action::obtainParameters(parameters);
 }
@@ -148,12 +154,20 @@ void TransformAction::perform() {
 
     if (_deform)
       idealFacade.deform(ideal);
+  }
+
+  if (_trimVariables)
+	idealFacade.trimVariables(ideals, names);
+
+  for (size_t i = 0; i < ideals.size(); ++i) {
+    BigIdeal& ideal = *(ideals[i]);
 
     if (_addPurePowers)
       idealFacade.addPurePowers(ideal);
 
     if (_canonicalize)
       idealFacade.sortVariables(ideal);
+
     if (_unique)
       idealFacade.sortGeneratorsUnique(ideal);
     else if (_sort || _canonicalize)

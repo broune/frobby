@@ -22,6 +22,7 @@
 
 #include <vector>
 
+class VarNames;
 class BigIdeal;
 class IOHandler;
 
@@ -34,11 +35,11 @@ class IdealFacade : private Facade {
  public:
   IdealFacade(bool printActions);
 
-  // Applies some generic deformation to the ideal.
+  /** Applies some generic deformation to the ideal. */
   void deform(BigIdeal& ideal);
 
-  // Takes the radical of the generators of ideal. Non-minimal
-  // generators that may appear due to this are not removed.
+  /** Takes the radical of the generators of ideal. Non-minimal
+	  generators that may appear due to this are not removed. */
   void takeRadical(BigIdeal& ideal);
 
   /** Compute the Krull dimension of ideal. By convention, this is -1
@@ -49,8 +50,7 @@ class IdealFacade : private Facade {
       free and minimally generated. This can speed up the computation,
       but will result in undefined behavior if it is not true.
 
-      @param codimension If true, return the codimension instead.
-  */
+      @param codimension If true, return the codimension instead. */
   mpz_class computeDimension(const BigIdeal& ideal,
                              bool codimension = false,
                              bool squareFreeAndMinimal = false);
@@ -58,36 +58,40 @@ class IdealFacade : private Facade {
   /** @todo: describe */
   mpz_class computeEuler(const BigIdeal& ideal);
 
-  // Take the product of the minimal generators of each ideal, and add
-  // the resulting monomials as generators of ideal. Requires that
-  // each ideal have the same names, including ideal.
+  /** Take the product of the minimal generators of each ideal, and add
+	  the resulting monomials as generators of ideal. Requires that
+	  each ideal have the same names, including ideal. */
   void takeProducts(const vector<BigIdeal*>& ideals, BigIdeal& ideal);
 
-  // Removes redundant generators from ideal.
+  /** Remove redundant generators from ideal. */
   void sortAllAndMinimize(BigIdeal& bigIdeal);
 
-  // Removes the variable var from the ideal and ring by substituting
-  // it by 1.
+  /** Remove the variable var from the ideal and ring by substituting
+	  it by 1 */
   void projectVar(BigIdeal& bigIdeal, size_t var);
 
-  // Adds x_i^(l_i+1) to the ideal for each i where that will be a
-  // minimal generator, where x^l is the lcm of the generators of
-  // bigIdeal.
+  /** Remove those variables that do not appear in any generator. */
+  void trimVariables(const vector<BigIdeal*>& ideals, VarNames& names);
+
+  /** Adds x_i^(l_i+1) to the ideal for each i where that will be a
+	  minimal generator, where x^l is the lcm of the generators of
+	  bigIdeal. */
   void addPurePowers(BigIdeal& bigIdeal);
 
-  // Sorts the generators of ideal and removes duplicates.
+  /** Sorts the generators of ideal and removes duplicates. */
   void sortGeneratorsUnique(BigIdeal& ideal);
 
-  // Sorts the generators of ideal.
+  /** Sorts the generators of ideal. */
   void sortGenerators(BigIdeal& ideal);
 
-  // Sorts the variables of ideal.
+  /** Sorts the variables of ideal. */
   void sortVariables(BigIdeal& ideal);
 
+  /** @todo: describe. */
   void printAnalysis(FILE* out, BigIdeal& ideal);
-  void printLcm(BigIdeal& ideal,
-                IOHandler* handler,
-                FILE* out);
+
+  /** @todo: describe. */
+  void printLcm(BigIdeal& ideal, IOHandler* handler, FILE* out);
 };
 
 #endif

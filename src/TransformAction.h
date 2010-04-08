@@ -46,6 +46,7 @@ class TransformAction : public Action {
   BoolParameter _radical;
   BoolParameter _product;
   BoolParameter _addPurePowers;
+  BoolParameter _trimVariables;
   IntegerParameter _projectVar;
 };
 
