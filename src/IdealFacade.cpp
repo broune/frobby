@@ -193,6 +193,34 @@ void IdealFacade::projectVar(BigIdeal& bigIdeal, size_t var) {
 
   endAction();
 }
+#include <iostream>
+void IdealFacade::trimVariables(const vector<BigIdeal*>& ideals,
+								VarNames& names) {
+  beginAction("Removing unused variables.");
+
+  vector<char> used(names.getVarCount());
+  for (size_t i = 0; i < ideals.size(); ++i) {
+	BigIdeal& ideal = *(ideals[i]);
+	ASSERT(ideal.getNames() == names);
+	for (size_t gen = 0; gen < ideal.getGeneratorCount(); ++gen)
+	  for (size_t var = 0; var < ideal.getVarCount(); ++var)
+		if (ideal[gen][var] != 0)
+		  used[var] = true;
+  }
+
+  // Go from high to low to avoid removing variable i interfering with
+  // the offset of variable j, as it would when i < j.
+  for (size_t var = names.getVarCount(); var > 0;) {
+	--var;
+	if (!used[var]) {
+	  names.projectVar(var);
+	  for (size_t i = 0; i < ideals.size(); ++i)
+		ideals[i]->projectVar(var);
+	}
+  }
+
+  endAction();
+}
 
 void IdealFacade::addPurePowers(BigIdeal& bigIdeal) {
   beginAction("Adding pure powers.");

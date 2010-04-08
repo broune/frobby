@@ -279,12 +279,5 @@ void HilbertBasecase::freeIdeal(auto_ptr<Ideal> ideal) {
   ASSERT(ideal.get() != 0);
 
   ideal->clear();
-  try {
-    exceptionSafePushBack(_idealCache, ideal);
-  } catch (bad_alloc) {
-    // In this case ideal gets deleted without being added to
-    // _idealCache, which is OK too.
-  } catch (...) {
-    reportInternalError("Unexpected exception at HilbertBasecase::freeIdeal.");
-  }
+  exceptionSafePushBack(_idealCache, ideal);
 }

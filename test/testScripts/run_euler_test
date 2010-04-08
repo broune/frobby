@@ -11,7 +11,7 @@ then
   shift;
 fi
 
-$frobby transform -radical < $test.test > $tmpFile  \
+$frobby transform -radical -minimize -trimVariables < $test.test > $tmpFile  \
   2> /dev/null
 $testhelper euler $tmpFile $test.euler $*
 if [ $? != 0 ]; then exit 1; fi
