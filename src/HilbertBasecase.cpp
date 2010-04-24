@@ -100,7 +100,7 @@ bool HilbertBasecase::stepComputation(Entry& entry, Entry& newEntry) {
       return false;
     }
 
-    // At this point entry is not a base case, and it cannot be
+     // At this point entry is not a base case, and it cannot be
     // simplified, so we have to split it into two.
 
     size_t bestPivotVar = _term.getFirstMaxExponent();
@@ -199,6 +199,10 @@ bool HilbertBasecase::canSimplify(size_t var,
   for (size_t other = 0; other < varCount; ++other) {
     if (other == var || counts[other] == 0)
       continue;
+
+	// todo: the answer is always no, I think, if var appears in less
+	// generators than other does, since then there must be some
+	// generator that other appears in that var does not.
 
     bool can = true;
     for (Ideal::const_iterator it = ideal.begin(); it != stop; ++it) {

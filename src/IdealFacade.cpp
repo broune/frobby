@@ -28,6 +28,7 @@
 #include "FrobbyStringStream.h"
 #include "SizeMaxIndepSetAlg.h"
 #include "HilbertBaseCase.h"
+#include "PivotEulerAlg.h"
 
 IdealFacade::IdealFacade(bool printActions):
   Facade(printActions) {
@@ -87,9 +88,11 @@ mpz_class IdealFacade::computeEuler(const BigIdeal& bigIdeal) {
   //if (!squareFreeAndMinimal)
   radical.minimize();
 
-  HilbertBasecase basecase;
-  basecase.computeCoefficient(radical);
-  mpz_class euler = basecase.getLastCoefficient();
+  //HilbertBasecase basecase;
+  //basecase.computeCoefficient(radical);
+  //mpz_class euler = basecase.getLastCoefficient();
+  PivotEulerAlg alg(radical);
+  mpz_class euler = alg.getEuler();
 
   endAction();
   return euler;

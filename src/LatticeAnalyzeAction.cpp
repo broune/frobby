@@ -130,6 +130,7 @@ namespace {
 	  cout << "A neighbor has a zero entry.\n";
 	else
 	  cout << "No neighbor has a zero entry.\n";
+
 	size_t sumCount =
 	  (ideal.getGeneratorCount() * (ideal.getGeneratorCount() - 1)) / 2;
 	cout << "There are " << ideal.getGeneratorCount() << " neighbors.\n";
