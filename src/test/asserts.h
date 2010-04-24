@@ -36,12 +36,16 @@ void assertTrue(bool value, const char* condition,
                 bool printDot);
 #define ASSERT_TRUE(VALUE) \
   assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, __printDots)
+#define ASSERT_TRUE_SILENT(VALUE) \
+  assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, false)
 
 void assertFalse(bool value, const char* condition,
                  const char* testName, const char* file, size_t line,
                  bool printDot);
 #define ASSERT_FALSE(VALUE) \
   assertFalse(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, __printDots)
+#define ASSERT_FALSE_SILENT(VALUE) \
+  assertFalse(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, false)
 
 void assertEqualFailed(const char* a, const char* b,
                        const char* aString, const char* bString,
@@ -70,5 +74,7 @@ template<class T1, class T2>
 
 #define ASSERT_EQ(A, B) \
   assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__, __printDots)
+#define ASSERT_EQ_SILENT(A, B) \
+  assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__, false)
 
 #endif

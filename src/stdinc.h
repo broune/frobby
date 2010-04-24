@@ -78,6 +78,8 @@ void operator delete[](void* s, const char* file, size_t line);
 #endif
 
 typedef unsigned int Exponent;
+typedef unsigned long Word;
+static const size_t BitsPerWord = 8 * sizeof(Word);
 
 /** @todo: move this elsewhere. */
 namespace constants {

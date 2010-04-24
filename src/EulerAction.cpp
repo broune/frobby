@@ -48,7 +48,6 @@ void EulerAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void EulerAction::perform() {
-
   BigIdeal ideal;
   Scanner in(_io.getInputFormat(), stdin);
   _io.autoDetectInputFormat(in);
