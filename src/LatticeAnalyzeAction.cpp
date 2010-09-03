@@ -29,6 +29,9 @@
 #include "DebugStrategy.h"
 #include "Matrix.h"
 #include "ColumnPrinter.h"
+#include "BigTermRecorder.h"
+#include "SliceParams.h"
+#include "SliceFacade.h"
 
 #include <algorithm>
 #include <set>
@@ -148,33 +151,79 @@ namespace {
 	  cout << it->first << it->second << '\n';
   }
 
-  void writeScarfGarph(const SatBinomIdeal& ideal) {
+  void writeScarfGraph(const SatBinomIdeal& ideal) {
 	ofstream out("graph.dot");
 	out << "digraph G {\n" << flush;
 	for (size_t gen1 = 0; gen1 < ideal.getGeneratorCount(); ++gen1) {
-	  size_t gen2 = ideal.getInteriorEdgeFrom(gen1);
-	  out << "  g" << gen1 << " [label=\"g" << gen1;
-	  if (gen2 == numeric_limits<size_t>::max()) {
-		out << " (no interior pair)\"];\n";
-		continue;
-	  }
-
 	  const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
-	  const vector<mpz_class>& g2 = ideal.getGenerator(gen2);
+	  out << "  g" << gen1 << " [label=\"g" << gen1
+		  << " (" << g1[0].get_d() << ')';
+	  if (ideal.isInterior(g1, g1))
+		out << "\\ninterior";
+	  out << "\", shape = box];\n";
 
-	  out << ", g" << gen2 << "\\n" << g1[0] << '\"';
-
-	  vector<mpz_class> sum(g1.size());
-	  for (size_t var = 0; var < g1.size(); ++var)
-		sum[var] = g1[var] + g2[var];
-
-	  if (ideal.isPointFreeBody(g1, sum))
-		out << ",shape=box";
-
-	  out << "];\n";
-	  out << "  g" << gen1 << " -> g" << gen2 << ";\n";	
+	  for (size_t gen2 = 0; gen2 < ideal.getGeneratorCount(); ++gen2) {
+		if (ideal.isInteriorEdge(gen1, gen2)) {
+		  out << "    g" << gen1 << " -> g" << gen2;
+		  if (ideal.isTerminatingEdge(gen1, gen2))
+			out << " [style = dashed, arrowhead = empty]";
+		  out << ";\n";
+		}
+	  }
 	}
 	out << "}\n";
+  }
+
+  void writeScarfComplex(const SatBinomIdeal& latticeIdeal) {
+	BigIdeal bigIdeal;
+	latticeIdeal.getInitialIdeal(bigIdeal);
+
+	BigTermRecorder recorder;
+	SliceParams params;
+	SliceFacade facade(params, bigIdeal, recorder);
+	facade.computeIrreducibleDecomposition(true);
+	auto_ptr<BigIdeal> mlfbs = recorder.releaseIdeal();
+	ASSERT(recorder.empty());
+
+
+	const size_t varCount = bigIdeal.getVarCount();
+	ColumnPrinter pr;
+	for (size_t var = 0; var < varCount; ++var)
+	  pr.addColumn();
+	pr.addColumn(true, "  is rhs of mlfb  ");
+
+	for (size_t mlfb = 0; mlfb < mlfbs->getGeneratorCount(); ++mlfb)
+	  for (size_t var = 0; var < varCount; ++var)
+		pr[var] << (*mlfbs)[mlfb][var] << '\n';
+
+	for (size_t mlfb = 0; mlfb < mlfbs->getGeneratorCount(); ++mlfb) {
+	  size_t offset = varCount;
+	  for (size_t gen = 0; gen < bigIdeal.getGeneratorCount(); ++gen) {
+		for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+		  if (bigIdeal[gen][var] > (*mlfbs)[mlfb][var])
+			goto skipIt1;
+		if (offset >= pr.getColumnCount())
+		  pr.addColumn(true, "  ", "");
+		++offset;
+	  skipIt1:;
+	  }
+	}
+
+	for (size_t mlfb = 0; mlfb < mlfbs->getGeneratorCount(); ++mlfb) {
+	  size_t offset = varCount;
+	  for (size_t gen = 0; gen < bigIdeal.getGeneratorCount(); ++gen) {
+		for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+		  if (bigIdeal[gen][var] > (*mlfbs)[mlfb][var])
+			goto skipIt2;
+		pr[offset] << 'g' << gen << '\n';
+		++offset;
+	  skipIt2:;
+	  }
+	  for (; offset < pr.getColumnCount(); ++offset)
+		pr[offset] << '\n';
+	}
+
+	cout << "\n\nThe " << mlfbs->getGeneratorCount() << " MLFBs in the Scarf complex are\n" << pr;
   }
 }
 
@@ -206,7 +255,7 @@ void LatticeAnalyzeAction::perform() {
   IOFacade ioFacade(_printActions);
   SatBinomIdeal ideal;
   ioFacade.readSatBinomIdeal(in, ideal);
-  
+
   Matrix matrix;
   {
 	SatBinomIdeal matrixIdeal;
@@ -225,7 +274,8 @@ void LatticeAnalyzeAction::perform() {
 
   printTriangles(ideal, matrix);
 
-  writeScarfGarph(ideal);
+  writeScarfGraph(ideal);
+  writeScarfComplex(ideal);
 }
 
 const char* LatticeAnalyzeAction::staticGetName() {

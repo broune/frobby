@@ -88,9 +88,17 @@ class SatBinomIdeal {
   bool isInterior(const vector<mpz_class>& a,
 				  const vector<mpz_class>& b) const;
 
-  /** Returns a b such that {b,a+b} is an interior edge of
-	  Top. Otherwise returns numeric_limits<size_t>::max(). */
-  size_t getInteriorEdgeFrom(size_t a) const;
+  /** Returns whether {to,to+from} is an interior edge of Top. */
+  bool isInteriorEdge(size_t from, size_t to) const;
+
+  /** Returns wehther {from,to+from} is an interior edge of Top and
+	  also {to,to+from} is an edge of Top (not necessarily
+	  interior). */
+  bool isTerminatingEdge(size_t from, size_t to) const;
+
+  /** Temporary. Returns whether the graph satisfies some conditions
+	  that it should if some hypotheses are correct. */
+  bool validate() const;
 
   /// Returns true if any generator, considered as an integer vector,
   /// is dominated by v.

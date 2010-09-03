@@ -56,7 +56,7 @@ bool HilbertSlice::baseCase(bool simplified) {
   basecase.computeCoefficient(_ideal);
   const mpz_class& coef = basecase.getLastCoefficient();
 
-  if (coef != 0)
+  //if (coef != 0)
     _consumer->consume(coef, getMultiply());
   clearIdealAndSubtract();
   return true;

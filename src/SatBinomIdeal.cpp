@@ -203,25 +203,86 @@ bool SatBinomIdeal::isInterior(const vector<mpz_class>& a,
   return true;
 }
 
-size_t SatBinomIdeal::getInteriorEdgeFrom(size_t a) const {
-  size_t edge = numeric_limits<size_t>::max();
-  const vector<mpz_class> aa = getGenerator(a);
-  if (isInterior(aa, aa))
-	return edge;
+namespace {
+  bool hasCycle(size_t gen, vector<char>& color, const SatBinomIdeal& ideal) {
+	// 0 = Not seen before.
+	// 1 = Exploring now.
+	// 2 = Already explored. Does not lead to cycle.
+	if (color[gen] == 1)
+	  return true;
+	if (color[gen] == 2)
+	  return false;
+	color[gen] = 1;
+	for (size_t g = 0; g < ideal.getGeneratorCount(); ++g)
+	  if (ideal.isInteriorEdge(gen, g) &&
+		  !ideal.isTerminatingEdge(gen, g) &&
+		  hasCycle(g, color, ideal))
+		return true;
+	color[gen] = 2;
+	return false;
+  }
+}
 
-  for (size_t b = 0; b < getGeneratorCount(); ++b) {
-	const vector<mpz_class> bb = getGenerator(b);
-	if (isInterior(bb, bb))
-	  continue;
-	vector<mpz_class> sum(aa.size());
-	for (size_t var = 0; var < aa.size(); ++var)
-	  sum[var] = aa[var] + bb[var];
-	if (isInterior(bb, sum)) {
-	  //ASSERT(edge == numeric_limits<size_t>::max());
-	  edge = b;
+bool SatBinomIdeal::validate() const {
+  // check the graph satisifies what we think it should.
+
+  bool generic = !hasZeroEntry();
+  if (!generic)
+	return true;
+
+  // termination.
+  vector<char> color(getGeneratorCount());
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	if (hasCycle(gen, color, *this))
+	  return false;
+
+  // out-degree 1 when generic
+  for (size_t from = 0; from < getGeneratorCount(); ++from) {
+	const vector<mpz_class>& fromGen = getGenerator(from);
+
+	size_t outDegree = 0;
+	for (size_t to = 0; to < getGeneratorCount(); ++to) {
+	  if (isInteriorEdge(from, to))
+		++outDegree;
+	}
+	if (isInterior(fromGen, fromGen)) {
+	  if (outDegree != 0)
+		return false;
+	} else {
+	  if (outDegree != 1)
+		return false;
 	}
   }
-  return edge;
+
+  return true;
+}
+
+bool SatBinomIdeal::isInteriorEdge(size_t from, size_t to) const {
+  const vector<mpz_class>& fromGen = getGenerator(from);
+  const vector<mpz_class>& toGen = getGenerator(to);
+
+  if (isInterior(fromGen, fromGen))
+	return false;
+  if (isInterior(toGen, toGen))
+	return false;
+
+  vector<mpz_class> sum(fromGen.size());
+  for (size_t var = 0; var < fromGen.size(); ++var)
+	sum[var] = fromGen[var] + toGen[var];
+  return isInterior(toGen, sum);
+}
+
+bool SatBinomIdeal::isTerminatingEdge(size_t from, size_t to) const {
+  if (!isInteriorEdge(from, to))
+	return false;
+
+  const vector<mpz_class> fromGen = getGenerator(from);
+  const vector<mpz_class> toGen = getGenerator(to);
+
+  vector<mpz_class> sum(fromGen.size());
+  for (size_t var = 0; var < fromGen.size(); ++var)
+	sum[var] = fromGen[var] + toGen[var];
+  return isPointFreeBody(fromGen, sum);
 }
 
 void SatBinomIdeal::getDoubleTriangleCount(mpz_class& count) const {
