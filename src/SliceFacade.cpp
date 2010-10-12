@@ -45,6 +45,8 @@
 #include "error.h"
 #include "display.h"
 
+#include <iterator>
+
 SliceFacade::SliceFacade(const SliceParams& params, const DataType& output):
   Facade(params.getPrintActions()),
   _params(params) {

@@ -1,6 +1,7 @@
 syntax: glob
 bin
 *~
+._*
 data
 frobby.lnk
 *.stackdump
