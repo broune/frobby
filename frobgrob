@@ -6,6 +6,7 @@ echo -n "1 " > $file.out.mat
 wc $file | sed "s/ *[0-9]* *\([0-9]*\) *.*/\1/" >> $file.out.mat
 cat $file >> $file.out.mat
 
+4ti2/4ti2gmp zbasis $file.out > /dev/null
 4ti2/4ti2gmp groebner $file.out > /dev/null
 
 cat $file.out.gro $file | bin/frobby optimize -chopFirstAndSubtract -maxStandard $*

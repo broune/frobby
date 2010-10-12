@@ -65,9 +65,8 @@ class SatBinomIdeal {
   /// Returns true if the initial ideal is weakly generic.
   bool initialIdealIsWeaklyGeneric() const;
 
-  /// Returns true if the generating set seems generic, i.e. no
-  /// generator has a zero entry and the initial ideal is weakly
-  /// generic.
+  /// Returns true if the generating set is generic, i.e. no
+  /// generator has a zero entry.
   ///
   /// This concept of genericity comes from Scarf's theory of
   /// maximal lattice-free bodies, and this link is preserved if the
@@ -75,8 +74,8 @@ class SatBinomIdeal {
   /// primitive vector.
   bool isGeneric() const;
 
-  /// Returns true if there are generators a and b such that {0,a,a+b}
-  /// {0,b,a+b} are both interior point-free bodies.
+  /// Returns the number of pairs of generators a and b such that
+  /// {0,a,a+b} and {0,b,a+b} are both interior point-free bodies.
   void getDoubleTriangleCount(mpz_class& count) const;
 
   /// Returns true if the smallest body containing zero, a and b has

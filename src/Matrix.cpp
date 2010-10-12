@@ -115,15 +115,19 @@ void print(ColumnPrinter& pr, const Matrix& mat) {
 
 void transpose(Matrix& trans, const Matrix& mat) {
   if (&trans == &mat) {
-	Matrix tmp(mat);
-	transpose(trans, tmp);
-	return;
+    transpose(trans);
+    return;
   }
 
   trans.resize(mat.getColCount(), mat.getRowCount());
   for (size_t row = 0; row < mat.getRowCount(); ++row)
-	for (size_t col = 0; col < mat.getColCount(); ++col)
-	  trans(col, row) = mat(row, col);
+    for (size_t col = 0; col < mat.getColCount(); ++col)
+      trans(col, row) = mat(row, col);
+}
+
+void transpose(Matrix& mat) {
+  Matrix tmp(mat);
+  transpose(mat, tmp);
 }
 
 
@@ -219,6 +223,17 @@ void subMatrix(Matrix& sub, const Matrix& mat,
 	  sub(row - rowBegin, col - colBegin) = mat(row, col);
 }
 
+void copyRow(Matrix& target, size_t targetRow,
+	     const Matrix& source, size_t sourceRow) {
+  ASSERT(target.getColCount() == source.getColCount());
+  ASSERT(targetRow < target.getRowCount());
+  ASSERT(sourceRow < source.getRowCount());
+
+  size_t colCount = target.getColCount();
+  for (size_t col = 0; col < colCount; ++col)
+    target(targetRow, col) = source(sourceRow, col);
+}
+
 bool inverse(Matrix& inv, const Matrix& mat) {
   ASSERT(mat.getRowCount() == mat.getColCount());
   size_t size = mat.getRowCount();
@@ -248,42 +263,44 @@ void nullSpace(Matrix& basis, const Matrix& matParam) {
   size_t col = 0;
   size_t row = 0;
   while (row < mat.getRowCount() && col < mat.getColCount()) {
-	if (mat(row,  col) == 0) {
-	  ++col;
-	} else {
-	  ++rank;
-	  colHasPivot[col] = true;
-	  ++row;
-	}
+    if (mat(row,  col) == 0) {
+      ++col;
+    } else {
+      ++rank;
+      colHasPivot[col] = true;
+      ++row;
+    }
   }
 
   // Construct basis
   basis.resize(mat.getColCount(), mat.getColCount() - rank);
   size_t nullCol = 0;
   for (size_t col = 0; col < mat.getColCount(); ++col) {
-	ASSERT(nullCol < basis.getColCount());
+    ASSERT(nullCol <= basis.getColCount());
 
-	if (colHasPivot[col])
-	  continue;
+    if (colHasPivot[col])
+      continue;
 
-	size_t row = 0;
-	for (size_t nullRow = 0; nullRow < basis.getRowCount(); ++nullRow) {
-	  if (colHasPivot[nullRow]) {
-		basis(nullRow, nullCol) = -mat(row, col);
-		++row;
-	  } else if (nullRow == col)
-		basis(nullRow, nullCol) = 1;
-	  else
-		basis(nullRow, nullCol) = 0;
-	}
+    ASSERT(nullCol < basis.getColCount());
 
-	++nullCol;
+    size_t row = 0;
+    for (size_t nullRow = 0; nullRow < basis.getRowCount(); ++nullRow) {
+      if (colHasPivot[nullRow]) {
+	basis(nullRow, nullCol) = -mat(row, col);
+	++row;
+      } else if (nullRow == col)
+	basis(nullRow, nullCol) = 1;
+      else
+	basis(nullRow, nullCol) = 0;
+    }
+
+    ++nullCol;
   }
   ASSERT(nullCol == basis.getColCount());
 
   // Make basis integer
   for (size_t col = 0; col < basis.getColCount(); ++col)
-	makeColumnIntegralPrimitive(basis, col);
+    makeColumnIntegralPrimitive(basis, col);
 }
 
 bool solve(Matrix& sol, const Matrix& lhs, const Matrix& rhs) {
@@ -326,4 +343,24 @@ bool solve(Matrix& sol, const Matrix& lhs, const Matrix& rhs) {
 	}
   }
   return true;
+}
+
+bool hasSameRowSpace(const Matrix& a, const Matrix& b) {
+  Matrix trA;
+  transpose(trA, a);
+
+  Matrix trB;
+  transpose(trB, b);
+
+  return hasSameColSpace(trA, trB);
+}
+
+bool hasSameColSpace(const Matrix& a, const Matrix& b) {
+  if (a.getRowCount() != b.getRowCount())
+    return false;
+
+  // A single row reduction of each of a and b would be a little more
+  // efficient.
+  Matrix dummy;
+  return solve(dummy, a, b) && solve(dummy, b, a);
 }

@@ -28,6 +28,7 @@
 #include "error.h"
 
 #include <algorithm>
+#include <iterator>
 
 OptimizeAction::OptimizeAction():
   Action

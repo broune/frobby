@@ -70,9 +70,12 @@ void product(BigIntVector& prod, const Matrix& mat, const BigIntVector& vec);
 /** Sets trans to the transpose of mat. */
 void transpose(Matrix& trans, const Matrix& mat);
 
+/** Transpose mat inplace. */
+void transpose(Matrix& mat);
+
 /** Adds mult times row sourceRow to row resultRow of mat. */
 void addMultiplyRow(Matrix& mat, size_t resultRow,
-					size_t sourceRow, const mpq_class& mult);
+		    size_t sourceRow, const mpq_class& mult);
 
 /** Multiplies row row with mult. */
 void multiplyRow(Matrix& mat, size_t row, const mpq_class& mult);
@@ -96,6 +99,11 @@ void subMatrix(Matrix& sub, const Matrix& mat,
 			   size_t rowBegin, size_t rowEnd,
 			   size_t colBegin, size_t colEnd);
 
+/** Copies row sourceRow from source to row targetRow of
+    target. source and taret Must have the same number of columns. */
+void copyRow(Matrix& target, size_t targetRow,
+	     const Matrix& source, size_t sourceRow);
+
 /** Sets inv to the inverse of mat.
 
 mat must be a square matrix. Returns true if mat is
@@ -107,9 +115,14 @@ bool inverse(Matrix& inv, const Matrix& mat);
 void nullSpace(Matrix& basis, const Matrix& mat);
 
 /** Sets sol to some matrix such that lhs*sol=rhs and returns true if
- such a vector exists. Otherwise returns false and does not change
- sol. sol cannot be a BigIntVector as it has to be able to contain
- fractions. */
+ such a matrix exists. Otherwise returns false and does not change
+ sol. */
 bool solve(Matrix& sol, const Matrix& lhs, const Matrix& rhs);
+
+/** Returns true if a and b have the same column space. */
+bool hasSameColSpace(const Matrix& a, const Matrix& b);
+
+/** Returns true if a and b have the same row space. */
+bool hasSameRowSpace(const Matrix& a, const Matrix& b);
 
 #endif
