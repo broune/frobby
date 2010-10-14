@@ -63,7 +63,7 @@ namespace {
     transpose(nullSpaceBasis, nullSpaceBasis);
 
     fputs("The right null space is spanned by the rows of\n",
-	  stdout);
+		  stdout);
     printIndentedMatrix(nullSpaceBasis);
   }
 
@@ -120,6 +120,24 @@ namespace {
       return _ideal.hasZeroEntry();
     }
 
+	void getInitialIdeal(BigIdeal& ideal) const {
+	  _ideal.getInitialIdeal(ideal);
+	}
+
+	auto_ptr<BigIdeal> computeMLFBs() const {
+	  BigIdeal bigIdeal;
+	  _ideal.getInitialIdeal(bigIdeal);
+
+	  BigTermRecorder recorder;
+	  SliceParams params;
+	  SliceFacade facade(params, bigIdeal, recorder);
+	  facade.computeIrreducibleDecomposition(true);
+	  auto_ptr<BigIdeal> mlfbs = recorder.releaseIdeal();
+	  ASSERT(recorder.empty());
+
+	  return mlfbs;
+	}
+
   private:
     Matrix _y; // rows are neighbors in y-space
     Matrix _h; // rows are neighbors in h-space
@@ -127,22 +145,92 @@ namespace {
     SatBinomIdeal _ideal;
   };
 
+  class NeighborPrinter {
+  public:
+    NeighborPrinter(const GrobLat& lat):
+      _lat(lat) {
+
+	  // "gXYZ:" label
+	  _labelIndex = _pr.getColumnCount();
+	  _pr.addColumn(true, " ");
+
+	  // h space
+	  _hHeader = _pr.getColumnCount();
+	  _pr.addColumn(true, " ", "");
+	  _hIndex = _pr.getColumnCount();
+	  for (size_t i = 0; i < _lat.getHDim(); ++i)
+		_pr.addColumn(true, i == 0 ? " " : "  ");
+
+	  _comma = _pr.getColumnCount();
+	  _pr.addColumn(true, "", " ");
+
+	  // y space
+	  _yHeader = _pr.getColumnCount();
+	  _pr.addColumn(true, " ", "");
+	  _yIndex = _pr.getColumnCount();
+	  for (size_t i = 0; i < _lat.getYDim(); ++i)
+		_pr.addColumn(true, i == 0 ? " " : "  ");
+    }
+
+    void addLine(size_t neighbor) {
+	  _pr[_labelIndex] << 'g' << neighbor << ":\n";
+	  _pr[_yHeader] << "y=\n";
+	  for (size_t i = 0; i < _lat.getYDim(); ++i)
+		_pr[_yIndex + i] << _lat.getYMatrix()(neighbor, i) << '\n';
+	  _pr[_comma] << ",\n";
+	  _pr[_hHeader] << "h=\n";
+	  for (size_t i = 0; i < _lat.getHDim(); ++i)
+		_pr[_hIndex + i] << _lat.getHMatrix()(neighbor, i) << '\n';
+    }
+
+    void addLine() {
+	  for (size_t i = 0; i < _pr.getColumnCount(); ++i)
+		_pr[i] << '\n';
+    }
+
+    void print(FILE* out) {
+      ::print(out, _pr);
+    }
+
+    void print(ostream& out) {
+	  out << _pr;
+    }
+
+  private:
+    const GrobLat& _lat;
+    ColumnPrinter _pr;
+	size_t _labelIndex;
+	size_t _comma;
+	size_t _yHeader;
+	size_t _yIndex;
+	size_t _hHeader;
+	size_t _hIndex;
+  };
+
+
+
+
+  void printNeighbor(const GrobLat& lat, size_t n) {
+    cout << "  g" << n << ": ";
+
+    cout << " y=";
+    for (size_t i = 0; i < lat.getYDim(); ++i)
+      cout << ' ' << lat.getYMatrix()(n, i);
+
+    cout << ",  h=";
+    for (size_t i = 0; i < lat.getHDim(); ++i)
+      cout << ' ' << lat.getHMatrix()(n, i);
+    cout << '\n';
+  }
+
   void printNeighbors(const GrobLat& lat) {
-    ColumnPrinter pr;
-
-    pr.addColumn(true, " ");
-    for (size_t i = 0; i < lat.getNeighborCount(); ++i)
-      pr[0] << 'g' << i << ":\n";
-
-    pr.addColumn(true, " y=");
-    print(pr, lat.getYMatrix());
-
-    pr.addColumn(true, ",  h=");
-    print(pr, lat.getHMatrix());
+	NeighborPrinter pr(lat);
+	for (size_t n = 0; n < lat.getNeighborCount(); ++n)
+	  pr.addLine(n);
 
     fprintf(stdout, "The %u neighbors in y-space and h-space are\n",
-	    (unsigned int)lat.getNeighborCount());
-    print(stdout, pr);
+			(unsigned int)lat.getNeighborCount());
+    pr.print(stdout);
     fputc('\n', stdout);
   }
 
@@ -153,8 +241,8 @@ namespace {
   };
 
   void makeTrianglesAndSums(const GrobLat& lat,
-			    set<string>& sums,
-			    vector<vector<Tri> >& tris) {
+							set<string>& sums,
+							vector<vector<Tri> >& tris) {
     const SatBinomIdeal& ideal = lat.getIdeal();
 
     size_t varCount = lat.getYDim();
@@ -162,43 +250,44 @@ namespace {
     vector<mpz_class> sum(varCount);
     for (size_t gen1 = 0; gen1 < neighborCount; ++gen1) {
       for (size_t gen2 = gen1 + 1; gen2 < neighborCount; ++gen2) {
-	const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
-	const vector<mpz_class>& g2 = ideal.getGenerator(gen2);
+		const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
+		const vector<mpz_class>& g2 = ideal.getGenerator(gen2);
 
-	// Set sum = g1 + g2.
-	for (size_t var = 0; var < varCount; ++var)
-	  sum[var] = g1[var] + g2[var];
+		// Set sum = g1 + g2.
+		for (size_t var = 0; var < varCount; ++var)
+		  sum[var] = g1[var] + g2[var];
 
-	ostringstream sumStr;
-	sumStr << "sum:";
-	for (size_t var = 0; var < varCount; ++var)
-	  sumStr << ' ' << sum[var];
-	sumStr << '\n';
-	sums.insert(sumStr.str());
-	if (ideal.isPointFreeBody(g1, sum) && ideal.isPointFreeBody(g2, sum)) {
-	  Tri tri;
-	  tri.a = gen1;
-	  tri.b = gen2;
-	  tri.rowAB.resize(2, lat.getHDim());
-	  copyRow(tri.rowAB, 0, lat.getHMatrix(), gen1);
-	  copyRow(tri.rowAB, 1, lat.getHMatrix(), gen2);
+		ostringstream sumStr;
+		sumStr << "sum:";
+		for (size_t var = 0; var < varCount; ++var)
+		  sumStr << ' ' << sum[var];
+		sumStr << '\n';
+		sums.insert(sumStr.str());
+		if (ideal.isPointFreeBody(g1, sum) && ideal.isPointFreeBody(g2, sum)) {
+		  Tri tri;
+		  tri.a = gen1;
+		  tri.b = gen2;
+		  tri.rowAB.resize(2, lat.getHDim());
+		  copyRow(tri.rowAB, 0, lat.getHMatrix(), gen1);
+		  copyRow(tri.rowAB, 1, lat.getHMatrix(), gen2);
 
-	  for (size_t plane = 0; plane < tris.size(); ++plane) {
-	    ASSERT(!tris[plane].empty());
-	    if (hasSameRowSpace(tri.rowAB, tris[plane][0].rowAB)) {
-	      tris[plane].push_back(tri);
-	      goto done;
-	    }
-	  }
-	  tris.resize(tris.size() + 1);
-	  tris.back().push_back(tri);
-	done:;
-	}
+		  for (size_t plane = 0; plane < tris.size(); ++plane) {
+			ASSERT(!tris[plane].empty());
+			if (hasSameRowSpace(tri.rowAB, tris[plane][0].rowAB)) {
+			  tris[plane].push_back(tri);
+			  goto done;
+			}
+		  }
+		  tris.resize(tris.size() + 1);
+		  tris.back().push_back(tri);
+		done:;
+		}
       }
     }
   }
 
-  void printTriangles(const GrobLat& lat) {
+  void printTriangles(size_t mlfbCount, size_t mlfbsInPlane,
+					  const GrobLat& lat) {
     set<string> sums;
     vector<mpz_class> sum(lat.getYDim());
     vector<vector<Tri> > tris;
@@ -217,32 +306,39 @@ namespace {
     size_t sumCount =
       (lat.getNeighborCount() * (lat.getNeighborCount() - 1)) / 2;
     cout << "There are " << lat.getNeighborCount() << " neighbors.\n";
+	cout << "There are " << mlfbCount << " MLFBs.\n";
+	cout << "There are "
+		 << mlfbsInPlane << " MLFBs whose neighbors lie in a plane.\n";
     cout << "There are " << sums.size() << " distinct neighbor sums out of "
-	 << sumCount << ".\n";
-    cout << "There are " << tris.size() << " distinct double triangle planes.\n";\
+		 << sumCount << ".\n";
+    cout << "There are " << tris.size()
+		 << " distinct double triangle planes.\n";
     cout << "There are " << triCount << " double triangles.\n\n";
 
     printNeighbors(lat);
 
-    cout << "\n\nThe " << triCount << " double triangles, grouped by linear span:\n\n";
+    cout << "\n\nThe " << triCount << " double triangles, grouped by linear span:";
 
     for (size_t plane = 0; plane < tris.size(); ++plane) {
       vector<Tri>& p = tris[plane];
-      cout << "*** Plane " << (plane + 1)
-	   << " has orthogonal space spanned by the rows of\n";
+      cout << "\n\n*** Plane " << (plane + 1)
+		   << " has orthogonal space spanned by the rows of\n";
 
       {
-	Matrix nullSpaceBasis;
-	nullSpace(nullSpaceBasis, p.front().rowAB);
-	transpose(nullSpaceBasis);
-	printIndentedMatrix(nullSpaceBasis);
+		Matrix nullSpaceBasis;
+		nullSpace(nullSpaceBasis, p.front().rowAB);
+		transpose(nullSpaceBasis);
+		printIndentedMatrix(nullSpaceBasis);
       }
       
-      cout << " and contains " << p.size() << " double triangle pairs:" << endl;
+      cout << " and contains " << p.size() << " double triangle pairs:\n";
+	  NeighborPrinter pr(lat);
       for (size_t t = 0; t < p.size(); ++t) {
-	cout << "  Pair of g" << p[t].a << " and g" << p[t].b << ":";
-	printIndentedMatrix(p[t].rowAB);
+		pr.addLine();
+		pr.addLine(p[t].a);
+		pr.addLine(p[t].b);
       }
+	  pr.print(stdout);
     }
   }
 
@@ -252,86 +348,83 @@ namespace {
     for (size_t gen1 = 0; gen1 < ideal.getGeneratorCount(); ++gen1) {
       const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
       out << "  g" << gen1 << " [label=\"g" << gen1
-	  << " (" << g1[0].get_d() << ')';
+		  << " (" << g1[0].get_d() << ')';
       if (ideal.isInterior(g1, g1))
-	out << "\\ninterior";
+		out << "\\ninterior";
       out << "\", shape = box];\n";
 
       for (size_t gen2 = 0; gen2 < ideal.getGeneratorCount(); ++gen2) {
-	if (ideal.isInteriorEdge(gen1, gen2)) {
-	  out << "    g" << gen1 << " -> g" << gen2;
-	  if (ideal.isTerminatingEdge(gen1, gen2))
-	    out << " [style = dashed, arrowhead = empty]";
-	  out << ";\n";
-	}
+		if (ideal.isInteriorEdge(gen1, gen2)) {
+		  out << "    g" << gen1 << " -> g" << gen2;
+		  if (ideal.isTerminatingEdge(gen1, gen2))
+			out << " [style = dashed, arrowhead = empty]";
+		  out << ";\n";
+		}
       }
     }
     out << "}\n";
   }
 
-  void writeScarfComplex(const SatBinomIdeal& latticeIdeal) {
-    BigIdeal bigIdeal;
-    latticeIdeal.getInitialIdeal(bigIdeal);
+  void writeScarfComplex(const BigIdeal& mlfbs,
+						 const GrobLat& lat,
+						 size_t& mlfbsInPlane,
+						 ostream& output) {
+	mlfbsInPlane = 0;
+	BigIdeal bigIdeal;
+	lat.getInitialIdeal(bigIdeal);
 
-    BigTermRecorder recorder;
-    SliceParams params;
-    SliceFacade facade(params, bigIdeal, recorder);
-    facade.computeIrreducibleDecomposition(true);
-    auto_ptr<BigIdeal> mlfbs = recorder.releaseIdeal();
-    ASSERT(recorder.empty());
+	ASSERT(mlfbs.getVarCount() == lat.getYDim());
+	const size_t varCount = lat.getYDim();
 
+	ostringstream nonFlats;
 
-    const size_t varCount = bigIdeal.getVarCount();
-    ColumnPrinter pr;
-    for (size_t var = 0; var < varCount; ++var)
-      pr.addColumn();
-    pr.addColumn(true, "  is rhs of mlfb  ");
+	output << "\n\n";
+	for (size_t mlfb = 0; mlfb < mlfbs.getGeneratorCount(); ++mlfb) {
+	  vector<size_t> points;
+	  for (size_t gen = 0; gen < bigIdeal.getGeneratorCount(); ++gen) {
+		for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
+		  if (bigIdeal[gen][var] > mlfbs[mlfb][var])
+			goto skipIt1;
+		points.push_back(gen);
+	  skipIt1:;
+	  }
 
-    for (size_t mlfb = 0; mlfb < mlfbs->getGeneratorCount(); ++mlfb)
-      for (size_t var = 0; var < varCount; ++var)
-	pr[var] << (*mlfbs)[mlfb][var] << '\n';
+	  Matrix mat(points.size(), lat.getHDim());
+	  for (size_t point = 0; point < points.size(); ++point)
+		for (size_t var = 0; var < lat.getHDim(); ++var)
+		  mat(point, var) = lat.getHMatrix()(points[point], var);
+	  bool flat = (rank(mat) == 2);
+	  if (flat)
+		++mlfbsInPlane;
 
-    for (size_t mlfb = 0; mlfb < mlfbs->getGeneratorCount(); ++mlfb) {
-      size_t offset = varCount;
-      for (size_t gen = 0; gen < bigIdeal.getGeneratorCount(); ++gen) {
-	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
-	  if (bigIdeal[gen][var] > (*mlfbs)[mlfb][var])
-	    goto skipIt1;
-	if (offset >= pr.getColumnCount())
-	  pr.addColumn(true, "  ", "");
-	++offset;
-      skipIt1:;
-      }
-    }
+	  ostream& out = flat ? output : nonFlats;
 
-    for (size_t mlfb = 0; mlfb < mlfbs->getGeneratorCount(); ++mlfb) {
-      size_t offset = varCount;
-      for (size_t gen = 0; gen < bigIdeal.getGeneratorCount(); ++gen) {
-	for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
-	  if (bigIdeal[gen][var] > (*mlfbs)[mlfb][var])
-	    goto skipIt2;
-	pr[offset] << 'g' << gen << '\n';
-	++offset;
-      skipIt2:;
-      }
-      for (; offset < pr.getColumnCount(); ++offset)
-	pr[offset] << '\n';
-    }
+	  out << "*** MLFB with rhs";
+	  for (size_t var = 0; var < varCount; ++var)
+		out << ' ' << mlfbs[mlfb][var];
+	  out << " contains the neighbors\n";
 
-    cout << "\n\nThe " << mlfbs->getGeneratorCount() << " MLFBs in the Scarf complex are\n" << pr;
+	  NeighborPrinter pr(lat);
+	  for (size_t i = 0; i < points.size(); ++i)
+		pr.addLine(points[i]);
+	  pr.print(out);
+	  if (flat)
+		out << "and these neighbors lie in a plane.\n";
+	  out << '\n';
+	}
+	output << nonFlats.str();
   }
 }
+LatticeAnalyzeAction::LatticeAnalyzeAction():
+  Action
+  (staticGetName(),
+   "Display information about the input ideal.",
+   "This action is not ready for use.\n\n"
+   "Display information about input Grobner basis of lattice.",
+   false),
 
-    LatticeAnalyzeAction::LatticeAnalyzeAction():
-    Action
-    (staticGetName(),
-     "Display information about the input ideal.",
-     "This action is not ready for use.\n\n"
-     "Display information about input Grobner basis of lattice.",
-     false),
-
-    _io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
-  }
+  _io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
+}
 
   void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
     _io.obtainParameters(parameters);
@@ -360,11 +453,7 @@ void LatticeAnalyzeAction::perform() {
     matrixIdeal.getMatrix(matrix);
   }
 
-  cerr << "** Counting double triangles" << endl;
-  mpz_class triCount;
-  ideal.getDoubleTriangleCount(triCount);
-
-  cerr << "** Computing matrix and it's nullspace" << endl;
+  cerr << "** Computing matrix and its nullspace" << endl;
   cout << "Analysis of the "
        << matrix.getRowCount() << " by " << matrix.getColCount() 
        << " matrix\n";
@@ -374,14 +463,22 @@ void LatticeAnalyzeAction::perform() {
   cerr << "** Computing h-space vectors" << endl;
   GrobLat lat(matrix, ideal);
 
+  cerr << "** Computing MLFBs" << endl;
+  auto_ptr<BigIdeal> mlfbs = lat.computeMLFBs();
+
+  cerr << "** Computing neighbors on MLFBs" << endl;
+  size_t mlfbsInPlane;
+  ostringstream mlfbOutput;
+  writeScarfComplex(*mlfbs, lat, mlfbsInPlane, mlfbOutput);
+
   cerr << "** Computing double triangles" << endl;
-  printTriangles(lat);
+  printTriangles(mlfbs->getGeneratorCount(), mlfbsInPlane, lat);
 
   //cerr << "** Computing Scarf graph" << endl;
-  //writeScarfGraph(ideal);
+  //writeScarfGraph(ideal); // slow
 
-  cerr << "** Computing Scarf complex" << endl;
-  writeScarfComplex(ideal);
+  cerr << "Writing MLFB data" << endl;
+  cout << mlfbOutput.str();
 }
 
 const char* LatticeAnalyzeAction::staticGetName() {
