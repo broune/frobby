@@ -253,6 +253,26 @@ bool inverse(Matrix& inv, const Matrix& mat) {
   return true;
 }
 
+size_t rank(const Matrix& matParam) {
+  Matrix mat(matParam);
+  rowReduceFully(mat);
+
+  // Find pivots
+  size_t rank = 0;
+  size_t col = 0;
+  size_t row = 0;
+  while (row < mat.getRowCount() && col < mat.getColCount()) {
+    if (mat(row,  col) == 0) {
+      ++col;
+    } else {
+      ++rank;
+      ++row;
+    }
+  }
+
+  return rank;
+}
+
 void nullSpace(Matrix& basis, const Matrix& matParam) {
   Matrix mat(matParam);
   rowReduceFully(mat);

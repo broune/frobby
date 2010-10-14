@@ -87,6 +87,9 @@ void swapRows(Matrix& mat, size_t row1, size_t row2);
 	triangular. This does not include making the pivot entries 1. */
 void rowReduce(Matrix& mat);
 
+/** Returns the rank of mat. */
+size_t rank(const Matrix& mat);
+
 /** Reduces mat to reduced row-echelon form, i.e. a row-echelon matrix
  such that no column contains two non-zero entries and all entries are
  zero or one.
