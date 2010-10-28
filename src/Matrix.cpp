@@ -253,7 +253,7 @@ bool inverse(Matrix& inv, const Matrix& mat) {
   return true;
 }
 
-size_t rank(const Matrix& matParam) {
+size_t matrixRank(const Matrix& matParam) {
   Matrix mat(matParam);
   rowReduceFully(mat);
 
