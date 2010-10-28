@@ -142,7 +142,7 @@ namespace {
     Matrix _y; // rows are neighbors in y-space
     Matrix _h; // rows are neighbors in h-space
     Matrix _mat; // matrix that defines lattice
-    SatBinomIdeal _ideal;
+    SatBinomIdeal _ideal; // other representation of _y, necessary for now
   };
 
   class NeighborPrinter {
@@ -207,9 +207,6 @@ namespace {
 	size_t _hIndex;
   };
 
-
-
-
   void printNeighbor(const GrobLat& lat, size_t n) {
     cout << "  g" << n << ": ";
 
@@ -240,9 +237,8 @@ namespace {
     Matrix rowAB;
   };
 
-  void makeTrianglesAndSums(const GrobLat& lat,
-							set<string>& sums,
-							vector<vector<Tri> >& tris) {
+  void makeTriangles(const GrobLat& lat,
+					 vector<vector<Tri> >& tris) {
     const SatBinomIdeal& ideal = lat.getIdeal();
 
     size_t varCount = lat.getYDim();
@@ -257,12 +253,6 @@ namespace {
 		for (size_t var = 0; var < varCount; ++var)
 		  sum[var] = g1[var] + g2[var];
 
-		ostringstream sumStr;
-		sumStr << "sum:";
-		for (size_t var = 0; var < varCount; ++var)
-		  sumStr << ' ' << sum[var];
-		sumStr << '\n';
-		sums.insert(sumStr.str());
 		if (ideal.isPointFreeBody(g1, sum) && ideal.isPointFreeBody(g2, sum)) {
 		  Tri tri;
 		  tri.a = gen1;
@@ -288,11 +278,10 @@ namespace {
 
   void printTriangles(size_t mlfbCount, size_t mlfbsInPlane,
 					  const GrobLat& lat) {
-    set<string> sums;
     vector<mpz_class> sum(lat.getYDim());
     vector<vector<Tri> > tris;
 
-    makeTrianglesAndSums(lat, sums, tris);
+    makeTriangles(lat, tris);
 
     size_t triCount = 0;
     for (size_t plane = 0; plane < tris.size(); ++plane)
@@ -303,14 +292,10 @@ namespace {
     else
       cout << "No neighbor has a zero entry.\n";
 
-    size_t sumCount =
-      (lat.getNeighborCount() * (lat.getNeighborCount() - 1)) / 2;
     cout << "There are " << lat.getNeighborCount() << " neighbors.\n";
 	cout << "There are " << mlfbCount << " MLFBs.\n";
 	cout << "There are "
 		 << mlfbsInPlane << " MLFBs whose neighbors lie in a plane.\n";
-    cout << "There are " << sums.size() << " distinct neighbor sums out of "
-		 << sumCount << ".\n";
     cout << "There are " << tris.size()
 		 << " distinct double triangle planes.\n";
     cout << "There are " << triCount << " double triangles.\n\n";
@@ -330,7 +315,7 @@ namespace {
 		transpose(nullSpaceBasis);
 		printIndentedMatrix(nullSpaceBasis);
       }
-      
+
       cout << " and contains " << p.size() << " double triangle pairs:\n";
 	  NeighborPrinter pr(lat);
       for (size_t t = 0; t < p.size(); ++t) {
@@ -393,7 +378,7 @@ namespace {
 	  for (size_t point = 0; point < points.size(); ++point)
 		for (size_t var = 0; var < lat.getHDim(); ++var)
 		  mat(point, var) = lat.getHMatrix()(points[point], var);
-	  bool flat = (rank(mat) == 2);
+	  bool flat = (matrixRank(mat) == 2);
 	  if (flat)
 		++mlfbsInPlane;
 
