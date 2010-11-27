@@ -45,7 +45,22 @@
 #include <iostream>
 
 namespace {
-  
+  enum NeighborPlace {
+	InPlane,
+	UnderPlane,
+	OverPlane,
+	NoPlace
+  };
+
+  char getPlaceCode(NeighborPlace place) {
+	switch (place) {
+	case InPlane: return 'P';
+	case UnderPlane: return 'U';
+	case OverPlane: return 'O';
+	case NoPlace: return ' ';
+	default: return 'E';
+	}
+  }
 
   void printIndentedMatrix(const Matrix& matrix) {
     ColumnPrinter pr;
@@ -124,20 +139,6 @@ namespace {
 	  _ideal.getInitialIdeal(ideal);
 	}
 
-	auto_ptr<BigIdeal> computeMLFBs() const {
-	  BigIdeal bigIdeal;
-	  _ideal.getInitialIdeal(bigIdeal);
-
-	  BigTermRecorder recorder;
-	  SliceParams params;
-	  SliceFacade facade(params, bigIdeal, recorder);
-	  facade.computeIrreducibleDecomposition(true);
-	  auto_ptr<BigIdeal> mlfbs = recorder.releaseIdeal();
-	  ASSERT(recorder.empty());
-
-	  return mlfbs;
-	}
-
   private:
     Matrix _y; // rows are neighbors in y-space
     Matrix _h; // rows are neighbors in h-space
@@ -145,10 +146,156 @@ namespace {
     SatBinomIdeal _ideal; // other representation of _y, necessary for now
   };
 
+  struct Mlfb {
+	mpq_class index;
+	vector<size_t> points;
+	vector<size_t> edges;
+	vector<mpz_class> rhs;
+	size_t planeCount;
+
+	bool operator<(const Mlfb& mlfb) const {
+	  if (planeCount > mlfb.planeCount)
+		return true;
+	  if (planeCount < mlfb.planeCount)
+		return false;
+
+	  return points.back() > mlfb.points.back();
+	}
+  };
+
+  size_t relax(size_t facet, vector<mpz_class>& rhs, const GrobLat& lat) {
+	size_t onFacet = numeric_limits<size_t>::max();
+	mpq_class leastEntry;
+
+	for (size_t n = 0; n < lat.getNeighborCount(); ++n) {
+	  if (facet > 0) {
+		for (size_t i = 0; i < lat.getYDim(); ++i) {
+		  if (i == facet)
+			continue;
+		  if (lat.getYMatrix()(n, i) > rhs[i])
+			goto notOnFacet;
+		}
+	  } else {
+		for (size_t i = 0; i < lat.getYDim(); ++i) {
+		  if (i == facet)
+			continue;
+		  if (lat.getYMatrix()(n, i) < rhs[i])
+			goto notOnFacet;
+		}
+	  }
+
+	  if (onFacet == numeric_limits<size_t>::max() ||
+		  leastEntry > lat.getYMatrix()(n, facet)) {
+		leastEntry = lat.getYMatrix()(n, facet);
+		onFacet = n;
+	  }
+
+	notOnFacet:;
+	}
+	return onFacet;
+  }
+
+  void computeMlfbs(vector<Mlfb>& mlfbs, const GrobLat& lat) {
+	BigIdeal initialIdeal;
+	lat.getInitialIdeal(initialIdeal);
+
+	BigTermRecorder recorder;
+	SliceParams params;
+	SliceFacade facade(params, initialIdeal, recorder);
+	facade.computeIrreducibleDecomposition(true);
+	auto_ptr<BigIdeal> rhsesOwner = recorder.releaseIdeal();
+	BigIdeal& rhses = *rhsesOwner;
+	ASSERT(recorder.empty());
+
+	mlfbs.clear();
+	mlfbs.resize(rhses.getGeneratorCount());
+	for (size_t i = 0; i < mlfbs.size(); ++i) {
+	  Mlfb& mlfb = mlfbs[i];
+
+	  for (size_t var = 0; var < lat.getYDim(); ++var)
+		mlfb.rhs.push_back(rhses[i][var]);
+
+	  for (size_t gen = 0; gen < initialIdeal.getGeneratorCount(); ++gen) {
+		for (size_t var = 0; var < initialIdeal.getVarCount(); ++var)
+		  if (initialIdeal[gen][var] > mlfb.rhs[var])
+			goto skipIt;
+		mlfb.points.push_back(gen);
+	  skipIt:;
+	  }
+
+	  // order to have maxima along diagonal, though for non-generic
+	  // this won't make sense, so we might as well only do it for
+	  // that case. Also insert edges.
+	  if (mlfb.points.size() == lat.getYDim() - 1) {
+		// -1 due to the missing 0.
+		for (size_t i = 1; i < lat.getYDim(); ++i)
+		  for (size_t p = 0; p < mlfb.points.size(); ++p)
+			if (lat.getYMatrix()(mlfb.points[p], i) == mlfb.rhs[i])
+			  swap(mlfb.points[i-1], mlfb.points[p]);
+
+		for (size_t pushIn = 0; pushIn < lat.getYDim(); ++pushIn) {
+		  mpq_class secondLargest = -1;
+		  size_t hits = 0;
+		  for (size_t i = 0; i < lat.getYDim(); ++i) {
+			const mpq_class entry = 0;
+			if (i > 0)
+			  entry = lat.getYMatrix()(mlfb.points[i], pushIn);
+
+			if (i == pushIn) {
+			  if (entry != mlfb.rhs[pushIn]) {
+				mlfb.edges.clear();
+				goto skip;
+			  }
+			} else {
+			  if (entry == secondLargest && entry >= 0) {
+				mlfb.edges.clear();
+				goto skip;
+			  }
+
+			  if (entry > secondLargest) {
+				secondLargest = entry;
+				hits = i;
+			  }
+			}
+		  }
+		  ASSERT(secondLargest >= 0);
+
+		  vector<mpz_class> rhs(mlfb.rhs);
+		  rhs[pushIn] = secondLargest;
+
+		  rhs[hits] = relax(hits, mlfb.rhs, lat);
+		  if (rhs[hits] < 0)
+			continue;
+
+		  if (pushIn == 0) {
+			ASSERT(hits > 0);
+			for (size_t i = 0; i < lat.getYDim(); ++i)
+			  rhs[i] -= lat.getYMatrix()(mlfb.points[hits - 1], i);
+		  }
+
+		  for (size_t m = 0; m < mlfbs.size(); ++m) {
+			if (mlfbs[m].rhs == rhs) {
+			  mlfb.edges[pushIn] = m;
+			  break;
+			}
+		  }
+		}
+
+	  skip:
+		Matrix mat(mlfb.points.size(), lat.getHDim());
+		for (size_t point = 0; point < mlfb.points.size(); ++point)
+		  for (size_t var = 0; var < lat.getHDim(); ++var)
+			mat(point, var) = lat.getHMatrix()(mlfb.points[point], var);
+		if (mlfb.points.size() == lat.getHDim())
+		  mlfb.index = determinant(mat);
+	  }
+	}
+  }
+
   class NeighborPrinter {
   public:
-    NeighborPrinter(const GrobLat& lat):
-      _lat(lat) {
+	NeighborPrinter(const GrobLat& lat):
+	  _lat(lat) {
 
 	  // "gXYZ:" label
 	  _labelIndex = _pr.getColumnCount();
@@ -170,10 +317,17 @@ namespace {
 	  _yIndex = _pr.getColumnCount();
 	  for (size_t i = 0; i < _lat.getYDim(); ++i)
 		_pr.addColumn(true, i == 0 ? " " : "  ");
-    }
 
-    void addLine(size_t neighbor) {
-	  _pr[_labelIndex] << 'g' << neighbor << ":\n";
+	  _edge = _pr.getColumnCount();
+	  _pr.addColumn(true, " ", "");
+	}
+
+	void addLine(size_t neighbor, NeighborPlace place = NoPlace, size_t edge = (size_t)-1) {
+	  _pr[_labelIndex] << 'g' << (neighbor + 1) << ':';
+	  if (place != NoPlace)
+		_pr[_labelIndex] << ' ' << getPlaceCode(place);
+	  _pr[_labelIndex] << '\n';
+
 	  _pr[_yHeader] << "y=\n";
 	  for (size_t i = 0; i < _lat.getYDim(); ++i)
 		_pr[_yIndex + i] << _lat.getYMatrix()(neighbor, i) << '\n';
@@ -181,71 +335,86 @@ namespace {
 	  _pr[_hHeader] << "h=\n";
 	  for (size_t i = 0; i < _lat.getHDim(); ++i)
 		_pr[_hIndex + i] << _lat.getHMatrix()(neighbor, i) << '\n';
-    }
 
-    void addLine() {
+	  if (edge != (size_t)-1) {
+		_pr[_edge] << "push to m" << (edge + 1);
+	  }
+	  _pr[_edge] << '\n';
+	}
+
+	void addZeroLine(NeighborPlace place = NoPlace) {
+	  _pr[_labelIndex] << "zero:";
+	  if (place != NoPlace)
+		_pr[_labelIndex] << ' ' << getPlaceCode(place);
+	  _pr[_labelIndex] << '\n';
+
+	  _pr[_yHeader] << "y=\n";
+	  for (size_t i = 0; i < _lat.getYDim(); ++i)
+		_pr[_yIndex + i] << 0 << '\n';
+	  _pr[_comma] << ",\n";
+	  _pr[_hHeader] << "h=\n";
+	  for (size_t i = 0; i < _lat.getHDim(); ++i)
+		_pr[_hIndex + i] << 0 << '\n';
+	}
+
+	void addLine() {
 	  for (size_t i = 0; i < _pr.getColumnCount(); ++i)
 		_pr[i] << '\n';
-    }
+	}
 
-    void print(FILE* out) {
-      ::print(out, _pr);
-    }
+	void print(FILE* out) {
+	  ::print(out, _pr);
+	}
 
-    void print(ostream& out) {
+	void print(ostream& out) {
 	  out << _pr;
-    }
+	}
 
   private:
-    const GrobLat& _lat;
-    ColumnPrinter _pr;
+	const GrobLat& _lat;
+	ColumnPrinter _pr;
 	size_t _labelIndex;
 	size_t _comma;
 	size_t _yHeader;
 	size_t _yIndex;
 	size_t _hHeader;
 	size_t _hIndex;
+	size_t _edge;
   };
-
-  void printNeighbor(const GrobLat& lat, size_t n) {
-    cout << "  g" << n << ": ";
-
-    cout << " y=";
-    for (size_t i = 0; i < lat.getYDim(); ++i)
-      cout << ' ' << lat.getYMatrix()(n, i);
-
-    cout << ",  h=";
-    for (size_t i = 0; i < lat.getHDim(); ++i)
-      cout << ' ' << lat.getHMatrix()(n, i);
-    cout << '\n';
-  }
 
   void printNeighbors(const GrobLat& lat) {
 	NeighborPrinter pr(lat);
+	pr.addZeroLine();
 	for (size_t n = 0; n < lat.getNeighborCount(); ++n)
 	  pr.addLine(n);
 
-    fprintf(stdout, "The %u neighbors in y-space and h-space are\n",
+	fprintf(stdout, "\nThe %u neighbors in y-space and h-space are\n",
 			(unsigned int)lat.getNeighborCount());
-    pr.print(stdout);
-    fputc('\n', stdout);
+	pr.print(stdout);
+	fputc('\n', stdout);
   }
 
   struct Tri {
-    size_t a;
-    size_t b;
-    Matrix rowAB;
+	size_t a;
+	size_t b;
   };
 
-  void makeTriangles(const GrobLat& lat,
-					 vector<vector<Tri> >& tris) {
-    const SatBinomIdeal& ideal = lat.getIdeal();
+  struct Plane {
+	Matrix nullSpaceBasis;
+	vector<Tri> tris;
+	Matrix rowAB;
 
-    size_t varCount = lat.getYDim();
-    size_t neighborCount = lat.getNeighborCount();
-    vector<mpz_class> sum(varCount);
-    for (size_t gen1 = 0; gen1 < neighborCount; ++gen1) {
-      for (size_t gen2 = gen1 + 1; gen2 < neighborCount; ++gen2) {
+	vector<NeighborPlace> neighborPlace;
+  };
+
+  void computePlanes(const GrobLat& lat, vector<Plane>& planes) {
+	const SatBinomIdeal& ideal = lat.getIdeal();
+
+	size_t varCount = lat.getYDim();
+	size_t neighborCount = lat.getNeighborCount();
+	vector<mpz_class> sum(varCount);
+	for (size_t gen1 = 0; gen1 < neighborCount; ++gen1) {
+	  for (size_t gen2 = gen1 + 1; gen2 < neighborCount; ++gen2) {
 		const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
 		const vector<mpz_class>& g2 = ideal.getGenerator(gen2);
 
@@ -257,215 +426,194 @@ namespace {
 		  Tri tri;
 		  tri.a = gen1;
 		  tri.b = gen2;
-		  tri.rowAB.resize(2, lat.getHDim());
-		  copyRow(tri.rowAB, 0, lat.getHMatrix(), gen1);
-		  copyRow(tri.rowAB, 1, lat.getHMatrix(), gen2);
+		  Matrix rowAB(2, lat.getHDim());
+		  copyRow(rowAB, 0, lat.getHMatrix(), gen1);
+		  copyRow(rowAB, 1, lat.getHMatrix(), gen2);
 
-		  for (size_t plane = 0; plane < tris.size(); ++plane) {
-			ASSERT(!tris[plane].empty());
-			if (hasSameRowSpace(tri.rowAB, tris[plane][0].rowAB)) {
-			  tris[plane].push_back(tri);
+		  for (size_t plane = 0; plane < planes.size(); ++plane) {
+			ASSERT(!planes[plane].tris.empty());
+			if (hasSameRowSpace(rowAB, planes[plane].rowAB)) {
+			  planes[plane].tris.push_back(tri);
 			  goto done;
 			}
 		  }
-		  tris.resize(tris.size() + 1);
-		  tris.back().push_back(tri);
+
+		  {
+			planes.resize(planes.size() + 1);
+			Plane& plane = planes.back();
+			plane.rowAB = rowAB;
+			nullSpace(plane.nullSpaceBasis, rowAB);
+			plane.tris.push_back(tri);
+
+			Matrix prod;
+			product(prod, lat.getHMatrix(), plane.nullSpaceBasis);
+			plane.neighborPlace.resize(lat.getNeighborCount());
+			for (size_t gen = 0; gen < lat.getNeighborCount(); ++gen) {
+			  mpq_class& value = prod(gen, 0);
+			  NeighborPlace place = InPlane;
+			  if (value < 0)
+				place = UnderPlane;
+			  else if (value > 0)
+				place = OverPlane;
+			  plane.neighborPlace[gen] = place;
+			}
+
+			transpose(plane.nullSpaceBasis);			  
+		  }
 		done:;
 		}
-      }
-    }
-  }
-
-  void printTriangles(size_t mlfbCount, size_t mlfbsInPlane,
-					  const GrobLat& lat) {
-    vector<mpz_class> sum(lat.getYDim());
-    vector<vector<Tri> > tris;
-
-    makeTriangles(lat, tris);
-
-    size_t triCount = 0;
-    for (size_t plane = 0; plane < tris.size(); ++plane)
-      triCount += tris[plane].size();
-
-    if (lat.hasZeroEntryY())
-      cout << "A neighbor has a zero entry.\n";
-    else
-      cout << "No neighbor has a zero entry.\n";
-
-    cout << "There are " << lat.getNeighborCount() << " neighbors.\n";
-	cout << "There are " << mlfbCount << " MLFBs.\n";
-	cout << "There are "
-		 << mlfbsInPlane << " MLFBs whose neighbors lie in a plane.\n";
-    cout << "There are " << tris.size()
-		 << " distinct double triangle planes.\n";
-    cout << "There are " << triCount << " double triangles.\n\n";
-
-    printNeighbors(lat);
-
-    cout << "\n\nThe " << triCount << " double triangles, grouped by linear span:";
-
-    for (size_t plane = 0; plane < tris.size(); ++plane) {
-      vector<Tri>& p = tris[plane];
-      cout << "\n\n*** Plane " << (plane + 1)
-		   << " has orthogonal space spanned by the rows of\n";
-
-      {
-		Matrix nullSpaceBasis;
-		nullSpace(nullSpaceBasis, p.front().rowAB);
-		transpose(nullSpaceBasis);
-		printIndentedMatrix(nullSpaceBasis);
-      }
-
-      cout << " and contains " << p.size() << " double triangle pairs:\n";
-	  NeighborPrinter pr(lat);
-      for (size_t t = 0; t < p.size(); ++t) {
-		pr.addLine();
-		pr.addLine(p[t].a);
-		pr.addLine(p[t].b);
-      }
-	  pr.print(stdout);
-    }
-  }
-
-  void writeScarfGraph(const SatBinomIdeal& ideal) {
-    ofstream out("graph.dot");
-    out << "digraph G {\n" << flush;
-    for (size_t gen1 = 0; gen1 < ideal.getGeneratorCount(); ++gen1) {
-      const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
-      out << "  g" << gen1 << " [label=\"g" << gen1
-		  << " (" << g1[0].get_d() << ')';
-      if (ideal.isInterior(g1, g1))
-		out << "\\ninterior";
-      out << "\", shape = box];\n";
-
-      for (size_t gen2 = 0; gen2 < ideal.getGeneratorCount(); ++gen2) {
-		if (ideal.isInteriorEdge(gen1, gen2)) {
-		  out << "    g" << gen1 << " -> g" << gen2;
-		  if (ideal.isTerminatingEdge(gen1, gen2))
-			out << " [style = dashed, arrowhead = empty]";
-		  out << ";\n";
-		}
-      }
-    }
-    out << "}\n";
-  }
-
-  void writeScarfComplex(const BigIdeal& mlfbs,
-						 const GrobLat& lat,
-						 size_t& mlfbsInPlane,
-						 ostream& output) {
-	mlfbsInPlane = 0;
-	BigIdeal bigIdeal;
-	lat.getInitialIdeal(bigIdeal);
-
-	ASSERT(mlfbs.getVarCount() == lat.getYDim());
-	const size_t varCount = lat.getYDim();
-
-	ostringstream nonFlats;
-
-	output << "\n\n";
-	for (size_t mlfb = 0; mlfb < mlfbs.getGeneratorCount(); ++mlfb) {
-	  vector<size_t> points;
-	  for (size_t gen = 0; gen < bigIdeal.getGeneratorCount(); ++gen) {
-		for (size_t var = 0; var < bigIdeal.getVarCount(); ++var)
-		  if (bigIdeal[gen][var] > mlfbs[mlfb][var])
-			goto skipIt1;
-		points.push_back(gen);
-	  skipIt1:;
 	  }
+	}
+  }
 
-	  Matrix mat(points.size(), lat.getHDim());
-	  for (size_t point = 0; point < points.size(); ++point)
-		for (size_t var = 0; var < lat.getHDim(); ++var)
-		  mat(point, var) = lat.getHMatrix()(points[point], var);
-	  bool flat = (matrixRank(mat) == 2);
-	  if (flat)
-		++mlfbsInPlane;
-
-	  ostream& out = flat ? output : nonFlats;
-
-	  out << "*** MLFB with rhs";
-	  for (size_t var = 0; var < varCount; ++var)
-		out << ' ' << mlfbs[mlfb][var];
-	  out << " contains the neighbors\n";
+  void printMlfbs(vector<Mlfb>& mlfbs, const Plane& plane, const GrobLat& lat) {
+	cout << "\n\n";
+	for (size_t i = 0; i < mlfbs.size(); ++i) {
+	  Mlfb& mlfb = mlfbs[i];
+	  cout << "*** MLFB with rhs";
+	  for (size_t var = 0; var < lat.getYDim(); ++var)
+		cout << ' ' << mlfb.rhs[var];
+	  cout << " contains the neighbors\n";
 
 	  NeighborPrinter pr(lat);
-	  for (size_t i = 0; i < points.size(); ++i)
-		pr.addLine(points[i]);
-	  pr.print(out);
-	  if (flat)
-		out << "and these neighbors lie in a plane.\n";
-	  out << '\n';
+	  pr.addZeroLine(InPlane);
+	  cout << mlfb.edges.size() << " edges:" << endl;
+	  for (size_t i = 0; i < mlfb.points.size(); ++i) {
+		size_t edge = numeric_limits<size_t>::max();
+		if (i < mlfb.edges.size())
+		  edge = mlfb.edges[i];
+		cout << edge;
+		pr.addLine(mlfb.points[i], plane.neighborPlace[mlfb.points[i]], edge);
+	  }
+	  pr.print(cout);
+	  cout << "Its index is " << mlfb.index << " and it has "
+		   << mlfb.planeCount << " plane neighbors.\n\n";
 	}
-	output << nonFlats.str();
+  }
+
+  void setupPlaneCountsAndOrder(vector<Mlfb>& mlfbs, const Plane& plane, map<size_t, size_t>& typeCounts) {
+	typeCounts.clear();
+
+	for (size_t i = 0; i < mlfbs.size(); ++i) {
+	  Mlfb& mlfb = mlfbs[i];
+	  mlfb.planeCount = 1; // counting zero
+	  for (size_t p = 0; p < mlfb.points.size(); ++p)
+		if (plane.neighborPlace[mlfb.points[p]] == InPlane)
+		  mlfb.planeCount += 1;
+	  typeCounts[mlfb.planeCount] += 1;
+	}
+	sort(mlfbs.begin(), mlfbs.end());
+  }
+
+  void printPlane(vector<Mlfb>& mlfbs, const Plane& plane, const GrobLat& lat) {
+	map<size_t, size_t> typeCounts;
+	setupPlaneCountsAndOrder(mlfbs, plane, typeCounts);
+
+	cout << "The plane's null space is spanned by the rows of\n";
+	printIndentedMatrix(plane.nullSpaceBasis);
+	cout << '\n';
+
+	for (size_t i = typeCounts.rbegin()->first; i > 0; --i)
+	  cout << "There are " << typeCounts[i] << " MLFBs with " << i << " plane neighbors.\n";
+	cout << '\n';
+
+	cout << "The plane contains " << plane.tris.size() << " double triangle pairs:\n";
+	NeighborPrinter pr(lat);
+	for (size_t t = 0; t < plane.tris.size(); ++t) {
+	  pr.addLine();
+	  pr.addLine(plane.tris[t].a);
+	  pr.addLine(plane.tris[t].b);
+	}
+	pr.print(stdout);
+
+	printMlfbs(mlfbs, plane, lat);
   }
 }
-LatticeAnalyzeAction::LatticeAnalyzeAction():
-  Action
-  (staticGetName(),
-   "Display information about the input ideal.",
-   "This action is not ready for use.\n\n"
-   "Display information about input Grobner basis of lattice.",
-   false),
 
-  _io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
-}
+  LatticeAnalyzeAction::LatticeAnalyzeAction():
+	Action
+	(staticGetName(),
+	 "Display information about the input ideal.",
+	 "This action is not ready for use.\n\n"
+	 "Display information about input Grobner basis of lattice.",
+	 false),
+
+	_io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
+  }
 
   void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
-    _io.obtainParameters(parameters);
-    Action::obtainParameters(parameters);
+	_io.obtainParameters(parameters);
+	Action::obtainParameters(parameters);
   }
 
   bool LatticeAnalyzeAction::displayAction() const {
-    return false;
+	return false;
   }
 
-void LatticeAnalyzeAction::perform() {
-  cerr << "** Reading input " << endl;
+  void LatticeAnalyzeAction::perform() {
+	cerr << "** Reading input " << endl;
 
-  Scanner in(_io.getInputFormat(), stdin);
-  _io.autoDetectInputFormat(in);
-  _io.validateFormats();
+	Scanner in(_io.getInputFormat(), stdin);
+	_io.autoDetectInputFormat(in);
+	_io.validateFormats();
 
-  IOFacade ioFacade(_printActions);
-  SatBinomIdeal ideal;
-  ioFacade.readSatBinomIdeal(in, ideal);
+	IOFacade ioFacade(_printActions);
+	SatBinomIdeal ideal;
+	ioFacade.readSatBinomIdeal(in, ideal);
 
-  Matrix matrix;
-  {
-    SatBinomIdeal matrixIdeal;
-    ioFacade.readSatBinomIdeal(in, matrixIdeal);
-    matrixIdeal.getMatrix(matrix);
+	Matrix matrix;
+	{
+	  SatBinomIdeal matrixIdeal;
+	  ioFacade.readSatBinomIdeal(in, matrixIdeal);
+	  matrixIdeal.getMatrix(matrix);
+	}
+
+	cerr << "** Computing matrix and its nullspace" << endl;
+	cout << "Analysis of the "
+		 << matrix.getRowCount() << " by " << matrix.getColCount() 
+		 << " matrix\n";
+	printIndentedMatrix(matrix);
+	printNullSpace(matrix);
+
+	cerr << "** Computing h-space vectors" << endl;
+	GrobLat lat(matrix, ideal);
+
+	cerr << "** Computing MLFBs" << endl;
+	vector<Mlfb> mlfbs;
+	computeMlfbs(mlfbs, lat);
+	stable_sort(mlfbs.begin(), mlfbs.end());
+
+	cerr << "** Computing double triangles" << endl;
+	vector<Plane> planes;
+	computePlanes(lat, planes);
+
+	size_t paraMlfbCount = 0;
+	for (size_t mlfb = 0; mlfb < mlfbs.size(); ++mlfb) {
+	  if (mlfbs[mlfb].index == 0)
+		++paraMlfbCount;
+	}
+
+	cerr << "** Producing output" << endl;
+
+	if (lat.hasZeroEntryY())
+	  cout << "A neighbor has a zero entry.\n";
+	else
+	  cout << "No neighbor has a zero entry.\n";
+
+	cout << "There are " << lat.getNeighborCount() << " neighbors excluding zero.\n";
+	cout << "There are " << mlfbs.size() << " MLFBs.\n";
+	cout << "There are " << paraMlfbCount << " parallelogram MLFBs.\n";
+	cout << "There are " << planes.size()
+		 << " distinct double triangle planes.\n";
+
+	printNeighbors(lat);
+
+	for (size_t plane = 0; plane < planes.size(); ++plane) {
+	  cout << "\n\n*** Plane " << (plane + 1) << " of " << planes.size() << "\n\n";
+	  printPlane(mlfbs, planes[plane], lat);
+	}
   }
 
-  cerr << "** Computing matrix and its nullspace" << endl;
-  cout << "Analysis of the "
-       << matrix.getRowCount() << " by " << matrix.getColCount() 
-       << " matrix\n";
-  printIndentedMatrix(matrix);
-  printNullSpace(matrix);
-
-  cerr << "** Computing h-space vectors" << endl;
-  GrobLat lat(matrix, ideal);
-
-  cerr << "** Computing MLFBs" << endl;
-  auto_ptr<BigIdeal> mlfbs = lat.computeMLFBs();
-
-  cerr << "** Computing neighbors on MLFBs" << endl;
-  size_t mlfbsInPlane;
-  ostringstream mlfbOutput;
-  writeScarfComplex(*mlfbs, lat, mlfbsInPlane, mlfbOutput);
-
-  cerr << "** Computing double triangles" << endl;
-  printTriangles(mlfbs->getGeneratorCount(), mlfbsInPlane, lat);
-
-  //cerr << "** Computing Scarf graph" << endl;
-  //writeScarfGraph(ideal); // slow
-
-  cerr << "Writing MLFB data" << endl;
-  cout << mlfbOutput.str();
-}
-
-const char* LatticeAnalyzeAction::staticGetName() {
-  return "latanal";
-}
+  const char* LatticeAnalyzeAction::staticGetName() {
+	return "latanal";
+  }
