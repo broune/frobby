@@ -113,6 +113,19 @@ void print(ColumnPrinter& pr, const Matrix& mat) {
 	  pr[baseCol + col] << mat(row, col) << '\n';
 }
 
+void product(Matrix& prod, const Matrix& a, const Matrix& b) {
+  ASSERT(a.getColCount() == b.getRowCount());
+
+  prod.resize(a.getRowCount(), b.getColCount());
+  for (size_t r = 0; r < a.getRowCount(); ++r) {
+	for (size_t c = 0; c < b.getColCount(); ++c) {
+	  prod(r, c) = 0;
+	  for (size_t i = 0; i < a.getColCount(); ++i)
+		prod(r, c) += a(r, i) * b(i, c);
+	}
+  }
+}
+
 void transpose(Matrix& trans, const Matrix& mat) {
   if (&trans == &mat) {
     transpose(trans);
@@ -383,4 +396,16 @@ bool hasSameColSpace(const Matrix& a, const Matrix& b) {
   // efficient.
   Matrix dummy;
   return solve(dummy, a, b) && solve(dummy, b, a);
+}
+
+mpq_class determinant(const Matrix& mat) {
+  ASSERT(mat.getRowCount() == mat.getColCount());
+
+  Matrix reduced(mat);
+  rowReduce(reduced);
+
+  mpq_class det = 1;
+  for (size_t i = 0; i < reduced.getRowCount(); ++i)
+	det *= reduced(i, i);
+  return det;
 }

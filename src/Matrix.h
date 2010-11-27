@@ -64,8 +64,8 @@ ostream& operator<<(ostream& out, const Matrix& mat);
 void print(FILE* file, const Matrix& mat);
 void print(ColumnPrinter& printer, const Matrix& mat);
 
-/** Sets prod to mat * vec. */
-void product(BigIntVector& prod, const Matrix& mat, const BigIntVector& vec);
+/** Sets prod to a * b. */
+void product(Matrix& prod, const Matrix& a, const Matrix& b);
 
 /** Sets trans to the transpose of mat. */
 void transpose(Matrix& trans, const Matrix& mat);
@@ -127,5 +127,8 @@ bool hasSameColSpace(const Matrix& a, const Matrix& b);
 
 /** Returns true if a and b have the same row space. */
 bool hasSameRowSpace(const Matrix& a, const Matrix& b);
+
+/** Returns the determinant of mat. */
+mpq_class determinant(const Matrix& mat);
 
 #endif
