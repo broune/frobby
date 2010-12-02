@@ -85,7 +85,6 @@ mpz_class IdealFacade::computeEuler(const BigIdeal& bigIdeal) {
     radical.insert(tmp);
   }
 
-  //if (!squareFreeAndMinimal)
   radical.minimize();
 
   //HilbertBasecase basecase;

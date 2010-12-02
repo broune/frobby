@@ -19,6 +19,11 @@
 #define PIVOT_EULER_ALG_GUARD
 
 class Ideal;
+class RawSquareFreeIdeal;
+
+#include <vector>
+
+class EulerState;
 
 class PivotEulerAlg {
  public:
@@ -26,7 +31,15 @@ class PivotEulerAlg {
   mpz_class getEuler();
 
  private:
+  void rec(EulerState&);
+  void taskRun(RawSquareFreeIdeal& ideal);
+  void incrementValue(bool negate);
+  void getPivot(const EulerState& state, Word* pivot);
+
   mpz_class _euler;
+  Word* _lcm;
+  Word* _pivot;
+  vector<size_t> _counts;
 };
 
 #endif

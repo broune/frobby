@@ -232,12 +232,12 @@ namespace {
 		  for (size_t p = 0; p < mlfb.points.size(); ++p)
 			if (lat.getYMatrix()(mlfb.points[p], i) == mlfb.rhs[i])
 			  swap(mlfb.points[i-1], mlfb.points[p]);
-
+		/*
 		for (size_t pushIn = 0; pushIn < lat.getYDim(); ++pushIn) {
 		  mpq_class secondLargest = -1;
 		  size_t hits = 0;
 		  for (size_t i = 0; i < lat.getYDim(); ++i) {
-			const mpq_class entry = 0;
+			mpq_class entry = 0;
 			if (i > 0)
 			  entry = lat.getYMatrix()(mlfb.points[i], pushIn);
 
@@ -280,8 +280,8 @@ namespace {
 			}
 		  }
 		}
-
-	  skip:
+		*/
+		//	  skip:
 		Matrix mat(mlfb.points.size(), lat.getHDim());
 		for (size_t point = 0; point < mlfb.points.size(); ++point)
 		  for (size_t var = 0; var < lat.getHDim(); ++var)
@@ -477,14 +477,14 @@ namespace {
 
 	  NeighborPrinter pr(lat);
 	  pr.addZeroLine(InPlane);
-	  cout << mlfb.edges.size() << " edges:" << endl;
+	  /*	  cout << mlfb.edges.size() << " edges:" << endl;*/
 	  for (size_t i = 0; i < mlfb.points.size(); ++i) {
 		size_t edge = numeric_limits<size_t>::max();
 		if (i < mlfb.edges.size())
 		  edge = mlfb.edges[i];
-		cout << edge;
+		//cout << edge;
 		pr.addLine(mlfb.points[i], plane.neighborPlace[mlfb.points[i]], edge);
-	  }
+		}
 	  pr.print(cout);
 	  cout << "Its index is " << mlfb.index << " and it has "
 		   << mlfb.planeCount << " plane neighbors.\n\n";

@@ -18,3 +18,24 @@
 #include "stdinc.h"
 #include "RawSquareFreeTerm.h"
 
+#include <sstream>
+
+namespace SquareFreeTermOps {
+  void print(FILE* file, const Word* term, size_t varCount) {
+	ostringstream out;
+	print(out, term, varCount);
+	fputs(out.str().c_str(), file);
+  }
+
+  void print(ostream& out, const Word* term, size_t varCount) {
+	ASSERT(term != 0 || varCount == 0);
+	
+	out << '(';
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (var != 0)
+		out << ", ";
+	  out << getExponent(term, var);
+	}
+	out << ')';	
+  }
+}

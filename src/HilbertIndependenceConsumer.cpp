@@ -74,6 +74,7 @@ void HilbertIndependenceConsumer::doneConsuming() {
 void HilbertIndependenceConsumer::consume(const mpz_class& coef,
                                           const Term& term) {
   ASSERT(_parent != 0);
+  ASSERT(coef != 0);
   consumeLeft(coef, term);
 }
 
@@ -111,7 +112,6 @@ consume(const mpz_class& coef, const Term& term) {
 
 void HilbertIndependenceConsumer::RightConsumer::doneConsuming() {
 }
-
 
 void HilbertIndependenceConsumer::consumeLeft(const mpz_class& leftCoef,
                                               const Term& leftTerm) {
