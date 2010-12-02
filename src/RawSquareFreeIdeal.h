@@ -18,6 +18,9 @@
 #ifndef RAW_SQUARE_FREE_IDEAL_GUARD
 #define RAW_SQUARE_FREE_IDEAL_GUARD
 
+#include <ostream>
+#include <vector>
+
 class Ideal;
 
 /** @todo describe further.
@@ -45,17 +48,36 @@ class RawSquareFreeIdeal {
 	  this function appers, but if that is not what you want you will
 	  need to catch the bad_alloc. This function will not throw
 	  bad_alloc for any other reason than that.
+
+	  todo: change the exception behavior to no exceptions.
   */
   static size_t getBytesOfMemoryFor(size_t varCount, size_t generatorCount);
 
   RawSquareFreeIdeal& operator=(const RawSquareFreeIdeal& ideal);
 
+  void print(FILE* file) const;
+  void print(ostream& out) const;
+
+  /** Inserts the generators of ideal from index 0 onward until
+	  reaching a non-squarefree generator or all generators have been
+	  inserted. Returns the number of generators that has been
+	  inserted. There must be enough capacity for all the generators
+	  even if not all are actually inserted. */
+  size_t insert(const Ideal& ideal);
+
   void minimize();
   void insert(const Word* term);
   void colon(const Word* by);
 
+  /** Insert term and minimize. Object msut be already minimized. */
   void insertReminimize(const Word* term);
+
+  /** Perform a colon and minimize. Object must be already minimized. */
   void colonReminimize(const Word* colon);
+
+  /** Remove the generator at index, then perform a colon by it and
+	  minimize. Object must be already minimized. */
+  void colonReminimizeAndRemove(size_t index);
 
   void getLcm(Word* lcm) const;
 
@@ -70,10 +92,21 @@ class RawSquareFreeIdeal {
   const Word* getGenerator(size_t index) const;
 
   /** Sets counts[var] to the number of generators that var divides. */
-  void getVarDividesCounts(size_t* counts) const;
+  void getVarDividesCounts(vector<size_t>& counts) const;
 
-  void remove(Word* term);
+  void removeGenerator(size_t index);
   Word* getNotRelativelyPrime(const Word* term);
+
+  /** Returns the index of a generator that is the only one to be
+	  divisible by some variable. Returns getGeneratorCount() if there
+	  is no such generator. */
+  size_t getExclusiveVarGenerator();
+
+  /** Returns true if for every variable it either divides ignore or
+	  it divides some (not necessarily minimal) generator. */
+  bool hasFullSupport(const Word* ignore) const;
+
+  void swap(size_t a, size_t b);
 
  private:
   // Not available
@@ -92,5 +125,10 @@ RawSquareFreeIdeal* newRawSquareFreeIdeal(size_t varCount, size_t capacity);
 
 /** Deallocates memory returned by newRawSquareFreeIdeal(). */
 void deleteRawSquareFreeIdeal(RawSquareFreeIdeal* ideal);
+
+inline ostream& operator<<(ostream& out, const RawSquareFreeIdeal& ideal) {
+  ideal.print(out);
+  return out;
+}
 
 #endif

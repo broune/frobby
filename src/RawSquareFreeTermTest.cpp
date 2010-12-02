@@ -84,21 +84,20 @@ TEST(RawSquareFreeTerm, HasFullSupport) {
 
   for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
 	Word* term = newTerm(varCount);
-	Word* termEnd = term + getWordCount(varCount);
 
 	for (size_t var = 0; var < varCount; ++var) {
-	  ASSERT_FALSE_SILENT(hasFullSupport(term, termEnd, varCount));
+	  ASSERT_FALSE_SILENT(hasFullSupport(term, varCount));
 	  setExponent(term, var, true);
 	}
-	ASSERT_TRUE_SILENT(hasFullSupport(term, termEnd, varCount));
+	ASSERT_TRUE_SILENT(hasFullSupport(term, varCount));
 
 	for (size_t var = 0; var < varCount; ++var) {
-	  ASSERT_TRUE_SILENT(hasFullSupport(term, termEnd, varCount));
+	  ASSERT_TRUE_SILENT(hasFullSupport(term, varCount));
 	  setExponent(term, var, false);
-	  ASSERT_FALSE_SILENT(hasFullSupport(term, termEnd, varCount));
+	  ASSERT_FALSE_SILENT(hasFullSupport(term, varCount));
 	  setExponent(term, var, true);
 	}
-	ASSERT_TRUE(hasFullSupport(term, termEnd, varCount));
+	ASSERT_TRUE(hasFullSupport(term, varCount));
 
 	deleteTerm(term);
   }  

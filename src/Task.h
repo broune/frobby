@@ -35,7 +35,8 @@ class Task {
 
   /** Called when the task is no longer used but run has not and will
    not be called. This can happen from a destructor being called due
-   to an exception, so dispose must not throw any exceptions.
+   to an exception, so dispose must not throw an exception under any
+   circumstances.
   */
   virtual void dispose() = 0;
 };
