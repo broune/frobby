@@ -528,23 +528,53 @@ namespace {
 
 	printMlfbs(mlfbs, plane, lat);
   }
+
+  void printMathematica3D(vector<Mlfb>& mlfbs, const GrobLat& lat) {
+	ofstream out("ma3d");
+	const Matrix& mat = lat.getHMatrix();
+	out << "a={\n";
+	for (size_t m = 0; m < mlfbs.size(); ++m) {
+	  out << " Graphcis3D[{RGBColor[";
+	  for (size_t i = 0; i < 3; ++i) {
+		if (i > 0)
+		  out << ',';
+		out << "0." << (rand() % 10000);
+	  }
+	  out << "],Polygon[{";
+
+	  Mlfb& mlfb = mlfbs[m];
+	  for (size_t p = 0; p < mlfb.points.size(); ++p) {
+		if (p > 0)
+		  out << ',';
+		out << '{';
+		for (size_t i = 0; i < lat.getHDim(); ++i) {
+		  if (i > 0)
+			out << ',';
+		  out << mat(mlfb.points[p], i);
+		}
+		out << '}';
+	  }
+	  out << "}]}],\n";
+	}
+	out << " Graphics3D[Point[{0,0,0}]]\n}\ng=Show[{a},Boxed->False];\n";
+  }
 }
 
-  LatticeAnalyzeAction::LatticeAnalyzeAction():
-	Action
-	(staticGetName(),
-	 "Display information about the input ideal.",
-	 "This action is not ready for use.\n\n"
-	 "Display information about input Grobner basis of lattice.",
-	 false),
+LatticeAnalyzeAction::LatticeAnalyzeAction():
+  Action
+  (staticGetName(),
+   "Display information about the input ideal.",
+   "This action is not ready for use.\n\n"
+   "Display information about input Grobner basis of lattice.",
+   false),
 
-	_io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
-  }
+  _io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
+}
 
-  void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
-	_io.obtainParameters(parameters);
-	Action::obtainParameters(parameters);
-  }
+void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
+  _io.obtainParameters(parameters);
+  Action::obtainParameters(parameters);
+}
 
   bool LatticeAnalyzeAction::displayAction() const {
 	return false;
@@ -612,6 +642,8 @@ namespace {
 	  cout << "\n\n*** Plane " << (plane + 1) << " of " << planes.size() << "\n\n";
 	  printPlane(mlfbs, planes[plane], lat);
 	}
+
+	printMathematica3D(mlfbs, lat);
   }
 
   const char* LatticeAnalyzeAction::staticGetName() {

@@ -190,13 +190,6 @@ PivotEulerAlg::PivotEulerAlg(const Ideal& ideal) {
   _lcm = 0;
 }
 
-void PivotEulerAlg::incrementValue(bool negate) {
-  if (negate)
-	--_euler;
-  else
-	++_euler;
-}
-
 mpz_class PivotEulerAlg::getEuler() {
   return _euler;
 }
