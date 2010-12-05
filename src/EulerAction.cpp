@@ -35,8 +35,8 @@
 EulerAction::EulerAction():
   Action
 (staticGetName(),
- "Compute the Euler characteristic of an encoded simplicial complex.",
- "Compute the Euler characteristic of an encoded simplicial complex.",
+ "Compute the Euler characteristic of a simplicial complex.",
+ "Compute the Euler characteristic of a simplicial complex.",
  false),
 
   _io(DataType::getMonomialIdealType(), DataType::getNullType()) {

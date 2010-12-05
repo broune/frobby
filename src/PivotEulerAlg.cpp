@@ -30,10 +30,18 @@ namespace Ops = SquareFreeTermOps;
 
 class EulerState {
 public:
+  EulerState(const Ideal& idealParam) {
+	const size_t varCount = idealParam.getVarCount();
+	ideal = newRawSquareFreeIdeal(varCount, idealParam.getGeneratorCount());
+	ideal->insert(idealParam);
+	eliminated = Ops::newTerm(varCount);
+	negateValue = false;
+  }
+
   EulerState() {
 	toZero();
   }
-  
+
   ~EulerState() {
 	deallocate();
   }
@@ -109,8 +117,13 @@ public:
 	negateValue = !negateValue;
   }
 
-  RawSquareFreeIdeal* ideal;
-  Word* eliminated;
+  const RawSquareFreeIdeal& getIdeal() const {
+	return *ideal;
+  }
+
+  size_t getVarCount() const {
+	return getIdeal().getVarCount();
+  }
 
 private:
   void toZero() {
@@ -124,38 +137,31 @@ private:
 	Ops::deleteTerm(eliminated);
   }
 
+  RawSquareFreeIdeal* ideal;
+  Word* eliminated;
   bool negateValue;
 };
 
-void PivotEulerAlg::rec(EulerState& state) {
-  const size_t varCount = state.ideal->getVarCount();
+bool PivotEulerAlg::rec(EulerState& state, EulerState& newState) {
+  while (true) {
+	if (state.baseCase(_euler))
+	  return false;
+	if (state.optimize())
+	  continue;
 
-  if (state.baseCase(_euler)) {
-	return;
+	getPivot(state, _pivot);
+
+	newState.clone(state);
+	newState.toSumSubState(_pivot);
+	state.toColonSubState(_pivot);
+
+	return true;
   }
-
-  if (state.optimize()) {
-	rec(state);
-	return;
-  }
-
-  getPivot(state, _pivot);
-  ASSERT(!Ops::isIdentity(_pivot, varCount));
-  ASSERT(Ops::isRelativelyPrime(_pivot, state.eliminated, varCount));
-
-  EulerState sumSubState;
-  sumSubState.clone(state);
-  state.toColonSubState(_pivot);
-
-  sumSubState.toSumSubState(_pivot);
-
-  rec(state);
-  rec(sumSubState);
 }
 
 void PivotEulerAlg::getPivot(const EulerState& state, Word* pivot) {
-  const size_t varCount = state.ideal->getVarCount();
-  state.ideal->getVarDividesCounts(_counts);
+  const size_t varCount = state.getVarCount();
+  state.getIdeal().getVarDividesCounts(_counts);
   Ops::setToIdentity(pivot, varCount);
   for (size_t var = 0; var < varCount; ++var) {
 	if (_counts[var] != 0) {
@@ -167,27 +173,29 @@ void PivotEulerAlg::getPivot(const EulerState& state, Word* pivot) {
 }
 
 void PivotEulerAlg::taskRun(RawSquareFreeIdeal& ideal) {
-  
+
 }
 
 PivotEulerAlg::PivotEulerAlg(const Ideal& ideal) {
-  RawSquareFreeIdeal* packed = newRawSquareFreeIdeal(ideal.getVarCount(),
-													 ideal.getGeneratorCount());
-  packed->insert(ideal);
-
-  _lcm = Ops::newTerm(ideal.getVarCount());
   _pivot = Ops::newTerm(ideal.getVarCount());
-  Word* eliminated = Ops::newTerm(ideal.getVarCount());
   _euler = 0;
 
-  EulerState state;
-  state.ideal = packed;
-  state.eliminated = eliminated;
+  vector<EulerState*> todo;
+  todo.push_back(new EulerState(ideal));
+  while (!todo.empty()) {
+	EulerState* state = todo.back();
+	todo.pop_back();
 
-  rec(state);
-  Ops::deleteTerm(_lcm);
+	EulerState* newState = new EulerState();
+	while (rec(*state, *newState)) {
+	  todo.push_back(newState);
+	  newState = new EulerState();
+	}
+	delete state;
+	delete newState;
+  }
+
   Ops::deleteTerm(_pivot);
-  _lcm = 0;
 }
 
 mpz_class PivotEulerAlg::getEuler() {

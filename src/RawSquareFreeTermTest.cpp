@@ -100,7 +100,7 @@ TEST(RawSquareFreeTerm, HasFullSupport) {
 	ASSERT_TRUE(hasFullSupport(term, varCount));
 
 	deleteTerm(term);
-  }  
+  }
 }
 
 TEST(RawSquareFreeTerm, IsIdentity) {
@@ -119,7 +119,7 @@ TEST(RawSquareFreeTerm, IsIdentity) {
 	ASSERT_TRUE(isIdentity(term, termEnd));
 
 	deleteTerm(term);
-  }  
+  }
 }
 
 TEST(RawSquareFreeTerm, SetToIdentity) {
@@ -136,7 +136,7 @@ TEST(RawSquareFreeTerm, SetToIdentity) {
 	}
 
 	deleteTerm(term);
-  }  
+  }
 }
 
 TEST(RawSquareFreeTerm, IsRelativelyPrime) {

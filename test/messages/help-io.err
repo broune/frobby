@@ -1,24 +1,24 @@
 Displaying information on topic: io
 
 Frobby understands several file formats. These are not documented, but they are
-simple enough that seeing an example should be enough to figure them out. 
+simple enough that seeing an example should be enough to figure them out.
 Getting an example is as simple as making Frobby produce output in that format.
 
 It is true of all the formats that white-space is insignificant, but other than
-that Frobby is quite fuzzy about how the input must look. E.g. a Macaulay 2 
+that Frobby is quite fuzzy about how the input must look. E.g. a Macaulay 2
 file containing a monomial ideal must start with "R = ", so writing "r = " with
-a lower-case r is an error. To help with this, Frobby tries to say what is 
+a lower-case r is an error. To help with this, Frobby tries to say what is
 wrong if there is an error.
 
-If no input format is specified, Frobby will guess at the format, and it will 
-guess correctly if there are no errors in the input. If no output format is 
+If no input format is specified, Frobby will guess at the format, and it will
+guess correctly if there are no errors in the input. If no output format is
 specified, Frobby will use the same format for output as for input. If you want
-to force Frobby to use a specific format, use the -iformat and -oformat 
-options. Using these with the transform action allows translation between 
-formats. 
+to force Frobby to use a specific format, use the -iformat and -oformat
+options. Using these with the transform action allows translation between
+formats.
 
-The formats available in Frobby and the types of data they support are as 
-follows. 
+The formats available in Frobby and the types of data they support are as
+follows.
 
 * The format 4ti2: Format used by the software package 4ti2.
   - supports input and output of a monomial ideal.
@@ -58,4 +58,3 @@ follows.
   - supports input and output of a monomial ideal.
   - supports input of a list of monomial ideals.
   - supports input and output of a polynomial.
-

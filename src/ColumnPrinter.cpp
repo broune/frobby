@@ -17,6 +17,8 @@
 #include "stdinc.h"
 #include "ColumnPrinter.h"
 
+#include "FrobbyStringStream.h"
+
 namespace {
   size_t getLineWidth(const string& str, size_t pos) {
 	size_t startPos = pos;
@@ -108,7 +110,7 @@ void ColumnPrinter::print(ostream& out) const {
 	  size_t& pos = poses[col];
 	  size_t width = getLineWidth(text, pos);
 
-	  if (_cols[col]->flushLeft)
+	  if (!_cols[col]->flushLeft)
 		printSpaces(out, widths[col] - width);
 
       while (pos < text.size()) {
@@ -120,13 +122,19 @@ void ColumnPrinter::print(ostream& out) const {
 		++pos;
 	  }
 
-	  if (!_cols[col]->flushLeft)
+	  if (_cols[col]->flushLeft)
 		printSpaces(out, widths[col] - width);
 
 	  out << _cols[col]->suffix;
 	}
 	out << '\n';
   }
+}
+
+void ColumnPrinter::print(FrobbyStringStream& out) const {
+  ostringstream tmp;
+  print(tmp);
+  out << tmp.str().c_str();
 }
 
 ostream& operator<<(ostream& out, const ColumnPrinter& printer) {

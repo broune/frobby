@@ -1,7 +1,7 @@
 Displaying information on action: optimize
 
 Solves an optimization program defined by the input monomial ideal I, and an
-input vector of integers v. The optimization program is 
+input vector of integers v. The optimization program is
 
   maximize v * e such that e encodes an irreducible component of I,
 

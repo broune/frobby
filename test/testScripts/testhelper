@@ -282,7 +282,7 @@ cat $origFrobbyOut|head
 echo "***** Error output head from Frobby:"
 cat $origFrobbyErr|head
 
-echo "***** Output head diff original compared to actual is"
+echo "***** Head of diff of output versus reference is"
 diff $referenceOutputFile $frobbyOut|head
 
 echo "***** Exit code was $frobbyExitCode, and expecting $expectedExitCode"

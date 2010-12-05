@@ -27,7 +27,8 @@
 
 /** Display msg to standard error with automatic line breaking. If a
  automatically broken line begins with whitespace, that whitespace is
- repeated in front of every line that is generated from breaking it.
+ repeated in front of every line that is generated from breaking
+ it.
 
  @param prepend Print this in front of every line that is printed.
 */

@@ -22,7 +22,7 @@
 
 void reportError(const string& errorMsg) {
   FrobbyStringStream err;
-  err << "ERROR: " << errorMsg << '\n';
+  err << "ERROR: " << errorMsg;
   throw FrobbyException(err);
 }
 
