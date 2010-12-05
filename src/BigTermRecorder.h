@@ -27,7 +27,7 @@
 class BigIdeal;
 class TermTranslator;
 
-/** BigTermRecorder records all the terms it consumes into an ideal. */ 
+/** BigTermRecorder records all the terms it consumes into an ideal. */
 class BigTermRecorder : public BigTermConsumer {
 public:
   BigTermRecorder();

@@ -157,7 +157,7 @@ void RSFIdeal::getVarDividesCounts(vector<size_t>& counts) const {
 		}
 		++countIt;
 		bit <<= 1;
-	  } while (bit != 0);	  
+	  } while (bit != 0);
 	}
   }
 }
@@ -214,7 +214,7 @@ bool RSFIdeal::hasFullSupport(const Word* ignore) const {
 		const size_t varsLeft = getVarCount() - offset * BitsPerWord;
 		ASSERT(varsLeft <= BitsPerWord);
 		return Ops::hasFullSupport(&support, varsLeft);
-	  } else 
+	  } else
 		return false;
 	}
   }

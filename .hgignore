@@ -11,3 +11,4 @@ core
 disttmp
 tmp
 sage
+ex/

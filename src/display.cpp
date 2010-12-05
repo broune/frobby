@@ -28,11 +28,16 @@ namespace {
   class Printer {
   public:
     Printer(const string& msg, const string& prepend):
-      _pos(0), _lineSize(0), _msg(msg), _prepend(prepend) {
+      _pos(0), _lineSize(0), _msg(msg), _prefix(prepend) {
+
+	  string wordSpacePrefix;
 
       while (_pos < _msg.size()) {
         // We are always at the start of a line at this point.
-        readPrependSpace();
+		ASSERT(_lineSize == 0);
+        readIndentation();
+		printRaw(_prefix);
+		printRaw(_indentation);
 
         if (_pos == _msg.size())
           break;
@@ -42,14 +47,15 @@ namespace {
           continue;
         }
 
+		wordSpacePrefix.clear();
         while (_pos < _msg.size()) {
           if (_msg[_pos] == '\n') {
             ++_pos;
             break;
           }
           if (isspace(_msg[_pos])) {
-            printSpace(_msg[_pos]);
-            ++_pos;
+			wordSpacePrefix += _msg[_pos];
+			++_pos;
             continue;
           }
           ASSERT(!isspace(_msg[_pos]));
@@ -57,15 +63,18 @@ namespace {
           ASSERT(_pos < _msg.size());
 
           string word;
-          while (_pos < _msg.size() && _msg[_pos] != '\n' && !isspace(_msg[_pos])) {
+          while (_pos < _msg.size() &&
+				 _msg[_pos] != '\n' &&
+				 !isspace(_msg[_pos])) {
             word += _msg[_pos];
             ++_pos;
           }
           ASSERT(!word.empty());
-          printWord(word);
+          printWord(wordSpacePrefix, word);
+		  wordSpacePrefix.clear();
         }
 
-        newLine();
+		newLine();
       }
     }
 
@@ -75,38 +84,30 @@ namespace {
       _lineSize = 0;
     }
 
-    void readPrependSpace() {
+    void readIndentation() {
       // Read whitespace at beginning of line.
-      _prependSpace.clear();
+      _indentation.clear();
       while (_pos < _msg.size() && _msg[_pos] != '\n' && isspace(_msg[_pos])) {
-        _prependSpace += _msg[_pos];
+        _indentation += _msg[_pos];
         ++_pos;
       }
     }
 
-    void printWord(const string& word) {
+    void printWord(const string& wordSpacePrefix, const string& word) {
       ASSERT(!word.empty());
 
       // Note that this will print beyond the console width if word is
       // the first thing we are printing on this line. That is because
       // there then is no way to fit the word on one line.
-      if (_lineSize != 0 && _lineSize + word.size() > ConsoleWidth)
-          newLine();
-
-      if (_lineSize == 0) {
-        printRaw(_prepend);
-        printRaw(_prependSpace);
-      }
+	  size_t wordAndPrefixSize = word.size() + wordSpacePrefix.size();
+	  if (_lineSize != 0 && _lineSize + wordAndPrefixSize  > ConsoleWidth) {
+		// we skip space before word if inserting newline
+		newLine();
+		printRaw(_prefix);
+		printRaw(_indentation);
+	  } else
+		printRaw(wordSpacePrefix);
       printRaw(word);
-    }
-
-    void printSpace(char c) {
-      ASSERT(c != '\n');
-      ASSERT(isspace(c));
-
-      // Ignore white space at end of line.
-      if (_lineSize < ConsoleWidth)
-        printRaw(c);
     }
 
     void printRaw(const string& word) {
@@ -122,8 +123,8 @@ namespace {
     size_t _pos;
     size_t _lineSize;
     const string& _msg;
-    const string& _prepend;
-    string _prependSpace;
+    const string& _prefix;
+    string _indentation;
   };
 }
 

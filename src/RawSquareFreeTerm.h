@@ -152,14 +152,14 @@ namespace SquareFreeTermOps {
 	for (; varCount >= BitsPerWord; ++a, ++b, ++res, varCount -= BitsPerWord)
 	  *res = (*a) | (*b);
 	if (varCount != 0)
-	  *res = (*a) | (*b);	  
+	  *res = (*a) | (*b);
   }
 
   inline void lcmInPlace(Word* res, const Word* a, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++res, varCount -= BitsPerWord)
 	  *res |= *a;
 	if (varCount != 0)
-	  *res |= *a;	  
+	  *res |= *a;
   }
 
   inline void gcd(Word* res, const Word* resEnd,

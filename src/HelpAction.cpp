@@ -23,6 +23,7 @@
 #include "error.h"
 #include "display.h"
 #include "FrobbyStringStream.h"
+#include "ColumnPrinter.h"
 
 #include <algorithm>
 
@@ -107,7 +108,7 @@ void HelpAction::displayIOHelp() {
      "\n\n"
      "The formats available in Frobby and the types of data they "
      "support are as follows. "
-     "\n\n");
+     "\n");
 
   vector<string> names;
   getIOHandlerNames(names);
@@ -116,7 +117,7 @@ void HelpAction::displayIOHelp() {
     auto_ptr<IOHandler> handler = createIOHandler(*name);
     ASSERT(handler.get() != 0);
 
-    fprintf(stderr, "* The format %s: %s\n",
+    fprintf(stderr, "\n* The format %s: %s\n",
             handler->getName(),
             handler->getDescription());
 
@@ -139,8 +140,6 @@ void HelpAction::displayIOHelp() {
 
       fprintf(stderr, formatStr, type.getName());
     }
-
-    fputc('\n', stderr);
   }
 }
 
@@ -164,28 +163,21 @@ void HelpAction::perform() {
     "one of the following. "
     "\n\n";
 
+  ColumnPrinter printer;
+  printer.addColumn(false, " ");
+  printer.addColumn(true, " - ");
+
   vector<string> names;
   Action::getActionNames(names);
-
-  // Compute maximum name length to make descriptions line up.
-  size_t maxNameLength = 0;
-  for (vector<string>::const_iterator it = names.begin();
-       it != names.end(); ++it)
-    if (maxNameLength < it->size())
-      maxNameLength = it->size();
-
   for (vector<string>::const_iterator it = names.begin();
        it != names.end(); ++it) {
     auto_ptr<Action> action(Action::createActionWithPrefix(*it));
-    if (!action->displayAction())
-      continue;
-
-    size_t length = (string(action->getName())).size();
-    out << ' ' << action->getName();
-    for (size_t i = length; i < maxNameLength; ++i)
-      out << ' ';
-    out << " - " << action->getShortDescription() << '\n';
+    if (action->displayAction()) {
+	  printer[0] << action->getName() << '\n';
+	  printer[1] << action->getShortDescription() << '\n';
+	}
   }
+  printer.print(out);
 
   out <<
     "\nType 'frobby help ACTION' to get more details on a specific action.\n"

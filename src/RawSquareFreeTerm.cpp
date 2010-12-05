@@ -29,13 +29,13 @@ namespace SquareFreeTermOps {
 
   void print(ostream& out, const Word* term, size_t varCount) {
 	ASSERT(term != 0 || varCount == 0);
-	
+
 	out << '(';
 	for (size_t var = 0; var < varCount; ++var) {
 	  if (var != 0)
 		out << ", ";
 	  out << getExponent(term, var);
 	}
-	out << ')';	
+	out << ')';
   }
 }

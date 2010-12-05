@@ -39,7 +39,7 @@
 #include <limits>
 #include <fstream>
 
-/** @todo: do not use cout 
+/** @todo: do not use cout
 
 @todo: move functionality into proper classes away from this file. */
 #include <iostream>
@@ -299,27 +299,27 @@ namespace {
 
 	  // "gXYZ:" label
 	  _labelIndex = _pr.getColumnCount();
-	  _pr.addColumn(true, " ");
+	  _pr.addColumn(false, " ");
 
 	  // h space
 	  _hHeader = _pr.getColumnCount();
-	  _pr.addColumn(true, " ", "");
+	  _pr.addColumn(false, " ", "");
 	  _hIndex = _pr.getColumnCount();
 	  for (size_t i = 0; i < _lat.getHDim(); ++i)
-		_pr.addColumn(true, i == 0 ? " " : "  ");
+		_pr.addColumn(false, i == 0 ? " " : "  ");
 
 	  _comma = _pr.getColumnCount();
-	  _pr.addColumn(true, "", " ");
+	  _pr.addColumn(false, "", " ");
 
 	  // y space
 	  _yHeader = _pr.getColumnCount();
-	  _pr.addColumn(true, " ", "");
+	  _pr.addColumn(false, " ", "");
 	  _yIndex = _pr.getColumnCount();
 	  for (size_t i = 0; i < _lat.getYDim(); ++i)
-		_pr.addColumn(true, i == 0 ? " " : "  ");
+		_pr.addColumn(false, i == 0 ? " " : "  ");
 
 	  _edge = _pr.getColumnCount();
-	  _pr.addColumn(true, " ", "");
+	  _pr.addColumn(false, " ", "");
 	}
 
 	void addLine(size_t neighbor, NeighborPlace place = NoPlace, size_t edge = (size_t)-1) {
@@ -458,7 +458,7 @@ namespace {
 			  plane.neighborPlace[gen] = place;
 			}
 
-			transpose(plane.nullSpaceBasis);			  
+			transpose(plane.nullSpaceBasis);
 		  }
 		done:;
 		}
@@ -534,7 +534,7 @@ namespace {
 	const Matrix& mat = lat.getHMatrix();
 	out << "a={\n";
 	for (size_t m = 0; m < mlfbs.size(); ++m) {
-	  out << " Graphcis3D[{RGBColor[";
+	  out << " Graphics3D[{RGBColor[";
 	  for (size_t i = 0; i < 3; ++i) {
 		if (i > 0)
 		  out << ',';
@@ -556,7 +556,7 @@ namespace {
 	  }
 	  out << "}]}],\n";
 	}
-	out << " Graphics3D[Point[{0,0,0}]]\n}\ng=Show[{a},Boxed->False];\n";
+	out << " Graphics3D[Point[{0,0,0}]]\n};\ng=Show[{a},Boxed->False];\n";
   }
 }
 
@@ -564,7 +564,7 @@ LatticeAnalyzeAction::LatticeAnalyzeAction():
   Action
   (staticGetName(),
    "Display information about the input ideal.",
-   "This action is not ready for use.\n\n"
+   "This action is not ready for general use.\n\n"
    "Display information about input Grobner basis of lattice.",
    false),
 
@@ -600,7 +600,7 @@ void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
 
 	cerr << "** Computing matrix and its nullspace" << endl;
 	cout << "Analysis of the "
-		 << matrix.getRowCount() << " by " << matrix.getColCount() 
+		 << matrix.getRowCount() << " by " << matrix.getColCount()
 		 << " matrix\n";
 	printIndentedMatrix(matrix);
 	printNullSpace(matrix);

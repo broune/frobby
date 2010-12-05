@@ -1,7 +1,7 @@
 Displaying information on action: transform
 
-By default, transform simply writes the input ideals to output. A
-number of parameters allow to transform the input ideal in various ways.
+By default, transform simply writes the input ideals to output. A number of
+parameters allow to transform the input ideal in various ways.
 
 The parameters accepted by transform are as follows.
 
@@ -39,14 +39,17 @@ The parameters accepted by transform are as follows.
    value of 0 or more than the number of variables in the ring.
 
  -radical [BOOL]   (default is off)
-   Take the radical of the generators. Combine this with -minimize to
-   get rid of any non-minimal ones.
+   Take the radical of the generators. Combine this with -minimize to get rid
+   of any non-minimal ones.
 
  -sort [BOOL]   (default is off)
    Sort generators according to the reverse lexicographic order.
 
  -time [BOOL]   (default is off)
    Display and time each subcomputation.
+
+ -trimVariables [BOOL]   (default is off)
+   Remove variables that divide none of the generators.
 
  -unique [BOOL]   (default is off)
    Remove duplicate generators.

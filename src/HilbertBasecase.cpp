@@ -100,7 +100,7 @@ bool HilbertBasecase::stepComputation(Entry& entry, Entry& newEntry) {
       return false;
     }
 
-     // At this point entry is not a base case, and it cannot be
+    // At this point entry is not a base case, and it cannot be
     // simplified, so we have to split it into two.
 
     size_t bestPivotVar = _term.getFirstMaxExponent();

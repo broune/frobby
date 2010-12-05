@@ -1,2 +1,2 @@
-ERROR: Option -time was given the argument "not_on_or_off". The only valid 
+ERROR: Option -time was given the argument "not_on_or_off". The only valid
 arguments are "on" and "off".

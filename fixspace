@@ -8,10 +8,10 @@
 
 # I once had an error where the conversion had an error (the computer
 # didn't have dos2unix), resulting in the converted files being empty.
-# The result was that every file got replaced by an empty file! That was
-# not so nice, so this script is now stops operation as
-# soon as any error occurs, and it also checks that only space has been changed
-# before it overwrites the original file with a space-fixed version.
+# The result was that every file got replaced by an empty file! That
+# was not so nice, so this script stops operation as soon as any error
+# occurs, and it also checks that only space has been changed before
+# it overwrites the original file with a space-fixed version.
 
 for f in $*; do echo $f;
 

@@ -22,6 +22,8 @@
 #include <sstream>
 #include <vector>
 
+class FrobbyStringStream;
+
 class ColumnPrinter {
  public:
   ColumnPrinter(size_t columnCount = 0);
@@ -34,6 +36,7 @@ class ColumnPrinter {
   ostream& operator[](size_t col);
 
   void print(ostream& out) const;
+  void print(FrobbyStringStream& out) const;
 
  private:
   struct Col {

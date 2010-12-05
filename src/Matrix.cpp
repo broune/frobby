@@ -107,7 +107,7 @@ void print(FILE* file, const Matrix& mat) {
 void print(ColumnPrinter& pr, const Matrix& mat) {
   size_t baseCol = pr.getColumnCount();
   for (size_t i = 0; i < mat.getColCount(); ++i)
-	pr.addColumn();
+	pr.addColumn(false);
   for (size_t col = 0; col < mat.getColCount(); ++col)
 	for (size_t row = 0; row < mat.getRowCount(); ++row)
 	  pr[baseCol + col] << mat(row, col) << '\n';
