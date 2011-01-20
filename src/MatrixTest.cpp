@@ -344,3 +344,29 @@ TEST(Matrix, Print) {
   pr << makeMatrix(6, str);
   ASSERT_EQ(pr.str(), str);
 }
+
+TEST(Matrix, Determinant) {
+  Matrix mat1 = makeMatrix
+	(3,
+	 " 4  1  1\n"
+	 "-1 -2  1\n"
+	 " 2 -1  0\n");
+  ASSERT_EQ(determinant(mat1), 11);
+
+  Matrix mat2 = makeMatrix
+	(2,
+	 " 0  3\n"
+	 " 2  0\n");
+  ASSERT_EQ(determinant(mat2), -6);
+
+  Matrix mat3 = makeMatrix
+	(3,
+	 " 0  1    0\n"
+	 " 2  0  100\n"
+	 " 0  0    7\n");
+  ASSERT_EQ(determinant(mat3), -14);
+
+  Matrix mat4 = makeMatrix
+	(1, "-2\n");
+  ASSERT_EQ(determinant(mat4), -2);
+}
