@@ -166,7 +166,9 @@ void swapRows(Matrix& mat, size_t row1, size_t row2) {
 	swap(mat(row1, col), mat(row2, col));
 }
 
-void rowReduce(Matrix& mat) {
+bool rowReduce(Matrix& mat) {
+  bool permutationOdd = false;
+
   size_t rowsDone = 0;
   for (size_t pivotCol = 0; pivotCol < mat.getColCount(); ++pivotCol) {
 	size_t pivotRow = rowsDone;
@@ -176,7 +178,10 @@ void rowReduce(Matrix& mat) {
 	if (pivotRow == mat.getRowCount())
 	  continue;
 
-	swapRows(mat, rowsDone, pivotRow);
+	if (rowsDone != pivotRow) {
+	  permutationOdd = !permutationOdd;
+	  swapRows(mat, rowsDone, pivotRow);
+	}
 	pivotRow = rowsDone;
 	++rowsDone;
 
@@ -188,6 +193,8 @@ void rowReduce(Matrix& mat) {
 	  }
 	}
   }
+
+  return permutationOdd;
 }
 
 void rowReduceFully(Matrix& mat) {
@@ -402,9 +409,9 @@ mpq_class determinant(const Matrix& mat) {
   ASSERT(mat.getRowCount() == mat.getColCount());
 
   Matrix reduced(mat);
-  rowReduce(reduced);
+  bool permutationOdd = rowReduce(reduced);
 
-  mpq_class det = 1;
+  mpq_class det = permutationOdd ? -1 : 1;
   for (size_t i = 0; i < reduced.getRowCount(); ++i)
 	det *= reduced(i, i);
   return det;

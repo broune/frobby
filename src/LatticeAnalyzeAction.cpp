@@ -558,6 +558,13 @@ namespace {
 	}
 	out << " Graphics3D[Point[{0,0,0}]]\n};\ng=Show[{a},Boxed->False];\n";
   }
+
+  mpq_class getIndexSum(const vector<Mlfb>& mlfbs) {
+	mpq_class sum;
+	for (size_t m = 0; m < mlfbs.size(); ++m)
+	  sum += mlfbs[m].index;
+	return sum;
+  }
 }
 
 LatticeAnalyzeAction::LatticeAnalyzeAction():
@@ -635,6 +642,7 @@ void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
 	cout << "There are " << paraMlfbCount << " parallelogram MLFBs.\n";
 	cout << "There are " << planes.size()
 		 << " distinct double triangle planes.\n";
+	cout << "The sum of MLFB indexes is " << getIndexSum(mlfbs) << ".\n";
 
 	printNeighbors(lat);
 

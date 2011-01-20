@@ -84,8 +84,9 @@ void multiplyRow(Matrix& mat, size_t row, const mpq_class& mult);
 void swapRows(Matrix& mat, size_t row1, size_t row2);
 
 /** Reduces mat to row-echelon form, i.e. make it upper
-	triangular. This does not include making the pivot entries 1. */
-void rowReduce(Matrix& mat);
+	triangular. This does not include making the pivot entries
+	1. Returns true if the permutation made of the rows is odd. */
+bool rowReduce(Matrix& mat);
 
 /** Returns the rank of mat. */
 size_t matrixRank(const Matrix& mat);
