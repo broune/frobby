@@ -68,6 +68,7 @@ class RawSquareFreeIdeal {
   void minimize();
   void insert(const Word* term);
   void colon(const Word* by);
+  void colon(size_t var);
 
   /** Insert term and minimize. Object msut be already minimized. */
   void insertReminimize(const Word* term);
@@ -75,10 +76,15 @@ class RawSquareFreeIdeal {
   /** Perform a colon and minimize. Object must be already minimized. */
   void colonReminimize(const Word* colon);
 
+  /** Perform a colon by var and minimize. Object must be already minimized. */
+  void colonReminimize(size_t var);
+
   /** Remove the generator at index, then perform a colon by it and
 	  minimize. Object must be already minimized. */
   void colonReminimizeAndRemove(size_t index);
 
+  /** Puts the least common multiple of the generators of the ideal
+	  into lcm. */
   void getLcm(Word* lcm) const;
 
   static RawSquareFreeIdeal* newIdeal(size_t varCount, size_t capacity);
@@ -88,14 +94,35 @@ class RawSquareFreeIdeal {
   size_t getVarCount() const;
   size_t getWordsPerTerm() const;
 
+  /** Returns the generator at index. */
   Word* getGenerator(size_t index);
+
+  /** Returns the generator at index. */  
   const Word* getGenerator(size_t index) const;
+
+  /** Returns a pointer to the memory where a generator at index would
+	  be, even if index is equal to or greater than
+	  getGeneratorCount(). */
+  Word* getGeneratorUnsafe(size_t index);
+
+  /** Sets lcm to be the least common multple of those generators that
+	  var does not divide. */
+  void getLcmOfNonMultiples(Word* lcm, size_t var) const;
 
   /** Sets counts[var] to the number of generators that var divides. */
   void getVarDividesCounts(vector<size_t>& counts) const;
 
+  /** Returns the index of the first generator that var divides or
+	  getGeneratorCount() if no such generator exists. */
+  size_t getMultiple(size_t var) const;
+
+  /** Removes the generator at index. */
   void removeGenerator(size_t index);
-  Word* getNotRelativelyPrime(const Word* term);
+
+  /** Returns the index of the first generator that is not relatively
+	  prime with term. Returns getGeneratorCount() if no such
+	  generator exists. */
+  size_t getNotRelativelyPrime(const Word* term);
 
   /** Returns the index of a generator that is the only one to be
 	  divisible by some variable. Returns getGeneratorCount() if there
@@ -105,6 +132,9 @@ class RawSquareFreeIdeal {
   /** Returns true if for every variable it either divides ignore or
 	  it divides some (not necessarily minimal) generator. */
   bool hasFullSupport(const Word* ignore) const;
+
+  /** Returns true if no generator divides another. */
+  bool isMinimallyGenerated() const;
 
   void swap(size_t a, size_t b);
 

@@ -31,14 +31,12 @@ class PivotEulerAlg {
   mpz_class getEuler();
 
  private:
-  bool rec(EulerState& state, EulerState& newState);
-  void taskRun(RawSquareFreeIdeal& ideal);
+  bool processState(EulerState& state, EulerState& newState);
   void getPivot(const EulerState& state, Word* pivot);
 
   mpz_class _euler;
-  Word* _lcm;
-  Word* _pivot;
-  vector<size_t> _counts;
+  Word* _termTmp;
+  vector<size_t> _divCountsTmp;
 };
 
 #endif

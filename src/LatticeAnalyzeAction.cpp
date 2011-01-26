@@ -150,8 +150,10 @@ namespace {
 	mpq_class index;
 	vector<size_t> points;
 	vector<size_t> edges;
+	vector<size_t> edgeHitsFacet;
 	vector<mpz_class> rhs;
 	size_t planeCount;
+	size_t id;
 
 	bool operator<(const Mlfb& mlfb) const {
 	  if (planeCount > mlfb.planeCount)
@@ -161,32 +163,52 @@ namespace {
 
 	  return points.back() > mlfb.points.back();
 	}
+
+	size_t getEdge(size_t index) {
+	  if (index < edges.size())
+		return edges[index];
+	  else
+		return numeric_limits<size_t>::max();
+	}
   };
 
-  size_t relax(size_t facet, vector<mpz_class>& rhs, const GrobLat& lat) {
+  size_t pushOutFacetPositive(size_t facetPushOut,
+							  const vector<mpz_class>& rhs, 
+							  const GrobLat& lat) {
 	size_t onFacet = numeric_limits<size_t>::max();
 	mpq_class leastEntry;
 
 	for (size_t n = 0; n < lat.getNeighborCount(); ++n) {
-	  if (facet > 0) {
-		for (size_t i = 0; i < lat.getYDim(); ++i) {
-		  if (i == facet)
-			continue;
-		  if (lat.getYMatrix()(n, i) > rhs[i])
-			goto notOnFacet;
-		}
-	  } else {
-		for (size_t i = 0; i < lat.getYDim(); ++i) {
-		  if (i == facet)
-			continue;
-		  if (lat.getYMatrix()(n, i) < rhs[i])
-			goto notOnFacet;
-		}
+	  for (size_t i = 0; i < lat.getYDim(); ++i) {
+		if (i == facetPushOut)
+		  continue;
+		if (lat.getYMatrix()(n, i) >= rhs[i])
+		  goto notOnFacet;
 	  }
 
 	  if (onFacet == numeric_limits<size_t>::max() ||
-		  leastEntry > lat.getYMatrix()(n, facet)) {
-		leastEntry = lat.getYMatrix()(n, facet);
+		  leastEntry > lat.getYMatrix()(n, facetPushOut)) {
+		leastEntry = lat.getYMatrix()(n, facetPushOut);
+		onFacet = n;
+	  }
+
+	notOnFacet:;
+	}
+	return onFacet;
+  }
+
+  size_t pushOutFacetZero(const vector<mpz_class>& rhs, const GrobLat& lat) {
+	size_t onFacet = numeric_limits<size_t>::max();
+	mpq_class leastEntry;
+
+	for (size_t n = 0; n < lat.getNeighborCount(); ++n) {
+	  for (size_t i = 1; i < lat.getYDim(); ++i)
+		if (-lat.getYMatrix()(n, i) >= rhs[i])
+		  goto notOnFacet;
+
+	  if (onFacet == numeric_limits<size_t>::max() ||
+		  leastEntry > -lat.getYMatrix()(n, 0)) {
+		leastEntry = -lat.getYMatrix()(n, 0);
 		onFacet = n;
 	  }
 
@@ -211,6 +233,7 @@ namespace {
 	mlfbs.resize(rhses.getGeneratorCount());
 	for (size_t i = 0; i < mlfbs.size(); ++i) {
 	  Mlfb& mlfb = mlfbs[i];
+	  mlfb.id = i + 1;
 
 	  for (size_t var = 0; var < lat.getYDim(); ++var)
 		mlfb.rhs.push_back(rhses[i][var]);
@@ -223,72 +246,138 @@ namespace {
 	  skipIt:;
 	  }
 
-	  // order to have maxima along diagonal, though for non-generic
-	  // this won't make sense, so we might as well only do it for
-	  // that case. Also insert edges.
+	  // order to have maxima along diagonal if possible.
 	  if (mlfb.points.size() == lat.getYDim() - 1) {
 		// -1 due to the missing 0.
 		for (size_t i = 1; i < lat.getYDim(); ++i)
 		  for (size_t p = 0; p < mlfb.points.size(); ++p)
 			if (lat.getYMatrix()(mlfb.points[p], i) == mlfb.rhs[i])
 			  swap(mlfb.points[i-1], mlfb.points[p]);
-		/*
-		for (size_t pushIn = 0; pushIn < lat.getYDim(); ++pushIn) {
-		  mpq_class secondLargest = -1;
-		  size_t hits = 0;
-		  for (size_t i = 0; i < lat.getYDim(); ++i) {
-			mpq_class entry = 0;
-			if (i > 0)
-			  entry = lat.getYMatrix()(mlfb.points[i], pushIn);
+	  }
 
-			if (i == pushIn) {
-			  if (entry != mlfb.rhs[pushIn]) {
-				mlfb.edges.clear();
-				goto skip;
-			  }
-			} else {
-			  if (entry == secondLargest && entry >= 0) {
-				mlfb.edges.clear();
-				goto skip;
-			  }
+	  // Compute MLFB index.
+	  Matrix mat(mlfb.points.size(), lat.getHDim());
+	  for (size_t point = 0; point < mlfb.points.size(); ++point)
+		for (size_t var = 0; var < lat.getHDim(); ++var)
+		  mat(point, var) = lat.getHMatrix()(mlfb.points[point], var);
+	  if (mlfb.points.size() == lat.getHDim())
+		mlfb.index = determinant(mat);
+	} 
 
-			  if (entry > secondLargest) {
-				secondLargest = entry;
-				hits = i;
-			  }
-			}
-		  }
-		  ASSERT(secondLargest >= 0);
+	// Compute Scarf edges.
+	for (size_t m = 0; m < mlfbs.size(); ++m) {
+	  Mlfb& mlfb = mlfbs[m];
+	  if (mlfb.points.size() != lat.getYDim() - 1)
+		continue;
 
-		  vector<mpz_class> rhs(mlfb.rhs);
-		  rhs[pushIn] = secondLargest;
+	  mlfb.edges.resize(lat.getYDim());
+	  mlfb.edgeHitsFacet.resize(lat.getYDim());
+	  for (size_t facetPushIn = 0; facetPushIn < lat.getYDim(); ++facetPushIn) {
+		mpq_class secondLargest;
+		size_t facetPushOut = numeric_limits<size_t>::max();
 
-		  rhs[hits] = relax(hits, mlfb.rhs, lat);
-		  if (rhs[hits] < 0)
-			continue;
+		for (size_t neigh = 0; neigh < lat.getYDim(); ++neigh) {
+		  mpq_class entry = 0; // neigh == 0 represents zero.
+		  if (neigh > 0)
+			entry = lat.getYMatrix()(mlfb.points[neigh - 1], facetPushIn);
 
-		  if (pushIn == 0) {
-			ASSERT(hits > 0);
-			for (size_t i = 0; i < lat.getYDim(); ++i)
-			  rhs[i] -= lat.getYMatrix()(mlfb.points[hits - 1], i);
-		  }
+		  if (neigh == facetPushIn) {
+			if (entry != mlfb.rhs[facetPushIn]) 
+			  goto skipBecauseNotGeneric;
+		  } else {
+			if (entry == secondLargest &&
+				facetPushOut != numeric_limits<size_t>::max())
+			  goto skipBecauseNotGeneric;
 
-		  for (size_t m = 0; m < mlfbs.size(); ++m) {
-			if (mlfbs[m].rhs == rhs) {
-			  mlfb.edges[pushIn] = m;
-			  break;
+			if (entry > secondLargest ||
+				facetPushOut == numeric_limits<size_t>::max()) {
+			  secondLargest = entry;
+			  facetPushOut = neigh;
 			}
 		  }
 		}
-		*/
-		//	  skip:
-		Matrix mat(mlfb.points.size(), lat.getHDim());
-		for (size_t point = 0; point < mlfb.points.size(); ++point)
-		  for (size_t var = 0; var < lat.getHDim(); ++var)
-			mat(point, var) = lat.getHMatrix()(mlfb.points[point], var);
-		if (mlfb.points.size() == lat.getHDim())
-		  mlfb.index = determinant(mat);
+
+		// ----------------------------------------------
+		// ** Case 1: facetPushIn > 0 and facetPushOut > 0
+		// 
+		// We push in facetPushIn (discarding the non-zero neighbor
+		// previously on that facet) and hit a non-zero neighbor
+		// that is already on the MLFB. That neighbor now instead
+		// lies on facetPushIn and we push out facetPushOut in the
+		// straight forward way until it hits what will be the new
+		// neighbor on facetPushOut.
+		//
+		// ----------------------------------------------
+		// ** Case  2: facetPushIn > 0 and facetPushOut == 0
+		//
+		// We push in facetPushIn (discarding the non-zero neighbor
+		// previously on that facet) and hit zero. Zero now instead
+		// lies on facetPushIn and we push out facetPushOut. It will
+		// be pushing into the area on the opposite side from the
+		// half-set of neighbors that we are looking at, so to find
+		// the replacement neighbor to put on facetPushOut
+		// (i.e. facet zero) we need to consider the negative of the
+		// neighbors we have. When that neighbor -v has been found,
+		// we need to translate the whole body by +v so that zero
+		// will once again lie on facet zero.
+		//
+		// ----------------------------------------------
+		// ** case 3: facetPushIn == 0 and facetPushOut > 0
+		//
+		// We push in facetPushIn (discarding the zero previously on
+		// that facet) and hit a non-zero neighbor v on
+		// facetPushOut. Then v lies on facetPushIn (i.e. facet
+		// zero), so for the MLFB to have zero on facet 0 we need to
+		// translate it by -v. We then relax facetPushOut to find a
+		// replacement neighbor as in Case 1.
+
+		ASSERT(facetPushIn == 0 || secondLargest >= 0);
+		// In all cases the neighbor we hit moves to facetPushIn.
+		vector<mpz_class> rhs(mlfb.rhs);
+
+		rhs[facetPushIn] = secondLargest;
+
+		if (facetPushIn == 0) {
+		  // Case 3: the neighbor hit moves to facet 0 so translate
+		  // the body to make that neighbor zero.
+		  for (size_t i = 0; i < lat.getYDim(); ++i)
+			rhs[i] -= lat.getYMatrix()(mlfb.points[facetPushOut - 1], i);			
+		}
+
+		if (facetPushOut > 0) {
+		  // Case 1 or 3: push out in the usual way.
+		  size_t newNeighbor = pushOutFacetPositive(facetPushOut, rhs, lat);
+		  if (newNeighbor == numeric_limits<size_t>::max())
+			goto skipBecauseNotGeneric;
+		  rhs[facetPushOut] = lat.getYMatrix()(newNeighbor, facetPushOut);
+		}
+
+		if (facetPushOut == 0) {
+		  // Case 2: push out into negative neighbors
+		  size_t newNeighbor = pushOutFacetZero(rhs, lat);
+		  if (newNeighbor == numeric_limits<size_t>::max())
+			goto skipBecauseNotGeneric;
+		  for (size_t i = 0; i < lat.getYDim(); ++i)
+			rhs[i] += lat.getYMatrix()(newNeighbor, i);
+		  rhs[0] = 0;
+		}
+
+		// Find the MLFB with the right hand side that we have
+		// computed.
+		for (size_t m = 0; m < mlfbs.size(); ++m) {
+		  if (mlfbs[m].rhs == rhs) {
+			mlfb.edges[facetPushIn] = m + 1;
+			mlfb.edgeHitsFacet[facetPushIn] = facetPushOut;
+			goto foundMatch;
+		  }
+		}
+		goto skipBecauseNotGeneric;
+	  foundMatch:;
 	  }
+	  continue;
+	skipBecauseNotGeneric:
+	  mlfb.edges.clear(); 
+	  mlfb.edgeHitsFacet.clear();
 	}
   }
 
@@ -318,11 +407,16 @@ namespace {
 	  for (size_t i = 0; i < _lat.getYDim(); ++i)
 		_pr.addColumn(false, i == 0 ? " " : "  ");
 
+	  // edges
+	  _edgeHeader = _pr.getColumnCount();
+	  _pr.addColumn(false, "  ", "");
 	  _edge = _pr.getColumnCount();
 	  _pr.addColumn(false, " ", "");
 	}
 
-	void addLine(size_t neighbor, NeighborPlace place = NoPlace, size_t edge = (size_t)-1) {
+	void addLine(size_t neighbor,
+				 NeighborPlace place = NoPlace,
+				 size_t edge = (size_t)-1) {
 	  _pr[_labelIndex] << 'g' << (neighbor + 1) << ':';
 	  if (place != NoPlace)
 		_pr[_labelIndex] << ' ' << getPlaceCode(place);
@@ -337,12 +431,15 @@ namespace {
 		_pr[_hIndex + i] << _lat.getHMatrix()(neighbor, i) << '\n';
 
 	  if (edge != (size_t)-1) {
-		_pr[_edge] << "push to m" << (edge + 1);
+		_pr[_edgeHeader] << "push to";
+		_pr[_edge] << 'm' << edge;
 	  }
+	  _pr[_edgeHeader] << '\n';
 	  _pr[_edge] << '\n';
 	}
 
-	void addZeroLine(NeighborPlace place = NoPlace) {
+	void addZeroLine(NeighborPlace place = NoPlace,
+					 size_t edge = (size_t)-1) {
 	  _pr[_labelIndex] << "zero:";
 	  if (place != NoPlace)
 		_pr[_labelIndex] << ' ' << getPlaceCode(place);
@@ -355,6 +452,13 @@ namespace {
 	  _pr[_hHeader] << "h=\n";
 	  for (size_t i = 0; i < _lat.getHDim(); ++i)
 		_pr[_hIndex + i] << 0 << '\n';
+
+	  if (edge != (size_t)-1) {
+		_pr[_edgeHeader] << "push to";
+		_pr[_edge] << 'm' << edge;
+	  }
+	  _pr[_edgeHeader] << '\n';
+	  _pr[_edge] << '\n';
 	}
 
 	void addLine() {
@@ -379,6 +483,7 @@ namespace {
 	size_t _yIndex;
 	size_t _hHeader;
 	size_t _hIndex;
+	size_t _edgeHeader;
 	size_t _edge;
   };
 
@@ -470,21 +575,18 @@ namespace {
 	cout << "\n\n";
 	for (size_t i = 0; i < mlfbs.size(); ++i) {
 	  Mlfb& mlfb = mlfbs[i];
-	  cout << "*** MLFB with rhs";
+	  cout << "*** MLFB m" << mlfb.id << " with rhs";
 	  for (size_t var = 0; var < lat.getYDim(); ++var)
 		cout << ' ' << mlfb.rhs[var];
 	  cout << " contains the neighbors\n";
 
 	  NeighborPrinter pr(lat);
-	  pr.addZeroLine(InPlane);
-	  /*	  cout << mlfb.edges.size() << " edges:" << endl;*/
+	  pr.addZeroLine(InPlane, mlfb.getEdge(0));
 	  for (size_t i = 0; i < mlfb.points.size(); ++i) {
-		size_t edge = numeric_limits<size_t>::max();
-		if (i < mlfb.edges.size())
-		  edge = mlfb.edges[i];
-		//cout << edge;
-		pr.addLine(mlfb.points[i], plane.neighborPlace[mlfb.points[i]], edge);
-		}
+		pr.addLine(mlfb.points[i],
+				   plane.neighborPlace[mlfb.points[i]],
+				   mlfb.getEdge(i + 1));
+	  }
 	  pr.print(cout);
 	  cout << "Its index is " << mlfb.index << " and it has "
 		   << mlfb.planeCount << " plane neighbors.\n\n";
@@ -527,6 +629,50 @@ namespace {
 	pr.print(stdout);
 
 	printMlfbs(mlfbs, plane, lat);
+  }
+  /*
+  const char* getEdgePos(size_t index) {
+	switch (index) {
+	case 0: return "s";
+	case 1: return "e";
+	case 2: return "n";
+	case 3: return "w";
+	default: ASSERT(false);
+	  return "ERROR";
+	}
+  }
+*/
+  const char* getEdgePos(size_t index) {
+	switch (index) {
+	case 0: return "sw";
+	case 1: return "se";
+	case 2: return "ne";
+	case 3: return "nw";
+	default: ASSERT(false);
+	  return "ERROR";
+	}
+  }
+
+  void printScarfGraph(const vector<Mlfb>& mlfbs) {
+	ofstream out("graph.dot");
+	out << "graph G {\n";
+	for (size_t m = 0; m < mlfbs.size(); ++m) {
+	  const Mlfb& mlfb = mlfbs[m];
+	  out << "  m" << mlfb.id << "[label=\"";
+	  out << "m" << mlfb.id << "\\nindex " << mlfb.index;
+	  out << "\", shape=box];\n";
+
+	  for (size_t e = 0; e < mlfb.edges.size(); ++e) {
+		size_t hits = mlfb.edgeHitsFacet[e];
+		if (mlfb.id < mlfb.edges[e])
+			continue;
+
+		out << "   m" << mlfb.id << " -- m" << mlfb.edges[e] << " [";
+		out << "headport=" << getEdgePos(hits) << ", ";
+		out << "tailport=" << getEdgePos(e) << "];\n";
+	  }
+	}
+	out << "}\n";
   }
 
   void printMathematica3D(vector<Mlfb>& mlfbs, const GrobLat& lat) {
@@ -651,6 +797,7 @@ void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
 	  printPlane(mlfbs, planes[plane], lat);
 	}
 
+	printScarfGraph(mlfbs);
 	printMathematica3D(mlfbs, lat);
   }
 

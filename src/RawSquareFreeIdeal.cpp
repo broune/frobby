@@ -93,26 +93,31 @@ size_t RSFIdeal::insert(const Ideal& ideal) {
   ASSERT(getVarCount() == ideal.getVarCount());
 
   size_t gen = 0;
-  for (; gen < ideal.getGeneratorCount(); ++gen)
-	if (!Ops::encodeTerm(getGenerator(_genCount + gen), ideal[gen], getVarCount()))
+  for (; gen < ideal.getGeneratorCount(); ++gen) {
+	++_genCount;
+	if (!Ops::encodeTerm(getGenerator(_genCount - 1),
+						 ideal[gen], getVarCount())) {
+	  --_genCount;
 	  break;
-  _genCount += gen;
+	}
+  }
   return gen;
 }
 
 void RSFIdeal::minimize() {
   size_t wordCount = getWordsPerTerm();
-  for (size_t i = 0; i < _genCount; ++i) {
+  for (size_t i = 0; i < _genCount;) {
 	for (size_t div = 0; div < _genCount; ++div) {
 	  if (div != i &&
 		  Ops::divides(getGenerator(div), getGenerator(div) + wordCount,
 					   getGenerator(i))) {
-		--_genCount;
 		Ops::assign(getGenerator(i), getGenerator(i) + wordCount,
-					getGenerator(_genCount));
+					getGenerator(_genCount - 1));
+		--_genCount;
 		goto next;
 	  }
 	}
+	++i;
   next:;
   }
 }
@@ -124,12 +129,35 @@ void RSFIdeal::colon(const Word* by) {
 			   getGenerator(i), by);
 }
 
+void RSFIdeal::colon(size_t var) {
+  for (size_t i = 0; i < _genCount; ++i)
+	Ops::setExponent(getGenerator(i), var, false);
+}
+
 Word* RSFIdeal::getGenerator(size_t index) {
+  ASSERT(index < getGeneratorCount());
   return _memory + index * getWordsPerTerm();
 }
 
 const Word* RSFIdeal::getGenerator(size_t index) const {
+  ASSERT(index < getGeneratorCount());
   return _memory + index * getWordsPerTerm();
+}
+
+Word* RSFIdeal::getGeneratorUnsafe(size_t index) {
+  // no assert to check index is valid as this method specifically
+  // allows out-of-bounds access.
+  return _memory + index * getWordsPerTerm();
+}
+
+void RSFIdeal::getLcmOfNonMultiples(Word* lcm, size_t var) const {
+  ASSERT(var < getVarCount());
+
+  Ops::setToIdentity(lcm, getVarCount());
+  for (size_t i = 0; i < getGeneratorCount(); ++i) {
+	if (Ops::getExponent(getGenerator(i), var) == false)
+	  Ops::lcm(lcm, lcm, getGenerator(i), getVarCount());
+  }	
 }
 
 void RSFIdeal::getVarDividesCounts(vector<size_t>& counts) const {
@@ -162,6 +190,13 @@ void RSFIdeal::getVarDividesCounts(vector<size_t>& counts) const {
   }
 }
 
+size_t RSFIdeal::getMultiple(size_t var) const {
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	if (Ops::getExponent(getGenerator(gen), var) == true)
+	  return gen;
+  return getGeneratorCount();
+}
+
 void RSFIdeal::removeGenerator(size_t gen) {
   Word* term = getGenerator(gen);
   Word* last = getGenerator(getGeneratorCount() - 1);
@@ -170,12 +205,12 @@ void RSFIdeal::removeGenerator(size_t gen) {
   --_genCount;
 }
 
-Word* RSFIdeal::getNotRelativelyPrime(const Word* term) {
+size_t RSFIdeal::getNotRelativelyPrime(const Word* term) {
   const size_t wordCount = getWordsPerTerm();
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
 	if (!Ops::isRelativelyPrime(term, term + wordCount, getGenerator(gen)))
-	  return getGenerator(gen);
-  return 0;
+	  return gen;
+  return getGeneratorCount();
 }
 
 size_t RSFIdeal::getExclusiveVarGenerator() {
@@ -221,6 +256,17 @@ bool RSFIdeal::hasFullSupport(const Word* ignore) const {
   return true;
 }
 
+bool RSFIdeal::isMinimallyGenerated() const {
+  size_t wordCount = getWordsPerTerm();
+  for (size_t i = 0; i < _genCount; ++i)
+	for (size_t div = 0; div < _genCount; ++div)
+	  if (div != i &&
+		  Ops::divides(getGenerator(div), getGenerator(div) + wordCount,
+					   getGenerator(i)))
+		return false;
+  return true;
+}
+
 void RSFIdeal::swap(size_t a, size_t b) {
   Ops::swap(getGenerator(a), getGenerator(b), getVarCount());
 }
@@ -251,6 +297,11 @@ void RSFIdeal::insertReminimize(const Word* term) {
 
 void RSFIdeal::colonReminimize(const Word* by) {
   colon(by);
+  minimize();
+}
+
+void RSFIdeal::colonReminimize(size_t var) {
+  colon(var);
   minimize();
 }
 
