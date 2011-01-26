@@ -80,9 +80,9 @@ TEST(RawSquareFreeTerm, Assign) {
 }
 
 TEST(RawSquareFreeTerm, HasFullSupport) {
-  const size_t maxVarCount = 2 * BitsPerWord;
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
 
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* term = newTerm(varCount);
 
 	for (size_t var = 0; var < varCount; ++var) {
@@ -104,8 +104,8 @@ TEST(RawSquareFreeTerm, HasFullSupport) {
 }
 
 TEST(RawSquareFreeTerm, IsIdentity) {
-  const size_t maxVarCount = 2 * BitsPerWord;
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* term = newTerm(varCount);
 	Word* termEnd = term + getWordCount(varCount);
 
@@ -123,8 +123,8 @@ TEST(RawSquareFreeTerm, IsIdentity) {
 }
 
 TEST(RawSquareFreeTerm, SetToIdentity) {
-  const size_t maxVarCount = 2 * BitsPerWord;
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* term = newTerm(varCount);
 	Word* termEnd = term + getWordCount(varCount);
 
@@ -133,6 +133,28 @@ TEST(RawSquareFreeTerm, SetToIdentity) {
 	  setExponent(term, var, true);
 	  setToIdentity(term, termEnd);
 	  ASSERT_TRUE_SILENT(isIdentity(term, termEnd));
+
+	  setExponent(term, var, true);
+	  setToIdentity(term, varCount);
+	  ASSERT_TRUE_SILENT(isIdentity(term, termEnd));
+	}
+
+	deleteTerm(term);
+  }
+}
+
+TEST(RawSquareFreeTerm, SetToAllVarProd) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
+	Word* term = newTerm(varCount);
+
+	setToAllVarProd(term, varCount);
+	ASSERT_TRUE(hasFullSupport(term, varCount));
+	for (size_t var = 0; var < varCount; ++var) {
+	  setExponent(term, var, false);
+	  setToAllVarProd(term, varCount);
+	  ASSERT_TRUE_SILENT(isValid(term, varCount));
+	  ASSERT_TRUE_SILENT(hasFullSupport(term, varCount));
 	}
 
 	deleteTerm(term);
@@ -140,8 +162,8 @@ TEST(RawSquareFreeTerm, SetToIdentity) {
 }
 
 TEST(RawSquareFreeTerm, IsRelativelyPrime) {
-  const size_t maxVarCount = 2 * BitsPerWord;
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* a = newTerm(varCount);
 	Word* aEnd = a + getWordCount(varCount);
 	Word* b = newTerm(varCount);
@@ -165,8 +187,8 @@ TEST(RawSquareFreeTerm, IsRelativelyPrime) {
 }
 
 TEST(RawSquareFreeTerm, Lcm) {
-  const size_t maxVarCount = 2 * BitsPerWord;
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* a = newTerm(varCount);
 	Word* b = newTerm(varCount);
 	Word* c = newTerm(varCount);
@@ -204,8 +226,8 @@ TEST(RawSquareFreeTerm, Lcm) {
 }
 
 TEST(RawSquareFreeTerm, Gcd) {
-  const size_t maxVarCount = 2 * BitsPerWord;
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* a = newTerm(varCount);
 	Word* b = newTerm(varCount);
 	Word* c = newTerm(varCount);
@@ -241,8 +263,8 @@ TEST(RawSquareFreeTerm, Gcd) {
 }
 
 TEST(RawSquareFreeTerm, Colon) {
-  const size_t maxVarCount = 2 * BitsPerWord;
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* a = newTerm(varCount);
 	Word* b = newTerm(varCount);
 	Word* c = newTerm(varCount);
@@ -278,8 +300,8 @@ TEST(RawSquareFreeTerm, Colon) {
 }
 
 TEST(RawSquareFreeTerm, Divides) {
-  const size_t maxVarCount = 2 * BitsPerWord;
-  for (size_t varCount = 0; varCount < maxVarCount; ++varCount) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
 	Word* a = newTerm(varCount);
 	Word* aEnd = a + getWordCount(varCount);
 	Word* b = newTerm(varCount);
@@ -297,4 +319,55 @@ TEST(RawSquareFreeTerm, Divides) {
 	deleteTerm(a);
 	deleteTerm(b);
   }
+}
+
+TEST(RawSquareFreeTerm, Invert) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
+	Word* a = newTerm(varCount);
+
+	ASSERT_TRUE(isIdentity(a, varCount));
+	invert(a, varCount);
+	ASSERT_TRUE(hasFullSupport(a, varCount));
+	ASSERT_TRUE(isValid(a, varCount));
+
+	if (varCount < 1)
+	  continue;
+
+	setExponent(a, 0, false);
+	setExponent(a, varCount - 1, false);
+	invert(a, varCount);
+	ASSERT_TRUE(getExponent(a, 0));
+	ASSERT_TRUE(getExponent(a, varCount - 1));
+
+	invert(a, varCount);
+	ASSERT_FALSE(getExponent(a, 0));
+	ASSERT_FALSE(getExponent(a, varCount - 1));
+
+	deleteTerm(a);
+  }
+}
+
+TEST(RawSquareFreeTerm, IsValid) {
+  const size_t varCount = 2 * BitsPerWord;
+  Word* a = newTerm(varCount);
+  ASSERT_TRUE(isValid(a, varCount));
+
+  setExponent(a, 1, true);
+  ASSERT_FALSE(isValid(a, 1));
+  ASSERT_TRUE(isValid(a, 2));
+
+  setExponent(a, BitsPerWord, true);
+  ASSERT_TRUE(isValid(a, BitsPerWord));
+  ASSERT_TRUE(isValid(a, BitsPerWord + 1));
+
+  setExponent(a, BitsPerWord + 1, true);
+  ASSERT_FALSE(isValid(a, BitsPerWord + 1));
+  ASSERT_TRUE(isValid(a, BitsPerWord + 2));
+
+  setExponent(a, varCount - 1, true);
+  ASSERT_FALSE(isValid(a, varCount - 1));
+  ASSERT_TRUE(isValid(a, varCount));
+
+  deleteTerm(a);
 }

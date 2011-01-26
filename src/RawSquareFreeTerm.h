@@ -22,19 +22,39 @@
 #include <algorithm>
 
 namespace SquareFreeTermOps {
-  inline bool isIdentity(Word* a, Word* aEnd) {
+  inline bool isIdentity(const Word* a, Word* aEnd) {
 	for (; a != aEnd; ++a)
 	  if (*a != 0)
 		return false;
 	return true;
   }
 
-  inline bool isIdentity(Word* a, size_t varCount) {
+  inline bool isIdentity(const Word* a, size_t varCount) {
 	if (varCount == 0)
 	  return true;
 	while (true) {
 	  if (*a != 0)
 		return false;
+	  if (varCount <= BitsPerWord)
+		return true;
+	  ++a;
+	  varCount -= BitsPerWord;
+	}
+  }
+
+  inline size_t getSizeOfSupport(const Word* a, size_t varCount) {
+	if (varCount == 0)
+	  return 0;
+	size_t count;
+	while (true) {
+	  Word word = *a;
+	  // TODO: should be able to improve this set bit counting algorithm.
+	  while (word != 0) {
+		if (word & 1 != 0)
+		  ++count;
+		word >>= 1;
+	  }
+
 	  if (varCount <= BitsPerWord)
 		return true;
 	  ++a;
@@ -61,6 +81,16 @@ namespace SquareFreeTermOps {
 	  *res = 0;
 	if (varCount > 0)
 	  *res = 0;
+  }
+
+  /** Sets all exponents of res to 1. */
+  inline void setToAllVarProd(Word* res, size_t varCount) {
+	for (; varCount >= BitsPerWord; ++res, varCount -= BitsPerWord)
+	  *res = ~0;
+	if (varCount > 0) {
+	  const Word fullSupportWord = (((Word)1) << varCount) - 1;
+	  *res = fullSupportWord;
+	}
   }
 
   /** Returns identity term of varCount variables. Must deallocate
@@ -205,6 +235,30 @@ namespace SquareFreeTermOps {
 	  std::swap(*a, *b);
 	if (varCount > 0)
 	  std::swap(*a, *b);
+  }
+
+  /** Make 0 exponents 1 and make 1 exponents 0. */
+  inline void invert(Word* a, size_t varCount) {
+	for (; varCount >= BitsPerWord; ++a, varCount -= BitsPerWord)
+	  *a = ~*a;
+	if (varCount > 0) {
+	  const Word fullSupportWord = (((Word)1) << varCount) - 1;
+	  *a = (~*a) & fullSupportWord;
+	}
+  }
+
+  /** The unused bits at the end of the last word must be zero for the
+	  functions here to work correctly. They should all maintain this
+	  invariant. This function is useful in tests to ensure that that
+	  is true. */
+  inline bool isValid(Word* a, size_t varCount) {
+	size_t offset = varCount / BitsPerWord;
+	a += offset;
+	varCount -= BitsPerWord * offset;
+	if (varCount == 0)
+	  return true;
+	const Word fullSupportWord = (((Word)1) << varCount) - 1;
+	return ((*a) & ~fullSupportWord) == 0;
   }
 
   void print(FILE* file, const Word* term, size_t varCount);
