@@ -19,8 +19,19 @@
 #include "RawSquareFreeTerm.h"
 
 #include <sstream>
+#include <vector>
 
 namespace SquareFreeTermOps {
+  Word* newTermParse(const char* strParam) {
+	string str(strParam);
+	Word* term = newTerm(str.size());
+	for (size_t var = 0; var < str.size(); ++var) {
+	  ASSERT(str[var] == '0' || str[var] == '1');
+	  setExponent(term, var, str[var] == '1' ? 1 : 0);
+	}
+	return term;
+  }
+
   void print(FILE* file, const Word* term, size_t varCount) {
 	ostringstream out;
 	print(out, term, varCount);

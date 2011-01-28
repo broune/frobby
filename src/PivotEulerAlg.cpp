@@ -27,6 +27,8 @@
 
 #include <vector>
 
+#include <iostream> //todo
+
 namespace Ops = SquareFreeTermOps;
 
 typedef vector<size_t> DivCounts;
@@ -53,44 +55,51 @@ public:
 	deallocate();
   }
 
-  void cloneWithCapacityForOneMoreGenerator(const EulerState& state) {
-	ASSERT(state.debugIsValid());
-	if (this == &state)
-	  return;
-
-	// Add one to capacity to support adding a single additional
-	// generator later.
-	const size_t capacity = state.ideal->getGeneratorCount() + 1;
-	const size_t varCount = state.ideal->getVarCount();
-
-	allocateIdealAndEliminated(varCount, capacity);
-
-	*ideal = *state.ideal;
-	Ops::assign(eliminated, state.eliminated, varCount);
-	sign = state.sign;
-
-	ASSERT(debugIsValid());
-  }
-
-  void toColonSubState(const Word* pivot) {
+  bool toColonSubState(const Word* pivot) {
 	ASSERT(pivot != 0);
+	ASSERT(Ops::isRelativelyPrime(pivot, getEliminatedVars(), getVarCount()));
 
+	const size_t genCountBefore = getIdeal().getGeneratorCount();
 	ideal->colonReminimize(pivot);
 	Ops::lcmInPlace(eliminated, pivot, ideal->getVarCount());
 	ASSERT(debugIsValid());
+	return genCountBefore != getIdeal().getGeneratorCount();
   }
 
-  void toColonSubState(size_t pivotVar) {
+  bool toColonSubState(size_t pivotVar) {
 	ASSERT(pivotVar < getVarCount());
+	ASSERT(Ops::getExponent(getEliminatedVars(), pivotVar) == 0);
 
+	const size_t genCountBefore = getIdeal().getGeneratorCount();
 	ideal->colonReminimize(pivotVar);
 	Ops::setExponent(eliminated, pivotVar, true);
 	ASSERT(debugIsValid());
+	return genCountBefore != getIdeal().getGeneratorCount();
   }
 
-  void toSumSubState(const Word* pivot) {
- 	ideal->insertReminimize(pivot);
+  void toColonSubStateNoReminimizeNecessary(size_t pivotVar) {
+	ASSERT(pivotVar < getVarCount());
+	ASSERT(Ops::getExponent(getEliminatedVars(), pivotVar) == 0);
+
+	ideal->colon(pivotVar);
+	Ops::setExponent(eliminated, pivotVar, true);
 	ASSERT(debugIsValid());
+	
+  }
+
+  void makeSumSubState(const Word* pivot, EulerState& subState) {
+	ASSERT(&subState != this);
+
+	const size_t capacity = ideal->getGeneratorCount();
+	const size_t varCount = ideal->getVarCount();
+	subState.allocateIdealAndEliminated(varCount, capacity);
+
+	subState.ideal->insertNonMultiples(pivot, *ideal);
+	Ops::lcm(subState.eliminated, eliminated, pivot, varCount);
+	subState.sign = sign;
+	subState.flipSign();
+
+	ASSERT(subState.debugIsValid());
   }
 
   void reset() {
@@ -123,6 +132,7 @@ public:
   size_t getNonEliminatedVarCount() const {
 	const size_t eliminatedVarCount =
 	  Ops::getSizeOfSupport(getEliminatedVars(), getVarCount());
+
 	ASSERT(getVarCount() >= eliminatedVarCount);
 	return getVarCount() - eliminatedVarCount;
   }
@@ -205,6 +215,12 @@ bool baseCaseSimple1(mpz_class& accumulator,
   if (!ideal.hasFullSupport(eliminated))
 	return true;
 
+  ASSERT(ideal.getGeneratorCount() != 0);
+  if (ideal.getGeneratorCount() == 1) {
+	accumulator -= state.getSign();
+	return true;
+  }
+
   if (ideal.getGeneratorCount() == 2) {
 	accumulator += state.getSign();
 	return true;
@@ -213,47 +229,83 @@ bool baseCaseSimple1(mpz_class& accumulator,
   return false;
 }
 
+bool optimizeSimpleFromDivCounts(mpz_class& accumulator,
+								 EulerState& state,
+								 DivCounts& divCounts,
+								 Word* termTmp) {
+  const size_t varCount = state.getVarCount();
+  const size_t genCount = state.getIdeal().getGeneratorCount();
+  ASSERT(genCount > 2);
+
+  for (size_t var = 0; var < varCount; ++var) {
+	if (divCounts[var] == genCount) {
+	  // No need to flag the optimization here even if this
+	  // optimization is performed as this optimization does not
+	  // impact previous optimizations.
+	  state.toColonSubStateNoReminimizeNecessary(var);
+	  divCounts[var] = 0;
+	}
+
+	if (divCounts[var] == genCount - 1 && genCount > 1) {
+	  const Word* nonMultiple =
+		state.getIdeal().getGenerator(state.getIdeal().getNonMultiple(var));
+	  Ops::lcm(termTmp, nonMultiple, state.getEliminatedVars(), varCount);
+	  Ops::setExponent(termTmp, var, 1);
+	  if (Ops::hasFullSupport(termTmp, varCount))
+		accumulator += state.getSign();
+
+	  if (state.toColonSubState(var))
+		return true;
+	  divCounts[var] = 0;
+	}
+
+	if (divCounts[var] == genCount - 2 && genCount > 2) {
+	  state.getIdeal().getLcmOfNonMultiples(termTmp, var);
+	  Ops::lcmInPlace(termTmp, state.getEliminatedVars(), varCount);
+	  Ops::setExponent(termTmp, var, 1);
+	  if (Ops::hasFullSupport(termTmp, varCount))
+		accumulator -= state.getSign();
+
+	  if (state.toColonSubState(var))
+		return true;
+	  divCounts[var] = 0;
+	}
+  }
+  return false;
+}
+
 bool baseCaseSimple2(mpz_class& accumulator,
 					 const EulerState& state,
 					 const DivCounts& divCounts) {
   const size_t varCount = state.getVarCount();
   const RawSquareFreeIdeal& ideal = state.getIdeal();
+  const size_t genCount = state.getIdeal().getGeneratorCount();
 
   for (size_t var = 0; var < varCount; ++var)
-	if (divCounts[var] > 1)
+	if (divCounts[var] != 1 && divCounts[var] != genCount)
 	  return false;
 
-  if (ideal.getGeneratorCount() % 2 == 1)
-	accumulator -= state.getSign();
-  else
+  if ((ideal.getGeneratorCount() & 1) == 0)
 	accumulator += state.getSign();
+  else
+	accumulator -= state.getSign();
   return true;
 }
 
 bool baseCasePreconditionSimplified(mpz_class& accumulator,
 									const EulerState& state,
 									const DivCounts& divCounts) {
-  const size_t varCount = state.getVarCount();
   const RawSquareFreeIdeal& ideal = state.getIdeal();
 
   if (ideal.getGeneratorCount() == 3) {
 	accumulator += state.getSign() + state.getSign();
 	return true;
   }
-
-  if (ideal.getGeneratorCount() != 4 ||
-	  state.getNonEliminatedVarCount() != 4)
-	return false;
-  for (size_t var = 0; var < varCount; ++var)
-	if (divCounts[var] > 2)
-	  return false;
-
-  accumulator -= state.getSign();
-  return true;
+  return false;
 }
 
 bool optimizeOneDivCounts(EulerState& state,
-						  const DivCounts& divCounts,
+						  DivCounts& divCounts,
 						  Word* tmp) {
   const size_t varCount = state.getVarCount();
   const RawSquareFreeIdeal& ideal = state.getIdeal();
@@ -265,6 +317,7 @@ bool optimizeOneDivCounts(EulerState& state,
 	size_t index = ideal.getMultiple(var);
 	ASSERT(ideal.getGeneratorCount() > index);
 	Ops::lcmInPlace(tmp, ideal.getGenerator(index), varCount);
+
 	state.removeGenerator(index);
 	state.flipSign();
   }
@@ -272,33 +325,51 @@ bool optimizeOneDivCounts(EulerState& state,
   if (Ops::isIdentity(tmp, varCount))
 	return false;
 
-  state.toColonSubState(tmp);
-  return true;
-}
-
-bool optimizeVarPairs(EulerState& state, Word* tmp) {
-  const size_t varCount = state.getVarCount();
-  const RawSquareFreeIdeal& ideal = state.getIdeal();
+  if (state.toColonSubState(tmp) || ideal.getGeneratorCount() <= 2)
+	return true;
 
   for (size_t var = 0; var < varCount; ++var) {
+	if (Ops::getExponent(tmp, var) == 1) {
+	  if (divCounts[var] == 1)
+		divCounts[var] = 0;
+	  else
+		return true;
+	}
+  }
+  return false;
+}
+
+bool optimizeVarPairs(EulerState& state, Word* tmp, DivCounts& divCounts) {
+  const size_t varCount = state.getVarCount();
+  const RawSquareFreeIdeal& ideal = state.getIdeal();
+  const Word* eliminated = state.getEliminatedVars();
+
+  for (size_t var = 0; var < varCount; ++var) {
+	if (Ops::getExponent(eliminated, var) == 1)
+	  continue;
 	ideal.getLcmOfNonMultiples(tmp, var);
 	Ops::lcmInPlace(tmp, state.getEliminatedVars(), varCount);
 	Ops::setExponent(tmp, var, true);
 	if (!Ops::hasFullSupport(tmp, varCount)) {
-	  state.toColonSubState(var);
-	  return true;
+	  if (state.toColonSubState(var))
+		return true;
+	  divCounts[var] = 0;
 	}
   }
   return false;
 }
 
 bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
+  //cout << "*** Before simplification:\n" << state.getIdeal();
+  ++_stepsPerformed;
+
   // ** First optimize state and return false if a base case is detected.
+  bool doAllPairs = false;
+
   while (true) {
 	ASSERT(state.debugIsValid());
 
-	state.getIdeal().getVarDividesCounts(_divCountsTmp);
-	ASSERT(_divCountsTmp.size() == state.getVarCount());
+	state.getIdeal().getVarDividesCounts(_divCountsTmp, _termTmp);
 
 	if (baseCaseSimple1(_euler, state))
 	  return false;
@@ -307,20 +378,35 @@ bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
 
 	if (optimizeOneDivCounts(state, _divCountsTmp, _termTmp))
 	  continue;
-	if (optimizeVarPairs(state, _termTmp))
+	if (optimizeSimpleFromDivCounts(_euler, state, _divCountsTmp, _termTmp))
 	  continue;
+	if (doAllPairs && optimizeVarPairs(state, _termTmp, _divCountsTmp))
+	continue;
 	break;
   }
 
-  if (baseCasePreconditionSimplified(_euler, state, _divCountsTmp))
+  if (doAllPairs && baseCasePreconditionSimplified(_euler, state, _divCountsTmp))
 	return false;
+  
+  //cout << "+++ After simplification/base case:\n" << state.getIdeal();
+
 
   // ** State is not a base case so perform a split while putting the
   // two sub-states into state and newState.
-  getPivot(state, _termTmp);
-  newState.cloneWithCapacityForOneMoreGenerator(state);
-  newState.toSumSubState(_termTmp);
-  state.toColonSubState(_termTmp);
+  
+  size_t pivotVar = 0;
+  for (size_t var = 1; var < _divCountsTmp.size(); ++var)
+	if (_divCountsTmp[var] > _divCountsTmp[pivotVar])
+	  pivotVar = var;
+
+  //cout << "Pivot is " << pivotVar;
+  
+  Ops::setToIdentity(_termTmp, state.getVarCount());
+  Ops::setExponent(_termTmp, pivotVar, 1);
+
+
+  state.makeSumSubState(_termTmp, newState);
+  state.toColonSubState(pivotVar);
   
   return true;
 }
@@ -339,6 +425,7 @@ void PivotEulerAlg::getPivot(const EulerState& state, Word* pivot) {
 }
 
 PivotEulerAlg::PivotEulerAlg(const Ideal& ideal) {
+  _stepsPerformed = 0;
   _termTmp = Ops::newTerm(ideal.getVarCount());
   try {
 	_euler = 0;
@@ -350,20 +437,6 @@ PivotEulerAlg::PivotEulerAlg(const Ideal& ideal) {
 	  exceptionSafePushBack(todo, initialState);
 	}
 
-	/*
-	while (!todo.empty()) {
-	  auto_ptr<EulerState> state(todo.back());
-	  todo.pop_back();
-
-	  auto_ptr<EulerState> newState(new EulerState());
-	  while (processState(*state, *newState)) {
-		exceptionSafePushBack(todo, newState);
-		newState = auto_ptr<EulerState>(new EulerState());
-	  }
-	}
-	//*/
-
-	//*
 	size_t todoCount = 1;
 	while (todoCount > 0) {
 	  ASSERT(todoCount - 1 < todo.size());
@@ -380,12 +453,12 @@ PivotEulerAlg::PivotEulerAlg(const Ideal& ideal) {
 	  else
 		--todoCount;
 	}
-	//*/
   } catch (...) {
 	Ops::deleteTerm(_termTmp);
 	throw;
   }
   Ops::deleteTerm(_termTmp);
+  cerr << "\nsteps: " << _stepsPerformed << endl;
 }
 
 mpz_class PivotEulerAlg::getEuler() {

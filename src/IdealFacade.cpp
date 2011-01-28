@@ -87,11 +87,15 @@ mpz_class IdealFacade::computeEuler(const BigIdeal& bigIdeal) {
 
   radical.minimize();
 
-  //HilbertBasecase basecase;
-  //basecase.computeCoefficient(radical);
-  //mpz_class euler = basecase.getLastCoefficient();
-  PivotEulerAlg alg(radical);
-  mpz_class euler = alg.getEuler();
+  mpz_class euler;
+  if (0) {
+	HilbertBasecase basecase;
+	basecase.computeCoefficient(radical);
+	euler = basecase.getLastCoefficient();
+  } else {
+	PivotEulerAlg alg(radical);
+	euler = alg.getEuler();
+  }
 
   endAction();
   return euler;
