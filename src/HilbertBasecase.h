@@ -55,6 +55,7 @@ class HilbertBasecase {
 
   mpz_class _sum;
   Term _term;
+  size_t _stepsPerformed;
 };
 
 #endif

@@ -21,8 +21,11 @@
 #include "Term.h"
 #include "error.h"
 
+#include <iostream> // todo
+
 HilbertBasecase::HilbertBasecase():
-  _idealCacheDeleter(_idealCache) {
+  _idealCacheDeleter(_idealCache),
+  _stepsPerformed(0) {
 }
 
 HilbertBasecase::~HilbertBasecase() {
@@ -39,6 +42,9 @@ HilbertBasecase::~HilbertBasecase() {
 // If entry needs to be split into two, then true is returned, entry
 // becomes one of the subcomputations, and newEntry becomes the other.
 bool HilbertBasecase::stepComputation(Entry& entry, Entry& newEntry) {
+  ++_stepsPerformed;
+  cout << "*** Before simplification/base case:\n" << *entry.ideal;
+
   size_t varCount = entry.ideal->getVarCount();
 
   // This loops keeps iterating as long as entry is not a base case
@@ -100,10 +106,13 @@ bool HilbertBasecase::stepComputation(Entry& entry, Entry& newEntry) {
       return false;
     }
 
+	cout << "+++ After simplification/base case:\n" << *entry.ideal;
+
     // At this point entry is not a base case, and it cannot be
     // simplified, so we have to split it into two.
 
     size_t bestPivotVar = _term.getFirstMaxExponent();
+	cout << "Pivot is " << bestPivotVar << endl;
 
     // Handle outer slice.
     auto_ptr<Ideal> outer = getNewIdeal();
@@ -182,6 +191,7 @@ void HilbertBasecase::computeCoefficient(Ideal& originalIdeal) {
     _todo.clear();
     throw;
   }
+  cout << _stepsPerformed << endl;
 }
 
 const mpz_class& HilbertBasecase::getLastCoefficient() {

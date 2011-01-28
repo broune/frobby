@@ -37,6 +37,7 @@ class PivotEulerAlg {
   mpz_class _euler;
   Word* _termTmp;
   vector<size_t> _divCountsTmp;
+  size_t _stepsPerformed;
 };
 
 #endif

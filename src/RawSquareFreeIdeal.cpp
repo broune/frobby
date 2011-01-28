@@ -31,6 +31,7 @@ namespace Ops = SquareFreeTermOps;
 RSFIdeal* RSFIdeal::construct(void* buffer, size_t varCount) {
   RSFIdeal* p = static_cast<RSFIdeal*>(buffer);
   p->_varCount = varCount;
+  p->_wordsPerTerm = Ops::getWordCount(varCount);
   p->_genCount = 0;
   return p;
 }
@@ -67,7 +68,8 @@ size_t RSFIdeal::getBytesOfMemoryFor(size_t varCount, size_t generatorCount) {
 }
 
 RSFIdeal& RSFIdeal::operator=(const RSFIdeal& ideal) {
-  _varCount = ideal._varCount;
+  _varCount = ideal.getVarCount();
+  _wordsPerTerm = ideal.getWordsPerTerm();
   _genCount = 0;
   for (size_t gen = 0; gen < ideal.getGeneratorCount(); ++gen)
 	insert(ideal.getGenerator(gen));
@@ -83,7 +85,7 @@ void RSFIdeal::print(FILE* file) const {
 void RSFIdeal::print(ostream& out) const {
   out << "//------------ Ideal (Square Free):\n";
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
-    Ops::print(out, getGenerator(gen), _varCount);
+    Ops::print(out, getGenerator(gen), getVarCount());
     out << '\n';
   }
   out << "------------\\\\\n";
@@ -106,32 +108,34 @@ size_t RSFIdeal::insert(const Ideal& ideal) {
 
 void RSFIdeal::minimize() {
   size_t wordCount = getWordsPerTerm();
-  for (size_t i = 0; i < _genCount;) {
-	for (size_t div = 0; div < _genCount; ++div) {
-	  if (div != i &&
-		  Ops::divides(getGenerator(div), getGenerator(div) + wordCount,
-					   getGenerator(i))) {
-		Ops::assign(getGenerator(i), getGenerator(i) + wordCount,
-					getGenerator(_genCount - 1));
+  const iterator start = begin();
+  iterator stop = end();
+
+  for (iterator it = start; it != stop;) {
+	for (const_iterator div = start; div != stop; ++div) {
+	  if (Ops::divides(*div, *div + wordCount, *it) && div != it) {
+		--stop;
+		Ops::assign(*it, *it + wordCount, *stop);
 		--_genCount;
 		goto next;
 	  }
 	}
-	++i;
+	++it;
   next:;
   }
 }
 
 void RSFIdeal::colon(const Word* by) {
-  size_t wordCount = getWordsPerTerm();
-  for (size_t i = 0; i < _genCount; ++i)
-	Ops::colon(getGenerator(i), getGenerator(i) + wordCount,
-			   getGenerator(i), by);
+  const size_t wordCount = getWordsPerTerm();
+  const iterator stop = end();
+  for (iterator it = begin(); it != stop; ++it)
+	Ops::colon(*it, *it + wordCount, *it, by);
 }
 
 void RSFIdeal::colon(size_t var) {
-  for (size_t i = 0; i < _genCount; ++i)
-	Ops::setExponent(getGenerator(i), var, false);
+  const iterator stop = end();
+  for (iterator it = begin(); it != stop; ++it)
+	Ops::setExponent(*it, var, false);
 }
 
 Word* RSFIdeal::getGenerator(size_t index) {
@@ -150,51 +154,133 @@ Word* RSFIdeal::getGeneratorUnsafe(size_t index) {
   return _memory + index * getWordsPerTerm();
 }
 
+const Word* RSFIdeal::getGeneratorUnsafe(size_t index) const {
+  // no assert to check index is valid as this method specifically
+  // allows out-of-bounds access.
+  return _memory + index * getWordsPerTerm();
+}
+
 void RSFIdeal::getLcmOfNonMultiples(Word* lcm, size_t var) const {
   ASSERT(var < getVarCount());
 
-  Ops::setToIdentity(lcm, getVarCount());
-  for (size_t i = 0; i < getGeneratorCount(); ++i) {
-	if (Ops::getExponent(getGenerator(i), var) == false)
-	  Ops::lcm(lcm, lcm, getGenerator(i), getVarCount());
-  }	
+  const Word* const lcmEnd = lcm + getWordsPerTerm();
+  Ops::setToIdentity(lcm, lcmEnd);
+
+  const const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
+	if (Ops::getExponent(*it, var) == 0)
+	  Ops::lcmInPlace(lcm, lcmEnd, *it);
 }
 
 void RSFIdeal::getVarDividesCounts(vector<size_t>& counts) const {
   counts.resize(getVarCount());
   fill(counts.begin(), counts.end(), static_cast<size_t>(0));
-  size_t wordCount = getWordsPerTerm();
-  for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
-	vector<size_t>::iterator countIt = counts.begin();
-	for (size_t word = 0; word < wordCount; ++word) {
-	  Word bit = 1;
-	  // countIt can go beyond counts + getVarCount here, since it
-	  // will go to the end of the word, but the entries there will
-	  // all be 0 so countIt will not be accessed when it is invalid,
-	  // so there is not a problem. It may be more efficient to
-	  // compute a countEnd outside the loop and compare to that
-	  // instead of the bit. That would have to come down to an
-	  // experiment.
-	  //
-	  // TODO: actually this is not OK, since C++ does not support
-	  // even calculating pointers past the end of an array, except
-	  // for the first spot past the end.
-	  do {
-		if ((getGenerator(gen)[word] & bit) != 0) {
-		  *countIt += 1;
-		}
-		++countIt;
-		bit <<= 1;
-	  } while (bit != 0);
+  size_t* countsPtr = &(counts.front());
+
+  const const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
+	Ops::incrementAtSupport(*it, countsPtr, getVarCount());
+}
+
+void RSFIdeal::getVarDividesCounts(vector<size_t>& divCounts,
+								   Word* termTmp) const {
+  divCounts.resize(getVarCount());
+  fill(divCounts.begin(), divCounts.end(), static_cast<size_t>(0));
+  size_t* divCountsPtr = &(divCounts.front());
+  const size_t varCount = getVarCount();
+
+  // mask is 000100010001...0001 in binary.
+  const static Word mask = ~0u / 15u;
+  ASSERT(Ops::getSizeOfSupport(&mask, BitsPerWord) == BitsPerWord / 4);
+  ASSERT(~0u == mask | (mask << 1) | (mask << 2) | (mask << 3));
+  ASSERT(BitsPerWord % 4 == 0);
+
+  size_t generatorsToGo = getGeneratorCount();
+  const_iterator blockBegin = begin();
+  const_iterator blockEnd = blockBegin;
+  while (generatorsToGo > 0) {
+	if (generatorsToGo >= 15) {
+	  blockEnd = blockBegin + 15;
+	  generatorsToGo -= 15;
+	} else {
+	  blockEnd = blockBegin + generatorsToGo;
+	  generatorsToGo = 0;
 	}
+
+	const size_t wordCount = getWordsPerTerm();
+	for (size_t i = 0; i < wordCount; ++i) {
+	  Word w0 = 0;
+	  Word w1 = 0;
+	  Word w2 = 0;
+	  Word w3 = 0;
+
+	  for (const_iterator it = blockBegin; it != blockEnd; ++it) {
+		const Word word = (*it)[i];
+		w0 += word & mask;
+		w1 += (word >> 1) & mask;
+		w2 += (word >> 2) & mask;
+		w3 += (word >> 3) & mask;
+	  }
+
+	  size_t var = i * BitsPerWord;
+	  size_t* counts = divCountsPtr + var;
+	  for (size_t j = 0; j < BitsPerWord / 4; ++j) {
+		if (var < varCount) *counts += w0 & 0xF; else break;
+		++var; ++counts;
+		if (var < varCount) *counts += w1 & 0xF; else break;
+		++var; ++counts;
+		if (var < varCount) *counts += w2 & 0xF; else break;
+		++var; ++counts;
+		if (var < varCount) *counts += w3 & 0xF; else break;
+		++var; ++counts;
+		w0 >>= 4;
+		w1 >>= 4;
+		w2 >>= 4;
+		w3 >>= 4;
+	  }
+	}
+	blockBegin = blockEnd;
   }
+
+#ifdef DEBUG
+  vector<size_t> check;
+  getVarDividesCounts(check);
+  ASSERT(check == divCounts);
+#endif
 }
 
 size_t RSFIdeal::getMultiple(size_t var) const {
-  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	if (Ops::getExponent(getGenerator(gen), var) == true)
-	  return gen;
+  ASSERT(var < getVarCount());
+
+  const const_iterator stop = end();
+  const const_iterator start = begin();
+  for (const_iterator it = start; it != stop; ++it)
+	if (Ops::getExponent(*it, var) == 1)
+	  return it - start;
   return getGeneratorCount();
+}
+
+size_t RSFIdeal::getNonMultiple(size_t var) const {
+  ASSERT(var < getVarCount());
+
+  const const_iterator stop = end();
+  const const_iterator start = begin();
+  for (const_iterator it = start; it != stop; ++it)
+	if (Ops::getExponent(*it, var) == 0)
+	  return it - start;
+  return getGeneratorCount();
+}
+
+void RSFIdeal::getGcdOfMultiples(Word* gcd, size_t var) const {
+  ASSERT(var < getVarCount());
+
+  const Word* const gcdEnd = gcd + getWordsPerTerm();
+  Ops::setToAllVarProd(gcd, getVarCount());
+
+  const const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
+	if (Ops::getExponent(*it, var) == 1)
+	  Ops::gcdInPlace(gcd, gcdEnd, *it);  
 }
 
 void RSFIdeal::removeGenerator(size_t gen) {
@@ -203,6 +289,27 @@ void RSFIdeal::removeGenerator(size_t gen) {
   if (term != last)
 	Ops::assign(term, term + getWordsPerTerm(), last);
   --_genCount;
+}
+
+void RSFIdeal::insertNonMultiples(const Word* term,
+								  const RawSquareFreeIdeal& ideal) {
+  ASSERT(getVarCount() == ideal.getVarCount());
+
+  const Word* termEnd = term + getWordsPerTerm();
+  const_iterator stop = ideal.end();
+  for (const_iterator it = ideal.begin(); it != stop; ++it)
+	if (!Ops::divides(term, termEnd, *it))
+	  insert(*it);
+}
+
+void RSFIdeal::insertNonMultiples(size_t var,
+								  const RawSquareFreeIdeal& ideal) {
+  ASSERT(getVarCount() == ideal.getVarCount());
+
+  const_iterator stop = ideal.end();
+  for (const_iterator it = ideal.begin(); it != stop; ++it)
+	if (Ops::getExponent(*it, var) == 0)
+	  insert(*it);
 }
 
 size_t RSFIdeal::getNotRelativelyPrime(const Word* term) {
@@ -239,10 +346,13 @@ size_t RSFIdeal::getExclusiveVarGenerator() {
 
 bool RSFIdeal::hasFullSupport(const Word* ignore) const {
   const size_t wordCount = getWordsPerTerm();
+  const const_iterator start = begin();
+  const const_iterator stop = end();
+
   for (size_t offset = 0; offset < wordCount; ++offset) {
 	Word support = ignore[offset];
-	for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	  support |= getGenerator(gen)[offset];
+	for (const_iterator it = start; it != stop; ++it)
+	  support |= (*it)[offset];
 	const Word allOnes = ~((Word)0);
 	if (support != allOnes) {
 	  if (offset == wordCount - 1) {
@@ -271,59 +381,150 @@ void RSFIdeal::swap(size_t a, size_t b) {
   Ops::swap(getGenerator(a), getGenerator(b), getVarCount());
 }
 
+bool RSFIdeal::operator==(const RawSquareFreeIdeal& ideal) const {
+  if (getVarCount() != ideal.getVarCount())
+    return false;
+  if (getGeneratorCount() != ideal.getGeneratorCount())
+    return false;
+
+  const size_t varCount = getVarCount();
+  const_iterator stop = end();  
+  const_iterator it = begin();
+  const_iterator it2 = ideal.begin();
+  for (; it != stop; ++it, ++it2)
+    if (!Ops::equals(*it, *it2, varCount))
+      return false;
+  return true;
+}
+
+namespace {
+  struct CmpForSortLexAscending : std::binary_function<size_t, size_t, bool> {
+	bool operator()(size_t a, size_t b) const {
+	  return Ops::lexLess(ideal->getGenerator(a), ideal->getGenerator(b),
+						  ideal->getVarCount());
+	}
+	RawSquareFreeIdeal* ideal;
+  };
+}
+
+void RSFIdeal::sortLexAscending() {
+  vector<size_t> sorted(getGeneratorCount());
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	sorted[gen] = gen; 
+  {
+	CmpForSortLexAscending cmp;
+	cmp.ideal = this;
+	std::sort(sorted.begin(), sorted.end(), cmp);
+  }
+
+  RawSquareFreeIdeal* clone =
+	newRawSquareFreeIdeal(getVarCount(), getGeneratorCount());
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	clone->insert(getGenerator(gen));
+  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
+	Ops::assign(getGenerator(gen), clone->getGenerator(sorted[gen]),
+				getVarCount());
+  deleteRawSquareFreeIdeal(clone);
+}
+
 void RSFIdeal::insert(const Word* term) {
   ++_genCount;
   Word* pos = getGenerator(_genCount - 1);
   Ops::assign(pos, pos + getWordsPerTerm(), term);
 }
 
-size_t RSFIdeal::getGeneratorCount() const {
-  return _genCount;
-}
-
-size_t RSFIdeal::getVarCount() const {
-  return _varCount;
-}
-
-size_t RSFIdeal::getWordsPerTerm() const {
-  ASSERT(_varCount > 0);
-  return Ops::getWordCount(_varCount);
-}
-
-void RSFIdeal::insertReminimize(const Word* term) {
-  insert(term);
-  minimize();
-}
-
 void RSFIdeal::colonReminimize(const Word* by) {
+  ASSERT(by != 0);
   colon(by);
   minimize();
 }
 
 void RSFIdeal::colonReminimize(size_t var) {
-  colon(var);
-  minimize();
-}
+  ASSERT(var < getVarCount());
+  const size_t varCount = getVarCount();
+  const iterator start = begin();
+  iterator stop = end();
 
-void RSFIdeal::colonReminimizeAndRemove(size_t index) {
-  ASSERT(index < getGeneratorCount());
-  swap(index, getGeneratorCount() - 1);
-  const Word* colonBy = getGenerator(getGeneratorCount() - 1);
-  --_genCount;
-  colonReminimize(colonBy);
+  iterator left = start;
+  iterator right = stop;
+  if (left == right)
+	return;
+  --right;
+  
+  while (left != right) {
+	while (Ops::getExponent(*left, var) == 1) {
+	  ++left;
+	  if (left == right)
+		goto leftEqRight;
+	}
+	while (Ops::getExponent(*right, var) == 0) {
+	  --right;
+	  if (left == right)
+		goto leftEqRight;
+	}
+	Ops::swap(*left, *right, varCount);
+  }
+ leftEqRight:
+  ASSERT(left == right);
+  const iterator middle = left;
+  
+  if (Ops::getExponent(*middle, var) == 1)
+	return; // var divides all generators
+  if (middle == start)
+	return; // var divides no generators
+
+  // var divides [start, middle) and does not divide [middle, end).
+
+  // Do the colon
+  for (iterator it = start; it != middle; ++it)
+	Ops::setExponent(*it, var, 0);
+ 
+  size_t wordCount = getWordsPerTerm();
+  for (iterator it = middle; it != stop;) {
+	for (const_iterator div = start; div != middle; ++div) {
+	  if (Ops::divides(*div, *div + wordCount, *it) && div != it) {
+		--stop;
+		Ops::assign(*it, *it + wordCount, *stop);
+		--_genCount;
+		goto next;
+	  }
+	}
+	++it;
+  next:;
+  }
 }
 
 void RSFIdeal::getLcm(Word* lcm) const {
-  const size_t wordCount = getWordsPerTerm();
-  Ops::setToIdentity(lcm, lcm + wordCount);
-  for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	Ops::lcm(lcm, lcm + wordCount, lcm, getGenerator(gen));
+  Word* lcmEnd = lcm + getWordsPerTerm();
+  Ops::setToIdentity(lcm, lcmEnd);
+  const const_iterator stop = end();
+  for (const_iterator it = begin(); it != stop; ++it)
+	Ops::lcm(lcm, lcmEnd, lcm, *it);
 }
 
 RSFIdeal* newRawSquareFreeIdeal(size_t varCount, size_t capacity) {
   size_t byteCount = RSFIdeal::getBytesOfMemoryFor(varCount, capacity);
   void* buffer = new char[byteCount];
   return RSFIdeal::construct(buffer, varCount);
+}
+
+RawSquareFreeIdeal* newRawSquareFreeIdealParse(const char* str) {
+  istringstream in(str);
+  vector<string> lines;
+  string line;
+
+  while (getline(in, line))
+	lines.push_back(line);
+
+  const size_t varCount = lines.empty() ? 0 : lines.front().size();
+  RawSquareFreeIdeal* ideal = newRawSquareFreeIdeal(varCount, lines.size());
+  for (size_t gen = 0; gen < lines.size(); ++gen) {
+	ASSERT(lines[gen].size() == varCount);
+	Word* term = Ops::newTermParse(lines[gen].c_str());
+	ideal->insert(term);
+	Ops::deleteTerm(term);
+  }
+  return ideal;
 }
 
 void deleteRawSquareFreeIdeal(RSFIdeal* ideal) {

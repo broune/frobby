@@ -191,6 +191,9 @@ class Ideal {
   // generator exists.
   const_iterator getMultiple(size_t var) const;
 
+  /** Rereturns true if *this equals ideal. This comparison takes
+   non-minimal generators and the order of the generators into
+   account. */
   bool operator==(const Ideal& ideal) const;
 
   void print(FILE* file) const;

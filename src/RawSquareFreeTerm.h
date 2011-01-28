@@ -45,7 +45,7 @@ namespace SquareFreeTermOps {
   inline size_t getSizeOfSupport(const Word* a, size_t varCount) {
 	if (varCount == 0)
 	  return 0;
-	size_t count;
+	size_t count = 0;
 	while (true) {
 	  Word word = *a;
 	  // TODO: should be able to improve this set bit counting algorithm.
@@ -56,7 +56,7 @@ namespace SquareFreeTermOps {
 	  }
 
 	  if (varCount <= BitsPerWord)
-		return true;
+		return count;
 	  ++a;
 	  varCount -= BitsPerWord;
 	}
@@ -71,7 +71,7 @@ namespace SquareFreeTermOps {
 	  return ((varCount - 1) / BitsPerWord) + 1;
   }
 
-  inline void setToIdentity(Word* res, Word* resEnd) {
+  inline void setToIdentity(Word* res, const Word* resEnd) {
 	for (; res != resEnd; ++res)
 	  *res = 0;
   }
@@ -102,6 +102,13 @@ namespace SquareFreeTermOps {
 	return word;
   }
 
+  /** Allocates and returns a term based on str. The returned term
+   must be deallocated using deleteTerm. str is parsed as a list of
+   exponent vector entries that must be '0' or '1'. The string can
+   contain no other characters. The parsing is inefficient and is
+   intended for constructing terms in testing. */
+  Word* newTermParse(const char* str);
+
   /** Deletes term previously returned by newTerm(). Term can be null. */
   inline void deleteTerm(Word* term) {
 	delete[] term;
@@ -112,6 +119,24 @@ namespace SquareFreeTermOps {
 	  if ((*a & (~*b)) != 0)
 		return false;
 	return true;
+  }
+
+  inline bool lexLess(const Word* a, const Word* b, size_t varCount) {
+	if (varCount == 0)
+	  return false;
+	while (true) {
+	  if (*a != *b) {
+		Word xorAB = (*a) ^ (*b);
+		ASSERT(xorAB != 0);
+		Word leastSignificantBit = xorAB & (-xorAB);
+		return (*a & leastSignificantBit) == 0;		
+	  }
+	  if (varCount <= BitsPerWord)
+		return false; // a and b are equal
+	  ++a;
+	  ++b;
+	  varCount -= BitsPerWord;
+	}
   }
 
   inline void colon(Word* res, const Word* resEnd, const Word* a, const Word* b) {
@@ -185,6 +210,11 @@ namespace SquareFreeTermOps {
 	  *res = (*a) | (*b);
   }
 
+  inline void lcmInPlace(Word* res, const Word* resEnd, const Word* a) {
+	for (; res != resEnd; ++a, ++res)
+	  *res |= *a;
+  }
+
   inline void lcmInPlace(Word* res, const Word* a, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++res, varCount -= BitsPerWord)
 	  *res |= *a;
@@ -196,6 +226,18 @@ namespace SquareFreeTermOps {
 				  const Word* a, const Word* b) {
 	for (; res != resEnd; ++a, ++b, ++res)
 	  *res = (*a) & (*b);
+  }
+
+  inline void gcdInPlace(Word* res, const Word* resEnd, const Word* a) {
+	for (; res != resEnd; ++a, ++res)
+	  *res &= *a;
+  }
+
+  inline void gcdInPlace(Word* res, const Word* a, size_t varCount) {
+	for (; varCount >= BitsPerWord; ++a, ++res, varCount -= BitsPerWord)
+	  *res &= *a;
+	if (varCount != 0)
+	  *res &= *a;
   }
 
   inline bool isRelativelyPrime(const Word* a, const Word* aEnd, const Word* b) {
@@ -223,11 +265,18 @@ namespace SquareFreeTermOps {
 	word = (word & (~setBit)) | valueBit;
   }
 
-  inline bool getExponent(const Word* a, size_t var) {
+  /** Returns zero if var divides a and returns a non-zero value
+	  otherwise. The non-zero value is not necessarily 1. */
+  inline int varDivides(const Word* a, size_t var) {
 	const Word word = a[getWordOffset(var)];
 	const Word bitMask = ((Word)1) << getBitOffset(var);
 	const Word value = word & bitMask;  // clear other bits
-	return value != 0;
+	return value;
+  }
+
+  /** returns true if var divides a and false otherwise. */
+  inline bool getExponent(const Word* a, size_t var) {
+	return varDivides(a, var) != 0;
   }
 
   inline void swap(Word* a, Word* b, size_t varCount) {
@@ -244,6 +293,41 @@ namespace SquareFreeTermOps {
 	if (varCount > 0) {
 	  const Word fullSupportWord = (((Word)1) << varCount) - 1;
 	  *a = (~*a) & fullSupportWord;
+	}
+  }
+
+  /** For every variable var that divides a, increment inc[var] by one. */
+  inline void incrementAtSupport(const Word* a, size_t* inc, size_t varCount) {
+	if (varCount == 0)
+	  return;
+	while (true) {
+	  Word word = *a;
+	  size_t* intraWordInc = inc;
+	  while (word != 0) {
+		*intraWordInc += word & 1; // +1 if bit set
+		++intraWordInc;
+		word = word >> 1;
+	  }
+	  if (varCount <= BitsPerWord)
+		return;
+	  varCount -= BitsPerWord;
+	  inc += BitsPerWord;
+	  ++a;
+	}
+  }
+
+  /** Returns true if a equals b. */
+  inline bool equals(const Word* a, const Word* b, size_t varCount) {
+	if (varCount == 0)
+	  return true;
+	while (true) {
+	  if (*a != *b)
+		return false;
+	  if (varCount <= BitsPerWord)
+		return true;
+	  ++a;
+	  ++b;
+	  varCount -= BitsPerWord;
 	}
   }
 
