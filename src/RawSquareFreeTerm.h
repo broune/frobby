@@ -296,15 +296,71 @@ namespace SquareFreeTermOps {
 	}
   }
 
-  /** For every variable var that divides a, increment inc[var] by one. */
-  inline void incrementAtSupport(const Word* a, size_t* inc, size_t varCount) {
+  /** Returns var if a equals var. If a is the identity or the product
+	  of more than one variable then returns varCount. */
+  inline size_t getVarIfPure(const Word* const a, size_t varCount) {
+	const Word* hit = 0;
+	size_t varsToGo = varCount;
+	const Word* it = a;
+	for (; varsToGo >= BitsPerWord; ++it, varsToGo -= BitsPerWord) {
+	  if (*it != 0) {
+		if (hit != 0)
+		  return varCount;
+		hit = it;
+	  }
+	}
+	if (varsToGo != 0) {
+	  if (*it != 0) {
+		if (hit != 0)
+		  return varCount;
+		hit = it;
+	  }
+	}
+	if (hit == 0)
+	  return varCount;
+	size_t hitVar = (hit - a) * BitsPerWord;
+	Word word = *hit;
+	while ((word & 1) == 0) {
+	  ASSERT(word != 0);
+	  ++hitVar;
+	  word >>= 1;
+	}
+	word >>= 1;
+	if (word != 0)
+	  return varCount;
+	return hitVar;
+  }
+  
+  /** For every variable var that divides a, decrement inc[var] by one. */
+  inline void decrementAtSupport(const Word* a, size_t* inc, size_t varCount) {
 	if (varCount == 0)
 	  return;
 	while (true) {
 	  Word word = *a;
 	  size_t* intraWordInc = inc;
 	  while (word != 0) {
-		*intraWordInc += word & 1; // +1 if bit set
+		*intraWordInc -= word & 1; // -1 if bit set
+		++intraWordInc;
+		word = word >> 1;
+	  }
+	  if (varCount <= BitsPerWord)
+		return;
+	  varCount -= BitsPerWord;
+	  inc += BitsPerWord;
+	  ++a;
+	}
+  }
+
+  /** For every variable var that divides a, set inc[var] to zero. */
+  inline void toZeroAtSupport(const Word* a, size_t* inc, size_t varCount) {
+	if (varCount == 0)
+	  return;
+	while (true) {
+	  Word word = *a;
+	  size_t* intraWordInc = inc;
+	  while (word != 0) {
+		if (word & 1)
+		  *intraWordInc = 0;
 		++intraWordInc;
 		word = word >> 1;
 	  }

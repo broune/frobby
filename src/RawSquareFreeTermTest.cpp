@@ -403,6 +403,30 @@ TEST(RawSquareFreeTerm, Invert) {
   }
 }
 
+TEST(RawSquareFreeTerm, GetVarIfPure) {
+  const size_t maxVarCount = 2 * BitsPerWord + 1;
+  for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
+	Word* a = newTerm(varCount);
+
+	ASSERT_EQ(getVarIfPure(a, varCount), varCount);
+	for (size_t v1 = 0; v1 < varCount; ++v1) {
+	  setExponent(a, v1, 1);
+	  ASSERT_EQ_SILENT(getVarIfPure(a, varCount), v1);
+	  for (size_t v2 = 0; v2 < varCount; ++v2) {
+		if (v1 != v2) {
+		  setExponent(a, v2, 1);
+		  ASSERT_EQ_SILENT(getVarIfPure(a, varCount), varCount);
+		  setExponent(a, v2, 0);
+		}
+	  }
+	  setExponent(a, v1, 0);
+	}
+
+	deleteTerm(a);
+  }
+}
+
+/*
 TEST(RawSquareFreeTerm, IncrementAtSupport) {
   const size_t maxVarCount = 2 * BitsPerWord + 1;
   for (size_t varCount = 0; varCount <= maxVarCount; ++varCount) {
@@ -441,7 +465,7 @@ TEST(RawSquareFreeTerm, IncrementAtSupport) {
 	deleteTerm(third);
   }
 }
-
+*/
 TEST(RawSquareFreeTerm, IsValid) {
   const size_t varCount = 2 * BitsPerWord;
   Word* a = newTerm(varCount);
