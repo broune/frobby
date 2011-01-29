@@ -172,18 +172,7 @@ void RSFIdeal::getLcmOfNonMultiples(Word* lcm, size_t var) const {
 	  Ops::lcmInPlace(lcm, lcmEnd, *it);
 }
 
-void RSFIdeal::getVarDividesCounts(vector<size_t>& counts) const {
-  counts.resize(getVarCount());
-  fill(counts.begin(), counts.end(), static_cast<size_t>(0));
-  size_t* countsPtr = &(counts.front());
-
-  const const_iterator stop = end();
-  for (const_iterator it = begin(); it != stop; ++it)
-	Ops::incrementAtSupport(*it, countsPtr, getVarCount());
-}
-
-void RSFIdeal::getVarDividesCounts(vector<size_t>& divCounts,
-								   Word* termTmp) const {
+void RSFIdeal::getVarDividesCounts(vector<size_t>& divCounts) const {
   divCounts.resize(getVarCount());
   fill(divCounts.begin(), divCounts.end(), static_cast<size_t>(0));
   size_t* divCountsPtr = &(divCounts.front());
@@ -241,12 +230,6 @@ void RSFIdeal::getVarDividesCounts(vector<size_t>& divCounts,
 	}
 	blockBegin = blockEnd;
   }
-
-#ifdef DEBUG
-  vector<size_t> check;
-  getVarDividesCounts(check);
-  ASSERT(check == divCounts);
-#endif
 }
 
 size_t RSFIdeal::getMultiple(size_t var) const {
@@ -434,9 +417,120 @@ void RSFIdeal::insert(const Word* term) {
 }
 
 void RSFIdeal::colonReminimize(const Word* by) {
+
   ASSERT(by != 0);
-  colon(by);
-  minimize();
+  const size_t varCount = getVarCount();
+  const iterator start = begin();
+  iterator stop = end();
+
+  iterator left = start;
+  iterator right = stop;
+  if (left == right)
+	return;
+  --right;
+  
+  while (left != right) {
+	while (!Ops::isRelativelyPrime(*left, by, varCount)) {
+	  ++left;
+	  if (left == right)
+		goto leftEqRight;
+	}
+	while (Ops::isRelativelyPrime(*right, by, varCount)) {
+	  --right;
+	  if (left == right)
+		goto leftEqRight;
+	}
+	Ops::swap(*left, *right, varCount);
+  }
+ leftEqRight:
+
+
+  ASSERT(left == right);
+  iterator middle = left;
+
+  if (middle == start && Ops::isRelativelyPrime(*middle, by, varCount)) {
+	    ASSERT(isMinimallyGenerated());
+  return;
+  }
+	  if (!Ops::isRelativelyPrime(*middle, by, varCount))
+	++middle; // happens if none are relatively prime.
+
+
+
+  // Do the colon
+  const size_t wordCount = getWordsPerTerm();
+  for (iterator it = start; it != middle; ++it)
+	Ops::colon(*it, *it + wordCount, *it, by);
+
+  // var is not relatively prime to [start, middle) and is relatively
+  // prime to [middle, end).
+
+  for (iterator it = start; it != stop;) {
+	for (const_iterator div = start; div != middle; ++div) {
+	  if (Ops::divides(*div, *div + wordCount, *it) && div != it) {
+		if (middle == stop)
+		  --middle;
+		--stop;
+		Ops::assign(*it, *it + wordCount, *stop);
+		--_genCount;
+		goto next;
+	  }
+	}
+	++it;
+  next:;
+  }
+}
+
+void RSFIdeal::colonReminimizeTrackDivCounts(const Word* colon,
+											 vector<size_t>& divCounts) {
+#ifdef DEBUG
+  {
+	vector<size_t> tmp;
+	getVarDividesCounts(tmp);
+	ASSERT(tmp == divCounts);
+  }
+#endif
+
+  size_t genCount = getGeneratorCount();
+  colonReminimize(colon);
+  if (genCount != getGeneratorCount())
+	getVarDividesCounts(divCounts);
+  else
+	Ops::toZeroAtSupport(colon, &divCounts.front(), getVarCount());
+
+#ifdef DEBUG
+  {
+	vector<size_t> tmp;
+	getVarDividesCounts(tmp);
+	ASSERT(tmp == divCounts);
+  }
+#endif
+}
+
+void RSFIdeal::colonReminimizeTrackDivCounts
+(size_t var, vector<size_t>& divCounts) {
+#ifdef DEBUG
+  {
+	vector<size_t> tmp;
+	getVarDividesCounts(tmp);
+	ASSERT(tmp == divCounts);
+  }
+#endif
+
+  size_t genCount = getGeneratorCount();
+  colonReminimize(var);
+  if (genCount != getGeneratorCount())
+	getVarDividesCounts(divCounts);
+  else
+	divCounts[var] = 0;
+
+#ifdef DEBUG
+  {
+	vector<size_t> tmp;
+	getVarDividesCounts(tmp);
+	ASSERT(tmp == divCounts);
+  }
+#endif
 }
 
 void RSFIdeal::colonReminimize(size_t var) {

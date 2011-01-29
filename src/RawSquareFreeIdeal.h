@@ -70,11 +70,24 @@ class RawSquareFreeIdeal {
   void colon(const Word* by);
   void colon(size_t var);
 
-  /** Perform a colon and minimize. Object must be already minimized. */
+  /** Performs a colon and minimize. Object must be already minimized. */
   void colonReminimize(const Word* colon);
 
-  /** Perform a colon by var and minimize. Object must be already minimized. */
+  /** Performs a colon by var and minimize. Object must be already minimized. */
   void colonReminimize(size_t var);
+
+  /** Performs a colon by colon and minimize. Object must be already
+   minimized. divCounts must be initially equal to the vector computed
+   by getVarDividesCounts. It will be updated to match any changes
+   performed by the colon and minimize. */
+  void colonReminimizeTrackDivCounts(const Word* colon,
+									 vector<size_t>& divCounts);
+
+  /** Performs a colon by var and minimize. Object must be already
+   minimized. divCounts must be initially equal to the vector computed
+   by getVarDividesCounts. It will be updated to match any changes
+   performed by the colon and minimize. */
+  void colonReminimizeTrackDivCounts(size_t var, vector<size_t>& divCounts);
 
   /** Puts the least common multiple of the generators of the ideal
 	  into lcm. */
@@ -113,11 +126,6 @@ class RawSquareFreeIdeal {
 
   /** Sets counts[var] to the number of generators that var divides. */
   void getVarDividesCounts(vector<size_t>& counts) const;
-
-  /** Sets counts[var] to the number of generators that var
-   divides. Uses termTmp as scratch memory for a more efficient
-   algorithm. */
-  void getVarDividesCounts(vector<size_t>& divCounts, Word* termTmp) const;
 
   /** Returns the index of the first generator that var divides or
 	  getGeneratorCount() if no such generator exists. */
