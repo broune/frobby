@@ -363,7 +363,7 @@ TEST(RawSquareFreeTerm, LexLess) {
 	  setExponent(b, var, 1);
 	  ASSERT_TRUE_SILENT(lexLess(a, b, varCount));
 	  ASSERT_FALSE_SILENT(lexLess(b, a, varCount));
-	  
+
 	  if (var % 3 == 1) {
 		// vary the pattern of the vars we've already been at.
 		setExponent(a, var, 0);
