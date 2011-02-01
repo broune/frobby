@@ -449,7 +449,6 @@ PivotEulerAlg::PivotEulerAlg(const Ideal& ideal) {
 	throw;
   }
   Ops::deleteTerm(_termTmp);
-  cerr << "\nsteps: " << _stepsPerformed << endl;
 }
 
 mpz_class PivotEulerAlg::getEuler() {

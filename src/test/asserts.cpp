@@ -57,6 +57,19 @@ void assertFailed(const char* errorMsg,
   throw AssertException(msg.str());
 }
 
+void assertFailed2(const char* errorMsg,
+				   const char* testName, const char* file, size_t line,
+				   const char* expression1, const char* expression1Value,
+				   const char* expression2, const char* expression2Value) {
+  stringstream msg;
+  msg << errorMsg
+	  << "The value of the expression\n  " << expression1
+	  << "\nprints as\n " << expression1Value << '\n'
+	  << "and the value of the expression\n  " << expression2
+	  << "\nprints as\n " << expression2Value << '\n';
+  assertFailed(msg.str().c_str(), testName, file, line);
+}
+
 void assertTrue(bool value, const char* valueString,
                 const char* testName, const char* file, size_t line,
                 bool printDot) {
@@ -68,6 +81,17 @@ void assertTrue(bool value, const char* valueString,
   stringstream msg;
   msg << "Expected \n   " << valueString << "\nto be true, but it was not.\n";
   assertFailed(msg.str().c_str(), testName, file, line);
+}
+
+void assertTrue2Failed(const char* valueString,
+					   const char* testName, const char* file, size_t line,
+					   const char* expression1, const char* expression1Value,
+					   const char* expression2, const char* expression2Value) {
+  stringstream msg;
+  msg << "Expected \n   " << valueString << "\nto be true, but it was not.\n";
+  assertFailed2(msg.str().c_str(), testName, file, line,
+				expression1, expression1Value,
+				expression2, expression2Value);
 }
 
 void assertFalse(bool value, const char* valueString,
@@ -87,8 +111,20 @@ void assertEqualFailed(const char* a, const char* b,
                        const char* aString, const char* bString,
                        const char* testName, const char* file, size_t line) {
   stringstream msg;
-  msg << "Expected " << aString << " == " << bString << ", but\n"
-      << "the  left hand side was equal to\n" << a << "\nwhile "
-      << "the right hand side was equal to\n" << b << "\n";
+  msg << "Expected " << aString << " == " << bString << ",\n"
+	  << "but operator== returned false. "
+      << "The  left hand side prints as\n" << a << "\nwhile "
+      << "the right hand side prints as\n" << b << ".\n";
+  assertFailed(msg.str().c_str(), testName, file, line);
+}
+
+void assertNotEqualFailed(const char* a, const char* b,
+						  const char* aString, const char* bString,
+						  const char* testName, const char* file, size_t line) {
+  stringstream msg;
+  msg << "Expected " << aString << " != " << bString << ",\n"
+	  << "but operator!= returned false. "
+      << "The  left hand side prints as\n" << a << "\nwhile "
+      << "the right hand side prints as\n" << b << ".\n";
   assertFailed(msg.str().c_str(), testName, file, line);
 }

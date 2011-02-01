@@ -45,27 +45,32 @@ RSFIdeal* RSFIdeal::construct(void* buffer, const Ideal& ideal) {
 }
 
 size_t RSFIdeal::getBytesOfMemoryFor(size_t varCount, size_t generatorCount) {
-  // Note that x / y rounded up is (x - 1) / y + 1 for x, y > 0. The
+  // This calculation is tricky because there are many overflows that
+  // can occur. If most cases if an overflow occurs or nearly occurs
+  // then the amount of memory needed could not be allocated on the
+  // system. In this case 0 is returned to signal the error. Note that
+  // x / y rounded up is (x - 1) / y + 1 for x, y > 0. The
   // multiplication a * b does not overflow if a <= MAX /
-  // b. Otherwise, there may not be an overflow, but a * b will still be
-  // too much to reasonably allocate.
+  // b. Otherwise, there may not be an overflow, but a * b will still
+  // be too much to reasonably allocate.
 
   size_t bytesForStruct = sizeof(RSFIdeal) - sizeof(Word);
+  if (generatorCount == 0)
+	return bytesForStruct;
 
   // Compute bytes per generator taking into account memory alignment.
-  size_t bytesPerGenUnaligned = (varCount - 1) / 8 + 1;
+  size_t bytesPerGenUnaligned = varCount == 0 ? 1 : (varCount - 1) / 8 + 1;
   size_t wordsPerGen = (bytesPerGenUnaligned - 1) / sizeof(Word) + 1;
-  // todo: how does this multiplication not always overflow?
-  if (wordsPerGen > numeric_limits<size_t>::max() * sizeof(Word))
-	throw bad_alloc(); // todo: don't throw exceptions from get... function!
+  if (wordsPerGen > numeric_limits<size_t>::max() / sizeof(Word))
+	return 0;
   size_t bytesPerGen = wordsPerGen * sizeof(Word);
 
   // Compute bytes in all.
   if (bytesPerGen > numeric_limits<size_t>::max() / generatorCount)
-	throw bad_alloc();
+	return 0;
   size_t bytesForGens = bytesPerGen * generatorCount;
   if (bytesForGens > numeric_limits<size_t>::max() - bytesForStruct)
-	throw bad_alloc();
+	return 0;
   return bytesForStruct + bytesForGens;
 }
 
@@ -74,8 +79,7 @@ RSFIdeal& RSFIdeal::operator=(const RSFIdeal& ideal) {
   _wordsPerTerm = ideal.getWordsPerTerm();
   _genCount = 0;
   _memoryEnd = _memory;
-  for (size_t gen = 0; gen < ideal.getGeneratorCount(); ++gen)
-	insert(ideal.getGenerator(gen));
+  insert(ideal);
   return *this;
 }
 
@@ -105,6 +109,12 @@ size_t RSFIdeal::insert(const Ideal& ideal) {
 	_memoryEnd += getWordsPerTerm();
   }
   return gen;
+}
+
+void RSFIdeal::insert(const RawSquareFreeIdeal& ideal) {
+  const_iterator stop = ideal.end();
+  for (const_iterator it = ideal.begin(); it != stop; ++it)
+	insert(*it);
 }
 
 void RSFIdeal::minimize() {
@@ -398,7 +408,6 @@ void RSFIdeal::insert(const Word* term) {
 }
 
 void RSFIdeal::colonReminimize(const Word* by) {
-
   ASSERT(by != 0);
   const size_t varCount = getVarCount();
   const iterator start = begin();
@@ -430,10 +439,10 @@ void RSFIdeal::colonReminimize(const Word* by) {
   iterator middle = left;
 
   if (middle == start && Ops::isRelativelyPrime(*middle, by, varCount)) {
-	    ASSERT(isMinimallyGenerated());
-  return;
+	ASSERT(isMinimallyGenerated());
+	return;
   }
-	  if (!Ops::isRelativelyPrime(*middle, by, varCount))
+  if (!Ops::isRelativelyPrime(*middle, by, varCount))
 	++middle; // happens if none are relatively prime.
 
 
@@ -461,58 +470,6 @@ void RSFIdeal::colonReminimize(const Word* by) {
 	++it;
   next:;
   }
-}
-
-void RSFIdeal::colonReminimizeTrackDivCounts(const Word* colon,
-											 vector<size_t>& divCounts) {
-#ifdef DEBUG
-  {
-	vector<size_t> tmp;
-	getVarDividesCounts(tmp);
-	ASSERT(tmp == divCounts);
-  }
-#endif
-
-  size_t genCount = getGeneratorCount();
-  colonReminimize(colon);
-  if (genCount != getGeneratorCount())
-	getVarDividesCounts(divCounts);
-  else
-	Ops::toZeroAtSupport(colon, &divCounts.front(), getVarCount());
-
-#ifdef DEBUG
-  {
-	vector<size_t> tmp;
-	getVarDividesCounts(tmp);
-	ASSERT(tmp == divCounts);
-  }
-#endif
-}
-
-void RSFIdeal::colonReminimizeTrackDivCounts
-(size_t var, vector<size_t>& divCounts) {
-#ifdef DEBUG
-  {
-	vector<size_t> tmp;
-	getVarDividesCounts(tmp);
-	ASSERT(tmp == divCounts);
-  }
-#endif
-
-  size_t genCount = getGeneratorCount();
-  colonReminimize(var);
-  if (genCount != getGeneratorCount())
-	getVarDividesCounts(divCounts);
-  else
-	divCounts[var] = 0;
-
-#ifdef DEBUG
-  {
-	vector<size_t> tmp;
-	getVarDividesCounts(tmp);
-	ASSERT(tmp == divCounts);
-  }
-#endif
 }
 
 void RSFIdeal::colonReminimize(size_t var) {
@@ -544,12 +501,14 @@ void RSFIdeal::colonReminimize(size_t var) {
   ASSERT(left == right);
   const iterator middle = left;
 
-  if (middle == start && Ops::getExponent(*middle, 0) == 0)
+  if (middle == start && Ops::getExponent(*middle, var) == 0)
 	return; // var divides no generators
 
   bool dividesAll = false;
-  if (Ops::getExponent(*middle, var) == 1)
+  if (Ops::getExponent(*middle, var) == 1) {
+	Ops::setExponent(*middle, var, 0);
 	dividesAll = true;
+  }
 
   // Do the colon
   for (iterator it = start; it != middle; ++it)
@@ -586,8 +545,21 @@ void RSFIdeal::getLcm(Word* lcm) const {
 
 RSFIdeal* newRawSquareFreeIdeal(size_t varCount, size_t capacity) {
   size_t byteCount = RSFIdeal::getBytesOfMemoryFor(varCount, capacity);
+  if (byteCount == 0)
+	throw bad_alloc();
   void* buffer = new char[byteCount];
   return RSFIdeal::construct(buffer, varCount);
+}
+
+RawSquareFreeIdeal* newRawSquareFreeIdeal(const RawSquareFreeIdeal& ideal) {
+  size_t byteCount = RSFIdeal::getBytesOfMemoryFor(ideal.getVarCount(),
+												   ideal.getGeneratorCount());
+  if (byteCount == 0)
+	throw bad_alloc();
+  void* buffer = new char[byteCount];
+  RawSquareFreeIdeal* p = RSFIdeal::construct(buffer, ideal.getVarCount());
+  p->insert(ideal);
+  return p;
 }
 
 RawSquareFreeIdeal* newRawSquareFreeIdealParse(const char* str) {
@@ -596,7 +568,8 @@ RawSquareFreeIdeal* newRawSquareFreeIdealParse(const char* str) {
   string line;
 
   while (getline(in, line))
-	lines.push_back(line);
+	if (line != "")
+	  lines.push_back(line);
 
   const size_t varCount = lines.empty() ? 0 : lines.front().size();
   RawSquareFreeIdeal* ideal = newRawSquareFreeIdeal(varCount, lines.size());

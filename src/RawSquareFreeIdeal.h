@@ -42,14 +42,9 @@ class RawSquareFreeIdeal {
 	  ideal with the given parameters. This size is padded to ensure
 	  proper alignment if ideals are placed one after the other.
 
-	  This function throws bad_alloc if the number of bytes cannot be
+	  This function return zero if the number of bytes cannot be
 	  represented in a size_t, or nearly cannot be represented in a
-	  size_t. That is proper for most any circumstance where a call to
-	  this function appers, but if that is not what you want you will
-	  need to catch the bad_alloc. This function will not throw
-	  bad_alloc for any other reason than that.
-
-	  todo: change the exception behavior to no exceptions.
+	  size_t. The returned value is otherwise positive.
   */
   static size_t getBytesOfMemoryFor(size_t varCount, size_t generatorCount);
 
@@ -65,6 +60,9 @@ class RawSquareFreeIdeal {
 	  even if not all are actually inserted. */
   size_t insert(const Ideal& ideal);
 
+  /** Inserts all the generators of ideal. */
+  void insert(const RawSquareFreeIdeal& ideal);
+
   void minimize();
   void insert(const Word* term);
   void colon(const Word* by);
@@ -75,19 +73,6 @@ class RawSquareFreeIdeal {
 
   /** Performs a colon by var and minimize. Object must be already minimized. */
   void colonReminimize(size_t var);
-
-  /** Performs a colon by colon and minimize. Object must be already
-   minimized. divCounts must be initially equal to the vector computed
-   by getVarDividesCounts. It will be updated to match any changes
-   performed by the colon and minimize. */
-  void colonReminimizeTrackDivCounts(const Word* colon,
-									 vector<size_t>& divCounts);
-
-  /** Performs a colon by var and minimize. Object must be already
-   minimized. divCounts must be initially equal to the vector computed
-   by getVarDividesCounts. It will be updated to match any changes
-   performed by the colon and minimize. */
-  void colonReminimizeTrackDivCounts(size_t var, vector<size_t>& divCounts);
 
   /** Puts the least common multiple of the generators of the ideal
 	  into lcm. */
@@ -167,6 +152,9 @@ class RawSquareFreeIdeal {
    non-minimal generators and the order of the generators into
    account. */
   bool operator==(const RawSquareFreeIdeal& ideal) const;
+  bool operator!=(const RawSquareFreeIdeal& ideal) const {
+	return !(*this == ideal);
+  }
 
   /** Sorts the generators in ascending lex order. */
   void sortLexAscending();
@@ -279,6 +267,9 @@ class RawSquareFreeIdeal {
 	varCount variables. Pointer must be deallocated using
 	deleteRawSquareFreeIdeal. */
 RawSquareFreeIdeal* newRawSquareFreeIdeal(size_t varCount, size_t capacity);
+
+/** Allocates a copy of ideal with no extra capacity. */
+RawSquareFreeIdeal* newRawSquareFreeIdeal(const RawSquareFreeIdeal& ideal);
 
 /** Allocates and returns an ideal based on str. The returned ideal
   must be deallocated using deleteRawSquareFreeIdeal. str is parsed
