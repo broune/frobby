@@ -242,7 +242,6 @@ TEST(RawSquareFreeIdeal, ColonReminimizeMinimize_VarAndTerm) {
 	 "000000000000000\n");
 
 
-
   TEST_COLON_REMINIMIZE_TERM("", "", "");
   TEST_COLON_REMINIMIZE_TERM("0", "0", "0");
   TEST_COLON_REMINIMIZE_TERM("0", "1", "0");
@@ -281,4 +280,38 @@ TEST(RawSquareFreeIdeal, ColonReminimizeMinimize_VarAndTerm) {
 	 "000000000000001\n",
 	 "100000000000001",
 	 "000000000000000\n");
+}
+
+TEST(RawSquareFreeIdeal, GetVarDividesCounts) {
+  const size_t varCount = 2 * BitsPerWord + 1;
+  RSFIdeal* ideal = newRawSquareFreeIdeal(varCount, 100);
+  Word* term = newTerm(varCount);
+  vector<size_t> countsCorrect(varCount);
+  vector<size_t> counts;
+
+  ideal->getVarDividesCounts(counts);
+  ASSERT_EQ(counts, countsCorrect);
+
+  setToAllVarProd(term, varCount);
+  const size_t insertAllOnesCount = 33;
+  for (size_t i = 0; i < insertAllOnesCount; ++i) {
+	ideal->insert(term);
+	for (size_t var = 0; var < varCount; ++var)
+	  countsCorrect[var] += 1;
+	ideal->getVarDividesCounts(counts);
+	ASSERT_EQ(counts, countsCorrect);
+  }
+
+  ASSERT(ideal->getGeneratorCount() <= varCount);
+  setToIdentity(term, varCount);
+  for (size_t i = 0; i < varCount; ++i) {
+    setExponent(ideal->getGenerator(i % insertAllOnesCount), i, 0);
+	ideal->insert(term);
+	countsCorrect[i] -= 1;
+	ideal->getVarDividesCounts(counts);
+	ASSERT_EQ(counts, countsCorrect);
+  }
+
+  deleteRawSquareFreeIdeal(ideal);
+  deleteTerm(term);
 }

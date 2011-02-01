@@ -90,9 +90,11 @@ void RSFIdeal::print(FILE* file) const {
 }
 
 void RSFIdeal::print(ostream& out) const {
+  const size_t varCount = getVarCount();
   out << "//------------ Ideal (Square Free):\n";
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen) {
-    Ops::print(out, getGenerator(gen), getVarCount());
+	for (size_t var = 0; var < varCount; ++var)
+	  out << Ops::getExponent(getGenerator(gen), var);
     out << '\n';
   }
   out << "------------\\\\\n";
