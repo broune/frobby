@@ -56,7 +56,7 @@
 #endif
 #endif
 
-#include <memory>
+#include <cstddef>
 using namespace std;
 
 #ifdef DEBUG

@@ -24,6 +24,7 @@
 #include <limits>
 #include <algorithm>
 #include <sstream>
+#include <cstring>
 
 typedef RawSquareFreeIdeal RSFIdeal;
 namespace Ops = SquareFreeTermOps;
@@ -33,6 +34,7 @@ RSFIdeal* RSFIdeal::construct(void* buffer, size_t varCount) {
   p->_varCount = varCount;
   p->_wordsPerTerm = Ops::getWordCount(varCount);
   p->_genCount = 0;
+  p->_memoryEnd = p->_memory;
   return p;
 }
 
@@ -71,6 +73,7 @@ RSFIdeal& RSFIdeal::operator=(const RSFIdeal& ideal) {
   _varCount = ideal.getVarCount();
   _wordsPerTerm = ideal.getWordsPerTerm();
   _genCount = 0;
+  _memoryEnd = _memory;
   for (size_t gen = 0; gen < ideal.getGeneratorCount(); ++gen)
 	insert(ideal.getGenerator(gen));
   return *this;
@@ -96,12 +99,10 @@ size_t RSFIdeal::insert(const Ideal& ideal) {
 
   size_t gen = 0;
   for (; gen < ideal.getGeneratorCount(); ++gen) {
-	++_genCount;
-	if (!Ops::encodeTerm(getGenerator(_genCount - 1),
-						 ideal[gen], getVarCount())) {
-	  --_genCount;
+	if (!Ops::encodeTerm(_memoryEnd, ideal[gen], getVarCount()))
 	  break;
-	}
+	++_genCount;
+	_memoryEnd += getWordsPerTerm();
   }
   return gen;
 }
@@ -117,6 +118,7 @@ void RSFIdeal::minimize() {
 		--stop;
 		Ops::assign(*it, *it + wordCount, *stop);
 		--_genCount;
+		_memoryEnd -= getWordsPerTerm();
 		goto next;
 	  }
 	}
@@ -138,28 +140,6 @@ void RSFIdeal::colon(size_t var) {
 	Ops::setExponent(*it, var, false);
 }
 
-Word* RSFIdeal::getGenerator(size_t index) {
-  ASSERT(index < getGeneratorCount());
-  return _memory + index * getWordsPerTerm();
-}
-
-const Word* RSFIdeal::getGenerator(size_t index) const {
-  ASSERT(index < getGeneratorCount());
-  return _memory + index * getWordsPerTerm();
-}
-
-Word* RSFIdeal::getGeneratorUnsafe(size_t index) {
-  // no assert to check index is valid as this method specifically
-  // allows out-of-bounds access.
-  return _memory + index * getWordsPerTerm();
-}
-
-const Word* RSFIdeal::getGeneratorUnsafe(size_t index) const {
-  // no assert to check index is valid as this method specifically
-  // allows out-of-bounds access.
-  return _memory + index * getWordsPerTerm();
-}
-
 void RSFIdeal::getLcmOfNonMultiples(Word* lcm, size_t var) const {
   ASSERT(var < getVarCount());
 
@@ -173,10 +153,10 @@ void RSFIdeal::getLcmOfNonMultiples(Word* lcm, size_t var) const {
 }
 
 void RSFIdeal::getVarDividesCounts(vector<size_t>& divCounts) const {
-  divCounts.resize(getVarCount());
-  fill(divCounts.begin(), divCounts.end(), static_cast<size_t>(0));
-  size_t* divCountsPtr = &(divCounts.front());
   const size_t varCount = getVarCount();
+  divCounts.resize(getVarCount());
+  size_t* divCountsPtr = &(divCounts.front());
+  memset(divCountsPtr, 0, sizeof(Word) * varCount);
 
   // mask is 000100010001...0001 in binary.
   const static Word mask = ~0u / 15u;
@@ -263,15 +243,16 @@ void RSFIdeal::getGcdOfMultiples(Word* gcd, size_t var) const {
   const const_iterator stop = end();
   for (const_iterator it = begin(); it != stop; ++it)
 	if (Ops::getExponent(*it, var) == 1)
-	  Ops::gcdInPlace(gcd, gcdEnd, *it);  
+	  Ops::gcdInPlace(gcd, gcdEnd, *it);
 }
 
 void RSFIdeal::removeGenerator(size_t gen) {
   Word* term = getGenerator(gen);
-  Word* last = getGenerator(getGeneratorCount() - 1);
+  Word* last = _memoryEnd - getWordsPerTerm();
   if (term != last)
 	Ops::assign(term, term + getWordsPerTerm(), last);
   --_genCount;
+  _memoryEnd -= getWordsPerTerm();
 }
 
 void RSFIdeal::insertNonMultiples(const Word* term,
@@ -371,7 +352,7 @@ bool RSFIdeal::operator==(const RawSquareFreeIdeal& ideal) const {
     return false;
 
   const size_t varCount = getVarCount();
-  const_iterator stop = end();  
+  const_iterator stop = end();
   const_iterator it = begin();
   const_iterator it2 = ideal.begin();
   for (; it != stop; ++it, ++it2)
@@ -393,7 +374,7 @@ namespace {
 void RSFIdeal::sortLexAscending() {
   vector<size_t> sorted(getGeneratorCount());
   for (size_t gen = 0; gen < getGeneratorCount(); ++gen)
-	sorted[gen] = gen; 
+	sorted[gen] = gen;
   {
 	CmpForSortLexAscending cmp;
 	cmp.ideal = this;
@@ -411,9 +392,9 @@ void RSFIdeal::sortLexAscending() {
 }
 
 void RSFIdeal::insert(const Word* term) {
+  Ops::assign(_memoryEnd, _memoryEnd + getWordsPerTerm(), term);
   ++_genCount;
-  Word* pos = getGenerator(_genCount - 1);
-  Ops::assign(pos, pos + getWordsPerTerm(), term);
+  _memoryEnd += getWordsPerTerm();
 }
 
 void RSFIdeal::colonReminimize(const Word* by) {
@@ -428,7 +409,7 @@ void RSFIdeal::colonReminimize(const Word* by) {
   if (left == right)
 	return;
   --right;
-  
+
   while (left != right) {
 	while (!Ops::isRelativelyPrime(*left, by, varCount)) {
 	  ++left;
@@ -473,6 +454,7 @@ void RSFIdeal::colonReminimize(const Word* by) {
 		--stop;
 		Ops::assign(*it, *it + wordCount, *stop);
 		--_genCount;
+		_memoryEnd -= getWordsPerTerm();
 		goto next;
 	  }
 	}
@@ -535,7 +517,7 @@ void RSFIdeal::colonReminimizeTrackDivCounts
 
 void RSFIdeal::colonReminimize(size_t var) {
   ASSERT(var < getVarCount());
-  const size_t varCount = getVarCount();
+  const size_t wordCount = getWordsPerTerm();
   const iterator start = begin();
   iterator stop = end();
 
@@ -544,7 +526,7 @@ void RSFIdeal::colonReminimize(size_t var) {
   if (left == right)
 	return;
   --right;
-  
+
   while (left != right) {
 	while (Ops::getExponent(*left, var) == 1) {
 	  ++left;
@@ -556,30 +538,36 @@ void RSFIdeal::colonReminimize(size_t var) {
 	  if (left == right)
 		goto leftEqRight;
 	}
-	Ops::swap(*left, *right, varCount);
+	Ops::swap(*left, *left + wordCount, *right);
   }
  leftEqRight:
   ASSERT(left == right);
   const iterator middle = left;
-  
-  if (Ops::getExponent(*middle, var) == 1)
-	return; // var divides all generators
-  if (middle == start)
+
+  if (middle == start && Ops::getExponent(*middle, 0) == 0)
 	return; // var divides no generators
 
-  // var divides [start, middle) and does not divide [middle, end).
+  bool dividesAll = false;
+  if (Ops::getExponent(*middle, var) == 1)
+	dividesAll = true;
 
   // Do the colon
   for (iterator it = start; it != middle; ++it)
 	Ops::setExponent(*it, var, 0);
- 
-  size_t wordCount = getWordsPerTerm();
+  if (dividesAll)
+    return;
+
+  // var divides [start, middle) and does not divide [middle, end).
+
   for (iterator it = middle; it != stop;) {
 	for (const_iterator div = start; div != middle; ++div) {
-	  if (Ops::divides(*div, *div + wordCount, *it) && div != it) {
+	  ASSERT(div != it);
+	  if (Ops::divides(*div, *div + wordCount, *it)) {
+		ASSERT(stop != middle);
 		--stop;
 		Ops::assign(*it, *it + wordCount, *stop);
 		--_genCount;
+		_memoryEnd -= getWordsPerTerm();
 		goto next;
 	  }
 	}

@@ -173,7 +173,7 @@ namespace {
   };
 
   size_t pushOutFacetPositive(size_t facetPushOut,
-							  const vector<mpz_class>& rhs, 
+							  const vector<mpz_class>& rhs,
 							  const GrobLat& lat) {
 	size_t onFacet = numeric_limits<size_t>::max();
 	mpq_class leastEntry;
@@ -262,7 +262,7 @@ namespace {
 		  mat(point, var) = lat.getHMatrix()(mlfb.points[point], var);
 	  if (mlfb.points.size() == lat.getHDim())
 		mlfb.index = determinant(mat);
-	} 
+	}
 
 	// Compute Scarf edges.
 	for (size_t m = 0; m < mlfbs.size(); ++m) {
@@ -282,7 +282,7 @@ namespace {
 			entry = lat.getYMatrix()(mlfb.points[neigh - 1], facetPushIn);
 
 		  if (neigh == facetPushIn) {
-			if (entry != mlfb.rhs[facetPushIn]) 
+			if (entry != mlfb.rhs[facetPushIn])
 			  goto skipBecauseNotGeneric;
 		  } else {
 			if (entry == secondLargest &&
@@ -299,7 +299,7 @@ namespace {
 
 		// ----------------------------------------------
 		// ** Case 1: facetPushIn > 0 and facetPushOut > 0
-		// 
+		//
 		// We push in facetPushIn (discarding the non-zero neighbor
 		// previously on that facet) and hit a non-zero neighbor
 		// that is already on the MLFB. That neighbor now instead
@@ -341,7 +341,7 @@ namespace {
 		  // Case 3: the neighbor hit moves to facet 0 so translate
 		  // the body to make that neighbor zero.
 		  for (size_t i = 0; i < lat.getYDim(); ++i)
-			rhs[i] -= lat.getYMatrix()(mlfb.points[facetPushOut - 1], i);			
+			rhs[i] -= lat.getYMatrix()(mlfb.points[facetPushOut - 1], i);
 		}
 
 		if (facetPushOut > 0) {
@@ -376,7 +376,7 @@ namespace {
 	  }
 	  continue;
 	skipBecauseNotGeneric:
-	  mlfb.edges.clear(); 
+	  mlfb.edges.clear();
 	  mlfb.edgeHitsFacet.clear();
 	}
   }

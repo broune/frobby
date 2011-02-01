@@ -27,8 +27,6 @@
 
 #include <vector>
 
-#include <iostream> //todo
-
 namespace Ops = SquareFreeTermOps;
 
 typedef vector<size_t> DivCounts;
@@ -83,7 +81,7 @@ public:
 
 	ideal->colon(pivotVar);
 	Ops::setExponent(eliminated, pivotVar, true);
-	ASSERT(debugIsValid());	
+	ASSERT(debugIsValid());
   }
 
   void toColonSubStateNoReminimizeNecessary(Word* pivot) {
@@ -390,20 +388,20 @@ bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
 
   if (doAllPairs && baseCasePreconditionSimplified(_euler, state, _divCountsTmp))
 	return false;
-  
+
   //cout << "+++ After simplification/base case:\n" << state.getIdeal();
 
 
   // ** State is not a base case so perform a split while putting the
   // two sub-states into state and newState.
-  
+
   size_t pivotVar = 0;
   for (size_t var = 1; var < _divCountsTmp.size(); ++var)
 	if (_divCountsTmp[var] > _divCountsTmp[pivotVar])
 	  pivotVar = var;
 
   //cout << "Pivot is " << pivotVar;
-  
+
   Ops::setToIdentity(_termTmp, state.getVarCount());
   Ops::setExponent(_termTmp, pivotVar, 1);
 

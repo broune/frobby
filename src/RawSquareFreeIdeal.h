@@ -103,7 +103,7 @@ class RawSquareFreeIdeal {
   /** Returns the generator at index. */
   Word* getGenerator(size_t index);
 
-  /** Returns the generator at index. */  
+  /** Returns the generator at index. */
   const Word* getGenerator(size_t index) const;
 
   /** Returns a pointer to the memory where a generator at index would
@@ -260,11 +260,9 @@ class RawSquareFreeIdeal {
   {return const_iterator(_memory, getWordsPerTerm());}
 
   iterator end()
-  {return iterator(getGeneratorUnsafe(getGeneratorCount()),
-						 getWordsPerTerm());}
+  {return iterator(_memoryEnd, getWordsPerTerm());}
   const_iterator end() const
-  {return const_iterator(getGeneratorUnsafe(getGeneratorCount()),
-						 getWordsPerTerm());}
+  {return const_iterator(_memoryEnd, getWordsPerTerm());}
 
  private:
   RawSquareFreeIdeal(); // Not available
@@ -273,6 +271,7 @@ class RawSquareFreeIdeal {
   size_t _varCount;
   size_t _wordsPerTerm;
   size_t _genCount;
+  Word* _memoryEnd;
   Word _memory[1]; // variable size array
 };
 
@@ -296,6 +295,28 @@ void deleteRawSquareFreeIdeal(RawSquareFreeIdeal* ideal);
 inline ostream& operator<<(ostream& out, const RawSquareFreeIdeal& ideal) {
   ideal.print(out);
   return out;
+}
+
+inline Word* RawSquareFreeIdeal::getGenerator(size_t index) {
+  ASSERT(index < getGeneratorCount());
+  return _memory + index * getWordsPerTerm();
+}
+
+inline const Word* RawSquareFreeIdeal::getGenerator(size_t index) const {
+  ASSERT(index < getGeneratorCount());
+  return _memory + index * getWordsPerTerm();
+}
+
+inline Word* RawSquareFreeIdeal::getGeneratorUnsafe(size_t index) {
+  // no assert to check index is valid as this method specifically
+  // allows out-of-bounds access.
+  return _memory + index * getWordsPerTerm();
+}
+
+inline const Word* RawSquareFreeIdeal::getGeneratorUnsafe(size_t index) const {
+  // no assert to check index is valid as this method specifically
+  // allows out-of-bounds access.
+  return _memory + index * getWordsPerTerm();
 }
 
 #endif
