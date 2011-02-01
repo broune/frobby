@@ -39,6 +39,39 @@ void assertTrue(bool value, const char* condition,
 #define ASSERT_TRUE_SILENT(VALUE) \
   assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, false)
 
+void assertTrue2Failed(const char* valueString,
+					   const char* testName, const char* file, size_t line,
+					   const char* expression1, const char* expression1Value,
+					   const char* expression2, const char* expression2Value);
+template<class A, class B>
+  void assertTrue2(bool value, const char* valueString,
+				   const char* testName, const char* file, size_t line,
+				   const char* expression1, const A& a,
+				   const char* expression2, const B& b,
+				   bool printDot) {
+  if (value) {
+    assertSucceeded(printDot);
+    return;
+  }
+
+  stringstream aValue;
+  aValue << a;
+
+  stringstream bValue;
+  bValue << b;
+
+  assertTrue2Failed(valueString, testName, file, line,
+					expression1, aValue.str().c_str(),
+					expression2, bValue.str().c_str());
+}
+#define ASSERT_TRUE2(VALUE, A, B)											\
+  assertTrue2(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__,			\
+			  #A,A,#B,B, __printDots);
+#define ASSERT_TRUE2_SILENT(VALUE, A, B)									\
+  assertTrue2(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__,			\
+			  #A,A,#B,B, false);
+
+
 void assertFalse(bool value, const char* condition,
                  const char* testName, const char* file, size_t line,
                  bool printDot);
@@ -50,7 +83,6 @@ void assertFalse(bool value, const char* condition,
 void assertEqualFailed(const char* a, const char* b,
                        const char* aString, const char* bString,
                        const char* testName, const char* file, size_t line);
-
 template<class T1, class T2>
   void assertEqual(const T1& a, const T2& b,
                    const char* aString, const char* bString,
@@ -71,10 +103,37 @@ template<class T1, class T2>
                     aString, bString,
                     testName, file, line);
 }
-
 #define ASSERT_EQ(A, B) \
   assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__, __printDots)
 #define ASSERT_EQ_SILENT(A, B) \
   assertEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__, false)
+
+void assertNotEqualFailed(const char* a, const char* b,
+						  const char* aString, const char* bString,
+						  const char* testName, const char* file, size_t line);
+template<class T1, class T2>
+  void assertNotEqual(const T1& a, const T2& b,
+					  const char* aString, const char* bString,
+					  const char* testName, const char* file, size_t line,
+					  bool printDot) {
+  if (a != b) {
+    assertSucceeded(printDot);
+    return;
+  }
+
+  stringstream aValue;
+  aValue << a;
+
+  stringstream bValue;
+  bValue << b;
+
+  assertNotEqualFailed(aValue.str().c_str(), bValue.str().c_str(),
+					   aString, bString,
+					   testName, file, line);
+}
+#define ASSERT_NEQ(A, B) \
+  assertNotEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__, __printDots)
+#define ASSERT_NEQ_SILENT(A, B) \
+  assertNotEqual(A, B, #A, #B, __nameOfTest, __FILE__, __LINE__, false)
 
 #endif

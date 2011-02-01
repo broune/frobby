@@ -50,16 +50,14 @@ namespace SquareFreeTermOps {
 	out << ')';
   }
 
-
-#define inline
-  inline bool isIdentity(const Word* a, Word* aEnd) {
+  bool isIdentity(const Word* a, Word* aEnd) {
 	for (; a != aEnd; ++a)
 	  if (*a != 0)
 		return false;
 	return true;
   }
 
-  inline bool isIdentity(const Word* a, size_t varCount) {
+  bool isIdentity(const Word* a, size_t varCount) {
 	if (varCount == 0)
 	  return true;
 	while (true) {
@@ -72,7 +70,7 @@ namespace SquareFreeTermOps {
 	}
   }
 
-  inline size_t getSizeOfSupport(const Word* a, size_t varCount) {
+  size_t getSizeOfSupport(const Word* a, size_t varCount) {
 	if (varCount == 0)
 	  return 0;
 	size_t count = 0;
@@ -92,7 +90,7 @@ namespace SquareFreeTermOps {
 	}
   }
 
-  inline size_t getWordCount(size_t varCount) {
+  size_t getWordCount(size_t varCount) {
 	// Compute varCount / BitsPerWord rounded up. Special case for
 	// varCount == 0 as formula has underflow issue for that input.
 	if (varCount == 0)
@@ -101,12 +99,12 @@ namespace SquareFreeTermOps {
 	  return ((varCount - 1) / BitsPerWord) + 1;
   }
 
-  inline void setToIdentity(Word* res, const Word* resEnd) {
+  void setToIdentity(Word* res, const Word* resEnd) {
 	for (; res != resEnd; ++res)
 	  *res = 0;
   }
 
-  inline void setToIdentity(Word* res, size_t varCount) {
+  void setToIdentity(Word* res, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++res, varCount -= BitsPerWord)
 	  *res = 0;
 	if (varCount > 0)
@@ -114,7 +112,7 @@ namespace SquareFreeTermOps {
   }
 
   /** Sets all exponents of res to 1. */
-  inline void setToAllVarProd(Word* res, size_t varCount) {
+  void setToAllVarProd(Word* res, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++res, varCount -= BitsPerWord)
 	  *res = ~0;
 	if (varCount > 0) {
@@ -125,7 +123,7 @@ namespace SquareFreeTermOps {
 
   /** Returns identity term of varCount variables. Must deallocate
 	  with deleteTerm(). */
-  inline Word* newTerm(size_t varCount) {
+  Word* newTerm(size_t varCount) {
 	const size_t wordCount = getWordCount(varCount);
 	Word* word = new Word[wordCount];
 	setToIdentity(word, word + wordCount);
@@ -140,11 +138,11 @@ namespace SquareFreeTermOps {
   Word* newTermParse(const char* str);
 
   /** Deletes term previously returned by newTerm(). Term can be null. */
-  inline void deleteTerm(Word* term) {
+  void deleteTerm(Word* term) {
 	delete[] term;
   }
 
-  inline bool lexLess(const Word* a, const Word* b, size_t varCount) {
+  bool lexLess(const Word* a, const Word* b, size_t varCount) {
 	if (varCount == 0)
 	  return false;
 	while (true) {
@@ -162,12 +160,12 @@ namespace SquareFreeTermOps {
 	}
   }
 
-  inline void colon(Word* res, const Word* resEnd, const Word* a, const Word* b) {
+  void colon(Word* res, const Word* resEnd, const Word* a, const Word* b) {
 	for (; res != resEnd; ++res, ++a, ++b)
 	  *res = (*a) & (~*b);
   }
 
-  inline void assign(Word* a, const Word* b, size_t varCount) {
+  void assign(Word* a, const Word* b, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++b, varCount -= BitsPerWord)
 	  *a = *b;
 	if (varCount > 0)
@@ -177,7 +175,7 @@ namespace SquareFreeTermOps {
   /** Assigns the RawSquareFreeTerm-encoded form of term to encoded
 	  and returns true if term is square free. Otherwise returns
 	  false. */
-  inline bool encodeTerm(Word* encoded, const Exponent* term, const size_t varCount) {
+  bool encodeTerm(Word* encoded, const Exponent* term, const size_t varCount) {
 	size_t var = 0;
 	while (var < varCount) {
 	  Word bit = 1;
@@ -195,50 +193,50 @@ namespace SquareFreeTermOps {
 	return true;
   }
 
-  inline void lcm(Word* res, const Word* resEnd,
+  void lcm(Word* res, const Word* resEnd,
 				  const Word* a, const Word* b) {
 	for (; res != resEnd; ++a, ++b, ++res)
 	  *res = (*a) | (*b);
   }
 
-  inline void lcm(Word* res, const Word* a, const Word* b, size_t varCount) {
+  void lcm(Word* res, const Word* a, const Word* b, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++b, ++res, varCount -= BitsPerWord)
 	  *res = (*a) | (*b);
 	if (varCount != 0)
 	  *res = (*a) | (*b);
   }
 
-  inline void lcmInPlace(Word* res, const Word* resEnd, const Word* a) {
+  void lcmInPlace(Word* res, const Word* resEnd, const Word* a) {
 	for (; res != resEnd; ++a, ++res)
 	  *res |= *a;
   }
 
-  inline void lcmInPlace(Word* res, const Word* a, size_t varCount) {
+  void lcmInPlace(Word* res, const Word* a, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++res, varCount -= BitsPerWord)
 	  *res |= *a;
 	if (varCount != 0)
 	  *res |= *a;
   }
 
-  inline void gcd(Word* res, const Word* resEnd,
+  void gcd(Word* res, const Word* resEnd,
 				  const Word* a, const Word* b) {
 	for (; res != resEnd; ++a, ++b, ++res)
 	  *res = (*a) & (*b);
   }
 
-  inline void gcdInPlace(Word* res, const Word* resEnd, const Word* a) {
+  void gcdInPlace(Word* res, const Word* resEnd, const Word* a) {
 	for (; res != resEnd; ++a, ++res)
 	  *res &= *a;
   }
 
-  inline void gcdInPlace(Word* res, const Word* a, size_t varCount) {
+  void gcdInPlace(Word* res, const Word* a, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++res, varCount -= BitsPerWord)
 	  *res &= *a;
 	if (varCount != 0)
 	  *res &= *a;
   }
 
-  inline bool isRelativelyPrime(const Word* a, const Word* b, size_t varCount) {
+  bool isRelativelyPrime(const Word* a, const Word* b, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++b, varCount -= BitsPerWord)
 	  if ((*a) & (*b))
 		return false;
@@ -249,7 +247,7 @@ namespace SquareFreeTermOps {
   }
 
   /** Make 0 exponents 1 and make 1 exponents 0. */
-  inline void invert(Word* a, size_t varCount) {
+  void invert(Word* a, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, varCount -= BitsPerWord)
 	  *a = ~*a;
 	if (varCount > 0) {
@@ -260,7 +258,7 @@ namespace SquareFreeTermOps {
 
   /** Returns var if a equals var. If a is the identity or the product
 	  of more than one variable then returns varCount. */
-  inline size_t getVarIfPure(const Word* const a, size_t varCount) {
+  size_t getVarIfPure(const Word* const a, size_t varCount) {
 	const Word* hit = 0;
 	size_t varsToGo = varCount;
 	const Word* it = a;
@@ -294,7 +292,7 @@ namespace SquareFreeTermOps {
   }
 
   /** For every variable var that divides a, decrement inc[var] by one. */
-  inline void decrementAtSupport(const Word* a, size_t* inc, size_t varCount) {
+  void decrementAtSupport(const Word* a, size_t* inc, size_t varCount) {
 	if (varCount == 0)
 	  return;
 	while (true) {
@@ -314,7 +312,7 @@ namespace SquareFreeTermOps {
   }
 
   /** For every variable var that divides a, set inc[var] to zero. */
-  inline void toZeroAtSupport(const Word* a, size_t* inc, size_t varCount) {
+  void toZeroAtSupport(const Word* a, size_t* inc, size_t varCount) {
 	if (varCount == 0)
 	  return;
 	while (true) {
@@ -335,7 +333,7 @@ namespace SquareFreeTermOps {
   }
 
   /** Returns true if a equals b. */
-  inline bool equals(const Word* a, const Word* b, size_t varCount) {
+  bool equals(const Word* a, const Word* b, size_t varCount) {
 	if (varCount == 0)
 	  return true;
 	while (true) {
@@ -353,7 +351,7 @@ namespace SquareFreeTermOps {
 	  functions here to work correctly. They should all maintain this
 	  invariant. This function is useful in tests to ensure that that
 	  is true. */
-  inline bool isValid(Word* a, size_t varCount) {
+  bool isValid(Word* a, size_t varCount) {
 	size_t offset = varCount / BitsPerWord;
 	a += offset;
 	varCount -= BitsPerWord * offset;
@@ -363,7 +361,7 @@ namespace SquareFreeTermOps {
 	return ((*a) & ~fullSupportWord) == 0;
   }
 
-  inline void swap(Word* a, Word* b, size_t varCount) {
+  void swap(Word* a, Word* b, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++b, varCount -= BitsPerWord)
 	  std::swap(*a, *b);
 	if (varCount > 0)
