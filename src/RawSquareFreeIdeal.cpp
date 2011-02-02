@@ -29,6 +29,59 @@
 typedef RawSquareFreeIdeal RSFIdeal;
 namespace Ops = SquareFreeTermOps;
 
+namespace {
+  /** As the STL function std::partition except specialized to work
+	  with the iterators we get from SquareFreeIdeal. std::partition
+	  cannot be used with these.
+
+	  Rearranges the elements in the range [begin, end) and returns an
+	  iterator middle. Middle has the property that pred(x) is true for x
+	  in [begin,middle) and false for x in [middle, end). */
+  template<class Iter, class Pred>
+  inline Iter RsfPartition(Iter begin, Iter end, Pred pred, size_t varCount) {
+	// The invariant of the loop is that pred(x) is true if x precedes
+	// begin and pred(x) is false if x is at or after end.
+	while (true) {
+	  if (begin == end)
+		return begin;
+	  while (pred(*begin))
+		if (++begin == end)
+		  return begin;
+	  // now pred(*begin) is true and begin < end.
+	  if (begin == --end)
+		return begin;
+	  while (!pred(*end))
+		if (begin == --end)
+		  return begin;
+	  // now pred(*end) is false and begin < end.
+
+	  // This swap is the reason that std::partition doesn't work
+	  Ops::swap(*begin, *end, varCount); 
+	  ++begin;
+	}
+  }
+
+  /** Removes those elements of [begin, end) that are not minimal. The
+   result is in the sub-range [begin, newEnd) where newEnd is the
+   returned value. */
+   RSFIdeal::iterator minimize(RSFIdeal::iterator begin,
+							  RSFIdeal::iterator end,
+							  const size_t wordCount) {
+	for (RSFIdeal::iterator it = begin; it != end;) {
+	  for (RSFIdeal::const_iterator div = begin; div != end; ++div) {
+		if (Ops::divides(*div, *div + wordCount, *it) && div != it) {
+		  --end;
+		  Ops::assign(*it, *it + wordCount, *end);
+		  goto next;
+		}
+	  }
+	  ++it;
+	next:;
+	}
+	return end;
+  }
+}
+
 RSFIdeal* RSFIdeal::construct(void* buffer, size_t varCount) {
   RSFIdeal* p = static_cast<RSFIdeal*>(buffer);
   p->_varCount = varCount;
@@ -120,23 +173,9 @@ void RSFIdeal::insert(const RawSquareFreeIdeal& ideal) {
 }
 
 void RSFIdeal::minimize() {
-  size_t wordCount = getWordsPerTerm();
-  const iterator start = begin();
-  iterator stop = end();
-
-  for (iterator it = start; it != stop;) {
-	for (const_iterator div = start; div != stop; ++div) {
-	  if (Ops::divides(*div, *div + wordCount, *it) && div != it) {
-		--stop;
-		Ops::assign(*it, *it + wordCount, *stop);
-		--_genCount;
-		_memoryEnd -= getWordsPerTerm();
-		goto next;
-	  }
-	}
-	++it;
-  next:;
-  }
+  iterator newEnd = ::minimize(begin(), end(), getWordsPerTerm());
+  _genCount = newEnd - begin();
+  _memoryEnd = *newEnd;
 }
 
 void RSFIdeal::colon(const Word* by) {
@@ -409,132 +448,95 @@ void RSFIdeal::insert(const Word* term) {
   _memoryEnd += getWordsPerTerm();
 }
 
+namespace {
+  struct ColonReminimizeTermHelper {
+	bool operator()(const Word* term) {
+	  return !Ops::isRelativelyPrime(colon, colonEnd, term);
+	}
+	const Word* colon;
+	const Word* colonEnd;
+  };
+}
+
 void RSFIdeal::colonReminimize(const Word* by) {
   ASSERT(by != 0);
   const size_t varCount = getVarCount();
+  const size_t wordCount = getWordsPerTerm();
   const iterator start = begin();
   iterator stop = end();
 
-  iterator left = start;
-  iterator right = stop;
-  if (left == right)
-	return;
-  --right;
+  ColonReminimizeTermHelper colonIsRelativelyPrime;
+  colonIsRelativelyPrime.colon = by;
+  colonIsRelativelyPrime.colonEnd = by + wordCount;
+  iterator middle = RsfPartition(start, stop, colonIsRelativelyPrime, varCount);
 
-  while (left != right) {
-	while (!Ops::isRelativelyPrime(*left, by, varCount)) {
-	  ++left;
-	  if (left == right)
-		goto leftEqRight;
-	}
-	while (Ops::isRelativelyPrime(*right, by, varCount)) {
-	  --right;
-	  if (left == right)
-		goto leftEqRight;
-	}
-	Ops::swap(*left, *right, varCount);
-  }
- leftEqRight:
-
-
-  ASSERT(left == right);
-  iterator middle = left;
-
-  if (middle == start && Ops::isRelativelyPrime(*middle, by, varCount)) {
-	ASSERT(isMinimallyGenerated());
-	return;
-  }
-  if (!Ops::isRelativelyPrime(*middle, by, varCount))
-	++middle; // happens if none are relatively prime.
-
-
-
-  // Do the colon
-  const size_t wordCount = getWordsPerTerm();
+  if (middle == start)
+	return; // colon is relatively prime to all generators
   for (iterator it = start; it != middle; ++it)
 	Ops::colon(*it, *it + wordCount, *it, by);
 
   // var is not relatively prime to [start, middle) and is relatively
   // prime to [middle, end).
 
-  for (iterator it = start; it != stop;) {
-	for (const_iterator div = start; div != middle; ++div) {
-	  if (Ops::divides(*div, *div + wordCount, *it) && div != it) {
-		if (middle == stop)
-		  --middle;
-		--stop;
-		Ops::assign(*it, *it + wordCount, *stop);
-		--_genCount;
-		_memoryEnd -= getWordsPerTerm();
+  iterator newMiddle = ::minimize(start, middle, getWordsPerTerm());
+	
+  iterator newEnd = newMiddle;
+  for (iterator it = middle; it != stop; ++it) {
+	for (const_iterator div = start; div != newMiddle; ++div)
+	  if (Ops::divides(*div, *div + wordCount, *it))
 		goto next;
-	  }
-	}
-	++it;
+	Ops::assign(*newEnd, *newEnd + wordCount, *it);
+	++newEnd;
   next:;
   }
+
+  _memoryEnd = *newEnd;
+  _genCount = newEnd - start;
+}
+
+namespace {
+  struct ColonReminimizeVarHelper {
+	bool operator()(const Word* term) {
+	  return Ops::getExponent(term, var) != 0;
+	}
+	size_t var;
+  };
 }
 
 void RSFIdeal::colonReminimize(size_t var) {
   ASSERT(var < getVarCount());
+  const size_t varCount = getVarCount();
   const size_t wordCount = getWordsPerTerm();
   const iterator start = begin();
   iterator stop = end();
 
-  iterator left = start;
-  iterator right = stop;
-  if (left == right)
-	return;
-  --right;
+  ColonReminimizeVarHelper varDivides;
+  varDivides.var = var;
+  iterator middle = RsfPartition(start, stop, varDivides, varCount);
 
-  while (left != right) {
-	while (Ops::getExponent(*left, var) == 1) {
-	  ++left;
-	  if (left == right)
-		goto leftEqRight;
-	}
-	while (Ops::getExponent(*right, var) == 0) {
-	  --right;
-	  if (left == right)
-		goto leftEqRight;
-	}
-	Ops::swap(*left, *left + wordCount, *right);
-  }
- leftEqRight:
-  ASSERT(left == right);
-  const iterator middle = left;
-
-  if (middle == start && Ops::getExponent(*middle, var) == 0)
+  if (middle == start)
 	return; // var divides no generators
-
-  bool dividesAll = false;
-  if (Ops::getExponent(*middle, var) == 1) {
-	Ops::setExponent(*middle, var, 0);
-	dividesAll = true;
-  }
-
-  // Do the colon
   for (iterator it = start; it != middle; ++it)
 	Ops::setExponent(*it, var, 0);
-  if (dividesAll)
-    return;
+  if (middle == stop)
+	return; // var divides all
 
-  // var divides [start, middle) and does not divide [middle, end).
-
+  // var divided [start, middle) and did (does) not divide [middle,
+  // end).  Both of these ranges are minimized on their own, and no
+  // element of [middle, end) divides an element of [start, middle).
   for (iterator it = middle; it != stop;) {
 	for (const_iterator div = start; div != middle; ++div) {
-	  ASSERT(div != it);
 	  if (Ops::divides(*div, *div + wordCount, *it)) {
-		ASSERT(stop != middle);
 		--stop;
 		Ops::assign(*it, *it + wordCount, *stop);
 		--_genCount;
-		_memoryEnd -= getWordsPerTerm();
 		goto next;
 	  }
 	}
 	++it;
   next:;
   }
+  _memoryEnd = *stop;
 }
 
 void RSFIdeal::getLcm(Word* lcm) const {
