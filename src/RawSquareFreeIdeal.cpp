@@ -203,63 +203,79 @@ void RSFIdeal::getLcmOfNonMultiples(Word* lcm, size_t var) const {
 	  Ops::lcmInPlace(lcm, lcmEnd, *it);
 }
 
+static inline void countVarDividesBlockUpTo15(const Word* it,
+											  size_t genCount,
+											  const size_t wordsPerTerm,
+											  size_t* counts) {
+  // mask has the bit pattern 0001 0001 ... 0001
+  const Word mask = ~((Word)0u) / 15u;
+
+  Word a0, a1, a2, a3;
+  if (genCount & 1 == 1) {
+	const Word a = *it;
+	a0 = a & mask;
+	a1 = (a >> 1) & mask;
+	a2 = (a >> 2) & mask;
+	a3 = (a >> 3) & mask;
+	it += wordsPerTerm;
+  } else
+	a0 = a1 = a2 = a3 = 0;
+
+  genCount >>= 1;
+  for (size_t i = 0; i < genCount; ++i) {
+	const Word a = *it;
+	it += wordsPerTerm;
+	const Word aa = *it;
+	it += wordsPerTerm;
+
+	a0 += a & mask;
+	a1 += (a >> 1) & mask;
+	a2 += (a >> 2) & mask;
+	a3 += (a >> 3) & mask;
+
+	a0 += aa & mask;
+	a1 += (aa >> 1) & mask;
+	a2 += (aa >> 2) & mask;
+	a3 += (aa >> 3) & mask;
+  }
+
+  for (size_t i = 0; i < BitsPerWord / 4; ++i) {
+	*(counts + 0) += a0 & 0xF;
+	*(counts + 1) += a1 & 0xF;
+	*(counts + 2) += a2 & 0xF;
+	*(counts + 3) += a3 & 0xF;
+	a0 >>= 4;
+	a1 >>= 4;
+	a2 >>= 4;
+	a3 >>= 4;
+	counts += 4;
+  }
+}
+
 void RSFIdeal::getVarDividesCounts(vector<size_t>& divCounts) const {
   const size_t varCount = getVarCount();
+  const size_t wordCount = getWordsPerTerm();
+  // We do reserve BitsPerWord extra space. Otherwise we would have to
+  // make sure not to index past the end of the vector of counts when
+  // dealing with variables in the unused part of the last word.
+  divCounts.reserve(getVarCount() + BitsPerWord);
   divCounts.resize(getVarCount());
-  size_t* divCountsPtr = &(divCounts.front());
-  memset(divCountsPtr, 0, sizeof(Word) * varCount);
-
-  // mask is 000100010001...0001 in binary.
-  const static Word mask = ~0u / 15u;
-  ASSERT(Ops::getSizeOfSupport(&mask, BitsPerWord) == BitsPerWord / 4);
-  ASSERT(~0u == mask | (mask << 1) | (mask << 2) | (mask << 3));
-  ASSERT(BitsPerWord % 4 == 0);
+  size_t* divCountsBasePtr = &(divCounts.front());
+  size_t* divCountsEnd = divCountsBasePtr + BitsPerWord * wordCount;
+  memset(divCountsBasePtr, 0, sizeof(Word) * varCount);
 
   size_t generatorsToGo = getGeneratorCount();
   const_iterator blockBegin = begin();
-  const_iterator blockEnd = blockBegin;
   while (generatorsToGo > 0) {
-	if (generatorsToGo >= 15) {
-	  blockEnd = blockBegin + 15;
-	  generatorsToGo -= 15;
-	} else {
-	  blockEnd = blockBegin + generatorsToGo;
-	  generatorsToGo = 0;
-	}
+	const size_t blockSize = generatorsToGo >= 15 ? 15 : generatorsToGo;
 
-	const size_t wordCount = getWordsPerTerm();
-	for (size_t i = 0; i < wordCount; ++i) {
-	  Word w0 = 0;
-	  Word w1 = 0;
-	  Word w2 = 0;
-	  Word w3 = 0;
+	size_t* counts = divCountsBasePtr;
+	const Word* genOffset = *blockBegin;
+	for (; counts != divCountsEnd; counts += BitsPerWord, ++genOffset)
+	  countVarDividesBlockUpTo15(genOffset, blockSize, wordCount, counts);
 
-	  for (const_iterator it = blockBegin; it != blockEnd; ++it) {
-		const Word word = (*it)[i];
-		w0 += word & mask;
-		w1 += (word >> 1) & mask;
-		w2 += (word >> 2) & mask;
-		w3 += (word >> 3) & mask;
-	  }
-
-	  size_t var = i * BitsPerWord;
-	  size_t* counts = divCountsPtr + var;
-	  for (size_t j = 0; j < BitsPerWord / 4; ++j) {
-		if (var < varCount) *counts += w0 & 0xF; else break;
-		++var; ++counts;
-		if (var < varCount) *counts += w1 & 0xF; else break;
-		++var; ++counts;
-		if (var < varCount) *counts += w2 & 0xF; else break;
-		++var; ++counts;
-		if (var < varCount) *counts += w3 & 0xF; else break;
-		++var; ++counts;
-		w0 >>= 4;
-		w1 >>= 4;
-		w2 >>= 4;
-		w3 >>= 4;
-	  }
-	}
-	blockBegin = blockEnd;
+	generatorsToGo -= blockSize;
+	blockBegin = blockBegin + blockSize;
   }
 }
 
@@ -360,23 +376,33 @@ size_t RSFIdeal::getExclusiveVarGenerator() {
 }
 
 bool RSFIdeal::hasFullSupport(const Word* ignore) const {
+  ASSERT(ignore != 0);
   const size_t wordCount = getWordsPerTerm();
-  const const_iterator start = begin();
-  const const_iterator stop = end();
+  const Word allOnes = ~((Word)0);
 
-  for (size_t offset = 0; offset < wordCount; ++offset) {
-	Word support = ignore[offset];
-	for (const_iterator it = start; it != stop; ++it)
-	  support |= (*it)[offset];
-	const Word allOnes = ~((Word)0);
-	if (support != allOnes) {
-	  if (offset == wordCount - 1) {
-		const size_t varsLeft = getVarCount() - offset * BitsPerWord;
-		ASSERT(varsLeft <= BitsPerWord);
-		return Ops::hasFullSupport(&support, varsLeft);
-	  } else
-		return false;
+  const Word* firstGenOffset = _memory;
+  const Word* endGenOffset = _memoryEnd;
+  size_t varsLeft = getVarCount();
+  while (true) {
+	const Word* gen = firstGenOffset;
+	Word support = *ignore;
+	while (gen != endGenOffset) {
+	  support |= *gen;
+	  gen += wordCount;
 	}
+
+	if (varsLeft >= BitsPerWord) {
+	  if (support != allOnes)
+		return false;
+	} else {
+	  const Word fullSupportWord = (((Word)1) << varsLeft) - 1;
+	  return support == fullSupportWord;
+	}
+
+	varsLeft -= BitsPerWord;
+	++ignore;
+	++firstGenOffset;
+	++endGenOffset;
   }
   return true;
 }

@@ -19,6 +19,8 @@
 
 #include "Action.h"
 #include "IOParameters.h"
+#include "BoolParameter.h"
+#include "StringParameter.h"
 
 /** Implements the command line interface action euler. */
 class EulerAction : public Action {
@@ -32,6 +34,11 @@ class EulerAction : public Action {
   static const char* staticGetName();
 
  private:
+  StringParameter _algorithm;
+  BoolParameter _printStatistics;
+  BoolParameter _useUniqueDivSimplify;
+  BoolParameter _useManyDivSimplify;
+  BoolParameter _useAllPairsSimplify;
   IOParameters _io;
 };
 

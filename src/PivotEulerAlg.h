@@ -18,17 +18,32 @@
 #ifndef PIVOT_EULER_ALG_GUARD
 #define PIVOT_EULER_ALG_GUARD
 
+#include <vector>
+#include <cstdio>
+
 class Ideal;
 class RawSquareFreeIdeal;
-
-#include <vector>
-
 class EulerState;
 
 class PivotEulerAlg {
  public:
-  PivotEulerAlg(const Ideal& ideal);
-  mpz_class getEuler();
+  PivotEulerAlg();
+
+  mpz_class computeEulerCharacteristic(const Ideal& ideal);
+
+  enum Alg {
+	HybridAlg = 0,
+	PivotAlg = 1,
+	MayerVietorisAlg = 2
+  };
+  void setAlgorithm(Alg value) {_alg = value;}
+  void setPrintStatistics(bool value, FILE* out) {
+	_printStatistics = value;
+	_statisticsOut = out;
+  }
+  void setUseUniqueDivSimplify(bool value) {_useUniqueDivSimplify = value;}
+  void setUseManyDivSimplify(bool value) {_useManyDivSimplify = value;}
+  void setUseAllPairsSimplify(bool value) {_useAllPairsSimplify = value;}
 
  private:
   bool processState(EulerState& state, EulerState& newState);
@@ -38,6 +53,14 @@ class PivotEulerAlg {
   Word* _termTmp;
   vector<size_t> _divCountsTmp;
   size_t _stepsPerformed;
+
+  FILE* _statisticsOut;
+  bool _printStatistics;
+  bool _useUniqueDivSimplify;
+  bool _useManyDivSimplify;
+  bool _useAllPairsSimplify;
+  bool _needDivCounts;
+  Alg _alg;
 };
 
 #endif

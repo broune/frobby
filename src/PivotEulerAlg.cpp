@@ -93,15 +93,16 @@ public:
 	ASSERT(debugIsValid());
   }
 
-  void makeSumSubState(const Word* pivot, EulerState& subState) {
+  void makeSumSubState(size_t pivotVar, EulerState& subState) {
 	ASSERT(&subState != this);
 
 	const size_t capacity = ideal->getGeneratorCount();
 	const size_t varCount = ideal->getVarCount();
 	subState.allocateIdealAndEliminated(varCount, capacity);
 
-	subState.ideal->insertNonMultiples(pivot, *ideal);
-	Ops::lcm(subState.eliminated, eliminated, pivot, varCount);
+	subState.ideal->insertNonMultiples(pivotVar, *ideal);
+	Ops::assign(subState.eliminated, eliminated, varCount);
+	Ops::setExponent(subState.eliminated, pivotVar, 1);
 	subState.sign = sign;
 	subState.flipSign();
 
@@ -165,9 +166,23 @@ public:
   }
 #endif
 
+  EulerState& operator=(const EulerState& state) {
+	if (&state == this)
+	  return *this;
+
+	const size_t capacity = state.getIdeal().getGeneratorCount();
+	const size_t varCount = state.getIdeal().getVarCount();
+	allocateIdealAndEliminated(varCount, capacity);
+	*ideal = state.getIdeal();
+	Ops::assign(eliminated, state.eliminated, varCount);
+	sign = state.sign;
+
+	ASSERT(debugIsValid());
+	return *this;
+  }
+
 private:
   EulerState(const EulerState&); // unavailable
-  EulerState& operator=(const EulerState&); // unavailable
 
   void toZero() {
 	ideal = 0;
@@ -363,34 +378,33 @@ bool optimizeVarPairs(EulerState& state, Word* tmp, DivCounts& divCounts) {
 }
 
 bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
-  //cout << "*** Before simplification:\n" << state.getIdeal();
   ++_stepsPerformed;
 
   // ** First optimize state and return false if a base case is detected.
-  bool doAllPairs = false;
-
   while (true) {
 	ASSERT(state.debugIsValid());
 
 	if (baseCaseSimple1(_euler, state))
 	  return false;
 
-	state.getIdeal().getVarDividesCounts(_divCountsTmp);
+	ASSERT(_needDivCounts == _useUniqueDivSimplify || _useManyDivSimplify);
+	if (_needDivCounts)
+	  state.getIdeal().getVarDividesCounts(_divCountsTmp);
 
-	if (optimizeOneDivCounts(state, _divCountsTmp, _termTmp))
+	if (_useUniqueDivSimplify &&
+		optimizeOneDivCounts(state, _divCountsTmp, _termTmp))
 	  continue;
-	if (optimizeSimpleFromDivCounts(_euler, state, _divCountsTmp, _termTmp))
+	if (_useManyDivSimplify &&
+		optimizeSimpleFromDivCounts(_euler, state, _divCountsTmp, _termTmp))
 	  continue;
-	if (doAllPairs && optimizeVarPairs(state, _termTmp, _divCountsTmp))
-	continue;
+	if (_useAllPairsSimplify) {
+	  if (optimizeVarPairs(state, _termTmp, _divCountsTmp))
+		continue;
+	  if (baseCasePreconditionSimplified(_euler, state, _divCountsTmp))
+		return false;
+	}
 	break;
   }
-
-  if (doAllPairs && baseCasePreconditionSimplified(_euler, state, _divCountsTmp))
-	return false;
-
-  //cout << "+++ After simplification/base case:\n" << state.getIdeal();
-
 
   // ** State is not a base case so perform a split while putting the
   // two sub-states into state and newState.
@@ -400,13 +414,28 @@ bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
 	if (_divCountsTmp[var] > _divCountsTmp[pivotVar])
 	  pivotVar = var;
 
-  //cout << "Pivot is " << pivotVar;
+  bool usePivotSplit;
+  if (_alg == HybridAlg) {
+	usePivotSplit = true; // todo: be smarter on this
+  } else if (_alg == PivotAlg)
+	usePivotSplit = true;
+  else {
+	ASSERT(_alg == MayerVietorisAlg);
+	usePivotSplit = false;
+  }
 
-  Ops::setToIdentity(_termTmp, state.getVarCount());
-  Ops::setExponent(_termTmp, pivotVar, 1);
-
-  state.makeSumSubState(_termTmp, newState);
-  state.toColonSubState(pivotVar);
+  if (usePivotSplit) {
+	state.makeSumSubState(pivotVar, newState);
+	state.toColonSubState(pivotVar);
+  } else {
+	size_t piv = state.getIdeal().getMultiple(pivotVar);
+	const Word* pivot = state.getIdeal().getGenerator(piv);
+	newState = state;
+	newState.removeGenerator(piv);
+	newState.toColonSubState(pivot);
+	newState.flipSign();
+	state.removeGenerator(piv);
+  }
 
   return true;
 }
@@ -415,42 +444,79 @@ void PivotEulerAlg::getPivot(const EulerState& state, Word* pivot) {
   ASSERT(false);
 }
 
-PivotEulerAlg::PivotEulerAlg(const Ideal& ideal) {
-  _stepsPerformed = 0;
-  _termTmp = Ops::newTerm(ideal.getVarCount());
-  try {
-	_euler = 0;
-
-	vector<EulerState*> todo;
-	ElementDeleter<vector<EulerState*> > todoDeleter(todo);
-	{
-	  auto_ptr<EulerState> initialState(new EulerState(ideal));
-	  exceptionSafePushBack(todo, initialState);
-	}
-
-	size_t todoCount = 1;
-	while (todoCount > 0) {
-	  ASSERT(todoCount - 1 < todo.size());
-	  if (todoCount == todo.size()) {
-		auto_ptr<EulerState> newState(new EulerState);
-		exceptionSafePushBack(todo, newState);
-	  }
-	  ASSERT(todoCount < todo.size());
-
-	  EulerState& state = *todo[todoCount - 1];
-	  EulerState& nextState = *todo[todoCount];
-	  if (processState(state, nextState))
-		++todoCount;
-	  else
-		--todoCount;
-	}
-  } catch (...) {
-	Ops::deleteTerm(_termTmp);
-	throw;
+PivotEulerAlg::PivotEulerAlg():
+  _euler(0),
+  _termTmp(0),
+  _stepsPerformed(0),
+  _printStatistics(false),
+  _useUniqueDivSimplify(true),
+  _useManyDivSimplify(true),
+  _useAllPairsSimplify(true),
+  _alg(HybridAlg) {
   }
-  Ops::deleteTerm(_termTmp);
-}
 
-mpz_class PivotEulerAlg::getEuler() {
+mpz_class PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
+  _stepsPerformed = 0;
+  if (ideal.getGeneratorCount() == 0)
+	_euler = 0;
+  else if (ideal.getVarCount() == 0)
+	_euler = -1;
+  else {
+	_termTmp = Ops::newTerm(ideal.getVarCount());
+	try {
+	  _euler = 0;
+	  _needDivCounts = _useUniqueDivSimplify ||	_useManyDivSimplify;
+
+	  vector<EulerState*> todo;
+	  ElementDeleter<vector<EulerState*> > todoDeleter(todo);
+	  {
+		auto_ptr<EulerState> initialState(new EulerState(ideal));
+		exceptionSafePushBack(todo, initialState);
+	  }
+
+	  size_t todoCount = 1;
+	  while (todoCount > 0) {
+		ASSERT(todoCount - 1 < todo.size());
+		if (todoCount == todo.size()) {
+		  auto_ptr<EulerState> newState(new EulerState);
+		  exceptionSafePushBack(todo, newState);
+		}
+		ASSERT(todoCount < todo.size());
+
+		EulerState& state = *todo[todoCount - 1];
+		EulerState& nextState = *todo[todoCount];
+		if (processState(state, nextState))
+		  ++todoCount;
+		else
+		  --todoCount;
+	  }
+	} catch (...) {
+	  Ops::deleteTerm(_termTmp);
+	  throw;
+	}
+	Ops::deleteTerm(_termTmp);
+  }
+
+  if (_printStatistics) {
+	FILE* out = _statisticsOut;
+	fputs("*** Statistics for Euler characteristic computation\n", out);
+	fprintf(out, "-Using unique div simplify: %s\n",
+			_useUniqueDivSimplify ? "yes" : "no");
+	fprintf(out, "-Using many div simplify: %s\n",
+			_useManyDivSimplify ? "yes" : "no");
+	fprintf(out, "-Using all pairs simplify: %s\n",
+			_useAllPairsSimplify ? "yes" : "no");
+	const char* alg;
+	if (_alg == MayerVietorisAlg)
+	  alg = "Mayer-Vietoris based algorithm.";
+	else if (_alg == PivotAlg)
+	  alg = "Pivot based algorithm";
+	else {
+	  ASSERT(_alg == HybridAlg);
+	  alg = "Hybrid algorithm of Mayer-Vietories and Pivot.";
+	}
+	fprintf(out, "-Algorithm: %s\n", alg);
+	fprintf(out, "-States processed: %lu\n", (unsigned long)_stepsPerformed);
+  }
   return _euler;
 }

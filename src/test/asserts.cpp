@@ -28,6 +28,82 @@ logic_error(e) {
 }
 
 namespace TestInternal {
+  void assertOK(const StdData& data) {
+	if (data.printDot) {
+	  fputc('.', stdout);
+	  fflush(stdout);
+	}
+  }
+
+  void assertFail(const char* cond, const char* expected, const StdData& data) {
+	stringstream msg;
+	msg << "Unit test " << data.testName
+		<< " failed in file " << data.file
+		<< " on line " << data.line << ".\n"
+		<< "Expected \n " << cond << " to be \n " << expected
+		<< "but it was not.";
+	if (!msg) {
+	  // This means msg has run out of memory, and so no message will be
+	  // printed. In this case it is better to indicate running out of
+	  // memory. As it happens, this also avoids the need for some
+	  // special cases for tests when being run as a test for recovery
+	  // from running out of memory. E.g. when precisely this thing
+	  // happens with stringstream just ignoring its input without an
+	  // exception causes tests to fail.
+	  throw bad_alloc();
+	}
+	throw AssertException(msg.str());
+  }
+
+  void assertFail1(const char* cond, const char* expected, const StdData& data,
+				   const char* exp1, string exp1Value) {
+	stringstream msg;
+	msg << "Unit test " << data.testName
+		<< " failed in file " << data.file
+		<< " on line " << data.line << ".\n"
+		<< "Expected \n " << cond << "\nto equal\n " << expected
+		<< "\nbut it did not.\n"
+		<< "The value of the expression\n " << exp1
+		<< "\nprints as\n " << exp1Value << '\n';
+	if (!msg) {
+	  // This means msg has run out of memory, and so no message will be
+	  // printed. In this case it is better to indicate running out of
+	  // memory. As it happens, this also avoids the need for some
+	  // special cases for tests when being run as a test for recovery
+	  // from running out of memory. E.g. when precisely this thing
+	  // happens with stringstream just ignoring its input without an
+	  // exception causes tests to fail.
+	  throw bad_alloc();
+	}
+	throw AssertException(msg.str());
+  }
+
+  void assertFail2(const char* cond, const char* expected, const StdData& data,
+				   const char* exp1, string exp1Value,
+				   const char* exp2, string exp2Value) {
+	stringstream msg;
+	msg << "Unit test " << data.testName
+		<< " failed in file " << data.file
+		<< " on line " << data.line << ".\n"
+		<< "Expected \n " << cond << "\nto equal\n " << expected
+		<< "\nbut it did not.\n"
+		<< "The value of the expression\n " << exp1
+		<< "\nprints as\n " << exp1Value << '\n'
+		<< "The value of the expression\n " << exp2
+		<< "\nprints as\n " << exp2Value << '\n';
+	if (!msg) {
+	  // This means msg has run out of memory, and so no message will be
+	  // printed. In this case it is better to indicate running out of
+	  // memory. As it happens, this also avoids the need for some
+	  // special cases for tests when being run as a test for recovery
+	  // from running out of memory. E.g. when precisely this thing
+	  // happens with stringstream just ignoring its input without an
+	  // exception causes tests to fail.
+	  throw bad_alloc();
+	}
+	throw AssertException(msg.str());
+  }
+
   void assertSucceeded(bool printDot) {
 	if (printDot) {
 	  fputc('.', stdout);
