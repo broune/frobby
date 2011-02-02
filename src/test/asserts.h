@@ -29,6 +29,28 @@ class AssertException : public logic_error {
 };
 
 namespace TestInternal {
+  struct StdData {
+  StdData(size_t line, const char* file, const char* testName, bool printDot):
+	line(line), file(file), testName(testName), printDot(printDot) {}
+	size_t line;
+	const char* file;
+	const char* testName;
+	bool printDot;
+  };
+#define STD_DATA TestInternal::StdData(__LINE__, __FILE__, __nameOfTest, __printDots)
+#define SILENT(X) \
+  {bool ___printDots = __printDots; __printDots = false; X; __printDots = ___printDots;}
+
+  template<class T>
+	string toStr(const T& t) {stringstream out;out << t;return out.str();}
+
+  void assertOK(const StdData&);
+  void assertFail(const char* cond, const char* expected, const StdData&);
+  void assertFail1(const char* cond, const char* expected, const StdData&,
+				   const char* exp1, string exp1Value);
+  void assertFail2(const char* cond, const char* expected, const StdData&,
+				   const char* exp1, string exp1Value,
+				   const char* exp2, string exp2Value);
 
   void assertSucceeded(bool printDot);
 
@@ -38,10 +60,19 @@ namespace TestInternal {
   void assertTrue(bool value, const char* condition,
 				  const char* testName, const char* file, size_t line,
 				  bool printDot);
-#define ASSERT_TRUE(VALUE)												\
-  TestInternal::assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, __printDots)
-#define ASSERT_TRUE_SILENT(VALUE)										\
-  TestInternal::assertTrue(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, false)
+#define ASSERT_TRUE(VALUE) \
+  {if(VALUE)assertOK(STD_DATA);else assertFail(#VALUE,"true",STD_DATA);}
+#define ASSERT_TRUE_SILENT(VALUE) SILENT(ASSERT_TRUE(VALUE))
+
+#define ASSERT_TRUE1(VALUE, X)											\
+  {if(VALUE)assertOK(STD_DATA);else assertFail1(#VALUE,"true",STD_DATA,#X,TestInternal::toStr(X));}
+#define ASSERT_FALSE1(VALUE, X)											\
+  {if(!VALUE)assertOK(STD_DATA);else assertFail1(#VALUE,"false",STD_DATA,#X,TestInternal::toStr(X));}
+
+#define ASSERT_TRUE2(VALUE, X, Y)											\
+  {if(VALUE)assertOK(STD_DATA);else assertFail2(#VALUE,"true",STD_DATA,#X,TestInternal::toStr(X),#Y,TestInternal::toStr(Y));}
+#define ASSERT_FALSE2(VALUE, X, Y)											\
+  {if(!VALUE)assertOK(STD_DATA);else assertFail2(#VALUE,"false",STD_DATA,#X,TestInternal::toStr(X),#Y,TestInternal::toStr(Y));}
 
   void assertTrue2Failed(const char* valueString,
 						 const char* testName, const char* file, size_t line,
@@ -68,9 +99,6 @@ namespace TestInternal {
 					  expression1, aValue.str().c_str(),
 					  expression2, bValue.str().c_str());
   }
-#define ASSERT_TRUE2(VALUE, A, B)										\
-  TestInternal::assertTrue2(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, \
-							#A,A,#B,B, __printDots);
 #define ASSERT_TRUE2_SILENT(VALUE, A, B)								\
   TestInternal::assertTrue2(VALUE, #VALUE, __nameOfTest, __FILE__, __LINE__, \
 							#A,A,#B,B, false);

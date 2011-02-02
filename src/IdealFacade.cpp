@@ -62,45 +62,6 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
   endAction();
 }
 
-mpz_class IdealFacade::computeEuler(const BigIdeal& bigIdeal) {
-  beginAction("Computing Euler characteristic.");
-
-  if (bigIdeal.getVarCount() == 0)
-	return bigIdeal.getGeneratorCount() == 0 ? 0 : -1;
-
-  size_t varCount = bigIdeal.getVarCount();
-  size_t genCount = bigIdeal.getGeneratorCount();
-
-  Ideal radical(varCount);
-  Term tmp(varCount);
-  for (size_t term = 0; term < genCount; ++term) {
-    for (size_t var = 0; var < varCount; ++var) {
-      if (bigIdeal[term][var] == 0)
-        tmp[var] = 0;
-      else if (bigIdeal[term][var] == 1)
-        tmp[var] = 1;
-	  else
-		reportError("Input ideal is not square free.");
-    }
-    radical.insert(tmp);
-  }
-
-  radical.minimize();
-
-  mpz_class euler;
-  if (0) {
-	HilbertBasecase basecase;
-	basecase.computeCoefficient(radical);
-	euler = basecase.getLastCoefficient();
-  } else {
-	PivotEulerAlg alg(radical);
-	euler = alg.getEuler();
-  }
-
-  endAction();
-  return euler;
-}
-
 mpz_class IdealFacade::computeDimension(const BigIdeal& bigIdeal,
                                         bool codimension,
                                         bool squareFreeAndMinimal) {
