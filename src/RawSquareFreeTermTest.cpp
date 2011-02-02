@@ -25,7 +25,7 @@ using namespace SquareFreeTermOps;
 namespace Ops = SquareFreeTermOps;
 
 TEST(RawSquareFreeTerm, getWordCount) {
-  ASSERT_EQ(getWordCount(0), 0u);
+  ASSERT_EQ(getWordCount(0), 1u);
   ASSERT_EQ(getWordCount(1), 1u);
 
   ASSERT_EQ(getWordCount(BitsPerWord - 1), 1u);

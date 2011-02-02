@@ -94,7 +94,7 @@ namespace SquareFreeTermOps {
 	// Compute varCount / BitsPerWord rounded up. Special case for
 	// varCount == 0 as formula has underflow issue for that input.
 	if (varCount == 0)
-	  return 0;
+	  return 1;
 	else
 	  return ((varCount - 1) / BitsPerWord) + 1;
   }
