@@ -83,6 +83,12 @@ class SatBinomIdeal {
   bool isPointFreeBody(const vector<mpz_class>& a,
                        const vector<mpz_class>& b) const;
 
+  /// Returns true if the smallest body containing zero, a, b and c
+  /// has no generator in its interior.
+  bool isPointFreeBody(const vector<mpz_class>& a,
+                       const vector<mpz_class>& b,
+					   const vector<mpz_class>& c) const;
+
   /** Returns true if max(0,a,b) is strictly positive in every element. */
   bool isInterior(const vector<mpz_class>& a,
 				  const vector<mpz_class>& b) const;

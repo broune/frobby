@@ -6,7 +6,7 @@ You run it by typing `frobby ACTION', where ACTION is one of the following.
       analyze - Display information about the input ideal.
    assoprimes - Compute the associated primes of the input ideal.
     dimension - Compute the (co)dimension of the input ideal.
-        euler - Compute the Euler characteristic of a simplicial complex.
+        euler - Compute the Euler characteristic.
       frobdyn - Compute Frobenius number using dynamic programming.
       genfrob - Generate a random Frobenius problem instance.
      genideal - Generate a random monomial ideal.

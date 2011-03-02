@@ -24,200 +24,15 @@
 #include "Task.h"
 #include "TaskEngine.h"
 #include "ElementDeleter.h"
+#include "EulerState.h"
+#include "PivotStrategy.h"
 
+#include <sstream>
 #include <vector>
 
 namespace Ops = SquareFreeTermOps;
 
 typedef vector<size_t> DivCounts;
-
-class EulerState {
-public:
-  EulerState(const Ideal& idealParam) {
-	const size_t varCount = idealParam.getVarCount();
-
-	toZero();
-	allocateIdealAndEliminated(varCount, idealParam.getGeneratorCount());
-
-	ideal->insert(idealParam);
-	Ops::setToIdentity(eliminated, varCount);
-	sign = 1;
-	ASSERT(debugIsValid());
-  }
-
-  EulerState() {
-	toZero();
-  }
-
-  ~EulerState() {
-	deallocate();
-  }
-
-  bool toColonSubState(const Word* pivot) {
-	ASSERT(pivot != 0);
-	ASSERT(Ops::isRelativelyPrime(pivot, getEliminatedVars(), getVarCount()));
-
-	const size_t genCountBefore = getIdeal().getGeneratorCount();
-	ideal->colonReminimize(pivot);
-	Ops::lcmInPlace(eliminated, pivot, ideal->getVarCount());
-	ASSERT(debugIsValid());
-	return genCountBefore != getIdeal().getGeneratorCount();
-  }
-
-  bool toColonSubState(size_t pivotVar) {
-	ASSERT(pivotVar < getVarCount());
-	ASSERT(Ops::getExponent(getEliminatedVars(), pivotVar) == 0);
-
-	const size_t genCountBefore = getIdeal().getGeneratorCount();
-	ideal->colonReminimize(pivotVar);
-	Ops::setExponent(eliminated, pivotVar, true);
-	ASSERT(debugIsValid());
-	return genCountBefore != getIdeal().getGeneratorCount();
-  }
-
-  void toColonSubStateNoReminimizeNecessary(size_t pivotVar) {
-	ASSERT(pivotVar < getVarCount());
-	ASSERT(Ops::getExponent(getEliminatedVars(), pivotVar) == 0);
-
-	ideal->colon(pivotVar);
-	Ops::setExponent(eliminated, pivotVar, true);
-	ASSERT(debugIsValid());
-  }
-
-  void toColonSubStateNoReminimizeNecessary(Word* pivot) {
-	ASSERT(pivot != 0);
-	ASSERT(Ops::isRelativelyPrime(getEliminatedVars(), pivot, getVarCount()));
-
-	ideal->colon(pivot);
-	Ops::lcmInPlace(eliminated, pivot, getVarCount());
-	ASSERT(debugIsValid());
-  }
-
-  void makeSumSubState(size_t pivotVar, EulerState& subState) {
-	ASSERT(&subState != this);
-
-	const size_t capacity = ideal->getGeneratorCount();
-	const size_t varCount = ideal->getVarCount();
-	subState.allocateIdealAndEliminated(varCount, capacity);
-
-	subState.ideal->insertNonMultiples(pivotVar, *ideal);
-	Ops::assign(subState.eliminated, eliminated, varCount);
-	Ops::setExponent(subState.eliminated, pivotVar, 1);
-	subState.sign = sign;
-	subState.flipSign();
-
-	ASSERT(subState.debugIsValid());
-  }
-
-  void reset() {
-	deallocate();
-	toZero();
-  }
-
-  void flipSign() {
-	ASSERT(sign == 1 || sign == -1);
-	sign = -sign;
-  }
-
-  int getSign() const {
-	ASSERT(sign == 1 || sign == -1);
-	return sign;
-  }
-
-  const RawSquareFreeIdeal& getIdeal() const {
-	return *ideal;
-  }
-
-  const Word* getEliminatedVars() const {
-	return eliminated;
-  }
-
-  size_t getVarCount() const {
-	return getIdeal().getVarCount();
-  }
-
-  size_t getNonEliminatedVarCount() const {
-	const size_t eliminatedVarCount =
-	  Ops::getSizeOfSupport(getEliminatedVars(), getVarCount());
-
-	ASSERT(getVarCount() >= eliminatedVarCount);
-	return getVarCount() - eliminatedVarCount;
-  }
-
-  void removeGenerator(size_t index) {
-	ASSERT(index < getIdeal().getGeneratorCount());
-	ideal->removeGenerator(index);
-  }
-
-#ifdef DEBUG
-  bool debugIsValid() const {
-	if (ideal == 0 || eliminated == 0)
-	  return false;
-	if (sign != 1 && sign != -1)
-	  return false;
-	if (!ideal->isMinimallyGenerated())
-	  return false;
-	if (ideal->getNotRelativelyPrime(eliminated) !=
-		ideal->getGeneratorCount())
-	  return false;
-	if (eliminated != ideal->getGeneratorUnsafe(idealCapacity))
-	  return false;
-	return true;
-  }
-#endif
-
-  EulerState& operator=(const EulerState& state) {
-	if (&state == this)
-	  return *this;
-
-	const size_t capacity = state.getIdeal().getGeneratorCount();
-	const size_t varCount = state.getIdeal().getVarCount();
-	allocateIdealAndEliminated(varCount, capacity);
-	*ideal = state.getIdeal();
-	Ops::assign(eliminated, state.eliminated, varCount);
-	sign = state.sign;
-
-	ASSERT(debugIsValid());
-	return *this;
-  }
-
-private:
-  EulerState(const EulerState&); // unavailable
-
-  void toZero() {
-	ideal = 0;
-	eliminated = 0;
-	sign = 1;
-	idealCapacity = 0;
-  }
-
-  void allocateIdealAndEliminated(size_t varCount, size_t capacity) {
-	if (capacity > idealCapacity) {
-	  // Add 1 to the capacity to leave room for eliminated at the end.
-	  size_t byteCount =
-		RawSquareFreeIdeal::getBytesOfMemoryFor(varCount, capacity + 1);
-	  void* buffer = new char[byteCount];
-	  deallocate();
-
-	  ideal = RawSquareFreeIdeal::construct(buffer, varCount);
-	  idealCapacity = capacity;
-	  eliminated = ideal->getGeneratorUnsafe(capacity);
-	} else
-	  RawSquareFreeIdeal::construct(ideal, varCount);
-  }
-
-  void deallocate() {
-	deleteRawSquareFreeIdeal(ideal);
-	idealCapacity = 0;
-	// eliminated does not need to be deallocated as it is placed
-	// inside the memory allocated for ideal.
-  }
-
-  RawSquareFreeIdeal* ideal;
-  Word* eliminated;
-  int sign;
-  size_t idealCapacity;
-};
 
 bool baseCaseSimple1(mpz_class& accumulator,
 					 const EulerState& state) {
@@ -378,7 +193,7 @@ bool optimizeVarPairs(EulerState& state, Word* tmp, DivCounts& divCounts) {
 }
 
 bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
-  ++_stepsPerformed;
+  state.compactEliminatedVariablesIfProfitable();
 
   // ** First optimize state and return false if a base case is detected.
   while (true) {
@@ -387,9 +202,7 @@ bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
 	if (baseCaseSimple1(_euler, state))
 	  return false;
 
-	ASSERT(_needDivCounts == _useUniqueDivSimplify || _useManyDivSimplify);
-	if (_needDivCounts)
-	  state.getIdeal().getVarDividesCounts(_divCountsTmp);
+	state.getIdeal().getVarDividesCounts(_divCountsTmp);
 
 	if (_useUniqueDivSimplify &&
 		optimizeOneDivCounts(state, _divCountsTmp, _termTmp))
@@ -409,34 +222,8 @@ bool PivotEulerAlg::processState(EulerState& state, EulerState& newState) {
   // ** State is not a base case so perform a split while putting the
   // two sub-states into state and newState.
 
-  size_t pivotVar = 0;
-  for (size_t var = 1; var < _divCountsTmp.size(); ++var)
-	if (_divCountsTmp[var] > _divCountsTmp[pivotVar])
-	  pivotVar = var;
-
-  bool usePivotSplit;
-  if (_alg == HybridAlg) {
-	usePivotSplit = true; // todo: be smarter on this
-  } else if (_alg == PivotAlg)
-	usePivotSplit = true;
-  else {
-	ASSERT(_alg == MayerVietorisAlg);
-	usePivotSplit = false;
-  }
-
-  if (usePivotSplit) {
-	state.makeSumSubState(pivotVar, newState);
-	state.toColonSubState(pivotVar);
-  } else {
-	size_t piv = state.getIdeal().getMultiple(pivotVar);
-	const Word* pivot = state.getIdeal().getGenerator(piv);
-	newState = state;
-	newState.removeGenerator(piv);
-	newState.toColonSubState(pivot);
-	newState.flipSign();
-	state.removeGenerator(piv);
-  }
-
+  ASSERT(_pivotStrategy.get() != 0);
+  _pivotStrategy->doPivot(state, newState, _divCountsTmp);
   return true;
 }
 
@@ -447,16 +234,15 @@ void PivotEulerAlg::getPivot(const EulerState& state, Word* pivot) {
 PivotEulerAlg::PivotEulerAlg():
   _euler(0),
   _termTmp(0),
-  _stepsPerformed(0),
-  _printStatistics(false),
   _useUniqueDivSimplify(true),
   _useManyDivSimplify(true),
-  _useAllPairsSimplify(true),
-  _alg(HybridAlg) {
+  _useAllPairsSimplify(true) {
   }
 
-mpz_class PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
-  _stepsPerformed = 0;
+const mpz_class& PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
+  if (_pivotStrategy.get() == 0)
+	_pivotStrategy = newDefaultPivotStrategy();
+
   if (ideal.getGeneratorCount() == 0)
 	_euler = 0;
   else if (ideal.getVarCount() == 0)
@@ -465,7 +251,6 @@ mpz_class PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
 	_termTmp = Ops::newTerm(ideal.getVarCount());
 	try {
 	  _euler = 0;
-	  _needDivCounts = _useUniqueDivSimplify ||	_useManyDivSimplify;
 
 	  vector<EulerState*> todo;
 	  ElementDeleter<vector<EulerState*> > todoDeleter(todo);
@@ -497,26 +282,7 @@ mpz_class PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
 	Ops::deleteTerm(_termTmp);
   }
 
-  if (_printStatistics) {
-	FILE* out = _statisticsOut;
-	fputs("*** Statistics for Euler characteristic computation\n", out);
-	fprintf(out, "-Using unique div simplify: %s\n",
-			_useUniqueDivSimplify ? "yes" : "no");
-	fprintf(out, "-Using many div simplify: %s\n",
-			_useManyDivSimplify ? "yes" : "no");
-	fprintf(out, "-Using all pairs simplify: %s\n",
-			_useAllPairsSimplify ? "yes" : "no");
-	const char* alg;
-	if (_alg == MayerVietorisAlg)
-	  alg = "Mayer-Vietoris based algorithm.";
-	else if (_alg == PivotAlg)
-	  alg = "Pivot based algorithm";
-	else {
-	  ASSERT(_alg == HybridAlg);
-	  alg = "Hybrid algorithm of Mayer-Vietories and Pivot.";
-	}
-	fprintf(out, "-Algorithm: %s\n", alg);
-	fprintf(out, "-States processed: %lu\n", (unsigned long)_stepsPerformed);
-  }
+  _pivotStrategy->computationCompleted(*this);
+
   return _euler;
 }

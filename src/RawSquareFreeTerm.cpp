@@ -43,8 +43,6 @@ namespace SquareFreeTermOps {
 
 	out << '(';
 	for (size_t var = 0; var < varCount; ++var) {
-	  if (var != 0)
-		out << ", ";
 	  out << getExponent(term, var);
 	}
 	out << ')';
@@ -78,7 +76,7 @@ namespace SquareFreeTermOps {
 	  Word word = *a;
 	  // TODO: should be able to improve this set bit counting algorithm.
 	  while (word != 0) {
-		if (word & 1 != 0)
+		if ((word & 1) != 0)
 		  ++count;
 		word >>= 1;
 	  }
@@ -97,6 +95,21 @@ namespace SquareFreeTermOps {
 	  return 1;
 	else
 	  return ((varCount - 1) / BitsPerWord) + 1;
+  }
+
+  void compact(Word* compacted, const Word* term,
+			   const Word* remove, size_t varCount) {
+	size_t newVarCount = 0;
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (getExponent(remove, var) != 0)
+		continue;
+	  setExponent(compacted, newVarCount, getExponent(term, var));
+	  ++newVarCount;
+	}
+	for (; newVarCount % BitsPerWord != 0; ++newVarCount)
+	  setExponent(compacted, newVarCount, 0);
+
+	ASSERT(isValid(compacted, newVarCount));
   }
 
   void setToIdentity(Word* res, const Word* resEnd) {
@@ -165,6 +178,11 @@ namespace SquareFreeTermOps {
 	  *res = (*a) & (~*b);
   }
 
+  void colonInPlace(Word* res, const Word* resEnd, const Word* b) {
+	for (; res != resEnd; ++res,  ++b)
+	  *res &= ~*b;
+  }
+
   void assign(Word* a, const Word* b, size_t varCount) {
 	for (; varCount >= BitsPerWord; ++a, ++b, varCount -= BitsPerWord)
 	  *a = *b;
@@ -218,9 +236,15 @@ namespace SquareFreeTermOps {
 	  *res |= *a;
   }
 
-  void gcd(Word* res, const Word* resEnd,
-				  const Word* a, const Word* b) {
+  void gcd(Word* res, const Word* resEnd, const Word* a, const Word* b) {
 	for (; res != resEnd; ++a, ++b, ++res)
+	  *res = (*a) & (*b);
+  }
+
+  void gcd(Word* res, const Word* a, const Word* b, size_t varCount) {
+	for (; varCount >= BitsPerWord; ++a, ++b, ++res, varCount -= BitsPerWord)
+	  *res = (*a) & (*b);
+	if (varCount != 0)
 	  *res = (*a) & (*b);
   }
 
@@ -351,7 +375,7 @@ namespace SquareFreeTermOps {
 	  functions here to work correctly. They should all maintain this
 	  invariant. This function is useful in tests to ensure that that
 	  is true. */
-  bool isValid(Word* a, size_t varCount) {
+  bool isValid(const Word* a, size_t varCount) {
 	size_t offset = varCount / BitsPerWord;
 	a += offset;
 	varCount -= BitsPerWord * offset;

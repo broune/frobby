@@ -40,8 +40,8 @@ namespace TestInternal {
 	msg << "Unit test " << data.testName
 		<< " failed in file " << data.file
 		<< " on line " << data.line << ".\n"
-		<< "Expected \n " << cond << " to be \n " << expected
-		<< "but it was not.";
+		<< "Expected \n " << cond << "\nto be\n " << expected
+		<< "\nbut it was not.";
 	if (!msg) {
 	  // This means msg has run out of memory, and so no message will be
 	  // printed. In this case it is better to indicate running out of

@@ -1,6 +1,6 @@
 # ***** Variables
 
-rawSources = main.cpp Action.cpp IOParameters.cpp						\
+rawSources := main.cpp Action.cpp IOParameters.cpp						\
   IrreducibleDecomAction.cpp fplllIO.cpp IOHandler.cpp fourti2.cpp		\
   randomDataGenerators.cpp MonosIOHandler.cpp BigIdeal.cpp				\
   TransformAction.cpp Macaulay2IOHandler.cpp NewMonosIOHandler.cpp		\
@@ -37,14 +37,10 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   OptimizeAction.cpp MaximalStandardAction.cpp test/Test.cpp			\
   test/TestCase.cpp test/TestQualifier.cpp test/TestRunner.cpp			\
   test/TestSuite.cpp test/TestVisitor.cpp test/macroes.cpp				\
-  test/asserts.cpp LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp	\
-  LibIrreducibleDecomTest.cpp IdealFactory.cpp PolynomialFactory.cpp	\
-  LibMaxStdTest.cpp LibStdProgramTest.cpp LibTest.cpp					\
-  OptimizeStrategyTest.cpp TermTest.cpp TermTranslatorTest.cpp			\
+  test/asserts.cpp IdealFactory.cpp PolynomialFactory.cpp				\
   LatticeAnalyzeAction.cpp SatBinomIdeal.cpp SatBinomConsumer.cpp		\
-  SatBinomRecorder.cpp TermGraderTest.cpp CountingIOHandler.cpp			\
-  test/TestSorter.cpp DimensionAction.cpp LibDimensionTest.cpp			\
-  SizeMaxIndepSetAlg.cpp IdealTest.cpp TaskEngine.cpp Task.cpp			\
+  SatBinomRecorder.cpp CountingIOHandler.cpp test/TestSorter.cpp		\
+  DimensionAction.cpp SizeMaxIndepSetAlg.cpp TaskEngine.cpp Task.cpp	\
   BigattiHilbertAlgorithm.cpp BigattiState.cpp ObjectCache.cpp			\
   HashPolynomial.cpp BigattiBaseCase.cpp BigattiPivotStrategy.cpp		\
   BigattiFacade.cpp UniHashPolynomial.cpp CommonParams.cpp				\
@@ -53,10 +49,17 @@ rawSources = main.cpp Action.cpp IOParameters.cpp						\
   CommonParamsHelper.cpp ActionPrinter.cpp ScarfHilbertAlgorithm.cpp	\
   ScarfFacade.cpp Deformer.cpp IdealTree.cpp TermPredicate.cpp			\
   ScarfParams.cpp IdealOrderer.cpp TermExtra.cpp display.cpp			\
-  LibPrimaryDecomTest.cpp LibAssociatedPrimesTest.cpp Matrix.cpp		\
-  MatrixTest.cpp BigIntVector.cpp ColumnPrinter.cpp EulerAction.cpp		\
+  Matrix.cpp BigIntVector.cpp ColumnPrinter.cpp EulerAction.cpp			\
   RawSquareFreeTerm.cpp RawSquareFreeIdeal.cpp PivotEulerAlg.cpp		\
-  RawSquareFreeTermTest.cpp RawSquareFreeIdealTest.cpp
+  EulerState.cpp PivotStrategy.cpp
+
+rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
+  LibIrreducibleDecomTest.cpp LibMaxStdTest.cpp LibStdProgramTest.cpp	\
+  LibTest.cpp OptimizeStrategyTest.cpp TermTest.cpp						\
+  TermTranslatorTest.cpp RawSquareFreeTermTest.cpp						\
+  RawSquareFreeIdealTest.cpp LibPrimaryDecomTest.cpp					\
+  LibAssociatedPrimesTest.cpp MatrixTest.cpp IdealTest.cpp				\
+  LibDimensionTest.cpp TermGraderTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of
@@ -95,6 +98,7 @@ ifeq ($(MODE), release)
   MATCH=true
 endif
 ifeq ($(MODE), debug)
+  rawSources := $(rawSources) $(rawTests)
   outdir = bin/debug/
   cflags += -g -D DEBUG -fno-inline -Werror -Wextra -Wno-uninitialized \
             -Wno-unused-parameter
@@ -114,6 +118,7 @@ ifeq ($(MODE), profile)
   benchArgs = _profile $(FROBBYARGS)
 endif
 ifeq ($(MODE), analysis)
+  rawSources := $(rawSources) $(rawTests)
   outdir = bin/analysis/
   cflags += -Wextra -fsyntax-only -O1 -Wfloat-equal -Wundef				\
   -Wno-endif-labels -Wshadow -Wlarger-than-1000 -Wpointer-arith			\

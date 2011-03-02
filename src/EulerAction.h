@@ -34,7 +34,10 @@ class EulerAction : public Action {
   static const char* staticGetName();
 
  private:
-  StringParameter _algorithm;
+  StringParameter _pivot;
+  StringParameter _stdPivot;
+  StringParameter _genPivot;
+  BoolParameter _printDebug;
   BoolParameter _printStatistics;
   BoolParameter _useUniqueDivSimplify;
   BoolParameter _useManyDivSimplify;
