@@ -18,6 +18,8 @@
 #ifndef PIVOT_EULER_ALG_GUARD
 #define PIVOT_EULER_ALG_GUARD
 
+#include "PivotStrategy.h"
+
 #include <vector>
 #include <cstdio>
 
@@ -29,21 +31,21 @@ class PivotEulerAlg {
  public:
   PivotEulerAlg();
 
-  mpz_class computeEulerCharacteristic(const Ideal& ideal);
+  const mpz_class& computeEulerCharacteristic(const Ideal& ideal);
+  const mpz_class& getComputedEulerCharacteristic() const {return _euler;}
 
-  enum Alg {
-	HybridAlg = 0,
-	PivotAlg = 1,
-	MayerVietorisAlg = 2
-  };
-  void setAlgorithm(Alg value) {_alg = value;}
-  void setPrintStatistics(bool value, FILE* out) {
-	_printStatistics = value;
-	_statisticsOut = out;
+  void setPivotStrategy(auto_ptr<PivotStrategy> strategy) {
+	_pivotStrategy = strategy;
   }
+
   void setUseUniqueDivSimplify(bool value) {_useUniqueDivSimplify = value;}
+  bool getUseUniqueDivSimplify() const {return _useUniqueDivSimplify;}
+
   void setUseManyDivSimplify(bool value) {_useManyDivSimplify = value;}
+  bool getUseManyDivSimplify() const {return _useManyDivSimplify;}
+
   void setUseAllPairsSimplify(bool value) {_useAllPairsSimplify = value;}
+  bool getUseAllPairsSimplify() const {return _useAllPairsSimplify;}
 
  private:
   bool processState(EulerState& state, EulerState& newState);
@@ -52,15 +54,11 @@ class PivotEulerAlg {
   mpz_class _euler;
   Word* _termTmp;
   vector<size_t> _divCountsTmp;
-  size_t _stepsPerformed;
 
-  FILE* _statisticsOut;
-  bool _printStatistics;
   bool _useUniqueDivSimplify;
   bool _useManyDivSimplify;
   bool _useAllPairsSimplify;
-  bool _needDivCounts;
-  Alg _alg;
+  auto_ptr<PivotStrategy> _pivotStrategy;
 };
 
 #endif

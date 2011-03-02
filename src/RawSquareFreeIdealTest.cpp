@@ -284,7 +284,7 @@ TEST(RawSquareFreeIdeal, ColonReminimizeMinimize_VarAndTerm) {
 
 TEST(RawSquareFreeIdeal, GetVarDividesCounts) {
   const size_t varCount = 2 * BitsPerWord + 1;
-  RSFIdeal* ideal = newRawSquareFreeIdeal(varCount, 100);
+  RSFIdeal* ideal = newRawSquareFreeIdeal(varCount, varCount + 33);
   Word* term = newTerm(varCount);
   vector<size_t> countsCorrect(varCount);
   vector<size_t> counts;
@@ -293,7 +293,7 @@ TEST(RawSquareFreeIdeal, GetVarDividesCounts) {
   ASSERT_EQ(counts, countsCorrect);
 
   setToAllVarProd(term, varCount);
-  const size_t insertAllOnesCount = 33;
+  const size_t insertAllOnesCount = varCount < 33 ? varCount : 33;
   for (size_t i = 0; i < insertAllOnesCount; ++i) {
 	ideal->insert(term);
 	for (size_t var = 0; var < varCount; ++var)
@@ -328,7 +328,6 @@ TEST(RawSquareFreeIdeal, GetVarDividesCounts) {
 	deleteRawSquareFreeIdeal(ideal);									\
 	deleteTerm(extra);													\
   }
-
 TEST(RawSquareFreeIdeal, HasFullSupport) {
   TEST_HASFULLSUPPORT("", "", true);
   TEST_HASFULLSUPPORT("0", "0", false);
@@ -362,4 +361,35 @@ TEST(RawSquareFreeIdeal, HasFullSupport) {
 	 "000000000000000000000000000000000000000000000000000000000000000000000\n",
 	 "000000000000000000000000000000000000000000000100000000000000000000000",
 	 false);
+
+  TEST_HASFULLSUPPORT // this triggered a bug
+	("11111111111111111111111111111111\n",
+	 "00000000000000000000000000000000",
+	 true);
+}
+
+#define TEST_COMPACT(beforeStr, removeStr, afterStr) {			\
+	RSFIdeal* before = newRawSquareFreeIdealParse(beforeStr);	\
+	Word* remove = newTermParse(removeStr);						\
+	RSFIdeal* after = newRawSquareFreeIdealParse(afterStr);		\
+    before->compact(remove);									\
+	ASSERT_EQ(*before, *after);									\
+	deleteRawSquareFreeIdeal(before);							\
+	deleteTerm(remove);											\
+	deleteRawSquareFreeIdeal(after);							\
+  }
+TEST(RawSquareFreeIdeal, Compact) {
+  TEST_COMPACT("101", "110", "1");
+  TEST_COMPACT("101", "101", "0");
+  TEST_COMPACT("101", "000", "101");
+  TEST_COMPACT("111\n000\n001\n101", "110", "1\n0\n1\n1\n");
+
+  TEST_COMPACT
+	("011111111111111111110000000000000000000000011011111111111111111111101\n"
+	 "111111111111111111111111111111111111111111111011111111111111111111101\n"
+	 "000000000000000000000000010000000000000000000000000000000000000000010\n",
+	 "111111110000000000000000000000000000000000000000000000000000000000001",
+	 "111111111111000000000000000000000001101111111111111111111110\n"
+	 "111111111111111111111111111111111111101111111111111111111110\n"
+	 "000000000000000001000000000000000000000000000000000000000001\n");
 }

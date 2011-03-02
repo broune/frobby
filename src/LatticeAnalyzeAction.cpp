@@ -39,7 +39,12 @@
 #include <limits>
 #include <fstream>
 
-/** @todo: do not use cout
+/**
+This file has stuff I'm using in my work with Scarf. It's just
+whatever code gets the job done so we can figure out the structure of
+these lattices. -Bjarke H. Roune
+
+@todo: do not use cout
 
 @todo: move functionality into proper classes away from this file. */
 #include <iostream>
@@ -148,6 +153,7 @@ namespace {
 
   struct Mlfb {
 	mpq_class index;
+	mpz_class dotDegree;
 	vector<size_t> points;
 	vector<size_t> edges;
 	vector<size_t> edgeHitsFacet;
@@ -164,7 +170,20 @@ namespace {
 	  return points.back() > mlfb.points.back();
 	}
 
-	size_t getEdge(size_t index) {
+	size_t getHitsNeighbor(size_t index) const {
+	  if (index < edgeHitsFacet.size()) {
+		size_t hits = edgeHitsFacet[index];
+		return hits == 0 ? 0 : points[hits - 1] + 1;
+	  } else
+		return numeric_limits<size_t>::max();
+	}
+
+	size_t getHitsFacet(size_t index) const {
+	  ASSERT(index < edgeHitsFacet.size());
+	  return edgeHitsFacet[index];
+	}
+
+	size_t getEdge(size_t index) const {
 	  if (index < edges.size())
 		return edges[index];
 	  else
@@ -231,6 +250,7 @@ namespace {
 
 	mlfbs.clear();
 	mlfbs.resize(rhses.getGeneratorCount());
+
 	for (size_t i = 0; i < mlfbs.size(); ++i) {
 	  Mlfb& mlfb = mlfbs[i];
 	  mlfb.id = i + 1;
@@ -255,21 +275,39 @@ namespace {
 			  swap(mlfb.points[i-1], mlfb.points[p]);
 	  }
 
+	  
 	  // Compute MLFB index.
-	  Matrix mat(mlfb.points.size(), lat.getHDim());
-	  for (size_t point = 0; point < mlfb.points.size(); ++point)
-		for (size_t var = 0; var < lat.getHDim(); ++var)
-		  mat(point, var) = lat.getHMatrix()(mlfb.points[point], var);
-	  if (mlfb.points.size() == lat.getHDim())
-		mlfb.index = determinant(mat);
+	  {
+		Matrix mat(mlfb.points.size(), lat.getHDim());
+		for (size_t point = 0; point < mlfb.points.size(); ++point)
+		  for (size_t var = 0; var < lat.getHDim(); ++var)
+			mat(point, var) = lat.getHMatrix()(mlfb.points[point], var);
+		if (mlfb.points.size() == lat.getHDim())
+		  mlfb.index = determinant(mat);
+	  }
 	}
 
-	// Compute Scarf edges.
+	Matrix nullSpaceBasis;
+    nullSpace(nullSpaceBasis, lat.getMatrix());
+    transpose(nullSpaceBasis, nullSpaceBasis);
+	// the basis is the rows of NullSpaceBasis at this point.
+
 	for (size_t m = 0; m < mlfbs.size(); ++m) {
 	  Mlfb& mlfb = mlfbs[m];
+
 	  if (mlfb.points.size() != lat.getYDim() - 1)
 		continue;
 
+	  // Compute dot degree.
+	  if (nullSpaceBasis.getRowCount() == 1 &&
+		  mlfb.rhs.size() == nullSpaceBasis.getColCount()) {
+		mlfb.dotDegree = 0;
+		for (size_t r = 0; r < nullSpaceBasis.getRowCount(); ++r)
+		  for (size_t c = 0; c < nullSpaceBasis.getColCount(); ++c)
+			mlfb.dotDegree += nullSpaceBasis(r, c) * mlfb.rhs[c];
+	  }
+
+	  // Compute Scarf edges.
 	  mlfb.edges.resize(lat.getYDim());
 	  mlfb.edgeHitsFacet.resize(lat.getYDim());
 	  for (size_t facetPushIn = 0; facetPushIn < lat.getYDim(); ++facetPushIn) {
@@ -407,15 +445,22 @@ namespace {
 	  for (size_t i = 0; i < _lat.getYDim(); ++i)
 		_pr.addColumn(false, i == 0 ? " " : "  ");
 
+	  // hits
+	  _hitsHeader = _pr.getColumnCount();
+	  _pr.addColumn(false, "  ", "");
+	  _hits = _pr.getColumnCount();
+	  _pr.addColumn(false, " ", "");
+
 	  // edges
 	  _edgeHeader = _pr.getColumnCount();
-	  _pr.addColumn(false, "  ", "");
+	  _pr.addColumn(false, " ", "");
 	  _edge = _pr.getColumnCount();
 	  _pr.addColumn(false, " ", "");
 	}
 
 	void addLine(size_t neighbor,
 				 NeighborPlace place = NoPlace,
+				 size_t hits = (size_t)-1,
 				 size_t edge = (size_t)-1) {
 	  _pr[_labelIndex] << 'g' << (neighbor + 1) << ':';
 	  if (place != NoPlace)
@@ -430,6 +475,16 @@ namespace {
 	  for (size_t i = 0; i < _lat.getHDim(); ++i)
 		_pr[_hIndex + i] << _lat.getHMatrix()(neighbor, i) << '\n';
 
+	  if (hits != (size_t)-1) {
+		_pr[_hitsHeader] << "hits";
+		if (hits == 0)
+		  _pr[_hits] << "zero";
+		else
+		  _pr[_hits] << 'g' << hits;
+	  }
+	  _pr[_hitsHeader] << '\n';
+	  _pr[_hits] << '\n';
+
 	  if (edge != (size_t)-1) {
 		_pr[_edgeHeader] << "push to";
 		_pr[_edge] << 'm' << edge;
@@ -439,6 +494,7 @@ namespace {
 	}
 
 	void addZeroLine(NeighborPlace place = NoPlace,
+					 size_t hits = (size_t)-1,
 					 size_t edge = (size_t)-1) {
 	  _pr[_labelIndex] << "zero:";
 	  if (place != NoPlace)
@@ -452,6 +508,16 @@ namespace {
 	  _pr[_hHeader] << "h=\n";
 	  for (size_t i = 0; i < _lat.getHDim(); ++i)
 		_pr[_hIndex + i] << 0 << '\n';
+
+	  if (hits != (size_t)-1) {
+		_pr[_hitsHeader] << "hits";
+		if (hits == 0)
+		  _pr[_hits] << "zero";
+		else
+		  _pr[_hits] << 'g' << hits;
+	  }
+	  _pr[_hitsHeader] << '\n';
+	  _pr[_hits] << '\n';
 
 	  if (edge != (size_t)-1) {
 		_pr[_edgeHeader] << "push to";
@@ -483,9 +549,21 @@ namespace {
 	size_t _yIndex;
 	size_t _hHeader;
 	size_t _hIndex;
+	size_t _hitsHeader;
+	size_t _hits;
 	size_t _edgeHeader;
 	size_t _edge;
   };
+
+  void printMinDotDegreeMlfb(vector<Mlfb>& mlfbs) {
+	Mlfb* min = &(mlfbs[0]);
+	for (size_t i = 1; i < mlfbs.size(); ++i) {
+	  Mlfb& mlfb = mlfbs[i];
+	  if (mlfb.dotDegree < min->dotDegree)
+		min = &mlfb;
+	}
+	cout << "The MLFB m" << min->id << " has minimal rhs dot product.\n";
+  }
 
   void printNeighbors(const GrobLat& lat) {
 	NeighborPrinter pr(lat);
@@ -502,15 +580,171 @@ namespace {
   struct Tri {
 	size_t a;
 	size_t b;
+	bool fromFlat;
   };
 
   struct Plane {
 	Matrix nullSpaceBasis;
-	vector<Tri> tris;
+	vector<Tri> nonMlfbTris;
 	Matrix rowAB;
 
 	vector<NeighborPlace> neighborPlace;
   };
+
+  bool getNeighborOnFacetIsOnPlane(const Plane& plane,
+								   const Mlfb& mlfb,
+								   size_t facet) {
+	ASSERT(facet < 4);
+	if (facet == 0)
+	  return true;
+	return plane.neighborPlace[mlfb.points[facet - 1]] == InPlane;
+  }
+  
+										
+										
+
+  struct SeqPos {
+	size_t mlfb;
+	size_t fixFacet1;
+	size_t fixFacet2;
+	size_t comingFromFacet;
+
+	SeqPos getReverse() const {
+	  size_t to;
+	  for (to = 0; to < 4; ++to) {
+		if (to != fixFacet1 && to != fixFacet2 && to != comingFromFacet)
+		  break;
+	  }
+	  ASSERT(to != 4);
+	  SeqPos reverse = *this;
+	  reverse.comingFromFacet = to;
+	  return reverse;
+	}
+
+	void order() {
+	  if (fixFacet1 > fixFacet2)
+		swap(fixFacet1, fixFacet2);
+	}
+
+	bool operator<(const SeqPos& pos) const {
+	  if (mlfb < pos.mlfb)
+		return true;
+	  if (mlfb > pos.mlfb)
+		return false;
+
+	  if (fixFacet1 < pos.fixFacet1)
+		return true;
+	  if (fixFacet1 > pos.fixFacet1)
+		return false;
+
+	  if (fixFacet2 < pos.fixFacet2)
+		return true;
+	  if (fixFacet2 > pos.fixFacet2)
+		return false;
+
+	  if (comingFromFacet < pos.comingFromFacet)
+		return true;
+	  if (comingFromFacet > pos.comingFromFacet)
+		return false;
+
+	  return false;
+	}
+  };
+
+  size_t mlfbIdToIndex(const vector<Mlfb>& mlfbs, size_t id) {
+	for (size_t i = 0; i < mlfbs.size(); ++i)
+	  if (mlfbs[i].id == id)
+		return i;
+	ASSERT(false);
+	cout << "ERROR no MLFB with requested id." << endl;
+	exit(1);
+  }
+
+  SeqPos nextInSeq(const vector<Mlfb>& mlfbs, SeqPos pos) {
+	size_t pushIn;
+	for (pushIn = 0;; ++pushIn) {
+	  ASSERT(pushIn < 4);
+	  if (pushIn != pos.fixFacet1 &&
+		  pushIn != pos.fixFacet2 &&
+		  pushIn != pos.comingFromFacet)
+		break;
+	}
+
+	size_t hits = mlfbs[pos.mlfb].getHitsFacet(pushIn);
+	ASSERT(hits != pushIn);
+
+	SeqPos next = pos;
+	next.mlfb = mlfbIdToIndex(mlfbs, mlfbs[pos.mlfb].getEdge(pushIn));
+	next.comingFromFacet = hits;
+
+	if (pos.fixFacet1 == hits)
+	  next.fixFacet1 = pushIn;
+	else if (pos.fixFacet2 == hits)
+	  next.fixFacet2 = pushIn;
+
+	next.order();
+	return next;
+  }
+
+  void printSequences(const vector<Mlfb>& mlfbs,
+					  const Plane& plane,
+					  set<SeqPos>& seen,
+					  size_t mlfb,
+					  bool triplesRequired) {
+	for (size_t fix1 = 0; fix1 < 4; ++fix1) {
+	  for (size_t fix2 = 0; fix2 < fix1; ++fix2) {
+		if (getNeighborOnFacetIsOnPlane(plane, mlfbs[mlfb], fix1) !=
+			getNeighborOnFacetIsOnPlane(plane, mlfbs[mlfb], fix2))
+		  continue;
+
+		for (size_t from = 0; from < 4; ++from) {
+		  if (from == fix1 || from == fix2)
+			continue;
+
+		  for (size_t to = 0; to < 4; ++to) {
+			if (to == fix1 || to == fix2 || to == from)
+			  continue;
+
+			SeqPos pos;
+			pos.mlfb = mlfb;
+			pos.fixFacet1 = fix1;
+			pos.fixFacet2 = fix2;
+			pos.comingFromFacet = from;
+			pos.order();
+			if (seen.find(pos) != seen.end())
+			  continue;
+			if (seen.find(pos.getReverse()) != seen.end())
+			  continue;
+
+			cout << "loop:";
+
+			bool first = true;
+			bool stop = false;
+			while (!stop) {
+			  if (seen.find(pos) != seen.end())
+				stop = true;
+			  seen.insert(pos);
+			  if (!first)
+				cout << "->";
+			  first = false;
+			  cout << 'm' << mlfbs[pos.mlfb].id;
+			  if (mlfbs[pos.mlfb].planeCount == 1 ||
+				  mlfbs[pos.mlfb].planeCount == 3)
+				cout << '*';
+			  if (mlfbs[pos.mlfb].planeCount == 4)
+				cout << 'F';
+
+			  cout << '('
+				   << pos.fixFacet1 << pos.fixFacet2 << pos.comingFromFacet
+				   << ')';
+			  pos = nextInSeq(mlfbs, pos);
+			}
+			cout << '\n';
+		  }
+		}
+	  }
+	}
+  }
 
   void computePlanes(const GrobLat& lat, vector<Plane>& planes) {
 	const SatBinomIdeal& ideal = lat.getIdeal();
@@ -531,14 +765,15 @@ namespace {
 		  Tri tri;
 		  tri.a = gen1;
 		  tri.b = gen2;
+		  tri.fromFlat = ideal.isPointFreeBody(g1, g2, sum);
 		  Matrix rowAB(2, lat.getHDim());
 		  copyRow(rowAB, 0, lat.getHMatrix(), gen1);
 		  copyRow(rowAB, 1, lat.getHMatrix(), gen2);
 
 		  for (size_t plane = 0; plane < planes.size(); ++plane) {
-			ASSERT(!planes[plane].tris.empty());
 			if (hasSameRowSpace(rowAB, planes[plane].rowAB)) {
-			  planes[plane].tris.push_back(tri);
+			  if (!tri.fromFlat)
+				planes[plane].nonMlfbTris.push_back(tri);
 			  goto done;
 			}
 		  }
@@ -548,7 +783,8 @@ namespace {
 			Plane& plane = planes.back();
 			plane.rowAB = rowAB;
 			nullSpace(plane.nullSpaceBasis, rowAB);
-			plane.tris.push_back(tri);
+			if (!tri.fromFlat)
+			  plane.nonMlfbTris.push_back(tri);
 
 			Matrix prod;
 			product(prod, lat.getHMatrix(), plane.nullSpaceBasis);
@@ -581,14 +817,16 @@ namespace {
 	  cout << " contains the neighbors\n";
 
 	  NeighborPrinter pr(lat);
-	  pr.addZeroLine(InPlane, mlfb.getEdge(0));
+	  pr.addZeroLine(InPlane, mlfb.getHitsNeighbor(0), mlfb.getEdge(0));
 	  for (size_t i = 0; i < mlfb.points.size(); ++i) {
 		pr.addLine(mlfb.points[i],
 				   plane.neighborPlace[mlfb.points[i]],
+				   mlfb.getHitsNeighbor(i + 1),
 				   mlfb.getEdge(i + 1));
 	  }
 	  pr.print(cout);
-	  cout << "Its index is " << mlfb.index << " and it has "
+	  cout << "Its index is " << mlfb.index << ", its rhs dot product is " <<
+		mlfb.dotDegree << " and it has "
 		   << mlfb.planeCount << " plane neighbors.\n\n";
 	}
   }
@@ -619,29 +857,44 @@ namespace {
 	  cout << "There are " << typeCounts[i] << " MLFBs with " << i << " plane neighbors.\n";
 	cout << '\n';
 
-	cout << "The plane contains " << plane.tris.size() << " double triangle pairs:\n";
+	cout << "The plane contains " << plane.nonMlfbTris.size()
+		 << " non-MLFB double triangle pair(s):\n";
 	NeighborPrinter pr(lat);
-	for (size_t t = 0; t < plane.tris.size(); ++t) {
+	for (size_t t = 0; t < plane.nonMlfbTris.size(); ++t) {
 	  pr.addLine();
-	  pr.addLine(plane.tris[t].a);
-	  pr.addLine(plane.tris[t].b);
+	  pr.addLine(plane.nonMlfbTris[t].a);
+	  pr.addLine(plane.nonMlfbTris[t].b);
+	  
 	}
 	pr.print(stdout);
 
+	cout << "\n\nmX(ABC) means we fix the neighbors on facet A and B while\n";
+	cout << "we got to the current MLFB mX by pushing out facet C, so the\n";
+	cout << "facet we will push in next is the remaining one. We track\n";
+	cout << "where the neighbors go ignoring translation of the MLFB\n";
+	cout << "so at the next step the facets ABC can have changed. We do not consider\n";
+	cout << "two states m1(ABC) and m1(DEF) to be equal if AB != DE. If only C\n";
+	cout << "and D differ its the same path in the opposite direction\n"
+		 << "which we make sure not to list in both directions. We only list paths\n"
+		 << "such that A and B are both on the thin plane or both off it.\n"
+	  "3-1's and 1-3's are indicated by a * while flats are indicated by an F.\n";
+
+	cout << "\nThe paths in the graph starting at 1-3's or 3-1's are:\n";
+
+	set<SeqPos> seen;
+	for (size_t i = 0; i < mlfbs.size(); ++i) {
+	  if (mlfbs[i].planeCount != 1 && mlfbs[i].planeCount != 3)
+		continue;
+	  printSequences(mlfbs, plane, seen, i, true);
+	}
+
+	cout << "The remaining paths are:\n";
+	for (size_t i = 0; i < mlfbs.size(); ++i)
+	  printSequences(mlfbs, plane, seen, i, false);
+
 	printMlfbs(mlfbs, plane, lat);
   }
-  /*
-  const char* getEdgePos(size_t index) {
-	switch (index) {
-	case 0: return "s";
-	case 1: return "e";
-	case 2: return "n";
-	case 3: return "w";
-	default: ASSERT(false);
-	  return "ERROR";
-	}
-  }
-*/
+
   const char* getEdgePos(size_t index) {
 	switch (index) {
 	case 0: return "sw";
@@ -665,7 +918,7 @@ namespace {
 	  for (size_t e = 0; e < mlfb.edges.size(); ++e) {
 		size_t hits = mlfb.edgeHitsFacet[e];
 		if (mlfb.id < mlfb.edges[e])
-			continue;
+		  continue;
 
 		out << "   m" << mlfb.id << " -- m" << mlfb.edges[e] << " [";
 		out << "headport=" << getEdgePos(hits) << ", ";
@@ -789,6 +1042,8 @@ void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
 	cout << "There are " << planes.size()
 		 << " distinct double triangle planes.\n";
 	cout << "The sum of MLFB indexes is " << getIndexSum(mlfbs) << ".\n";
+
+	printMinDotDegreeMlfb(mlfbs);
 
 	printNeighbors(lat);
 

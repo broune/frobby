@@ -74,6 +74,13 @@ class RawSquareFreeIdeal {
   /** Performs a colon by var and minimize. Object must be already minimized. */
   void colonReminimize(size_t var);
 
+  /** Removes the variables that divide remove. Unless remove is the
+   identity this will decrease varCount. The operation is much like
+   colon, except that the exponents are remove entirely instead of
+   just set to zero. The relative order of the remaining variables is
+   preserved. */
+  void compact(const Word* remove);
+
   /** Puts the least common multiple of the generators of the ideal
 	  into lcm. */
   void getLcm(Word* lcm) const;
@@ -109,6 +116,10 @@ class RawSquareFreeIdeal {
 	  generators that are divisible by var. */
   void getGcdOfMultiples(Word* gcd, size_t var) const;
 
+  /** Sets gcd to be the greatest common denominator of those
+	  generators that are divisible by div. */
+  void getGcdOfMultiples(Word* gcd, const Word* div) const;
+
   /** Sets counts[var] to the number of generators that var divides. */
   void getVarDividesCounts(vector<size_t>& counts) const;
 
@@ -119,6 +130,14 @@ class RawSquareFreeIdeal {
   /** Returns the index of the first generator that var does not
 	  divide or getGeneratorCount() if no such generator exists. */
   size_t getNonMultiple(size_t var) const;
+
+  /** Returns the index of a generator with maximum support. Returns 0
+	  if there are no generators. */
+  size_t getMaxSupportGen() const;
+
+  /** Returns the index of a generator with minimum support. Returns 0
+	  if there are no generators. */
+  size_t getMinSupportGen() const;
 
   /** Removes the generator at index. */
   void removeGenerator(size_t index);
@@ -148,7 +167,7 @@ class RawSquareFreeIdeal {
 
   void swap(size_t a, size_t b);
 
-  /** Rereturns true if *this equals ideal. This comparison takes
+  /** Returns true if *this equals ideal. This comparison takes
    non-minimal generators and the order of the generators into
    account. */
   bool operator==(const RawSquareFreeIdeal& ideal) const;
@@ -251,6 +270,10 @@ class RawSquareFreeIdeal {
   {return iterator(_memoryEnd, getWordsPerTerm());}
   const_iterator end() const
   {return const_iterator(_memoryEnd, getWordsPerTerm());}
+
+  /** Returns true if the internal invariants of ideal are
+   satisfied. Useful for debugging and tests. */
+  bool isValid() const;
 
  private:
   RawSquareFreeIdeal(); // Not available

@@ -179,9 +179,29 @@ bool SatBinomIdeal::isPointFreeBody(const vector<mpz_class>& a,
 
   vector<mpz_class> rhs(getVarCount());
 
+  // Set rhs to max(0,g1,g2)-1.
+  for (size_t var = 0; var < getVarCount(); ++var) {
+    rhs[var] = a[var] > b[var] ? a[var] : b[var];
+    if (rhs[var] < 0)
+      rhs[var] = 0;
+    rhs[var] -= 1;
+  }
+
+  return !isDominating(rhs);
+}
+
+bool SatBinomIdeal::isPointFreeBody(const vector<mpz_class>& a,
+                                    const vector<mpz_class>& b,
+									const vector<mpz_class>& c) const {
+  ASSERT(a.size() == getVarCount());
+  ASSERT(b.size() == getVarCount());
+
+  vector<mpz_class> rhs(getVarCount());
+
   // Set rhs to max(0,g1,g1+g2)-1.
   for (size_t var = 0; var < getVarCount(); ++var) {
     rhs[var] = a[var] > b[var] ? a[var] : b[var];
+	rhs[var] = rhs[var] > c[var] ? rhs[var] : c[var];
     if (rhs[var] < 0)
       rhs[var] = 0;
     rhs[var] -= 1;

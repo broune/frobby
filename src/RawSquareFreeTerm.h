@@ -30,6 +30,20 @@ namespace SquareFreeTermOps {
 
   size_t getWordCount(size_t varCount);
 
+  /** For every variable var that divides remove, remove the space for
+   that variable in term and put the result in compacted. So the
+   operation performed is a colon, except that the bits are removed
+   instead of just set to zero. The remaining bits are moved into the
+   gaps so that compacted may take up less space than term does. The
+   relative order of the remaining variables is preserved. The result
+   is placed in res.
+
+   It is allowed for compacted to equal term. Otherwise its memory
+   must be disjoint from that of term. The memory for remove must
+   always be disjoint from that of term. */
+  void compact(Word* compacted, const Word* term,
+			   const Word* remove, size_t varCount);
+
   void setToIdentity(Word* res, const Word* resEnd);
 
   void setToIdentity(Word* res, size_t varCount);
@@ -51,11 +65,13 @@ namespace SquareFreeTermOps {
   /** Deletes term previously returned by newTerm(). Term can be null. */
   void deleteTerm(Word* term);
 
+  /** Returns true if a divides b. */
   bool divides(const Word* a, const Word* aEnd, const Word* b);
 
   bool lexLess(const Word* a, const Word* b, size_t varCount);
 
   void colon(Word* res, const Word* resEnd, const Word* a, const Word* b);
+  void colonInPlace(Word* res, const Word* resEnd, const Word* b);
 
   void assign(Word* a, const Word* aEnd, const Word* b);
 
@@ -81,8 +97,8 @@ namespace SquareFreeTermOps {
 
   void lcmInPlace(Word* res, const Word* a, size_t varCount);
 
-  void gcd(Word* res, const Word* resEnd,
-				  const Word* a, const Word* b);
+  void gcd(Word* res, const Word* resEnd, const Word* a, const Word* b);
+  void gcd(Word* res, const Word* a, const Word* b, size_t varCount);
 
   void gcdInPlace(Word* res, const Word* resEnd, const Word* a);
 
@@ -120,7 +136,7 @@ namespace SquareFreeTermOps {
 	  functions here to work correctly. They should all maintain this
 	  invariant. This function is useful in tests to ensure that that
 	  is true. */
-  bool isValid(Word* a, size_t varCount);
+  bool isValid(const Word* a, size_t varCount);
 
   inline bool divides(const Word* a, const Word* aEnd, const Word* b) {
 	for (; a != aEnd; ++a, ++b)

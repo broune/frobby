@@ -32,6 +32,7 @@ public:
 
   operator const string&() const {return getValue();}
   void operator=(const string& value) {setValue(value);}
+  bool operator==(const string& str) const {return getValue() == str;}
 
 private:
   virtual string doGetArgumentType() const;

@@ -454,6 +454,7 @@ void Ideal::print(ostream& out) const {
 
 void Ideal::insert(const Exponent* exponents) {
   Exponent* term = _allocator.allocate();
+  IF_DEBUG(if (_varCount > 0)) // avoid copy asserting on null pointer
   copy(exponents, exponents + _varCount, term);
 
   // push_back could throw bad_alloc, but the allocator is already

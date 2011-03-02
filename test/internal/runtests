@@ -1,8 +1,12 @@
 #!/usr/bin/env sh
 
+frobby=../../bin/frobby
+
 if [ "$1" = "_full" ]; then
   shift;
 fi
 
-../testScripts/testhelper test /dev/null reference $*
-if [ $? != 0 ]; then exit 1; fi
+$frobby test 2> /dev/null > /dev/null
+if [ $? == 0 ]; then exit 0; fi
+echo "*** Internal test failed, rerunning tests with output ***"
+$frobby test

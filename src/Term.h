@@ -135,6 +135,7 @@ class Term {
   }
 
   Term& operator=(const Exponent* exponents) {
+    IF_DEBUG(if (_varCount > 0)) // avoid copy asserting on null pointer
     copy(exponents, exponents + _varCount, _exponents);
     return *this;
   }
