@@ -29,23 +29,23 @@
 namespace Ops = SquareFreeTermOps;
 
 namespace {
-  inline size_t getPopVar(const vector<size_t>& divCounts) {
-	return max_element(divCounts.begin(), divCounts.end()) - divCounts.begin();
+  inline size_t getPopVar(const size_t* divCounts, const size_t varCount) {
+	return max_element(divCounts, divCounts + varCount) - divCounts;
   }
 
-  inline size_t getRareVar(const vector<size_t>& divCounts) {
-	vector<size_t>::const_iterator end = divCounts.end();
-	vector<size_t>::const_iterator rare = divCounts.begin();
+  inline size_t getRareVar(const size_t* divCounts, const size_t varCount) {
+	const size_t* end = divCounts + varCount;
+	const size_t* rare = divCounts;
 	for (; rare != end; ++rare)
 	  if (*rare > 0)
 		break;
 
-	vector<size_t>::const_iterator it = rare + 1;
+	const size_t* it = rare + 1;
 	for (; it != end; ++it)
 	  if (*it > 0 && *it < *rare)
 		rare = it;
 
-	return rare - divCounts.begin();
+	return rare - divCounts;
   }
 
   class RawSquareFreeTerm {
@@ -56,7 +56,7 @@ namespace {
 	operator Word*() {return _term;}
 	operator const Word*() const {return _term;}
 
-	void reserve(size_t varCount) {
+	void reserve(const size_t varCount) {
 	  if (varCount > _capacity) {
 		Ops::deleteTerm(_term);
 		_term = Ops::newTerm(varCount);
@@ -71,7 +71,7 @@ namespace {
 
   class WithPivotTerm : public PivotStrategy {
   protected:
-	Word* termWithCapacity(size_t varCount) {
+	Word* termWithCapacity(const size_t varCount) {
 	  _term.reserve(varCount);
 	  return _term;
 	}
@@ -83,24 +83,22 @@ namespace {
   class StdStrategy : public WithPivotTerm {
   public:
 	virtual Word* getPivot(const EulerState& state,
-						   const vector<size_t>& divCounts) = 0;
+						   const size_t* divCounts) = 0;
 	virtual void computationCompleted(const PivotEulerAlg& alg) {}
   };
 
   class StdPopVar : public StdStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  state.inPlaceStdSplit(getPopVar(divCounts), newState);
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  const size_t varCount = state.getVarCount();
+	  return state.inPlaceStdSplit(getPopVar(divCounts, varCount));
 	}
 
-	virtual Word* getPivot(const EulerState& state,
-						   const vector<size_t>& divCounts) {
+	virtual Word* getPivot(const EulerState& state, const size_t* divCounts) {
 	  const size_t varCount = state.getVarCount();
 	  Word* pivot = termWithCapacity(varCount);
 	  Ops::setToIdentity(pivot, varCount);
-	  Ops::setExponent(pivot, getPopVar(divCounts), 1);
+	  Ops::setExponent(pivot, getPopVar(divCounts, varCount), 1);
 	  return pivot;
 	}
 
@@ -115,18 +113,16 @@ namespace {
 
   class StdRareVar : public StdStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  state.inPlaceStdSplit(getRareVar(divCounts), newState);
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  const size_t varCount = state.getVarCount();
+	  return state.inPlaceStdSplit(getRareVar(divCounts, varCount));
 	}
 
-	virtual Word* getPivot(const EulerState& state,
-						   const vector<size_t>& divCounts) {
+	virtual Word* getPivot(const EulerState& state, const size_t* divCounts) {
 	  const size_t varCount = state.getVarCount();
 	  Word* pivot = termWithCapacity(varCount);
 	  Ops::setToIdentity(pivot, varCount);
-	  Ops::setExponent(pivot, getRareVar(divCounts), 1);
+	  Ops::setExponent(pivot, getRareVar(divCounts, varCount), 1);
 	  return pivot;
 	}
 
@@ -141,21 +137,18 @@ namespace {
 
   class StdPopGcd : public StdStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  state.inPlaceStdSplit(getPivot(state, divCounts), newState);
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  return state.inPlaceStdSplit(getPivot(state, divCounts));
 	}
 
-	virtual Word* getPivot(const EulerState& state,
-						   const vector<size_t>& divCounts) {
+	virtual Word* getPivot(const EulerState& state, const size_t* divCounts) {
 	  const size_t varCount = state.getVarCount();
-	  const size_t popVar = getPopVar(divCounts);
+	  const size_t popVar = getPopVar(divCounts, varCount);
 	  Word* pivot = termWithCapacity(varCount);
 
 	  if (divCounts[popVar] == 1) {
 		Ops::setToIdentity(pivot, varCount);
-		Ops::setExponent(pivot, getPopVar(divCounts), 1);
+		Ops::setExponent(pivot, getPopVar(divCounts, varCount), 1);
 		return pivot;
 	  }
 
@@ -188,15 +181,12 @@ namespace {
 
   class StdRandom  : public StdStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  const size_t random = getRandomNotEliminatedVar(state);
-	  state.inPlaceStdSplit(random, newState);
+	  return state.inPlaceStdSplit(random);
 	}
 
-	virtual Word* getPivot(const EulerState& state,
-						   const vector<size_t>& divCounts) {
+	virtual Word* getPivot(const EulerState& state, const size_t* divCounts) {
 	  const size_t varCount = state.getVarCount();
 	  const size_t random = getRandomNotEliminatedVar(state);
 	  Word* pivot = termWithCapacity(varCount);
@@ -225,15 +215,12 @@ namespace {
 
   class StdAny  : public StdStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  const size_t any = getAnyNotEliminatedVar(state);
-	  state.inPlaceStdSplit(any, newState);
+	  return state.inPlaceStdSplit(any);
 	}
 
-	virtual Word* getPivot(const EulerState& state,
-						   const vector<size_t>& divCounts) {
+	virtual Word* getPivot(const EulerState& state, const size_t* divCounts) {
 	  const size_t varCount = state.getVarCount();
 	  const size_t any = getAnyNotEliminatedVar(state);
 	  Word* pivot = termWithCapacity(varCount);
@@ -267,14 +254,12 @@ namespace {
 	  ASSERT(_strat.get() != 0);
 	}
 
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  const size_t varCount = state.getVarCount();
 	  Word* narrow = _strat->getPivot(state, divCounts);
 	  Word* wide = termWithCapacity(varCount);
 	  state.getIdeal().getGcdOfMultiples(wide, narrow);
-	  state.inPlaceStdSplit(wide, newState);
+	  return state.inPlaceStdSplit(wide);
 	}
 
 	virtual void getName(ostream& out) const {
@@ -295,23 +280,24 @@ namespace {
 	typedef RawSquareFreeIdeal::iterator iterator;
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) = 0;
+							const size_t* divCounts,
+							const size_t varCount) = 0;
 	virtual void computationCompleted(const PivotEulerAlg& alg) {}
   };
 
   class GenPopVar : public GenStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  size_t pivotIndex = state.getIdeal().getMultiple(getPopVar(divCounts));
-	  state.inPlaceGenSplit(pivotIndex, newState);
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  const size_t varCount = state.getVarCount();
+	  size_t pivotIndex =
+		state.getIdeal().getMultiple(getPopVar(divCounts, varCount));
+	  return state.inPlaceGenSplit(pivotIndex);
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) {
-	  size_t popVar = getPopVar(divCounts);
-	  const size_t varCount = divCounts.size();
+						   const size_t* divCounts,
+						   const size_t varCount) {
+	  size_t popVar = getPopVar(divCounts, varCount);
 	  Word* term = termWithCapacity(varCount);
 	  Ops::setToIdentity(term, varCount);
 	  for (size_t var = 0; var < varCount; ++var)
@@ -339,17 +325,17 @@ namespace {
 
   class GenRareVar : public GenStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  size_t pivotIndex = state.getIdeal().getMultiple(getRareVar(divCounts));
-	  state.inPlaceGenSplit(pivotIndex, newState);
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  const size_t varCount = state.getVarCount();
+	  size_t pivotIndex =
+		state.getIdeal().getMultiple(getRareVar(divCounts, varCount));
+	  return state.inPlaceGenSplit(pivotIndex);
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) {
-	  size_t rareVar = getRareVar(divCounts);
-	  const size_t varCount = divCounts.size();
+							const size_t* divCounts,
+							const size_t varCount) {
+	  size_t rareVar = getRareVar(divCounts, varCount);
 
 	  iterator newEnd = begin;
 	  for (iterator it = begin; it != end; ++it) {
@@ -383,18 +369,17 @@ namespace {
 	  exceptionSafePushBack(_filters, strat);
 	}
 
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  const size_t varCount = state.getVarCount();
 	  const iterator begin = state.getIdeal().begin();
 	  iterator end = state.getIdeal().end();
 	  ASSERT(end - begin > 0);
 
 	  for (size_t i = 0; i < _filters.size(); ++i)
-		end = _filters[i]->filter(begin, end, divCounts);
+		end = _filters[i]->filter(begin, end, divCounts, varCount);
 	  ASSERT(end - begin > 0);
 
-	  state.inPlaceGenSplit(0, newState);
+	  return state.inPlaceGenSplit(0);
 	}
 
 	virtual void getName(ostream& out) const {
@@ -417,16 +402,16 @@ namespace {
 
   class GenRarestVars : public GenStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  filter(state.getIdeal().begin(), state.getIdeal().end(), divCounts);
-	  state.inPlaceGenSplit(0, newState);
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  const size_t varCount = state.getVarCount();
+	  filter(state.getIdeal().begin(), state.getIdeal().end(),
+			 divCounts, varCount);
+	  return state.inPlaceGenSplit(0);
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) {
-	  const size_t varCount = divCounts.size();
+							const size_t* divCounts,
+							const size_t varCount) {
 	  size_t lastDivCount = 0;
 	  while (end - begin > 1) {
 		size_t minDivCount = numeric_limits<size_t>::max();
@@ -436,7 +421,7 @@ namespace {
 		if (minDivCount == numeric_limits<size_t>::max())
 		  break;
 
-		end = filter(begin, end, divCounts, minDivCount);
+		end = filter(begin, end, divCounts, varCount, minDivCount);
 		lastDivCount = minDivCount;
 	  }
 	  return end;
@@ -452,10 +437,10 @@ namespace {
 
   private:
 	iterator filter(iterator begin, iterator end,
-					const vector<size_t>& divCounts,
+					const size_t* divCounts,
+					const size_t varCount,
 					size_t divCount) {
 	  // Set the support of term to be the vars of the specified rarity
-	  const size_t varCount = divCounts.size();
 	  Word* term = termWithCapacity(varCount);
 	  Ops::setToIdentity(term, varCount);
 	  for (size_t var = 0; var < varCount; ++var)
@@ -490,14 +475,14 @@ namespace {
 		return end; // no rare vars in any generator, so we can't discard any
 	}
 
-	size_t getRarest(const RawSquareFreeIdeal& ideal,
-					 const vector<size_t>& divCounts) {
+	size_t getRarest(const RawSquareFreeIdeal& ideal, const size_t* divCounts) {
+	  const size_t varCount = ideal.getVarCount();
 	  RawSquareFreeIdeal::const_iterator it = ideal.begin();
 	  const RawSquareFreeIdeal::const_iterator stop = ideal.end();
 	  RawSquareFreeIdeal::const_iterator rarest = it;
   
 	  for (; it != stop; ++it)
-		if (rarer(*it, *rarest, divCounts))
+		if (rarer(*it, *rarest, divCounts, varCount))
 		  rarest = it;
 	  return rarest - ideal.begin();
 	}
@@ -506,9 +491,9 @@ namespace {
 		support of term and b is the number of times that that divCount
 		appears in the support. */
 	pair<size_t, size_t> getRarity(const Word* const term,
-								   const vector<size_t>& divCounts,
+								   const size_t* divCounts,
+								   const size_t varCount,
 								   size_t above) {
-	  size_t varCount = divCounts.size();
 	  size_t rarity = varCount;
 	  size_t multiplicity = 0;
 	  for (size_t var = 0; var < varCount; ++var) {
@@ -527,11 +512,14 @@ namespace {
 	}
 
 	bool rarer(const Word* const a, const Word* const b,
-			   const vector<size_t>& divCounts) {	
+			   const size_t* divCounts,
+			   const size_t varCount) {	
 	  size_t lookAbove = 0;
 	  while (true) {
-		pair<size_t, size_t> rarityA = getRarity(a, divCounts, lookAbove);
-		pair<size_t, size_t> rarityB = getRarity(b, divCounts, lookAbove);
+		pair<size_t, size_t> rarityA =
+		  getRarity(a, divCounts, varCount, lookAbove);
+		pair<size_t, size_t> rarityB =
+		  getRarity(b, divCounts, varCount, lookAbove);
 
 		if (rarityA.first < rarityB.first)
 		  return true;
@@ -555,15 +543,13 @@ namespace {
 
   class GenMaxSupport : public GenStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  state.inPlaceGenSplit(state.getIdeal().getMaxSupportGen(), newState);	
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  return state.inPlaceGenSplit(state.getIdeal().getMaxSupportGen());	
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) {
-	  const size_t varCount = divCounts.size();
+							const size_t* divCounts,
+							const size_t varCount) {
 	  size_t maxSupp = 0;
 	  iterator newEnd = begin;
 	  for (iterator it = begin; it != end; ++it) {
@@ -591,15 +577,13 @@ namespace {
 
   class GenMinSupport : public GenStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  state.inPlaceGenSplit(state.getIdeal().getMinSupportGen(), newState);	
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  return state.inPlaceGenSplit(state.getIdeal().getMinSupportGen());	
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) {
-	  const size_t varCount = divCounts.size();
+							const size_t* divCounts,
+							const size_t varCount) {
 	  size_t minSupp = varCount;
 	  iterator newEnd = begin;
 	  for (iterator it = begin; it != end; ++it) {
@@ -627,14 +611,13 @@ namespace {
 
   class GenAny  : public GenStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
-	  state.inPlaceGenSplit(0, newState);	
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+	  return state.inPlaceGenSplit(0);	
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) {
+							const size_t* divCounts,
+							const size_t varCount) {
 	  return ++begin;
 	}
 
@@ -649,16 +632,14 @@ namespace {
 
   class GenRandom  : public GenStrategy {
   public:
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  size_t pivotIndex = rand() % state.getIdeal().getGeneratorCount();
-	  state.inPlaceGenSplit(pivotIndex, newState);	
+	  return state.inPlaceGenSplit(pivotIndex);	
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
-							const vector<size_t>& divCounts) {
-	  const size_t varCount = divCounts.size();
+							const size_t* divCounts,
+							const size_t varCount) {
 	  const size_t genCount = end - begin;
 	  const size_t choice = rand() % genCount;
 	  Ops::swap(*begin, *(begin + choice), varCount);
@@ -680,16 +661,14 @@ namespace {
 						auto_ptr<PivotStrategy> genStrat):
 	  _stdStrat(stdStrat), _genStrat(genStrat) {}
 
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  size_t varToGenRatio =
 		state.getNonEliminatedVarCount() /
 		state.getIdeal().getGeneratorCount();
 	  if (varToGenRatio < 10)
-		_stdStrat->doPivot(state, newState, divCounts);
+		return _stdStrat->doPivot(state, divCounts);
 	  else
-		_genStrat->doPivot(state, newState, divCounts);
+		return _genStrat->doPivot(state, divCounts);
 	}
 
 	virtual void getName(ostream& out) const {
@@ -715,16 +694,16 @@ namespace {
 	DebugStrategy(auto_ptr<PivotStrategy> strat, FILE* out):
 	  _strat(strat), _out(out) {}
 
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, 
+						 const size_t* divCounts) {
 	  const char* str1 = "\n\n\n"
 		"********************************(debug output)********************************\n"
 		"********** Processing this simplified state that is not a base case **********\n";
 	  fputs(str1, _out);
 	  state.print(_out);
 
-	  _strat->doPivot(state, newState, divCounts);
+	  EulerState* subState = _strat->doPivot(state, divCounts);
+	  ASSERT(subState != 0);
 
 	  const char* str2 =
 		"<<<<<<<<<<<<<<<<<<<<<<<<<<<< Substate 1 of 2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
@@ -734,7 +713,9 @@ namespace {
 	  const char* str3 =
 		"<<<<<<<<<<<<<<<<<<<<<<<<<<<< Substate 2 of 2 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
 	  fputs(str3, _out);
-	  newState.print(_out);
+	  subState->print(_out);
+
+	  return subState;
 	}
 
 	virtual void getName(ostream& out) const {
@@ -758,11 +739,9 @@ namespace {
 	StatisticsStrategy(auto_ptr<PivotStrategy> strat, FILE* out):
 	  _strat(strat), _out(out), _statesSplit(0) {}
 
-	virtual void doPivot(EulerState& state,
-						 EulerState& newState,
-						 const vector<size_t>& divCounts) {
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  ++_statesSplit;
-	  _strat->doPivot(state, newState, divCounts);
+	  return _strat->doPivot(state, divCounts);
 	}
 
 	virtual void getName(ostream& out) const {

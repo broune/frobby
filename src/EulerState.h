@@ -18,28 +18,33 @@
 #define EULER_STATE_GUARD
 
 #include "RawSquareFreeIdeal.h"
+
 class Ideal;
+class Arena;
 
 class EulerState {
 public:
-  EulerState(const Ideal& idealParam);
-  EulerState();
-  ~EulerState();
+  static EulerState* construct(const Ideal& idealParam, Arena* arena);
 
-  void inPlaceStdSplit(size_t pivotVar, EulerState& subState);
-  void inPlaceStdSplit(Word* pivot, EulerState& subState);
-  void inPlaceGenSplit(size_t pivotIndex, EulerState& subState);
+  EulerState(const Ideal& idealParam, Arena& arena);
+  EulerState(Arena& arena);
+
+  EulerState* inPlaceStdSplit(size_t pivotVar);
+  EulerState* inPlaceStdSplit(Word* pivot);
+  EulerState* inPlaceGenSplit(size_t pivotIndex);
 
   bool toColonSubState(const Word* pivot);
   bool toColonSubState(size_t pivotVar);
   void toColonSubStateNoReminimizeNecessary(size_t pivotVar);
   void toColonSubStateNoReminimizeNecessary(Word* pivot);
-  void makeSumSubState(size_t pivotVar, EulerState& subState);
-  void makeSumSubState(Word* pivot, EulerState& subState);
+
+  EulerState* makeSumSubState(size_t pivotVar);
+  EulerState* makeSumSubState(Word* pivot);
 
   void flipSign() {sign = -sign;}
   int getSign() const {return sign;}
 
+  EulerState* getParent() {return _parent;}
   RawSquareFreeIdeal& getIdeal() {return *ideal;}
   const RawSquareFreeIdeal& getIdeal() const {return *ideal;}
   const Word* getEliminatedVars() const {return eliminated;}
@@ -56,11 +61,10 @@ public:
   bool debugIsValid() const;
 #endif
 
-  EulerState& operator=(const EulerState& state);
-  void reset();
-
 private:
   EulerState(const EulerState&); // unavailable
+  static EulerState* rawConstruct(size_t varCount, size_t capacity,
+								  Arena* arena);
 
   void toZero();
 
@@ -71,7 +75,8 @@ private:
   RawSquareFreeIdeal* ideal;
   Word* eliminated;
   int sign;
-  size_t idealCapacity;
+  Arena* _alloc;
+  EulerState* _parent;
 };
 
 #endif
