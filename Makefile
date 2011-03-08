@@ -51,7 +51,7 @@ rawSources := main.cpp Action.cpp IOParameters.cpp						\
   ScarfParams.cpp IdealOrderer.cpp TermExtra.cpp display.cpp			\
   Matrix.cpp BigIntVector.cpp ColumnPrinter.cpp EulerAction.cpp			\
   RawSquareFreeTerm.cpp RawSquareFreeIdeal.cpp PivotEulerAlg.cpp		\
-  EulerState.cpp PivotStrategy.cpp
+  EulerState.cpp PivotStrategy.cpp Arena.cpp
 
 rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   LibIrreducibleDecomTest.cpp LibMaxStdTest.cpp LibStdProgramTest.cpp	\
@@ -59,7 +59,7 @@ rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   TermTranslatorTest.cpp RawSquareFreeTermTest.cpp						\
   RawSquareFreeIdealTest.cpp LibPrimaryDecomTest.cpp					\
   LibAssociatedPrimesTest.cpp MatrixTest.cpp IdealTest.cpp				\
-  LibDimensionTest.cpp TermGraderTest.cpp
+  LibDimensionTest.cpp TermGraderTest.cpp ArenaTest.cpp
 
 # This is for Mac 10.5. On other platforms this does not hurt, though
 # it would be nicer to not do it then. The same thing is true of

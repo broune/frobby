@@ -60,6 +60,13 @@ namespace TestInternal {
   void assertTrue(bool value, const char* condition,
 				  const char* testName, const char* file, size_t line,
 				  bool printDot);
+
+#define ASSERT_EXCEPTION(CODE, EXCEPTION_TYPE) \
+  {bool _frobby_sawException = false; \
+   try {CODE;} catch (EXCEPTION_TYPE) {_frobby_sawException = true;}	\
+   if (_frobby_sawException)assertOK(STD_DATA); \
+   else assertFail(#CODE,"throw exception of type " #EXCEPTION_TYPE,STD_DATA);}
+
 #define ASSERT_TRUE(VALUE) \
   {if(VALUE)assertOK(STD_DATA);else assertFail(#VALUE,"true",STD_DATA);}
 #define ASSERT_TRUE_SILENT(VALUE) SILENT(ASSERT_TRUE(VALUE))
