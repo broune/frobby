@@ -48,7 +48,7 @@ class PivotEulerAlg {
   bool getUseAllPairsSimplify() const {return _useAllPairsSimplify;}
 
  private:
-  bool processState(EulerState& state, EulerState& newState);
+  EulerState* processState(EulerState& state);
   void getPivot(const EulerState& state, Word* pivot);
 
   mpz_class _euler;

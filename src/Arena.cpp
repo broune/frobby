@@ -109,6 +109,8 @@ void Arena::discardPreviousBlock() {
   _block._previousBlock = before;
 }
 
+#ifdef DEBUG
 bool Arena::Block::debugIsValid(const void* ptr) const {
   return _blockBegin <= ptr && ptr < _freeBegin;
 }
+#endif
