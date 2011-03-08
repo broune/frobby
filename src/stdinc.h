@@ -74,15 +74,24 @@ void* operator new[](size_t s, const char* file, size_t line)
   throw (std::bad_alloc);
 void operator delete(void* s, const char* file, size_t line);
 void operator delete[](void* s, const char* file, size_t line);
-#define new new (__FILE__, __LINE__)
+#define NEW_MACRO new (__FILE__, __LINE__)
+#define new NEW_MACRO
 #else
 #define IF_DEBUG(X)
 #define ASSERT(X)
 #endif
 
 typedef unsigned int Exponent;
+
+/// The native unsigned type for the CPU. An incorrect type can result in
+/// worse performance but all computations must still be correct.
 typedef unsigned long Word;
 static const size_t BitsPerWord = 8 * sizeof(Word);
+
+/// The alignment that memory allocators must ensure. In other words
+/// allocators must return pointer addresses that are divisible by
+/// MemoryAlignment. MemoryAlignment must be a power of 2.
+static const size_t MemoryAlignment = sizeof(long);
 
 /** @todo: move this elsewhere. */
 namespace constants {
