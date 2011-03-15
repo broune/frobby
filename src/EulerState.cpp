@@ -83,7 +83,8 @@ EulerState* EulerState::inPlaceGenSplit(size_t pivotIndex) {
   EulerState* subState = rawConstruct(varCount, capacity, _alloc);
   subState->_parent = this;
 
-  subState->ideal = ideal;
+  *subState->ideal = *ideal;
+
   Ops::assign(subState->eliminated, eliminated, varCount);
   subState->sign = sign;
 
