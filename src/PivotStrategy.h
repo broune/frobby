@@ -28,9 +28,7 @@ class PivotStrategy {
 public:
   virtual ~PivotStrategy() {}
 
-  virtual void doPivot(EulerState& state,
-					   EulerState& newState,
-					   const vector<size_t>& divCounts) = 0;
+  virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) = 0;
   virtual void getName(ostream& out) const = 0;
   virtual void computationCompleted(const PivotEulerAlg& alg) = 0;
 

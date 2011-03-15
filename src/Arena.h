@@ -20,6 +20,10 @@
 
 #include <utility>
 
+#ifdef DEBUG
+#include <stack>
+#endif
+
 /** This is an arena allocator. Arena allocators are very fast at the
  cost of imposing limitations on how memory can be deallocated.
 
@@ -139,13 +143,15 @@ class Arena {
 	char* _blockEnd; /// one past last byte (aligned)
 	Block* _previousBlock; /// null if none
   } _block;
+
+  IF_DEBUG(stack<void*> _debugAllocs);
 };
 
 inline size_t Arena::alignNoOverflow(const size_t value) {
   const size_t decAlign = MemoryAlignment - 1; // compile time constant
 
   // This works because MemoryAlignment is a power of 2.
-  const size_t aligned = (value + decAlign) & ~decAlign;
+  const size_t aligned = (value + decAlign) & (~decAlign);
 
   ASSERT(aligned % MemoryAlignment == 0); // alignment
   ASSERT(aligned >= value); // no overflow
@@ -177,11 +183,19 @@ inline void* Arena::alloc(size_t size) {
 
   void* ptr = _block._freeBegin;
   _block._freeBegin += alignNoOverflow(size);
+
+  IF_DEBUG(_debugAllocs.push(ptr));
   return ptr;
 }
 
 inline void Arena::freeTop(void* ptr) {
   ASSERT(ptr != 0);
+#ifdef DEBUG
+  ASSERT(!_debugAllocs.empty());
+  ASSERT(_debugAllocs.top() == ptr);
+  _debugAllocs.pop();
+#endif
+
   if (!_block.isEmpty()) {
 	ASSERT(_block.debugIsValid(ptr));
     _block._freeBegin = static_cast<char*>(ptr);
@@ -191,6 +205,14 @@ inline void Arena::freeTop(void* ptr) {
 
 inline void Arena::freeAndAllAfter(void* ptr) {
   ASSERT(ptr != 0);
+#ifdef DEBUG
+  while (!_debugAllocs.empty() && ptr != _debugAllocs.top())
+	_debugAllocs.pop();
+  ASSERT(!_debugAllocs.empty());
+  ASSERT(_debugAllocs.top() == ptr);
+  _debugAllocs.pop();
+#endif
+
   if (_block.isInBlock(ptr)) {
 	ASSERT(_block.debugIsValid(ptr));
 	_block._freeBegin = static_cast<char*>(ptr);
