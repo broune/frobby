@@ -198,16 +198,12 @@ static Arena arena;
 EulerState* PivotEulerAlg::processState(EulerState& state) {
   state.compactEliminatedVariablesIfProfitable();
 
-  _termTmp = arena.allocArrayNoCon<Word>(state.getIdeal().getVarCount()).first;
-
   // ** First optimize state and return false if a base case is detected.
   while (true) {
 	ASSERT(state.debugIsValid());
 
-	if (baseCaseSimple1(_euler, state)) {
-		arena.freeTop(_termTmp);
+	if (baseCaseSimple1(_euler, state))
 	  return 0;
-	}
 
 	state.getIdeal().getVarDividesCounts(_divCountsTmp);
 	size_t* divCountsTmp = &(_divCountsTmp[0]);
@@ -221,10 +217,8 @@ EulerState* PivotEulerAlg::processState(EulerState& state) {
 	if (_useAllPairsSimplify) {
 	  if (optimizeVarPairs(state, _termTmp, divCountsTmp))
 		continue;
-	  if (baseCasePreconditionSimplified(_euler, state)) {
-		arena.freeTop(_termTmp);
+	  if (baseCasePreconditionSimplified(_euler, state))
 		return 0;
-	  }
 	}
 	break;
   }
@@ -235,8 +229,6 @@ EulerState* PivotEulerAlg::processState(EulerState& state) {
   size_t* divCountsTmp = &(_divCountsTmp[0]);
   ASSERT(_pivotStrategy.get() != 0);
   EulerState* next = _pivotStrategy->doPivot(state, divCountsTmp);
-
-  arena.freeTop(_termTmp);
 
   return next;
 }
@@ -262,17 +254,26 @@ const mpz_class& PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
   else if (ideal.getVarCount() == 0)
 	_euler = -1;
   else {
-	_euler = 0;
+	_termTmp =
+	  arena.allocArrayNoCon<Word>(Ops::getWordCount(ideal.getVarCount())).first;
 
-	EulerState* state = EulerState::construct(ideal, &arena);
-	while (state != 0) {
-	  EulerState* nextState = processState(*state);
-	  if (nextState == 0) {
-		nextState = state->getParent();
-		arena.freeAndAllAfter(state);
+	try {
+	  _euler = 0;
+
+	  EulerState* state = EulerState::construct(ideal, &arena);
+	  while (state != 0) {
+		EulerState* nextState = processState(*state);
+		if (nextState == 0) {
+		  nextState = state->getParent();
+		  arena.freeAndAllAfter(state);
+		}
+		state = nextState;
 	  }
-	  state = nextState;
+	} catch (...) {
+	  arena.freeAndAllAfter(_termTmp);
+	  throw;
 	}
+	arena.freeTop(_termTmp);
   }
 
   _pivotStrategy->computationCompleted(*this);
