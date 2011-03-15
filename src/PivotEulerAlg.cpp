@@ -192,9 +192,6 @@ bool optimizeVarPairs(EulerState& state, Word* tmp, DivCounts& divCounts) {
   return false;
 }
 
-#include "Arena.h"
-static Arena arena;
-
 EulerState* PivotEulerAlg::processState(EulerState& state) {
   state.compactEliminatedVariablesIfProfitable();
 
@@ -254,26 +251,26 @@ const mpz_class& PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
   else if (ideal.getVarCount() == 0)
 	_euler = -1;
   else {
-	_termTmp =
-	  arena.allocArrayNoCon<Word>(Ops::getWordCount(ideal.getVarCount())).first;
+	_termTmp = _arena.allocArrayNoCon<Word>
+	  (Ops::getWordCount(ideal.getVarCount())).first;
 
 	try {
 	  _euler = 0;
 
-	  EulerState* state = EulerState::construct(ideal, &arena);
+	  EulerState* state = EulerState::construct(ideal, &_arena);
 	  while (state != 0) {
 		EulerState* nextState = processState(*state);
 		if (nextState == 0) {
 		  nextState = state->getParent();
-		  arena.freeAndAllAfter(state);
+		  _arena.freeAndAllAfter(state);
 		}
 		state = nextState;
 	  }
 	} catch (...) {
-	  arena.freeAndAllAfter(_termTmp);
+	  _arena.freeAndAllAfter(_termTmp);
 	  throw;
 	}
-	arena.freeTop(_termTmp);
+	_arena.freeTop(_termTmp);
   }
 
   _pivotStrategy->computationCompleted(*this);
