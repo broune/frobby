@@ -20,6 +20,8 @@
 
 #include <new>
 
+Arena Arena::_scratchArena;
+
 Arena::Arena() {
 }
 

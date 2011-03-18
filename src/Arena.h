@@ -30,7 +30,8 @@
  Allocation and deallocation must occur in stack order (LIFO). In
  other words, only the most recently allocated buffer that has not
  been deallocated yet can be deallocated. It is also possible to
- deallocate all buffers that were deallocated after a given buffer.
+ deallocate all buffers that were deallocated after a given buffer. In
+ DEBUG mode stack order is enforced by ASSERTs.
 
  Arena satisfies allocation requests out of a larger block of
  memory. When a block is exhausted another block must be allocated
@@ -43,10 +44,11 @@
  fast implementation with excellent locality of reference. This can
  consume memory beyond that which the user of the Arena needs - all
  allocators have memory overhead. Optimal performance on both speed
- and memory consumption is usully reached by all code using the same
+ and memory consumption can usully be reached by all code using the same
  Arena object when that is possible given the stack-order limitation
  on deallocation.
 
+ All methods throw bad_alloc if backing memory allocation using new fails.
 */
 class Arena {
  public:
@@ -87,11 +89,13 @@ class Arena {
 
   /** As freeTop(array) except that the elements of the array in the
    range (array, arrayEnd] are deconstructed in decreasing order of
-   index. The destructors must not throw exceptions. */
+   index. The destructors must not throw exceptions.
+
+   array and arrayEnd must not be zero. */
   template<class T>
   void freeTopArray(T* array, T* arrayEnd);
 
-  /** As freeTopArray(p.first, p.second) */
+  /** As freeTopArray(p.first, p.second). */
   template<class T>
   void freeTopArray(pair<T*, T*> p) {freeTopArray(p.first, p.second);}
 
@@ -109,7 +113,17 @@ class Arena {
 
   // ***** Miscellaneous *****
 
+  /** Returns true if there are no live allocations for this Arena. */
   bool isEmpty() const {return _block._previousBlock == 0 && _block.isEmpty();}
+
+  /** Returns an arena object that can be used for non-thread safe
+   scratch memory after static objects have been initialized. The
+   default contract is that each function leaves this arena with the
+   exact same objects allocated as before the function was entered. It
+   is fine for functions to collaborate for example by using the arena
+   to return variable size objects without calling new, though care
+   should be used in such cases. */
+  static Arena& getArena() {return _scratchArena;}
 
  private:
   /** Allocate a new block with at least needed bytes. */
@@ -144,7 +158,9 @@ class Arena {
 	Block* _previousBlock; /// null if none
   } _block;
 
-  IF_DEBUG(stack<void*> _debugAllocs);
+  static Arena _scratchArena;
+
+  IF_DEBUG(stack<void*> _debugAllocs;)
 };
 
 inline size_t Arena::alignNoOverflow(const size_t value) {

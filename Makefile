@@ -51,7 +51,7 @@ rawSources := main.cpp Action.cpp IOParameters.cpp						\
   ScarfParams.cpp IdealOrderer.cpp TermExtra.cpp display.cpp			\
   Matrix.cpp BigIntVector.cpp ColumnPrinter.cpp EulerAction.cpp			\
   RawSquareFreeTerm.cpp RawSquareFreeIdeal.cpp PivotEulerAlg.cpp		\
-  EulerState.cpp PivotStrategy.cpp Arena.cpp
+  EulerState.cpp PivotStrategy.cpp Arena.cpp LocalArray.cpp
 
 rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   LibIrreducibleDecomTest.cpp LibMaxStdTest.cpp LibStdProgramTest.cpp	\
