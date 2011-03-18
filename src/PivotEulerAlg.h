@@ -19,7 +19,6 @@
 #define PIVOT_EULER_ALG_GUARD
 
 #include "PivotStrategy.h"
-#include "Arena.h"
 
 #include <vector>
 #include <cstdio>
@@ -60,7 +59,6 @@ class PivotEulerAlg {
   bool _useManyDivSimplify;
   bool _useAllPairsSimplify;
   auto_ptr<PivotStrategy> _pivotStrategy;
-  Arena _arena;
 };
 
 #endif

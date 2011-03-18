@@ -26,6 +26,8 @@
 #include "ElementDeleter.h"
 #include "EulerState.h"
 #include "PivotStrategy.h"
+#include "Arena.h"
+#include "LocalArray.h"
 
 #include <sstream>
 #include <vector>
@@ -251,28 +253,20 @@ const mpz_class& PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
   else if (ideal.getVarCount() == 0)
 	_euler = -1;
   else {
-	_termTmp = _arena.allocArrayNoCon<Word>
-	  (Ops::getWordCount(ideal.getVarCount())).first;
+	LocalArray<Word> termTmp(Ops::getWordCount(ideal.getVarCount()));
+	_termTmp = termTmp.begin();
+	_euler = 0;
 
-	try {
-	  _euler = 0;
-
-	  EulerState* state = EulerState::construct(ideal, &_arena);
-	  while (state != 0) {
-		EulerState* nextState = processState(*state);
-		if (nextState == 0) {
-		  nextState = state->getParent();
-		  _arena.freeAndAllAfter(state);
-		}
-		state = nextState;
+	EulerState* state = EulerState::construct(ideal, &(Arena::getArena()));
+	while (state != 0) {
+	  EulerState* nextState = processState(*state);
+	  if (nextState == 0) {
+		nextState = state->getParent();
+		Arena::getArena().freeAndAllAfter(state);
 	  }
-	} catch (...) {
-	  _arena.freeAndAllAfter(_termTmp);
-	  throw;
+	  state = nextState;
 	}
-	_arena.freeTop(_termTmp);
   }
-
   _pivotStrategy->computationCompleted(*this);
 
   return _euler;
