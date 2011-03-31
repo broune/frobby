@@ -19,6 +19,7 @@
 #include "Arena.h"
 
 #include <new>
+#include <limits>
 
 Arena Arena::_scratchArena;
 
@@ -26,7 +27,7 @@ Arena::Arena() {
 }
 
 Arena::~Arena() {
-  while (_block._previousBlock != 0)
+  while (_block.hasPreviousBlock())
 	discardPreviousBlock();
   delete[] _block._blockBegin;
 }
@@ -38,40 +39,29 @@ Arena::Block::Block():
   _previousBlock(0) {
 }
 
-void Arena::growCapacity(size_t neededUnaligned) {
-  const size_t minimumAlloc = 16 * 1024;
-  ASSERT(minimumAlloc % MemoryAlignment == 0);
+void Arena::growCapacity(const size_t needed) {
+  // ** Calcuate size of block (doubles capacity)
+  size_t size = std::max(needed, _block.getSize());
+  if (size > std::numeric_limits<size_t>::max() / 2)
+	throw bad_alloc(); // size * 2 overflows
+  size *= 2;
+  const size_t minimumAlloc = 16 * 1024 - sizeof(Block) - 16;
+  size = std::max(size, minimumAlloc); // avoid many small blocks
+  // align size by rounding down
+  size = size & ~(MemoryAlignment - 1); // works because m.a. is a power of 2
+  ASSERT(size >= needed); // is satisfied because we multiplied by 2
+  ASSERT(size % MemoryAlignment == 0);
+  if (size > std::numeric_limits<size_t>::max() - sizeof(Block))
+	throw bad_alloc(); // size + sizeof(block) overflows
 
-  // Align needed
-  ASSERT(neededUnaligned > 0); 
-  size_t needed = (neededUnaligned / MemoryAlignment) * MemoryAlignment;
-  if (needed != neededUnaligned) {
-	needed += MemoryAlignment;
-	if (needed < neededUnaligned)
-	  throw bad_alloc(); // overflow
-  }
-
-  // get at least 2x previous memory
-  size_t size = std::max(minimumAlloc, _block.getSize());
-  do {
-	if (size != (size * 2) / 2)
-	  throw bad_alloc(); // overflow
-	size *= 2;
-  } while (size / 2 < needed);
-
-  // we place old block information at the end of their memory area
-  if (_block._blockBegin != 0) {
+  // ** Save current block information at end of memory area
+  if (!_block.isNull()) {
 	Block* previousBlock = reinterpret_cast<Block*>(_block._blockEnd);
 	*previousBlock = _block;
 	_block._previousBlock = previousBlock;
   }
 
-  if (size > size + sizeof(Block)) {
-	ASSERT(false); // overflow
-	// This should never happen as size is a power of 2.
-	throw bad_alloc();
-  }
-
+  // ** Allocate buffer and update _block
   char* buffer = new char[size + sizeof(Block)];
   _block._blockBegin = buffer;
   _block._freeBegin = buffer;

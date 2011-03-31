@@ -39,6 +39,14 @@
 #include <limits>
 #include <fstream>
 
+
+#define CHECK(X)											\
+  if (!(X)) {												\
+    cout << "Check condition on line "						\
+		 << __LINE__ << " not satisfied: "#X << endl;		\
+    exit(1);												\
+  }
+
 /**
 This file has stuff I'm using in my work with Scarf. It's just
 whatever code gets the job done so we can figure out the structure of
@@ -127,6 +135,21 @@ namespace {
       return _ideal;
     }
 
+	size_t getSum(size_t a, size_t b) const {
+	  vector<mpq_class> sum(getHDim());
+	  for (size_t i = 0; i < getHDim(); ++i)
+		sum[i] = _h(a, i) + _h(b, i);
+	  for (size_t row = 0; row < _h.getRowCount(); ++row) {
+		bool match = true;
+		for (size_t col = 0; col < _h.getColCount(); ++col)
+		  if (sum[col] != _h(row, col))
+			match = false;
+		if (match)
+		  return row;
+	  }
+	  return _h.getRowCount();
+	}
+
     size_t getYDim() const {
       ASSERT(_y.getColCount() == _ideal.getVarCount());
       return _y.getColCount();
@@ -161,6 +184,13 @@ namespace {
 	size_t planeCount;
 	size_t id;
 
+	bool hasPoint(size_t n) const {
+	  for (size_t i = 0; i < points.size(); ++i)
+		if (points[i] == n)
+		  return true;
+	  return false;
+	}
+
 	bool operator<(const Mlfb& mlfb) const {
 	  if (planeCount > mlfb.planeCount)
 		return true;
@@ -188,6 +218,14 @@ namespace {
 		return edges[index];
 	  else
 		return numeric_limits<size_t>::max();
+	}
+
+	bool isPivot() const {
+	  return planeCount == 1 || planeCount == 3;
+	}
+
+	bool isFlat() const {
+	  return planeCount == 4;
 	}
   };
 
@@ -580,6 +618,7 @@ namespace {
   struct Tri {
 	size_t a;
 	size_t b;
+	size_t sumAB;
 	bool fromFlat;
   };
 
@@ -686,6 +725,31 @@ namespace {
 	return next;
   }
 
+  void getSeq(size_t mlfb, size_t to, size_t fix1, size_t fix2, const vector<Mlfb>& mlfbs, vector<SeqPos>& seq) {
+	seq.clear();
+	size_t from;
+	for (from = 0; from < 4; ++from) {
+	  if (from == fix1 || from == fix2 || from == to)
+		continue;
+	  break;
+	}
+	ASSERT(from != 4);
+
+	SeqPos pos;
+	pos.mlfb = mlfb;
+	pos.fixFacet1 = fix1;
+	pos.fixFacet2 = fix2;
+	pos.comingFromFacet = from;
+	pos.order();
+
+	seq.push_back(pos);
+	do {
+	  pos = nextInSeq(mlfbs, pos);
+	  seq.push_back(pos);
+	} while (mlfbs[pos.mlfb].planeCount != 1 &&
+			 mlfbs[pos.mlfb].planeCount != 3);
+  }
+
   void printSequences(const vector<Mlfb>& mlfbs,
 					  const Plane& plane,
 					  set<SeqPos>& seen,
@@ -720,7 +784,9 @@ namespace {
 
 			bool first = true;
 			bool stop = false;
+			size_t length = 0;
 			while (!stop) {
+			  ++length;
 			  if (seen.find(pos) != seen.end())
 				stop = true;
 			  seen.insert(pos);
@@ -739,7 +805,7 @@ namespace {
 				   << ')';
 			  pos = nextInSeq(mlfbs, pos);
 			}
-			cout << '\n';
+			cout << " (length " << (length - 1) << ")\n";
 		  }
 		}
 	  }
@@ -845,6 +911,108 @@ namespace {
 	sort(mlfbs.begin(), mlfbs.end());
   }
 
+  size_t getMlfbWithId(const vector<Mlfb>& mlfbs, size_t id) {
+	for (size_t i = 0; i < mlfbs.size(); ++i)
+	  if (mlfbs[i].id == id)
+		return i;
+	return mlfbs.size();
+  }
+
+  size_t getCentralEdgeFacet(const vector<Mlfb>& mlfbs, size_t me, size_t other) {
+	size_t c = 4;
+	for (size_t to = 0; to < 4; ++to) {
+	  const size_t e = getMlfbWithId(mlfbs, mlfbs[me].getEdge(to));
+	  if (mlfbs[e].isFlat() || (e != other && mlfbs[e].isPivot())) {
+		CHECK(c == 4);
+		c = to;
+	  }
+	}
+	CHECK(c != 4);
+	return c;
+  }
+
+  void prSeq(const vector<Mlfb>& mlfbs, const vector<SeqPos>& seq) {
+	cout << " Seq: ";
+	for (size_t i = 0; i < seq.size(); ++i)
+	  cout << (i > 0 ? "->" : "") << 'm' << mlfbs[seq[i].mlfb].id;
+	cout << endl;
+  }
+
+  bool disjointSeqs(const vector<SeqPos>& a, const vector<SeqPos>& b) {
+	for (size_t i = 0; i < a.size(); ++i)
+	  for (size_t j = 0; j < b.size(); ++j)
+		if (a[i].mlfb == b[j].mlfb)
+		  return false;
+	return true;
+  }
+
+  void getFlatSeq(size_t start1, size_t back1,
+				  size_t start2, size_t back2,
+				  size_t end1, size_t end2,
+				  bool goEven,
+				  vector<SeqPos>& seq, const vector<Mlfb>& mlfbs) {
+	size_t next1 = getMlfbWithId(mlfbs, mlfbs[start1].getEdge(back1));
+	size_t next2 = getMlfbWithId(mlfbs, mlfbs[start2].getEdge(back2));
+	size_t prev1 = start1;
+	size_t prev2 = start2;
+
+	while (next1 == next2) {
+	  size_t m = next1;
+	  CHECK(mlfbs[m].isFlat());
+
+	  SeqPos pos;
+	  pos.mlfb = m;
+	  seq.push_back(pos);
+
+	  bool set1 = false;
+	  for (size_t i = 0; i < 4; ++i) {
+		size_t n = getMlfbWithId(mlfbs, mlfbs[m].getEdge(i));
+		if (n != prev1 && n != prev2) {
+		  if (!set1) {
+			set1 = true;
+			next1 = n;
+		  } else
+			next2 = n;
+		}
+	  }
+
+	  prev1 = prev2 = m;
+	}
+
+	CHECK(next1 == end1 || next1 == end2);
+	CHECK(next2 == end1 || next2 == end2);
+  }
+
+  void check0Graph(vector<Mlfb>& mlfbs) {
+	vector<bool> ok(mlfbs.size());
+	bool sawFlat = false;
+	for (size_t i =0 ; i < mlfbs.size(); ++i) {
+	  ok[i] = (mlfbs[i].index == 0);
+	  sawFlat = true;
+	}
+	if (!sawFlat)
+	  return;
+
+	while (true) {
+	  bool done = true;
+	  for (size_t i = 0; i < mlfbs.size(); ++i) {
+		if (!ok[i]) {
+		  size_t to = getMlfbWithId(mlfbs, mlfbs[i].getEdge(0));
+		  if (ok[to]) {
+			done = false;
+			ok[i] = true;
+		  }
+		}
+	  }
+	  if (done)
+		break;
+	}
+
+	for (size_t i = 0; i < mlfbs.size(); ++i) {
+	  CHECK(ok[i]);
+	}
+  }
+
   void printPlane(vector<Mlfb>& mlfbs, const Plane& plane, const GrobLat& lat) {
 	map<size_t, size_t> typeCounts;
 	setupPlaneCountsAndOrder(mlfbs, plane, typeCounts);
@@ -868,6 +1036,110 @@ namespace {
 	}
 	pr.print(stdout);
 
+	vector<size_t> pivots;
+	for (size_t i = 0; i < mlfbs.size(); ++i)
+	  if (mlfbs[i].isPivot())
+		pivots.push_back(i);
+
+	CHECK(plane.nonMlfbTris.size() == 1);
+
+	if (typeCounts[0] == 0) {
+	  cout << "skipping plane with no flats." << endl;
+	  return;
+	}
+
+	CHECK(pivots.size() == 4);
+
+	{
+	  const Tri& tri = plane.nonMlfbTris[0];
+	  size_t a = tri.a;
+	  size_t b = tri.b;
+	  size_t ab = lat.getSum(a, b);
+
+	  bool found1 = false;
+	  for (size_t i = 0; i < pivots.size(); ++i) {
+		if (mlfbs[pivots[i]].hasPoint(a) && mlfbs[pivots[i]].hasPoint(ab)) {
+		  CHECK(!found1);
+		  found1 = true;
+		  swap(pivots[0], pivots[i]);
+		}
+	  }
+	  CHECK(found1);
+
+	  bool found2 = false;
+	  for (size_t i = 0; i < pivots.size(); ++i) {
+		if (mlfbs[pivots[i]].hasPoint(b) && mlfbs[pivots[i]].hasPoint(ab)) {
+		  CHECK(!found2);
+		  found2 = true;
+		  swap(pivots[1], pivots[i]);
+		}
+	  }
+	  CHECK(found2);
+
+	  if (mlfbs[pivots[0]].id > mlfbs[pivots[1]].id)
+		swap(pivots[0], pivots[1]); // for determinism
+	  if (mlfbs[pivots[2]].id > mlfbs[pivots[3]].id)
+		swap(pivots[2], pivots[3]); // for determinism
+	}
+	cout << endl;
+
+	for (size_t i = 0; i < 2; ++i) {
+	  size_t a, b, c, d;
+	  if (i == 0) {
+		a = pivots[0];
+		b = pivots[1];
+		c = pivots[2];
+		d = pivots[3];
+	  } else {
+		a = pivots[2];
+		b = pivots[3];
+		c = pivots[0];
+		d = pivots[1];
+	  }
+	  size_t avoid = getCentralEdgeFacet(mlfbs, a, b);
+	  size_t avoid2 = getCentralEdgeFacet(mlfbs, b, a);
+	  CHECK(typeCounts[0] == 0 || mlfbs[a].getEdge(avoid) == mlfbs[b].getEdge(avoid2));
+
+	  size_t x = (avoid <= 0 ? 1 : 0);
+	  size_t y = (avoid <= 1 ? 2 : 1);
+	  size_t z = (avoid <= 2 ? 3 : 2);
+
+	  vector<SeqPos> seqs[4];
+	  getSeq(a, x, y, z, mlfbs, seqs[0]);
+	  getSeq(a, y, z, x, mlfbs, seqs[1]);
+	  getSeq(a, z, x, y, mlfbs, seqs[2]);
+
+	  cout << "The " << (i == 0 ? "left" : "right") << " sequences are:\n";
+	  for (size_t j = 0; j < 3; ++j) {
+		prSeq(mlfbs, seqs[j]);
+		CHECK(seqs[j].front().mlfb == a);
+		seqs[j].erase(seqs[j].begin());
+
+		CHECK(seqs[j].back().mlfb == b);
+		seqs[j].resize(seqs[j].size() - 1);
+	  }
+
+	  getFlatSeq(a, avoid,
+				 b, avoid2,
+				 c, d, i == 0,
+				 seqs[3], mlfbs);
+
+	  if (i == 0) {
+		cout << "The flat sequence is:\n";
+		prSeq(mlfbs, seqs[3]);
+	  }
+
+	  for (size_t i = 0; i < 4; ++i) {
+		for (size_t j = 0; j < i; ++j) {
+		  CHECK(disjointSeqs(seqs[i], seqs[j]));
+		}
+	  }
+	  CHECK(seqs[0].size()+seqs[1].size()+seqs[2].size()+seqs[3].size()+4 == mlfbs.size());
+	}
+
+	check0Graph(mlfbs);
+
+	/*
 	cout << "\n\nmX(ABC) means we fix the neighbors on facet A and B while\n";
 	cout << "we got to the current MLFB mX by pushing out facet C, so the\n";
 	cout << "facet we will push in next is the remaining one. We track\n";
@@ -891,7 +1163,7 @@ namespace {
 	cout << "The remaining paths are:\n";
 	for (size_t i = 0; i < mlfbs.size(); ++i)
 	  printSequences(mlfbs, plane, seen, i, false);
-
+	*/
 	printMlfbs(mlfbs, plane, lat);
   }
 
@@ -966,96 +1238,101 @@ namespace {
   }
 }
 
-LatticeAnalyzeAction::LatticeAnalyzeAction():
-  Action
-  (staticGetName(),
-   "Display information about the input ideal.",
-   "This action is not ready for general use.\n\n"
-   "Display information about input Grobner basis of lattice.",
-   false),
+	  LatticeAnalyzeAction::LatticeAnalyzeAction():
+	  Action
+	  (staticGetName(),
+	   "Display information about the input ideal.",
+	   "This action is not ready for general use.\n\n"
+	   "Display information about input Grobner basis of lattice.",
+	   false),
 
-  _io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
-}
-
-void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
-  _io.obtainParameters(parameters);
-  Action::obtainParameters(parameters);
-}
-
-  bool LatticeAnalyzeAction::displayAction() const {
-	return false;
-  }
-
-  void LatticeAnalyzeAction::perform() {
-	cerr << "** Reading input " << endl;
-
-	Scanner in(_io.getInputFormat(), stdin);
-	_io.autoDetectInputFormat(in);
-	_io.validateFormats();
-
-	IOFacade ioFacade(_printActions);
-	SatBinomIdeal ideal;
-	ioFacade.readSatBinomIdeal(in, ideal);
-
-	Matrix matrix;
-	{
-	  SatBinomIdeal matrixIdeal;
-	  ioFacade.readSatBinomIdeal(in, matrixIdeal);
-	  matrixIdeal.getMatrix(matrix);
+	  _io(DataType::getSatBinomIdealType(), DataType::getMonomialIdealType()) {
 	}
 
-	cerr << "** Computing matrix and its nullspace" << endl;
-	cout << "Analysis of the "
-		 << matrix.getRowCount() << " by " << matrix.getColCount()
-		 << " matrix\n";
-	printIndentedMatrix(matrix);
-	printNullSpace(matrix);
-
-	cerr << "** Computing h-space vectors" << endl;
-	GrobLat lat(matrix, ideal);
-
-	cerr << "** Computing MLFBs" << endl;
-	vector<Mlfb> mlfbs;
-	computeMlfbs(mlfbs, lat);
-	stable_sort(mlfbs.begin(), mlfbs.end());
-
-	cerr << "** Computing double triangles" << endl;
-	vector<Plane> planes;
-	computePlanes(lat, planes);
-
-	size_t paraMlfbCount = 0;
-	for (size_t mlfb = 0; mlfb < mlfbs.size(); ++mlfb) {
-	  if (mlfbs[mlfb].index == 0)
-		++paraMlfbCount;
+	void LatticeAnalyzeAction::obtainParameters(vector<Parameter*>& parameters) {
+	  _io.obtainParameters(parameters);
+	  Action::obtainParameters(parameters);
 	}
 
-	cerr << "** Producing output" << endl;
-
-	if (lat.hasZeroEntryY())
-	  cout << "A neighbor has a zero entry.\n";
-	else
-	  cout << "No neighbor has a zero entry.\n";
-
-	cout << "There are " << lat.getNeighborCount() << " neighbors excluding zero.\n";
-	cout << "There are " << mlfbs.size() << " MLFBs.\n";
-	cout << "There are " << paraMlfbCount << " parallelogram MLFBs.\n";
-	cout << "There are " << planes.size()
-		 << " distinct double triangle planes.\n";
-	cout << "The sum of MLFB indexes is " << getIndexSum(mlfbs) << ".\n";
-
-	printMinDotDegreeMlfb(mlfbs);
-
-	printNeighbors(lat);
-
-	for (size_t plane = 0; plane < planes.size(); ++plane) {
-	  cout << "\n\n*** Plane " << (plane + 1) << " of " << planes.size() << "\n\n";
-	  printPlane(mlfbs, planes[plane], lat);
+	bool LatticeAnalyzeAction::displayAction() const {
+	  return false;
 	}
 
-	printScarfGraph(mlfbs);
-	printMathematica3D(mlfbs, lat);
-  }
+	void LatticeAnalyzeAction::perform() {
+	  cerr << "** Reading input " << endl;
 
-  const char* LatticeAnalyzeAction::staticGetName() {
-	return "latanal";
-  }
+	  Scanner in(_io.getInputFormat(), stdin);
+	  _io.autoDetectInputFormat(in);
+	  _io.validateFormats();
+
+	  IOFacade ioFacade(_printActions);
+	  SatBinomIdeal ideal;
+	  ioFacade.readSatBinomIdeal(in, ideal);
+
+	  Matrix matrix;
+	  {
+		SatBinomIdeal matrixIdeal;
+		ioFacade.readSatBinomIdeal(in, matrixIdeal);
+		matrixIdeal.getMatrix(matrix);
+	  }
+
+	  cerr << "** Computing matrix and its nullspace" << endl;
+	  cout << "Analysis of the "
+		   << matrix.getRowCount() << " by " << matrix.getColCount()
+		   << " matrix\n";
+	  printIndentedMatrix(matrix);
+	  printNullSpace(matrix);
+
+	  cerr << "** Computing h-space vectors" << endl;
+	  GrobLat lat(matrix, ideal);
+
+	  if (lat.hasZeroEntryY()) {
+		cout << "matrix not generic." << endl;
+		exit(2);
+	  }
+
+	  cerr << "** Computing MLFBs" << endl;
+	  vector<Mlfb> mlfbs;
+	  computeMlfbs(mlfbs, lat);
+	  stable_sort(mlfbs.begin(), mlfbs.end());
+
+	  cerr << "** Computing double triangles" << endl;
+	  vector<Plane> planes;
+	  computePlanes(lat, planes);
+
+	  size_t paraMlfbCount = 0;
+	  for (size_t mlfb = 0; mlfb < mlfbs.size(); ++mlfb) {
+		if (mlfbs[mlfb].index == 0)
+		  ++paraMlfbCount;
+	  }
+
+	  cerr << "** Producing output" << endl;
+
+	  if (lat.hasZeroEntryY())
+		cout << "A neighbor has a zero entry.\n";
+	  else
+		cout << "No neighbor has a zero entry.\n";
+
+	  cout << "There are " << lat.getNeighborCount() << " neighbors excluding zero.\n";
+	  cout << "There are " << mlfbs.size() << " MLFBs.\n";
+	  cout << "There are " << paraMlfbCount << " parallelogram MLFBs.\n";
+	  cout << "There are " << planes.size()
+		   << " distinct double triangle planes.\n";
+	  cout << "The sum of MLFB indexes is " << getIndexSum(mlfbs) << ".\n";
+
+	  printMinDotDegreeMlfb(mlfbs);
+
+	  printNeighbors(lat);
+
+	  for (size_t plane = 0; plane < planes.size(); ++plane) {
+		cout << "\n\n*** Plane " << (plane + 1) << " of " << planes.size() << "\n\n";
+		printPlane(mlfbs, planes[plane], lat);
+	  }
+
+	  printScarfGraph(mlfbs);
+	  printMathematica3D(mlfbs, lat);
+	}
+
+	const char* LatticeAnalyzeAction::staticGetName() {
+	  return "latanal";
+	}
