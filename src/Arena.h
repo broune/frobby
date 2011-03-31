@@ -107,14 +107,14 @@ class Arena {
 
   /** As freeTopArrayAndAllAfter(p.first, p.second). */
   template<class T>
-  void freeTopArrayAndAllAfter(pair<T*, T*> p) {
-	freeTopArrayAndAllAfter(p.first, p.second);
+  void freeArrayAndAllAfter(pair<T*, T*> p) {
+	freeArrayAndAllAfter(p.first, p.second);
   }
 
   // ***** Miscellaneous *****
 
   /** Returns true if there are no live allocations for this Arena. */
-  bool isEmpty() const {return _block._previousBlock == 0 && _block.isEmpty();}
+  bool isEmpty() const {return !_block.hasPreviousBlock() && _block.isEmpty();}
 
   /** Returns an arena object that can be used for non-thread safe
    scratch memory after static objects have been initialized. The
@@ -150,6 +150,8 @@ class Arena {
 	size_t getSize() const {return _blockEnd - _blockBegin;}
 	size_t getFreeCapacity() const {return _blockEnd - _freeBegin;}
 	bool isEmpty() const {return _blockBegin == _freeBegin;}
+	bool isNull() const {return _blockBegin == 0;}
+	bool hasPreviousBlock() const {return _previousBlock != 0;}
 	IF_DEBUG(bool debugIsValid(const void* ptr) const;)
 
 	char* _blockBegin; /// beginning of current block (aligned)

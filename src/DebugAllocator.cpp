@@ -224,7 +224,10 @@ void* DebugAllocator::allocate(size_t size,
   }
 
   ++_allocationCount;
-  return malloc(size);
+  void* p = malloc(size);
+  if (p == 0)
+	throw bad_alloc();
+  return p;
 }
 
 DebugAllocator::DebugAllocator():
