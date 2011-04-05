@@ -57,7 +57,6 @@ these lattices. -Bjarke H. Roune
 @todo: move functionality into proper classes away from this file. */
 #include <iostream>
 
-namespace {
   enum NeighborPlace {
 	InPlane,
 	UnderPlane,
@@ -313,7 +312,6 @@ namespace {
 			  swap(mlfb.points[i-1], mlfb.points[p]);
 	  }
 
-	  
 	  // Compute MLFB index.
 	  {
 		Matrix mat(mlfb.points.size(), lat.getHDim());
@@ -456,6 +454,12 @@ namespace {
 	  mlfb.edgeHitsFacet.clear();
 	}
   }
+
+
+
+
+
+
 
   class NeighborPrinter {
   public:
