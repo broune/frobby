@@ -1,5 +1,4 @@
 syntax: glob
-bin
 *~
 ._*
 data
@@ -13,3 +12,5 @@ tmp
 sage
 ex/
 ideals/
+bin/
+tmp/
