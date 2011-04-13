@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for (( c=1; c<=1000000; c++ )) do
+  echo -n "try $c.   ";
+  bin/frobby genfrob -entryCount 4 -maxEntryDigits 300 > w 2>/dev/null;
+  ./lata w;
+  if [ $? != 0 ]; then echo "found one!"; exit 42; fi
+done

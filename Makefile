@@ -51,7 +51,8 @@ rawSources := main.cpp Action.cpp IOParameters.cpp						\
   ScarfParams.cpp IdealOrderer.cpp TermExtra.cpp display.cpp			\
   Matrix.cpp BigIntVector.cpp ColumnPrinter.cpp EulerAction.cpp			\
   RawSquareFreeTerm.cpp RawSquareFreeIdeal.cpp PivotEulerAlg.cpp		\
-  EulerState.cpp PivotStrategy.cpp Arena.cpp LocalArray.cpp
+  EulerState.cpp PivotStrategy.cpp Arena.cpp LocalArray.cpp				\
+  LatticeAlgs.cpp
 
 rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   LibIrreducibleDecomTest.cpp LibMaxStdTest.cpp LibStdProgramTest.cpp	\
@@ -309,10 +310,8 @@ commit: test
 remoteUrl = ssh://daimi/projs/frobby
 pull:
 	hg pull $(remoteUrl)
-	cd sage; hg pull $(remoteUrl)/sage
 push:
 	hg push $(remoteUrl)
-	cd sage; hg push $(remoteUrl)/sage
 
 distribution:
 ifndef VER
