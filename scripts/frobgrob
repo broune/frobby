@@ -2,7 +2,8 @@
 file="$1" # the input file
 shift # important as any remaining options are passed on to Frobby
 
-fti2=4ti2/4ti2gmp # where to find 4ti2
+frobby=../bin/frobby
+fti2=../4ti2/4ti2gmp # where to find 4ti2
 
 # make input file $file.out.mat from $file in the format that 4ti2 expects
 echo -n "1 " > $file.out.mat
@@ -14,4 +15,4 @@ $fti2 zbasis $file.out > /dev/null # make $file.out.lat (not required)
 $fti2 groebner $file.out > /dev/null # make $file.out.gro
 
 # run frobby to compute Frobenius number from Grobner basis
-cat $file.out.gro $file | bin/frobby optimize -chopFirstAndSubtract -maxStandard $*
+cat $file.out.gro $file | $frobby optimize -chopFirstAndSubtract -maxStandard $*

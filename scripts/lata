@@ -1,9 +1,16 @@
 #!/bin/bash
+file=$1
+shift
 
-./frobgrob w 2> /dev/null > /dev/null
-cat w.out.gro w.out.lat|bin/frobby lata 2>/dev/null > /dev/null
+fti2=../4ti2/4ti2gmp.exe
+frobby=../bin/frobby
+
+./frobgrob $file 2> /dev/null > /dev/null
+
+cat $file.out.gro $file.out.lat|$frobby lata 2>/dev/null > /dev/null
 f=$?
+
 if [ $f == 2 ]; then echo "not generic"; exit 0; fi
-if [ $f != 0 ]; then echo "found counterexample"; cat w.out.gro w.out.lat|bin/frobby lata > w.ana; exit $f; fi
+if [ $f != 0 ]; then echo "found counterexample"; cat $file.out.gro $file.out.lat|$frobby lata > $file.ana; exit $f; fi
 echo generic
 exit 0;
