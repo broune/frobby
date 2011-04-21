@@ -104,6 +104,15 @@ void Mlfb::reset(size_t offset, const vector<Neighbor>& points) {
 		mat(point - 1, var) = getPoint(point).getH(var);
 	index = determinant(mat);
   }
+
+  if (getPointCount() == 4) {
+	Matrix mat(4, lat.getHDim());
+	for (size_t point = 0; point < getPointCount(); ++point)
+	  for (size_t var = 0; var < lat.getHDim(); ++var)
+		mat(point, var) = getPoint(point).getH(var);
+	_isParallelogram = ::isParallelogram(mat);
+  } else
+	_isParallelogram = false;
 }
 
 void computeMlfbs(vector<Mlfb>& mlfbs, const GrobLat& lat) {
@@ -337,7 +346,7 @@ size_t computeFlatIntervalCount(const vector<SeqPos>& flatSeq) {
 void computeFlatSeq(vector<SeqPos>& seq,
 					const vector<Mlfb>& mlfbs,
 					const Plane& plane) {
-  // ** compute left most facet
+  // ** compute left most flat
   const Mlfb* leftFlat = 0;
   for (size_t m = 0; m < mlfbs.size(); ++m) {
 	if (!plane.isFlat(mlfbs[m]))
@@ -348,20 +357,29 @@ void computeFlatSeq(vector<SeqPos>& seq,
 	  leftFlat = &(mlfbs[m]);
 	}
   }
-  ASSERT(leftFlat != 0);
+
+  seq.clear();
+  if (leftFlat == 0) {
+	ASSERT(!plane.hasFlat());
+	return;
+  }
 
   // ** go right as long as there is a flat there
-  seq.clear();
   SeqPos pos;
   pos.mlfb = leftFlat;
   while (plane.isFlat(*pos.mlfb)) {
+	ASSERT(seq.empty() || seq.back().mlfb != pos.mlfb);
 	seq.push_back(pos);
+	bool moved = false;
 	for (size_t facet = 1; facet < 4; ++facet) {
 	  if (pos.mlfb->getEdge(facet)->getEdge(0) == pos.mlfb) {
 		pos.mlfb = pos.mlfb->getEdge(facet);
+		moved = true;
 		break;
 	  }
 	}
+	if (!moved)
+	  break;
   }
 }  
 
@@ -431,25 +449,93 @@ void computePlanes(vector<Plane>& planes,
 	Plane& plane = planes[p];
 	for (size_t i = 0; i < mlfbs.size(); ++i)
 	  plane.typeCounts[plane.getType(mlfbs[i])] += 1;
+
 	computeFlatSeq(plane.flatSeq, mlfbs, plane);
-	computePivots(plane.pivots, plane.flatSeq);
+	computePivots(plane.pivots, mlfbs, plane, plane.flatSeq);
 	plane.flatIntervalCount = computeFlatIntervalCount(plane.flatSeq);
   }
 }
 
-void checkPlanes(const vector<Plane>& planes) {
+void check0Graph(const vector<Mlfb>& mlfbs) {
+  vector<bool> ok(mlfbs.size());
+  bool sawFlat = false;
+  for (size_t i =0 ; i < mlfbs.size(); ++i) {
+	ok[i] = (mlfbs[i].index == 0);
+	if (ok[i])
+	  sawFlat = true;
+  }
+  if (!sawFlat)
+	return;
+
+  while (true) {
+	bool done = true;
+	for (size_t i = 0; i < mlfbs.size(); ++i) {
+	  if (!ok[i]) {
+		size_t to = mlfbs[i].getEdge(0)->getOffset();
+		if (ok[to]) {
+		  done = false;
+		  ok[i] = true;
+		}
+	  }
+	}
+	if (done)
+	  break;
+  }
+
+  for (size_t i = 0; i < mlfbs.size(); ++i) {
+	CHECK(ok[i]);
+  }
+}
+
+void checkMlfbs(const vector<Mlfb>& mlfbs, const GrobLat& lat) {
+  CHECK(mlfbs.size() == lat.getNeighborCount() - 1);
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	CHECK(mlfbs[m].isParallelogram() == (mlfbs[m].index == 0));
+  }
+}
+
+void checkPlanes(const vector<Plane>& planes,
+				 const GrobLat& lat,
+				 const vector<Mlfb>& mlfbs) {
   bool multipleIntervals = false;
-  for (size_t p = 0; p < planes.size(); ++p)
+  bool anyFlat = false;
+  bool flatWith4Pivots = false;
+  for (size_t p = 0; p < planes.size(); ++p) {
 	if (planes[p].flatIntervalCount > 1)
 	  multipleIntervals = true;
-  if (multipleIntervals)
+	if (planes[p].hasFlat()) {
+	  anyFlat = true;
+	  if (planes[p].pivots.size() == 4)
+		flatWith4Pivots = true;
+	}
+  }
+  if (multipleIntervals) {
+	ASSERT(anyFlat);
+	//CHECK(flatWith4Pivots);
 	CHECK(planes.size() == 1);
+  }
+
+  if (planes.size() == 6) {
+	CHECK(!anyFlat);
+	CHECK(planes.size() == 6);
+	for (size_t p = 0; p < planes.size(); ++p) {
+	  CHECK(planes[p].pivots.size() == 4);
+	}
+	CHECK(lat.getNeighborCount() == 7);
+	CHECK(mlfbs.size() == 6);
+  }
+
+  if (anyFlat) {
+	//check0Graph(mlfbs);
+	//CHECK(flatWith4Pivots);
+	CHECK(planes.size() < 6);
+  }
 }
 
 void checkPlane(const Plane& plane, const vector<Mlfb>& mlfbs) {
   for (size_t i = 0; i < mlfbs.size(); ++i) {
 	if (plane.isPivot(mlfbs[i])) {
-	  CHECK(mlfbs[i].index == -1);
+	  CHECK(mlfbs[i].index == -1 || mlfbs[i].index == 1);
 	} else if (plane.isFlat(mlfbs[i])) {
 	  CHECK(mlfbs[i].index == 0);
 	}
@@ -478,10 +564,19 @@ bool disjointSeqs(const vector<SeqPos>& a, const vector<SeqPos>& b) {
   return true;
 }
 
-void computePivots(vector<const Mlfb*>& pivots, const vector<SeqPos>& flatSeq) {
-  ASSERT(!flatSeq.empty());
+void computePivots(vector<const Mlfb*>& pivots,
+				   const vector<Mlfb>& mlfbs,
+				   const Plane& plane,
+				   const vector<SeqPos>& flatSeq) {
+  pivots.clear();
+  for (size_t m = 0; m < mlfbs.size(); ++m)
+	if (plane.isPivot(mlfbs[m]))
+	  pivots.push_back(&(mlfbs[m]));
+  if (pivots.size() != 4 || flatSeq.empty())
+	return; // no idea about proper order in this case
 
   pivots.clear();
+  // use flat sequence to impose correct order
   size_t sumFacet = flatSeq.front().mlfb->getMinInitialFacet();
   pivots.push_back(flatSeq.front().mlfb->getEdge(0));
   pivots.push_back(flatSeq.front().mlfb->getEdge(sumFacet));
@@ -495,6 +590,7 @@ void computePivots(vector<const Mlfb*>& pivots, const vector<SeqPos>& flatSeq) {
 void computePivotSeqs(vector<vector<SeqPos> >& seqs,
 					  const Mlfb& pivot,
 					  const Plane& plane) {
+  ASSERT(plane.pivots.size() == 4);
   ASSERT(plane.isPivot(pivot));
   size_t flatFacet = pivotToFlatFacet(pivot, plane);
 
@@ -531,7 +627,7 @@ void checkPivotSeqs(vector<vector<SeqPos> >& pivotSeqs,
   NeighborPlace place;
   for (size_t i = 0; i < 3; ++i) {
 	CHECK(pivotSeqs[i].size() >= 2);
-	// ** all sequences on same between same pivots
+	// ** all sequences on same side between same pivots
 	CHECK((pivotSeqs[i].front().mlfb == pivot1 &&
 		   pivotSeqs[i].back().mlfb == pivot2) ||
 		  (pivotSeqs[i].front().mlfb == pivot2 &&
@@ -579,7 +675,7 @@ void checkPivotSeqs(vector<vector<SeqPos> >& pivotSeqs,
   }
 }
 
-void computeNonSums(vector<size_t>& nonSums, const GrobLat& lat) {
+void computeNonSums(vector<Neighbor>& nonSums, const GrobLat& lat) {
   vector<bool> isSum(lat.getNeighborCount());
   for (size_t i = 0; i < lat.getNeighborCount(); ++i) {
 	for (size_t j = 0; j < i; ++j) {
@@ -592,20 +688,30 @@ void computeNonSums(vector<size_t>& nonSums, const GrobLat& lat) {
   nonSums.clear();
   for (size_t i = 0; i < isSum.size(); ++i)
 	if (!isSum[i])
-	  nonSums.push_back(i);
+	  nonSums.push_back(lat.getNeighbor(i));
 }
 
-void checkNonSums(vector<size_t>& nonSums, const GrobLat& lat) {
+void checkNonSums(vector<Neighbor>& nonSums, const GrobLat& lat) {
   CHECK(nonSums.size() == 3 || nonSums.size() == 4);
   if (nonSums.size() == 3) {
 	Matrix mat(3, 3);
 	for (size_t ns = 0; ns < 3; ++ns)
 	  for (size_t var = 0; var < 3; ++var)
-		mat(ns, var) = lat.getHMatrix()(nonSums[ns], var);
+		mat(ns, var) = nonSums[ns].getH(var);
 	mpq_class det = determinant(mat);
 	CHECK(det == 1 || det == -1);
   } else {
-	CHECK(false); // impl
+	Matrix mat(4, 3);
+	for (size_t ns = 0; ns < 4; ++ns)
+	  for (size_t var = 0; var < 3; ++var)
+		mat(ns, var) = nonSums[ns].getY(var);
+	cout << mat << endl;
+	CHECK(isParallelogram(mat));
+
+	return; // not checking this as it seems to not be true
+	mpq_class areaSq = getParallelogramAreaSq(mat);
+	cout << areaSq << endl;
+	CHECK(areaSq == 1);
   }
 }
 
@@ -739,36 +845,6 @@ void checkNonMlfbTris(const GrobLat& lat,
   // ** the two pivots must be on the left
   CHECK((mlfbA == pivots[0] && mlfbB == pivots[1]) ||
 		(mlfbA == pivots[1] && mlfbB == pivots[0]));
-}
-
-void check0Graph(vector<Mlfb>& mlfbs) {
-  vector<bool> ok(mlfbs.size());
-  bool sawFlat = false;
-  for (size_t i =0 ; i < mlfbs.size(); ++i) {
-	ok[i] = (mlfbs[i].index == 0);
-	sawFlat = true;
-  }
-  if (!sawFlat)
-	return;
-
-  while (true) {
-	bool done = true;
-	for (size_t i = 0; i < mlfbs.size(); ++i) {
-	  if (!ok[i]) {
-		size_t to = mlfbs[i].getEdge(0)->getOffset();
-		if (ok[to]) {
-		  done = false;
-		  ok[i] = true;
-		}
-	  }
-	}
-	if (done)
-	  break;
-  }
-
-  for (size_t i = 0; i < mlfbs.size(); ++i) {
-	CHECK(ok[i]);
-  }
 }
 
 const char* getEdgePos(size_t index) {

@@ -370,3 +370,48 @@ TEST(Matrix, Determinant) {
 	(1, "-2\n");
   ASSERT_EQ(determinant(mat4), -2);
 }
+
+TEST(Matrix, IsParallelogram) {
+  // zeroes and variations of number of pointsx
+  for (size_t dim = 0; dim < 5; ++dim) {
+	ASSERT_FALSE(isParallelogram(Matrix(0, dim)));
+	ASSERT_FALSE(isParallelogram(Matrix(3, dim)));
+	ASSERT_TRUE(isParallelogram(Matrix(4, dim)));
+	ASSERT_FALSE(isParallelogram(Matrix(5, dim)));
+  }
+
+  // permutations
+  ASSERT_TRUE(isParallelogram(makeMatrix(2, "1 1\n 2 3\n 3 1\n 4 3\n")));
+  ASSERT_TRUE(isParallelogram(makeMatrix(2, "2 3\n 1 1\n 3 1\n 4 3\n")));
+  ASSERT_TRUE(isParallelogram(makeMatrix(2, "2 3\n 1 1\n 4 3\n 3 1\n")));
+  ASSERT_TRUE(isParallelogram(makeMatrix(2, "2 3\n 4 3\n 1 1\n 3 1\n")));
+  ASSERT_TRUE(isParallelogram(makeMatrix(2, "4 3\n 2 3\n 1 1\n 3 1\n")));
+  ASSERT_FALSE(isParallelogram(makeMatrix(2, "4 3\n 2 3\n 1 1\n 3 3\n")));
+
+  // higher dimension
+  ASSERT_TRUE(isParallelogram(makeMatrix(3,"1 1 4\n 2 3 6\n 3 1 7\n 4 3 9\n")));
+  ASSERT_FALSE(isParallelogram(makeMatrix(3,"1 1 5\n2 3 6\n 3 1 7\n 4 3 9\n")));
+
+  // lower dimension
+  ASSERT_TRUE(isParallelogram(makeMatrix(1, "1\n 2\n 3\n 4\n")));
+  ASSERT_FALSE(isParallelogram(makeMatrix(1, "1\n 1\n 3\n 4\n")));
+}
+
+TEST(Matrix, GetParallelogramArea) {
+  ASSERT_EQ(0, getParallelogramAreaSq(makeMatrix(1, "1\n1\n1\n1")));
+  ASSERT_EQ(0, getParallelogramAreaSq(makeMatrix(2, "1 2\n1 2\n3 5\n3 5")));
+  ASSERT_EQ(1, getParallelogramAreaSq(makeMatrix(2, "0 0\n0 1\n1 0\n1 1")));
+  ASSERT_EQ(4, getParallelogramAreaSq(makeMatrix(2, "0 0\n0 2\n1 0\n1 2")));
+  ASSERT_EQ(4, getParallelogramAreaSq(makeMatrix(2, "1 2\n1 4\n2 2\n2 4")));
+  ASSERT_EQ(4, getParallelogramAreaSq
+			(makeMatrix(3, "1 2 1\n1 4 1\n2 2 1\n2 4 1")));
+
+  ASSERT_EQ(44, getParallelogramAreaSq
+			(makeMatrix(3, "1 2 0\n1 4 2\n2 2 3\n2 4 5")));
+
+  ASSERT_EQ(19277, getParallelogramAreaSq
+			(makeMatrix(3, "5 -1 6\n 13 -5 5\n -14 5 -7\n -6 1 -8")));
+  ASSERT_EQ(2580644, getParallelogramAreaSq
+			(makeMatrix(4, "-17 -15 -16 29\n -16 7 -24 18\n"
+						"-2 -10 27 -14\n -1 12 19 -25")));
+}
