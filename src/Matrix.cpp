@@ -416,3 +416,69 @@ mpq_class determinant(const Matrix& mat) {
 	det *= reduced(i, i);
   return det;
 }
+
+namespace {
+  size_t getOppositeZeroRow(const Matrix& mat) {
+	// Let a,d and b,c be opposite vertices in a parallelogram. Then
+	// and only then b + c == d + a. We return the index of the row opposite
+	// to row 0. If the rows of mat are not the vertices of a parallelogram
+	// then we return mat.getRowCount().
+
+	if (mat.getRowCount() != 4)
+	  return mat.getRowCount();
+
+	mpq_class tmp;
+	for (size_t opposite = 1; opposite < 4; ++opposite) {
+	  bool isPara = true;
+	  for (size_t col = 0; col < mat.getColCount(); ++col) {
+		tmp = mat(0, col) + mat(opposite, col);
+		for (size_t row = 1; row < 4; ++row)
+		  if (row != opposite)
+			tmp -= mat(row, col);
+		if (tmp != 0) {
+		  isPara = false;
+		  break;
+		}
+	  }
+	  if (isPara)
+		return opposite;
+	}
+	return mat.getRowCount();
+  }
+}
+
+bool isParallelogram(const Matrix& mat) {
+  return getOppositeZeroRow(mat) != mat.getRowCount();
+}
+
+mpq_class getParallelogramAreaSq(const Matrix& mat) {
+  ASSERT(isParallelogram(mat));
+  size_t opposite = getOppositeZeroRow(mat);
+
+  size_t a;
+  for (a = 1; a < 4; ++a)
+	if (a != opposite)
+	  break;
+  ASSERT(a < 4);
+
+  size_t b;
+  for (b = a + 1; b < 4; ++b)
+	if (b != opposite)
+	  break;
+  ASSERT(b < 4);
+
+  // Translate to zero and drop the zero and sum vertices.
+  Matrix tmp(2, mat.getColCount());
+  for (size_t col = 0; col < mat.getColCount(); ++col) {
+	tmp(0, col) = mat(a, col) - mat(0, col);
+	tmp(1, col) = mat(b, col) - mat(0, col);
+  }
+
+  // Now the square of the area is det(tmp*transpose(tmp)).
+  Matrix trans;
+  transpose(trans, tmp);
+  Matrix prod;
+  product(prod, tmp, trans);
+
+  return determinant(prod);
+}

@@ -225,6 +225,10 @@ struct Plane {
   bool isFlat(const Mlfb& mlfb) const;
   size_t getType(const Mlfb& mlfb) const;
 
+  bool hasFlat() const {
+	return getTypeCount(4) > 0;
+  }
+
   Matrix nullSpaceBasis;
   vector<Tri> nonMlfbTris;
   Matrix rowAB;
@@ -311,6 +315,10 @@ class Mlfb {
 	return 4;
   }
 
+  bool isParallelogram() const {
+	return _isParallelogram;
+  }
+
   mpq_class index;
   mpz_class dotDegree;
   vector<Mlfb*> edges;
@@ -323,6 +331,7 @@ class Mlfb {
   vector<mpz_class> _rhs;
   vector<Neighbor> _points;
   size_t _offset;
+  bool _isParallelogram;
 };
 
 size_t pushOutFacetPositive(size_t facetPushOut,
@@ -363,24 +372,28 @@ void setupPlaneCountsAndOrder(vector<Mlfb>& mlfbs,
 
 bool disjointSeqs(const vector<SeqPos>& a, const vector<SeqPos>& b);
 
-/** Put all pivots into pivots. flatSeq must be the sequence of facets
-	and it must be non-empty. offsets 0,1 will be the left pivots
-	while 2,3 will be the right pivots. */
-void computePivots(vector<const Mlfb*>& pivots, const vector<SeqPos>& flatSeq);
+/** Put all pivots into pivots. flatSeq must be the sequence of
+	flats. If flatSeq is not empty, then offsets 0,1 will be the left
+	pivots while 2,3 will be the right pivots. */
+void computePivots(vector<const Mlfb*>& pivots,
+				   const vector<Mlfb>& mlfbs,
+				   const Plane& plane,
+				   const vector<SeqPos>& flatSeq);
 
-void computeNonSums(vector<size_t>& nonSums, const GrobLat& lat);
-void checkNonSums(vector<size_t>& nonSums, const GrobLat& lat);
+void computeNonSums(vector<Neighbor>& nonSums, const GrobLat& lat);
+void checkNonSums(vector<Neighbor>& nonSums, const GrobLat& lat);
 
 void checkFlatSeq(const vector<SeqPos>& flatSeq,
 				  const GrobLat& lat,
 				  const Plane& plane);
 
-void check0Graph(vector<Mlfb>& mlfbs);
-
 const char* getEdgePos(size_t index);
 mpq_class getIndexSum(const vector<Mlfb>& mlfbs);
 
-void checkPlanes(const vector<Plane>& planes);
+void checkMlfbs(const vector<Mlfb>& mlfbs, const GrobLat& lat);
+void checkPlanes(const vector<Plane>& planes,
+				 const GrobLat& lat,
+				 const vector<Mlfb>& mlfbs);
 void checkPlane(const Plane& plane, const vector<Mlfb>& mlfbs);
 
 #endif

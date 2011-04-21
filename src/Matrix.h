@@ -132,4 +132,13 @@ bool hasSameRowSpace(const Matrix& a, const Matrix& b);
 /** Returns the determinant of mat. */
 mpq_class determinant(const Matrix& mat);
 
+/** Returns true if the rows of mat are the (4) vertices of a parallelogram. */
+bool isParallelogram(const Matrix& mat);
+
+/** Returns the square of the area of the parallelogram whose vertices
+	are the 4 rows of mat. Mat must be a parallelogram. The square of
+	the are is integer if the entries of mat are integer and otherwise
+	it is rational. The are itself can be an irrational number. */
+mpq_class getParallelogramAreaSq(const Matrix& mat);
+
 #endif

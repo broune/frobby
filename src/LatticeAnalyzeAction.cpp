@@ -302,7 +302,7 @@ namespace {
 	cout << '\n';
 
 	cout << "The plane contains " << plane.nonMlfbTris.size()
-		 << " non-MLFB double triangle pair(s):\n";
+		 << " non-MLFB double triangle pair:\n";
 	NeighborPrinter pr(lat);
 	for (size_t t = 0; t < plane.nonMlfbTris.size(); ++t) {
 	  pr.addLine();
@@ -317,11 +317,15 @@ namespace {
 	const vector<const Mlfb*>& pivots = plane.pivots;
 
 	CHECK(plane.nonMlfbTris.size() == 1);
-	CHECK(pivots.size() >= 4);
+	CHECK(pivots.size() == 4 || pivots.size() == 6 || pivots.size() == 9
+		  || pivots.size() == 8 || pivots.size() == 10);
 
 	if (flatSeq.size() == 0) {
 	  CHECK(plane.getTypeCount(4) == 0);
 	  cout << "Plane has no flats so can't "
+		"compute or make sense of sequences (yet).\n";
+	} else if (pivots.size() != 4) {
+	  cout << "Plane has " << pivots.size() << " pivots so can't "
 		"compute or make sense of sequences (yet).\n";
 	} else {
 	  cout << endl;
@@ -346,8 +350,6 @@ namespace {
 	  checkNonMlfbTris(lat, mlfbs, pivots, plane.nonMlfbTris, plane);
 	  checkFlatSeq(flatSeq, lat, plane);
 	}
-
-	check0Graph(mlfbs);
   }
 
   void printScarfGraph(const vector<Mlfb>& mlfbs) {
@@ -460,7 +462,7 @@ void LatticeAnalyzeAction::perform() {
   vector<Mlfb> mlfbs;
   computeMlfbs(mlfbs, lat);
 
-  cerr << "** Computing double triangles" << endl;
+  cerr << "** Computing planes and associated structures" << endl;
   vector<Plane> planes;
   computePlanes(planes, lat, mlfbs);
 
@@ -477,30 +479,36 @@ void LatticeAnalyzeAction::perform() {
   else
 	cout << "No neighbor has a zero entry.\n";
 
+  mpq_class indexSum = getIndexSum(mlfbs);
+
   cout << "There are " << lat.getNeighborCount() << " neighbors excluding zero.\n";
   cout << "There are " << mlfbs.size() << " MLFBs.\n";
   cout << "There are " << paraMlfbCount << " parallelogram MLFBs.\n";
   cout << "There are " << planes.size()
 	   << " distinct double triangle planes.\n";
-  cout << "The sum of MLFB indexes is " << getIndexSum(mlfbs) << ".\n";
+  cout << "The sum of MLFB indexes is " << indexSum << ".\n";
+
+  CHECK(indexSum == 6 || indexSum == -6);
 
   printMinDotDegreeMlfb(mlfbs);
 
   printNeighbors(lat);
 
-  vector<size_t> nonSums;
+  vector<Neighbor> nonSums;
   computeNonSums(nonSums, lat);
   cout << "The " << nonSums.size() << " non-sum neighbors are:";
   for (size_t i = 0; i < nonSums.size(); ++i)
-	cout << ' ' << 'g' << (i+1);
+	cout << ' ' << nonSums[i].getName();
   cout << endl;
 
   for (size_t plane = 0; plane < planes.size(); ++plane) {
-	cout << "\n\n*** Plane " << (plane + 1) << " of " << planes.size() << "\n\n";
+	cout << "\n\n*** Plane " << (plane + 1)
+		 << " of " << planes.size() << "\n\n";
 	printPlane(mlfbs, planes[plane], lat);
 	checkPlane(planes[plane], mlfbs);
   }
-  checkPlanes(planes);
+  checkMlfbs(mlfbs, lat);
+  checkPlanes(planes, lat, mlfbs);
 
   printScarfGraph(mlfbs);
   printMathematica3D(mlfbs, lat);
