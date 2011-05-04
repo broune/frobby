@@ -25,7 +25,7 @@
 #include "error.h"
 #include "PivotEulerAlg.h"
 #include "Ideal.h"
-#include "HilbertBaseCase.h"
+#include "HilbertBasecase.h"
 #include "PivotStrategy.h"
 
 #include <algorithm>

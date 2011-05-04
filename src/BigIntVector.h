@@ -19,6 +19,7 @@
 #define BIG_INT_VECTOR_GUARD
 
 #include <vector>
+#include <ostream>
 
 class BigIntVector {
  public:
