@@ -27,7 +27,7 @@
 #include "error.h"
 #include "FrobbyStringStream.h"
 #include "SizeMaxIndepSetAlg.h"
-#include "HilbertBaseCase.h"
+#include "HilbertBasecase.h"
 #include "PivotEulerAlg.h"
 
 IdealFacade::IdealFacade(bool printActions):
