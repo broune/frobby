@@ -1,6 +1,6 @@
 #!/bin/bash
 
-digits=4
+digits=8
 entries=4
 
 for (( c=1; c<=1000000; c++ )) do

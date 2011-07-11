@@ -113,76 +113,26 @@ namespace {
 	  _pr.addColumn(false, " ", "");
 	}
 
-	void addLine(Neighbor neighbor,
-				 NeighborPlace place = NoPlace,
-				 size_t hits = (size_t)-1,
-				 Mlfb* edge = 0) {
-	  _pr[_labelIndex] << neighbor.getName() << ':';
-	  if (place != NoPlace)
-		_pr[_labelIndex] << ' ' << getPlaceCode(place);
-	  _pr[_labelIndex] << '\n';
-
-	  _pr[_yHeader] << "y=\n";
-	  for (size_t i = 0; i < neighbor.getYDim(); ++i)
-		_pr[_yIndex + i] << neighbor.getY(i) << '\n';
-	  _pr[_comma] << ",\n";
-	  _pr[_hHeader] << "h=\n";
-	  for (size_t i = 0; i < neighbor.getHDim(); ++i)
-		_pr[_hIndex + i] << neighbor.getH(i) << '\n';
-
-	  if (hits != (size_t)-1) {
-		_pr[_hitsHeader] << "hits";
-		if (hits == 0)
-		  _pr[_hits] << "zero";
-		else
-		  _pr[_hits] << 'g' << hits;
-	  }
+	void addNeighbor(Neighbor neighbor) {
+	  printNeighborOnly(neighbor);
 	  _pr[_hitsHeader] << '\n';
 	  _pr[_hits] << '\n';
-
-	  if (edge != 0) {
-		_pr[_edgeHeader] << "push to";
-		_pr[_edge] << edge->getName();
-	  }
 	  _pr[_edgeHeader] << '\n';
 	  _pr[_edge] << '\n';
 	}
 
-	void addZeroLine(NeighborPlace place = NoPlace,
-					 size_t hits = (size_t)-1,
-					 Mlfb* edge = 0) {
-	  _pr[_labelIndex] << "zero:";
-	  if (place != NoPlace)
-		_pr[_labelIndex] << ' ' << getPlaceCode(place);
-	  _pr[_labelIndex] << '\n';
-
-	  _pr[_yHeader] << "y=\n";
-	  for (size_t i = 0; i < _lat.getYDim(); ++i)
-		_pr[_yIndex + i] << 0 << '\n';
-	  _pr[_comma] << ",\n";
-	  _pr[_hHeader] << "h=\n";
-	  for (size_t i = 0; i < _lat.getHDim(); ++i)
-		_pr[_hIndex + i] << 0 << '\n';
-
-	  if (hits != (size_t)-1) {
-		_pr[_hitsHeader] << "hits";
-		if (hits == 0)
-		  _pr[_hits] << "zero";
-		else
-		  _pr[_hits] << 'g' << hits;
-	  }
-	  _pr[_hitsHeader] << '\n';
-	  _pr[_hits] << '\n';
-
-	  if (edge != 0) {
-		_pr[_edgeHeader] << "push to";
-		_pr[_edge] << edge->getName();
-	  }
-	  _pr[_edgeHeader] << '\n';
-	  _pr[_edge] << '\n';
+	void addMlfbPoint(Neighbor neighbor,
+					  const Plane& plane,
+					  Neighbor hits,
+					  Mlfb& edge) {
+	  printNeighborOnly(neighbor, plane.getPlace(neighbor));
+	  _pr[_hitsHeader] << "hits\n";
+	  _pr[_hits] << hits.getName() << '\n';
+	  _pr[_edgeHeader] << "push to\n";
+	  _pr[_edge] << edge.getName(plane) << '\n';
 	}
 
-	void addLine() {
+	void addEmptyLine() {
 	  for (size_t i = 0; i < _pr.getColumnCount(); ++i)
 		_pr[i] << '\n';
 	}
@@ -196,6 +146,21 @@ namespace {
 	}
 
   private:
+	void printNeighborOnly(Neighbor neighbor, NeighborPlace place = NoPlace) {
+	  _pr[_labelIndex] << neighbor.getName() << ':';
+	  if (place != NoPlace)
+		_pr[_labelIndex] << ' ' << getPlaceCode(place);
+	  _pr[_labelIndex] << '\n';
+
+	  _pr[_yHeader] << "y=\n";
+	  for (size_t i = 0; i < neighbor.getYDim(); ++i)
+		_pr[_yIndex + i] << neighbor.getY(i) << '\n';
+	  _pr[_comma] << ",\n";
+	  _pr[_hHeader] << "h=\n";
+	  for (size_t i = 0; i < neighbor.getHDim(); ++i)
+		_pr[_hIndex + i] << neighbor.getH(i) << '\n';
+	}
+
 	const GrobLat& _lat;
 	ColumnPrinter _pr;
 	size_t _labelIndex;
@@ -222,9 +187,9 @@ namespace {
 
   void printNeighbors(const GrobLat& lat) {
 	NeighborPrinter pr(lat);
-	pr.addZeroLine();
+	pr.addNeighbor(Neighbor(lat));
 	for (size_t n = 0; n < lat.getNeighborCount(); ++n)
-	  pr.addLine(lat.getNeighbor(n));
+	  pr.addNeighbor(lat.getNeighbor(n));
 
 	fprintf(stdout, "\nThe %u neighbors in y-space and h-space are\n",
 			(unsigned int)lat.getNeighborCount());
@@ -259,18 +224,17 @@ namespace {
 	cout << "\n\n";
 	for (size_t i = 0; i < order.size(); ++i) {
 	  Mlfb& mlfb = *(order[i]);
-	  cout << "*** MLFB " << mlfb.getName() << " with rhs";
+	  cout << "*** MLFB " << mlfb.getName(plane) << " with rhs";
 	  for (size_t var = 0; var < lat.getYDim(); ++var)
 		cout << ' ' << mlfb.getRhs()[var];
 	  cout << " contains the neighbors\n";
 
 	  NeighborPrinter pr(lat);
-	  pr.addZeroLine(InPlane, mlfb.getHitsNeighbor(0), mlfb.getEdge(0));
-	  for (size_t i = 1; i < mlfb.getPointCount(); ++i) {
-		pr.addLine(mlfb.getPoint(i),
-				   plane.getPlace(mlfb.getPoint(i)),
-				   mlfb.getHitsNeighbor(i),
-				   mlfb.getEdge(i));
+	  for (size_t i = 0; i < mlfb.getPointCount(); ++i) {
+		pr.addMlfbPoint(mlfb.getPoint(i),
+						plane,
+						mlfb.getHitsNeighbor(i),
+						*mlfb.getEdge(i));
 	  }
 	  pr.print(cout);
 	  cout << "Its index is " << mlfb.index << ", its rhs dot product is " <<
@@ -279,10 +243,10 @@ namespace {
 	}
   }
 
-  void prSeq(const vector<SeqPos>& seq) {
+  void prSeq(const vector<SeqPos>& seq, const Plane& plane) {
 	cout << " Seq: ";
 	for (size_t i = 0; i < seq.size(); ++i)
-	  cout << (i > 0 ? "->" : "") << seq[i].mlfb->getName();
+	  cout << (i > 0 ? "->" : "") << seq[i].mlfb->getName(plane);
 	cout << endl;
   }
 
@@ -301,32 +265,72 @@ namespace {
 		   << " MLFBs with " << i << " plane neighbors.\n";
 	cout << '\n';
 
-	cout << "The plane contains " << plane.nonMlfbTris.size()
-		 << " non-MLFB double triangle pair:\n";
-	NeighborPrinter pr(lat);
-	for (size_t t = 0; t < plane.nonMlfbTris.size(); ++t) {
-	  pr.addLine();
-	  pr.addLine(plane.nonMlfbTris[t].a);
-	  pr.addLine(plane.nonMlfbTris[t].b);
-	  
+	const Tri& tri = plane.tri;
+	cout << "The non-flat triangle of the plane is "
+		 << "{zero,"
+		 << tri.getA().getName() << ',' << tri.getSum().getName() << "},"
+		 << "{zero,"
+		 << tri.getB().getName() << ',' << tri.getSum().getName() << "}.";
+
+	cout << "\nThe MLFBs containing {zero,"
+		 << tri.getA().getName() << ',' << tri.getSum().getName() << "} are:";
+	for (size_t i = 0; i < tri.getASideMlfbs().size(); ++i)
+	  cout << ' ' << tri.getASideMlfbs()[i]->getName(plane);
+
+	cout << "\nThe MLFBs containing {zero,"
+		 << tri.getB().getName() << ',' << tri.getSum().getName() << "} are:";
+	for (size_t i = 0; i < tri.getBSideMlfbs().size(); ++i)
+	  cout << ' ' << tri.getBSideMlfbs()[i]->getName(plane);
+
+	cout << "\nThe neighbors on the boundary of the body defined by {zero,"
+		 << tri.getA().getName() << ','
+		 << tri.getB().getName() << ','
+		 << tri.getSum().getName() << "} are\n";
+	{
+	  NeighborPrinter pr(lat);
+	  for (size_t i = 0; i < tri.getNeighborsOnBoundary().size(); ++i)
+		pr.addNeighbor(tri.getNeighborsOnBoundary()[i]);
+	  pr.print(stdout);
 	}
-	pr.print(stdout);
+	cout << "and those in the interior are\n";
+	{
+	  NeighborPrinter pr(lat);
+	  for (size_t i = 0; i < tri.getNeighborsInInterior().size(); ++i)
+		pr.addNeighbor(tri.getNeighborsInInterior()[i]);
+	  pr.print(stdout);
+	}
+
 
 	printMlfbs(mlfbs, plane, lat);
 
 	const vector<const Mlfb*>& pivots = plane.pivots;
 
-	CHECK(plane.nonMlfbTris.size() == 1);
-	CHECK(pivots.size() == 4 || pivots.size() == 6 || pivots.size() == 9
-		  || pivots.size() == 8 || pivots.size() == 10);
+	CHECK((pivots.size() % 2) == 0);
 
-	if (flatSeq.size() == 0) {
-	  CHECK(plane.getTypeCount(4) == 0);
-	  cout << "Plane has no flats so can't "
-		"compute or make sense of sequences (yet).\n";
-	} else if (pivots.size() != 4) {
-	  cout << "Plane has " << pivots.size() << " pivots so can't "
-		"compute or make sense of sequences (yet).\n";
+	CHECK(!(tri.getASideMlfbs().size() == 2 &&
+			tri.getBSideMlfbs().size() == 2 &&
+			pivots.size() == 4 &&
+			flatSeq.size() > 0));
+
+	if (flatSeq.size() == 0 || pivots.size() != 4) {
+	  cout << "(Falling back to general framework as no flats or more than 4 pivots)\n\n";
+	  
+	  vector<vector<SeqPos> > left;
+	  vector<vector<SeqPos> > right;
+	  computeSeqs(left, right, mlfbs, plane);
+
+	  cout << "The left sequences are:\n";
+	  for (size_t j = 0; j < left.size(); ++j)
+		prSeq(left[j], plane);
+
+	  cout << "The right sequences are:\n";
+	  for (size_t j = 0; j < right.size(); ++j)
+		prSeq(right[j], plane);
+
+	  checkSeqs(left, right, plane, mlfbs);
+	  checkMiddle(plane, mlfbs);
+	  checkGraphOnPlane(plane, mlfbs);
+	  checkDoubleTriangle(plane, mlfbs);
 	} else {
 	  cout << endl;
 
@@ -338,16 +342,16 @@ namespace {
 
 	  cout << "The left sequences are:\n";
 	  for (size_t j = 0; j < leftSeqs.size(); ++j)
-		prSeq(leftSeqs[j]);
+		prSeq(leftSeqs[j], plane);
 	  cout << "The flat sequence is:\n";
-	  prSeq(flatSeq);
+	  prSeq(flatSeq, plane);
 	  cout << "The right sequences are:\n";
 	  for (size_t j = 0; j < rightSeqs.size(); ++j)
-		prSeq(rightSeqs[j]);
+		prSeq(rightSeqs[j], plane);
 
 	  checkPivotSeqs(leftSeqs, plane, mlfbs, flatSeq);
 	  checkPivotSeqs(rightSeqs, plane, mlfbs, flatSeq);
-	  checkNonMlfbTris(lat, mlfbs, pivots, plane.nonMlfbTris, plane);
+	  checkPlaneTri(lat, mlfbs, pivots, plane);
 	  checkFlatSeq(flatSeq, lat, plane);
 	}
   }
@@ -402,6 +406,16 @@ namespace {
 	  out << "}]}],\n";
 	}
 	out << " Graphics3D[Point[{0,0,0}]]\n};\ng=Show[{a},Boxed->False];\n";
+  }
+
+  void printThinPlanes(const vector<TriPlane>& thinPlanes) {
+	Matrix matrix(thinPlanes.size(), 3);
+
+	for (size_t p = 0; p < thinPlanes.size(); ++p)
+	  copyRow(matrix, p, thinPlanes[p].getNormal(), 0);
+
+	cout << "The " << thinPlanes.size() << " thin planes' normals are the rows of" << endl;
+	cout << matrix;
   }
 }
 
@@ -462,7 +476,11 @@ void LatticeAnalyzeAction::perform() {
   vector<Mlfb> mlfbs;
   computeMlfbs(mlfbs, lat);
 
-  cerr << "** Computing planes and associated structures" << endl;
+  cerr << "** Computing thin planes" << endl;
+  vector<TriPlane> thinPlanes;
+  getThinPlanes(thinPlanes, lat);
+
+  cerr << "** Computing double triangle planes and associated structures" << endl;
   vector<Plane> planes;
   computePlanes(planes, lat, mlfbs);
 
@@ -494,12 +512,13 @@ void LatticeAnalyzeAction::perform() {
 
   printNeighbors(lat);
 
-  vector<Neighbor> nonSums;
-  computeNonSums(nonSums, lat);
+  const vector<Neighbor>& nonSums = lat.getNonSums();
   cout << "The " << nonSums.size() << " non-sum neighbors are:";
   for (size_t i = 0; i < nonSums.size(); ++i)
 	cout << ' ' << nonSums[i].getName();
   cout << endl;
+
+  printThinPlanes(thinPlanes);
 
   for (size_t plane = 0; plane < planes.size(); ++plane) {
 	cout << "\n\n*** Plane " << (plane + 1)
@@ -508,12 +527,15 @@ void LatticeAnalyzeAction::perform() {
 	checkPlane(planes[plane], mlfbs);
   }
   checkMlfbs(mlfbs, lat);
-  checkPlanes(planes, lat, mlfbs);
+  checkDoubleTrianglePlanes(planes, lat, mlfbs);
+
+  checkPlanes(thinPlanes, planes);
 
   printScarfGraph(mlfbs);
   printMathematica3D(mlfbs, lat);
 
-  checkNonSums(nonSums, lat);
+  checkNonSums(lat);
+  checkGraph(mlfbs);
 }
 
 const char* LatticeAnalyzeAction::staticGetName() {

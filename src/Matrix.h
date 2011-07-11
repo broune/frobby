@@ -104,9 +104,9 @@ void subMatrix(Matrix& sub, const Matrix& mat,
 			   size_t colBegin, size_t colEnd);
 
 /** Copies row sourceRow from source to row targetRow of
-    target. source and taret Must have the same number of columns. */
+    target. source and target must have the same number of columns. */
 void copyRow(Matrix& target, size_t targetRow,
-	     const Matrix& source, size_t sourceRow);
+             const Matrix& source, size_t sourceRow);
 
 /** Sets inv to the inverse of mat.
 

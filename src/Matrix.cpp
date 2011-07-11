@@ -326,12 +326,12 @@ void nullSpace(Matrix& basis, const Matrix& matParam) {
     size_t row = 0;
     for (size_t nullRow = 0; nullRow < basis.getRowCount(); ++nullRow) {
       if (colHasPivot[nullRow]) {
-	basis(nullRow, nullCol) = -mat(row, col);
-	++row;
+		basis(nullRow, nullCol) = -mat(row, col);
+		++row;
       } else if (nullRow == col)
-	basis(nullRow, nullCol) = 1;
+		basis(nullRow, nullCol) = 1;
       else
-	basis(nullRow, nullCol) = 0;
+		basis(nullRow, nullCol) = 0;
     }
 
     ++nullCol;
