@@ -44,6 +44,7 @@
 
 #include <iostream>
 
+// wrapped in do .. while(false) to make it act like a single statement.
 #define CHECK(X)									\
   do {												\
 	if (!(X)) {										\
@@ -108,6 +109,8 @@ class Neighbor {
 
   bool isZero() const;
   bool isValid() const;
+  bool isSpecial() const;
+  bool isGenerator() const;
 
   string getName() const;
   const GrobLat& getGrobLat() const {return *_lat;}
@@ -120,21 +123,7 @@ class Neighbor {
 /** A lattice with associated Grobner basis/neighbors. */
 class GrobLat {
  public:
-  GrobLat(const Matrix& matrix, const SatBinomIdeal& ideal) {
-	_ideal = ideal;
-	_ideal.getMatrix(_y);
-
-	// transpose in preparation for solve
-	transpose(_y);
-	transpose(_mat, matrix);
-
-	solve(_h, _mat, _y);
-
-	// un-transpose
-	transpose(_mat);
-	transpose(_y);
-	transpose(_h);
-  }
+  GrobLat(const Matrix& matrix, const SatBinomIdeal& ideal);
 
   Neighbor getNeighbor(size_t row) const {
 	ASSERT(row < getNeighborCount());
@@ -199,9 +188,34 @@ class GrobLat {
 	_ideal.getInitialIdeal(ideal);
   }
 
+  bool isSum(Neighbor n) const {
+	ASSERT(n.isValid());
+	ASSERT(&n.getGrobLat() == this);
+	ASSERT(n.getRow() < _isSumRow.size());
+	return _isSumRow[n.getRow()];
+  }
+  const vector<Neighbor>& getNonSums() const {return _nonSums;}
   const mpq_class& getZero() const {return _zero;} // todo: remove
 
+  /// Returns true if the smallest body containing zero, a and b has
+  /// no neighbor in its interior.
+  bool isPointFreeBody(Neighbor a, Neighbor b) const {
+	return _ideal.isPointFreeBody(_ideal.getGenerator(a.getRow()),
+								  _ideal.getGenerator(b.getRow()));
+  }
+
+  /// Returns true if the smallest body containing zero, a, b and c
+  /// has no neighbor in its interior.
+  bool isPointFreeBody(Neighbor a, Neighbor b, Neighbor c) const {
+	return _ideal.isPointFreeBody(_ideal.getGenerator(a.getRow()),
+								  _ideal.getGenerator(b.getRow()),
+								  _ideal.getGenerator(c.getRow()));
+  }
+
  private:
+  vector<bool> _isSumRow;
+  vector<Neighbor> _nonSums;
+
   Matrix _y; // rows are neighbors in y-space
   Matrix _h; // rows are neighbors in h-space
   Matrix _mat; // matrix that defines lattice
@@ -209,20 +223,43 @@ class GrobLat {
   mpq_class _zero;
 };
 
-struct Tri {
-  Neighbor a;
-  Neighbor b;
-  Neighbor sumAB;
-  bool fromFlat;
+class Tri {
+ public:
+  Tri(Neighbor a, Neighbor b, Neighbor sum,
+	  const vector<Mlfb>& mlfbs, const GrobLat& lat);
+
+  Neighbor getA() const {return _a;}
+  Neighbor getB() const {return _b;}
+  Neighbor getSum() const {return _sum;}
+  const vector<const Mlfb*>& getASideMlfbs() const {return _aSideMlfbs;}
+  const vector<const Mlfb*>& getBSideMlfbs() const {return _bSideMlfbs;} 
+  const vector<Neighbor>& getNeighborsOnBoundary() const {return _boundary;}
+  const vector<Neighbor>& getNeighborsInInterior() const {return _interior;}
+
+ private:
+  Neighbor _a;
+  Neighbor _b;
+  Neighbor _sum; // neighbor that is sum of a and b
+  vector<const Mlfb*> _aSideMlfbs; // MLFBs containing {0,a,sum}
+  vector<const Mlfb*> _bSideMlfbs; // MLFBs containing {0,b,sum}
+  vector<Neighbor> _interior; // neighbors on boundary of <0,a,b,sum>
+  vector<Neighbor> _boundary; // neighbors in interior of <0,a,b,sum>
 };
 
-struct Plane {
+class Plane {
+ public:
+Plane(Neighbor a, Neighbor b, Neighbor sum,
+	  const vector<Mlfb>& mlfbs, const GrobLat& lat):
+  tri(a, b, sum, mlfbs, lat) {}
+
   size_t getTypeCount(size_t type) const;
   size_t getMaxType() const;
   NeighborPlace getPlace(Neighbor neighbor) const;
   bool inPlane(Neighbor neighbor) const;
   bool isPivot(const Mlfb& mlfb) const;
+  bool isSidePivot(const Mlfb& mlfb) const;
   bool isFlat(const Mlfb& mlfb) const;
+  bool is22(const Mlfb& mlfb) const;
   size_t getType(const Mlfb& mlfb) const;
 
   bool hasFlat() const {
@@ -230,7 +267,7 @@ struct Plane {
   }
 
   Matrix nullSpaceBasis;
-  vector<Tri> nonMlfbTris;
+  Tri tri;
   Matrix rowAB;
   size_t flatIntervalCount;
 
@@ -256,11 +293,6 @@ class Mlfb {
   Neighbor getPoint(size_t offset) const {
 	ASSERT(offset < getPointCount());
 	return _points[offset];
-	ASSERT(!_points.empty());
-	if (offset == 0)
-	  return Neighbor(_points.front().getGrobLat());
-	else
-	  return _points[offset - 1];
   }
 
   size_t getPointCount() const {
@@ -285,12 +317,17 @@ class Mlfb {
 	return name.str();
   }
 
-  size_t getHitsNeighbor(size_t index) const {
-	if (index < edgeHitsFacet.size()) {
-	  size_t hits = edgeHitsFacet[index];
-	  return hits == 0 ? 0 : _points[hits].getRow() + 1;
-	} else
-	  return numeric_limits<size_t>::max();
+  string getName(const Plane& plane) const {
+	if (plane.isPivot(*this))
+	  return getName() + 'P';
+	if (plane.isFlat(*this))
+	  return getName() + 'F';
+	return getName();
+  }
+
+  Neighbor getHitsNeighbor(size_t index) const {
+	ASSERT(index < edgeHitsFacet.size());
+	return getPoint(getHitsFacet(index));
   }
 
   size_t getHitsFacet(size_t index) const {
@@ -334,6 +371,70 @@ class Mlfb {
   bool _isParallelogram;
 };
 
+class TriPlane {
+public:
+  TriPlane(Neighbor a, Neighbor b, Neighbor c):
+	_a(a), _b(b), _c(c) {
+
+	Matrix mat(2, 3);
+	for (size_t col = 0; col < 3; ++col) {
+	  mat(0, col) = a.getH(col) - c.getH(col);
+	  mat(1, col) = b.getH(col) - c.getH(col);
+	}
+
+	nullSpace(_normal, mat);
+	transpose(_normal, _normal);
+	_line = (_normal.getRowCount() != 1);
+  }
+
+  bool isLine() const {
+	return _line;
+  }
+
+  bool closeToPlane(Neighbor a) {
+	ASSERT(!isLine());
+	mpz_class dn = dotNormal(a);
+	return dn == 0 || dn == 1 || dn == -1;
+  }
+
+  bool inPlane(Neighbor a) const {
+	return dotNormal(a) == 0;
+  }
+
+  mpz_class dotNormal(Neighbor a) const {
+	mpz_class prod = 0;
+	for (size_t i = 0; i < 3; ++i)
+	  prod += a.getH(i) * _normal(0, i);
+	return prod;
+  }
+
+  bool isParallel(const TriPlane& plane) const {
+	ASSERT(!isLine());
+	ASSERT(!plane.isLine());
+	mpz_class da = plane.dotNormal(_a);
+	return plane.dotNormal(_b) == da && plane.dotNormal(_c) == da;
+  }
+
+  bool isParallel(const Plane& plane) const {
+	ASSERT(!isLine());
+	return plane.nullSpaceBasis == getNormal();
+  }
+
+  /// returns the normal of the plane as the row of a matrix.
+  const Matrix& getNormal() const {
+	return _normal;
+  }
+
+private:
+  Neighbor _a, _b, _c;
+  Matrix _normal;  
+  bool _line;
+};
+
+void getThinPlanes(vector<TriPlane>& planes, const GrobLat& lat);
+void checkPlanes(const vector<TriPlane>& thinPlanes,
+				 const vector<Plane>& dtPlanes);
+
 size_t pushOutFacetPositive(size_t facetPushOut,
 							const vector<mpz_class>& rhs,
 							const GrobLat& lat);
@@ -342,10 +443,29 @@ size_t pushOutFacetZero(const vector<mpz_class>& rhs, const GrobLat& lat);
 
 void computeMlfbs(vector<Mlfb>& mlfbs, const GrobLat& lat);
 
+
+void computeSeqs(vector<vector<SeqPos> >& left,
+				 vector<vector<SeqPos> >& right,
+				 const vector<Mlfb>& mlfbs,
+				 const Plane& plane);
+
 /** Starting at pivot (which must be a pivot), follow the three
 	non-flat sequences starting at pivot. */
 void computePivotSeqs(vector<vector<SeqPos> >& seqs, const Mlfb& pivot,
 					  const Plane& plane);
+
+void checkSeqs(const vector<vector<SeqPos> >& left,
+			   const vector<vector<SeqPos> >& right,
+			   const Plane& plane,
+			   const vector<Mlfb>& mlfbs);
+void checkMiddle(const Plane& plane,
+				 const vector<Mlfb>& mlfbs);
+void checkDoubleTriangle(const Plane& plane,
+						 const vector<Mlfb>& mlfbs);
+void checkGraph(const vector<Mlfb>& mlfbs);
+void checkGraphOnPlane(const Plane& plane,
+					   const vector<Mlfb>& mlfbs);
+
 
 /** Perform checks where pivotSeqs are the 3 non-flat sequences on one
 	side. */
@@ -354,11 +474,10 @@ void checkPivotSeqs(vector<vector<SeqPos> >& pivotSeqs,
 					const vector<Mlfb>& mlfbs,
 					const vector<SeqPos>& flatSeq);
 
-void checkNonMlfbTris(const GrobLat& lat,
-					  const vector<Mlfb>& mlfbs,
-					  const vector<const Mlfb*>& pivots,
-					  const vector<Tri>& nonMlfbTris,
-					  const Plane& plane);
+void checkPlaneTri(const GrobLat& lat,
+				   const vector<Mlfb>& mlfbs,
+				   const vector<const Mlfb*>& pivots,
+				   const Plane& plane);
 
 void computePlanes(vector<Plane>& planes,
 				   const GrobLat& lat,
@@ -380,8 +499,7 @@ void computePivots(vector<const Mlfb*>& pivots,
 				   const Plane& plane,
 				   const vector<SeqPos>& flatSeq);
 
-void computeNonSums(vector<Neighbor>& nonSums, const GrobLat& lat);
-void checkNonSums(vector<Neighbor>& nonSums, const GrobLat& lat);
+void checkNonSums(const GrobLat& lat);
 
 void checkFlatSeq(const vector<SeqPos>& flatSeq,
 				  const GrobLat& lat,
@@ -391,9 +509,9 @@ const char* getEdgePos(size_t index);
 mpq_class getIndexSum(const vector<Mlfb>& mlfbs);
 
 void checkMlfbs(const vector<Mlfb>& mlfbs, const GrobLat& lat);
-void checkPlanes(const vector<Plane>& planes,
-				 const GrobLat& lat,
-				 const vector<Mlfb>& mlfbs);
+void checkDoubleTrianglePlanes(const vector<Plane>& planes,
+							   const GrobLat& lat,
+							   const vector<Mlfb>& mlfbs);
 void checkPlane(const Plane& plane, const vector<Mlfb>& mlfbs);
 
 #endif

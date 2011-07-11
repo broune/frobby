@@ -17,6 +17,121 @@
 #include "stdinc.h"
 #include "LatticeAlgs.h"
 
+#include <stack>
+
+void getThinPlanes(vector<TriPlane>& planes, const GrobLat& lat) {
+  planes.clear();
+  for (size_t a = 0; a <= lat.getNeighborCount(); ++a) {
+	Neighbor an(lat);
+	if (a < lat.getNeighborCount())
+	  an = lat.getNeighbor(a);
+	for (size_t b = 0; b < lat.getNeighborCount(); ++b) {
+	  for (size_t c = 0; c < lat.getNeighborCount(); ++c) {
+		TriPlane plane(an, lat.getNeighbor(b), lat.getNeighbor(c));
+		if (plane.isLine())
+		  continue; // points are collinear
+		ASSERT(plane.isParallel(plane));
+		bool parallel = false;
+		for (size_t p = 0; p < planes.size(); ++p) {
+		  if (plane.isParallel(planes[p])) {
+			parallel = true;
+			break;
+		  }
+		} 
+		if (parallel)
+		  continue; // already got this plane
+
+		bool isThin = true;
+		for (size_t n = 0; n < lat.getNeighborCount(); ++n) {
+		  if (!plane.closeToPlane(lat.getNeighbor(n))) {
+			isThin = false;
+			break;
+		  }
+		}
+		if (isThin)
+		  planes.push_back(plane);
+	  }
+	}
+  }
+}
+
+/*
+void checkParallelFaces(const vector<Mlfb>& mlfbs,
+						const vector<Plane> planes) {
+  vector<TriPlane> facePlanes;
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	const Mlfb& mlfb = mlfbs[m];
+	cout << mlfb.getName() << facePlanes.size() << endl;
+	Neighbor a = mlfb.getPoint(0);
+	Neighbor b = mlfb.getPoint(1);
+	Neighbor c = mlfb.getPoint(2);
+	Neighbor d = mlfb.getPoint(3);
+	facePlanes.push_back(TriPlane(b, c, d));
+	facePlanes.push_back(TriPlane(a, c, d));
+	facePlanes.push_back(TriPlane(a, b, d));
+	facePlanes.push_back(TriPlane(a, b, c));
+  }
+
+  for (size_t i = 0; i < facePlanes.size(); ++i) {
+	const TriPlane& plane = facePlanes[i];
+
+	bool thin = false;
+	for (size_t p = 0; p < planes.size(); ++p) {
+	  if (plane.isParallel(planes[p])) {
+		thin = true;
+		break;
+	  }
+	}
+	if (thin)
+	  continue;
+
+	size_t parallelCount = 0;
+	for (size_t j = 0; j < facePlanes.size(); ++j)
+	  if (plane.isParallel(facePlanes[j])) {cout << ' ' << j << endl;
+		++parallelCount;}
+	cout << parallelCount << ' ' << plane.getNormal() << endl;
+	CHECK(parallelCount == 2); // not satisfied
+  }
+}
+*/
+
+
+void checkPlanes(const vector<TriPlane>& thinPlanes,
+				 const vector<Plane>& dtPlanes) {
+  CHECK(thinPlanes.size() == dtPlanes.size());
+
+  for (size_t thin = 0; thin < thinPlanes.size(); ++thin) {
+	bool parallel = false;
+	for (size_t dt = 0; dt < dtPlanes.size(); ++dt) {
+	  if (thinPlanes[thin].isParallel(dtPlanes[dt])) {
+		parallel = true;
+		break;
+	  }
+	}
+	CHECK(parallel);
+  }
+
+  bool found = false;
+  for (size_t dt = 0; dt < dtPlanes.size(); ++dt) {
+	const Plane& plane = dtPlanes[dt];
+	size_t sum = plane.tri.getASideMlfbs().size() +
+	  plane.tri.getBSideMlfbs().size();
+
+    if (sum == 3)
+      found = true;
+	/*
+	if (plane.flatSeq.empty()) {
+	  if (sum == 4)
+		found = true;
+	} else {
+	  CHECK(sum == 3);
+	  found = true;
+	}
+	*/
+  }
+  CHECK(dtPlanes.size() == 6 || found);
+}
+
 char getPlaceCode(NeighborPlace place) {
   switch (place) {
   case InPlane: return 'P';
@@ -72,21 +187,27 @@ size_t pushOutFacetZero(const vector<mpz_class>& rhs, const GrobLat& lat) {
   return onFacet;
 }
 
+void computeRhs(vector<mpz_class>& rhs, const vector<Neighbor> points) {
+  ASSERT(!points.empty());
+  const GrobLat& lat = points[0].getGrobLat();
+  rhs.resize(lat.getYDim());
+  for (size_t var = 0; var < lat.getYDim(); ++var) {
+	rhs[var] = points[0].getY(var);
+	for (size_t p = 1; p < points.size(); ++p)
+	  if (rhs[var] < points[p].getY(var))
+		rhs[var] = points[p].getY(var);
+  }
+}
+
 void Mlfb::reset(size_t offset, const vector<Neighbor>& points) {
   ASSERT(!points.empty());
   _points = points;
   _offset = offset;
 
-  const GrobLat& lat = getPoint(0).getGrobLat();
+  const GrobLat& lat = points[0].getGrobLat();
 
-  _rhs.resize(lat.getYDim());
-  for (size_t var = 0; var < lat.getYDim(); ++var) {
-	_rhs[var] = points[0].getY(var);
-	for (size_t p = 1; p < points.size(); ++p)
-	  if (_rhs[var] < points[p].getY(var))
-		_rhs[var] = points[p].getY(var);
-  }
-	  
+  computeRhs(_rhs, points);
+
   // order to have maxima along diagonal if possible.
   if (getPointCount() == lat.getYDim()) {
 	for (size_t i = 0; i < lat.getYDim(); ++i)
@@ -317,6 +438,10 @@ SeqPos nextInSeq(SeqPos pos) {
   return next;
 }
 
+SeqPos prevInSeq(SeqPos pos) {
+  return nextInSeq(pos.getReverse()).getReverse();
+}
+
 size_t computeFlatIntervalCount(const vector<SeqPos>& flatSeq) {
   if (flatSeq.empty())
 	return 0u;
@@ -386,62 +511,45 @@ void computeFlatSeq(vector<SeqPos>& seq,
 void computePlanes(vector<Plane>& planes,
 				   const GrobLat& lat,
 				   vector<Mlfb>& mlfbs) {
-  const SatBinomIdeal& ideal = lat.getIdeal();
-
-  size_t varCount = lat.getYDim();
-  size_t neighborCount = lat.getNeighborCount();
-  vector<mpz_class> sum(varCount);
+  const size_t neighborCount = lat.getNeighborCount();
   for (size_t gen1 = 0; gen1 < neighborCount; ++gen1) {
 	for (size_t gen2 = gen1 + 1; gen2 < neighborCount; ++gen2) {
-	  const vector<mpz_class>& g1 = ideal.getGenerator(gen1);
-	  const vector<mpz_class>& g2 = ideal.getGenerator(gen2);
+	  Neighbor a = lat.getNeighbor(gen1);
+	  Neighbor b = lat.getNeighbor(gen2);
+	  Neighbor sum = lat.getSum(a, b);
 
-	  // Set sum = g1 + g2.
-	  for (size_t var = 0; var < varCount; ++var)
-		sum[var] = g1[var] + g2[var];
+	  if (!sum.isValid())
+		continue;
+	  if (!lat.isPointFreeBody(a, sum))
+		continue;
+	  if (!lat.isPointFreeBody(b, sum))
+		continue;
+	  if (lat.isPointFreeBody(a, b, sum))
+		continue; // only looking for non-flat double triangles right now
 
-	  if (ideal.isPointFreeBody(g1, sum) && ideal.isPointFreeBody(g2, sum)) {
-		Tri tri;
-		tri.a = lat.getNeighbor(gen1);
-		tri.b = lat.getNeighbor(gen2);
-		tri.fromFlat = ideal.isPointFreeBody(g1, g2, sum);
-		Matrix rowAB(2, lat.getHDim());
-		copyRow(rowAB, 0, lat.getHMatrix(), gen1);
-		copyRow(rowAB, 1, lat.getHMatrix(), gen2);
+	  Matrix rowAB(2, lat.getHDim());
+	  copyRow(rowAB, 0, lat.getHMatrix(), gen1);
+	  copyRow(rowAB, 1, lat.getHMatrix(), gen2);
 
-		for (size_t plane = 0; plane < planes.size(); ++plane) {
-		  if (hasSameRowSpace(rowAB, planes[plane].rowAB)) {
-			if (!tri.fromFlat)
-			  planes[plane].nonMlfbTris.push_back(tri);
-			goto done;
-		  }
-		}
+	  planes.push_back(Plane(a, b, sum, mlfbs, lat));
+	  Plane& plane = planes.back();
+	  plane.rowAB = rowAB;
+	  nullSpace(plane.nullSpaceBasis, rowAB);
 
-		{
-		  planes.resize(planes.size() + 1);
-		  Plane& plane = planes.back();
-		  plane.rowAB = rowAB;
-		  nullSpace(plane.nullSpaceBasis, rowAB);
-		  if (!tri.fromFlat)
-			plane.nonMlfbTris.push_back(tri);
-
-		  Matrix prod;
-		  product(prod, lat.getHMatrix(), plane.nullSpaceBasis);
-		  plane.neighborPlace.resize(lat.getNeighborCount());
-		  for (size_t gen = 0; gen < lat.getNeighborCount(); ++gen) {
-			mpq_class& value = prod(gen, 0);
-			NeighborPlace place = InPlane;
-			if (value < 0)
-			  place = UnderPlane;
-			else if (value > 0)
-			  place = OverPlane;
-			plane.neighborPlace[gen] = place;
-		  }
-
-		  transpose(plane.nullSpaceBasis);
-		}
-	  done:;
+	  Matrix prod;
+	  product(prod, lat.getHMatrix(), plane.nullSpaceBasis);
+	  plane.neighborPlace.resize(lat.getNeighborCount());
+	  for (size_t gen = 0; gen < lat.getNeighborCount(); ++gen) {
+		mpq_class& value = prod(gen, 0);
+		NeighborPlace place = InPlane;
+		if (value < 0)
+		  place = UnderPlane;
+		else if (value > 0)
+		  place = OverPlane;
+		plane.neighborPlace[gen] = place;
 	  }
+
+	  transpose(plane.nullSpaceBasis);
 	}
   }
 
@@ -455,6 +563,50 @@ void computePlanes(vector<Plane>& planes,
 	plane.flatIntervalCount = computeFlatIntervalCount(plane.flatSeq);
   }
 }
+
+Tri::Tri(Neighbor a, Neighbor b, Neighbor sum,
+		 const vector<Mlfb>& mlfbs, const GrobLat& lat):
+  _a(a), _b(b), _sum(sum) {
+
+  // find MLFBs containing {0,a,a+b}
+  for (size_t m = 0; m < mlfbs.size(); ++m)
+	if (mlfbs[m].hasPoint(a) && mlfbs[m].hasPoint(sum))
+	  _aSideMlfbs.push_back(&(mlfbs[m]));
+
+  // find MLFBs containing {0,b,a+b}
+  for (size_t m = 0; m < mlfbs.size(); ++m)
+	if (mlfbs[m].hasPoint(b) && mlfbs[m].hasPoint(sum))
+	  _bSideMlfbs.push_back(&(mlfbs[m]));
+
+  // find additional neighbors in the body defined by {0,a,b,a+b}
+  vector<Neighbor> points;
+  points.push_back(Neighbor(lat)); // add zero;
+  points.push_back(a);
+  points.push_back(b);
+  points.push_back(sum);
+  vector<mpz_class> rhs;
+  computeRhs(rhs, points);
+  _boundary.push_back(Neighbor(lat)); // add zero
+  for (size_t n = 0; n < lat.getNeighborCount(); ++n) {
+	Neighbor neighbor = lat.getNeighbor(n);
+	bool boundary = true;
+	bool interior = true;
+	for (size_t i = 0; i < rhs.size(); ++i) {
+	  if (neighbor.getY(i) == rhs[i])
+		interior = false;
+	  else if (neighbor.getY(i) > rhs[i]) {
+		interior = false;
+		boundary = false;
+		break;
+	  }
+	}
+	if (interior)
+	  _interior.push_back(neighbor);
+	else if (boundary)
+	  _boundary.push_back(neighbor);
+  }
+}
+
 
 void check0Graph(const vector<Mlfb>& mlfbs) {
   vector<bool> ok(mlfbs.size());
@@ -494,9 +646,36 @@ void checkMlfbs(const vector<Mlfb>& mlfbs, const GrobLat& lat) {
   }
 }
 
-void checkPlanes(const vector<Plane>& planes,
-				 const GrobLat& lat,
-				 const vector<Mlfb>& mlfbs) {
+void checkDoubleTrianglePlanes(const vector<Plane>& planes,
+							   const GrobLat& lat,
+							   const vector<Mlfb>& mlfbs) {
+  // Check no two planes are parallel. Otherwise there would a plane
+  // with two non-flat double triangles in it.
+  for (size_t p1 = 0; p1 < planes.size(); ++p1) {
+	for (size_t p2 = 0; p2 < p1; ++p2) {
+	  CHECK(!hasSameRowSpace(planes[p1].rowAB, planes[p2].rowAB));
+	}
+  }
+
+  // Check that all parallelograms lie in a plane. Otherwise there
+  // would be a plane defined by a flat that does not have a double
+  // triangle in it.
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	if (mlfbs[m].isParallelogram()) {
+	  bool liesInSomePlane = false;
+	  for (size_t p = 0; p < planes.size(); ++p) {
+		if (planes[p].isFlat(mlfbs[m])) {
+		  liesInSomePlane = true;
+		  break;
+		}
+	  }
+	  CHECK(liesInSomePlane);
+	}
+  }
+
+
+
+
   bool multipleIntervals = false;
   bool anyFlat = false;
   bool flatWith4Pivots = false;
@@ -587,6 +766,118 @@ void computePivots(vector<const Mlfb*>& pivots,
 	  pivots.push_back(flatSeq.back().mlfb->getEdge(i));
 }
 
+void computeSeqs(vector<vector<SeqPos> >& left,
+				 vector<vector<SeqPos> >& right,
+				 const vector<Mlfb>& mlfbs,
+				 const Plane& plane) {
+  vector<vector<SeqPos> > seqs;
+
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	if (!plane.isPivot(mlfbs[m]))
+	  continue;
+	const Mlfb& p = mlfbs[m];
+	for (size_t i = 0; i < 4; ++i) {
+	  const Mlfb& e = *(p.getEdge(i));
+	  if (plane.isPivot(e) || plane.isFlat(e))
+		continue;
+
+	  bool doneBefore = false;
+	  for (size_t s = 0; s < seqs.size(); ++s) {
+		if (*(seqs[s][seqs[s].size() - 1].mlfb) == p &&
+			*(seqs[s][seqs[s].size() - 2].mlfb) == e) {
+		  doneBefore = true;
+		  break;
+		}
+	  }
+	  if (doneBefore)
+		continue;
+
+	  size_t prevFacet;
+	  for (prevFacet = 0; prevFacet < 4; ++prevFacet)
+		if (*(e.getEdge(prevFacet)) == p)
+		  break;
+	  ASSERT(prevFacet < 4);
+
+	  NeighborPlace place = plane.getPlace(e.getPoint(prevFacet));
+	  size_t nextFacet;
+	  for (nextFacet = 0; nextFacet < 4; ++nextFacet) {
+		if (nextFacet != prevFacet &&
+			place == plane.getPlace(e.getPoint(nextFacet)))
+		  break;
+	  }
+	  SeqPos pos = prevInSeq(SeqPos(&e, nextFacet, prevFacet));
+
+	  seqs.resize(seqs.size() + 1);
+	  vector<SeqPos>& seq = seqs.back();
+	  seq.push_back(pos);
+	  do {
+		pos = nextInSeq(pos);
+		seq.push_back(pos);
+	  } while (!(plane.isPivot(*pos.mlfb)));	  
+	}	  
+  }
+
+  CHECK(!seqs.empty());
+  ASSERT(!seqs.front().empty());
+
+  // now we've got all the sequences. Time to look at the sides.
+  stack<const Mlfb*> pending;
+
+  // put a side pivot on the left arbitrarily and explore the
+  // connected component
+  vector<bool> leftSeen(mlfbs.size());
+  pending.push(seqs.front().front().mlfb);
+  while (!pending.empty()) {
+	const Mlfb& m = *pending.top();
+	pending.pop();
+	if (leftSeen[m.getOffset()])
+	  continue;
+	leftSeen[m.getOffset()] = true;
+	for (size_t s = 0; s < seqs.size(); ++s) {
+	  if (*(seqs[s].front().mlfb) == m)
+		pending.push(seqs[s].back().mlfb);
+	  if (*(seqs[s].back().mlfb) == m)
+		pending.push(seqs[s].front().mlfb);
+	}
+  }
+
+  // find a non-left side pivot
+  size_t m;
+  for (m = 0; m < mlfbs.size(); ++m)
+	if (plane.isSidePivot(mlfbs[m]) && !leftSeen[m])
+	  break;
+  CHECK(m < mlfbs.size());
+
+  // put the non-left pivot on the right and explore the connected
+  // component
+  vector<bool> rightSeen(mlfbs.size());
+  pending.push(&(mlfbs[m]));
+  while (!pending.empty()) {
+	const Mlfb& m = *pending.top();
+	pending.pop();
+	if (rightSeen[m.getOffset()])
+	  continue;
+	rightSeen[m.getOffset()] = true;
+	for (size_t s = 0; s < seqs.size(); ++s) {
+	  if (*(seqs[s].front().mlfb) == m)
+		pending.push(seqs[s].back().mlfb);
+	  if (*(seqs[s].back().mlfb) == m)
+		pending.push(seqs[s].front().mlfb);
+	}
+  }
+
+  left.clear();
+  right.clear();
+  for (size_t s = 0; s < seqs.size(); ++s) {
+	const size_t offset = seqs[s].front().mlfb->getOffset();
+	if (leftSeen[offset]) {
+	  CHECK(!rightSeen[offset]);
+	  left.push_back(seqs[s]);
+	} else if (rightSeen[offset])
+	  right.push_back(seqs[s]);
+  }  
+}
+
 void computePivotSeqs(vector<vector<SeqPos> >& seqs,
 					  const Mlfb& pivot,
 					  const Plane& plane) {
@@ -607,6 +898,194 @@ void computePivotSeqs(vector<vector<SeqPos> >& seqs,
 	  pos = nextInSeq(pos);
 	  seq.push_back(pos);
 	} while (!(plane.isPivot(*pos.mlfb)));	  
+  }
+}
+
+void checkSeq(vector<bool>& seenOnSide,
+			  const vector<SeqPos>& seq,
+			  const Plane& plane) {
+  CHECK(seq.size() >= 3); // each seq must have at least one 2-2.
+  CHECK(plane.isSidePivot(*(seq.front().mlfb))); // start is a pivot
+  CHECK(plane.isSidePivot(*(seq.back().mlfb))); // end is a pivot
+  CHECK(seq.front().mlfb != seq.back().mlfb); // no loops
+
+  for (size_t m = 1; m < seq.size() - 1 ; ++m) {
+	const Mlfb* prev = seq[m - 1].mlfb;
+	const Mlfb* current = seq[m].mlfb;
+	const Mlfb* next = seq[m + 1].mlfb;
+	const SeqPos& pos = seq[m];
+
+	// ** Check on 2-2 appears twice and update seenOnSide
+	CHECK(!seenOnSide[current->getOffset()]);
+	seenOnSide[current->getOffset()] = true;
+
+	// ** middle elements are 2-2s.
+	CHECK(plane.is22(*current));
+
+	// ** SeqPos fields agrees with sequence order
+	size_t prevFacet = pos.getBackFacet();
+	size_t nextFacet = pos.getForwardFacet();
+	CHECK(current->getEdge(prevFacet) == prev);
+	CHECK(current->getEdge(nextFacet) == next);
+
+	// ** in-coming and out-going facets are on same plane
+	CHECK(plane.getPlace(current->getPoint(prevFacet)) ==
+		  plane.getPlace(current->getPoint(nextFacet)));
+  }
+}
+
+void checkSide(vector<bool>& pivotOnSide,
+			   const vector<vector<SeqPos> >& side,
+			   const Plane& plane,
+			   const vector<Mlfb>& mlfbs) {
+  CHECK(side.size() == 2 || side.size() == 3);
+
+  vector<bool> seenOnSide(mlfbs.size());
+  for (size_t s = 0; s < side.size(); ++s){
+	// check sequence local properties and update seen
+	checkSeq(seenOnSide, side[s], plane);
+
+	// compute onSide
+	pivotOnSide[side[s].front().mlfb->getOffset()] = true;
+	pivotOnSide[side[s].back().mlfb->getOffset()] = true;
+  }
+
+  /* // must have seen all 2-2s on this side.
+  for (size_t m = 0; m < mlfbs.size(); ++m)
+	if (plane.is22(mlfbs[m]))
+	CHECK(seenOnSide[m]);*/
+
+  // 2,3 or 4 sidepivots
+  size_t sidePivots = 0;
+  for (size_t m = 0; m < mlfbs.size(); ++m)
+	if (pivotOnSide[m])
+	  ++sidePivots;
+  CHECK(sidePivots == 2 || sidePivots == 3 || sidePivots == 4);
+}
+
+void checkSeqs(const vector<vector<SeqPos> >& left,
+			   const vector<vector<SeqPos> >& right,
+			   const Plane& plane,
+			   const vector<Mlfb>& mlfbs) {
+  vector<bool> isLeftPivot(mlfbs.size());
+  checkSide(isLeftPivot, left, plane, mlfbs);
+
+  vector<bool> isRightPivot(mlfbs.size());
+  checkSide(isRightPivot, right, plane, mlfbs);
+
+  // all side pivots are on one and only one side
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	if (plane.isSidePivot(mlfbs[m]))
+	  CHECK((isLeftPivot[m] + isRightPivot[m]) == 1);
+	else
+	  CHECK((isLeftPivot[m] + isRightPivot[m]) == 0);
+  }
+}
+
+void checkMiddle(const Plane& plane,
+				 const vector<Mlfb>& mlfbs) {
+  // ** check that the subgraph of pivots and flat is connected.
+  vector<bool> seen(mlfbs.size());
+  stack<const Mlfb*> pending;
+
+  // find a pivot or flat
+  size_t m;
+  for (m = 0; m < mlfbs.size(); ++m)
+	if (plane.isFlat(mlfbs[m]) || plane.isPivot(mlfbs[m]))
+	  break;
+  ASSERT(m < mlfbs.size());
+
+  // explore the graph of pivots and flats that is connected to the
+  // one we found.
+  pending.push(&(mlfbs[m]));
+  while (!pending.empty()) {
+	const Mlfb& mlfb = *(pending.top());
+	pending.pop();
+	if (seen[mlfb.getOffset()])
+	  continue;
+	seen[mlfb.getOffset()] = true;
+	for (size_t i = 0; i < 4; ++i)
+	  pending.push(mlfb.getEdge(i));
+  }
+
+  // check that we have reached all pivots and flats
+  for (m = 0; m < mlfbs.size(); ++m)
+	if (plane.isFlat(mlfbs[m]) || plane.isPivot(mlfbs[m]))
+	  CHECK(seen[m]); 
+}
+
+void checkGraphOnPlane(const Plane& plane,
+					   const vector<Mlfb>& mlfbs) {
+  // no flat is adjacent to a 2-2
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	const Mlfb& mlfb = mlfbs[m];
+	if (plane.isFlat(mlfb))
+	  for (size_t i = 0; i < 4; ++i)
+		CHECK(!plane.is22(*(mlfb.getEdge(i))));
+  }
+
+  // parallelograms can't be flats and non-flat parallelograms are not
+  // adjacent to a flat
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	const Mlfb& mlfb = mlfbs[m];
+	if (mlfb.isParallelogram()) {
+	  CHECK(!plane.isPivot(mlfb));
+	  if (!plane.isFlat(mlfb)) {
+		for (size_t i = 0; i < 4; ++i) {
+		  const Mlfb& adj = *(mlfb.getEdge(i));
+		  CHECK(!plane.isFlat(adj));
+		}
+	  }
+	}
+  }
+}
+
+void checkDoubleTriangle(const Plane& plane,
+						 const vector<Mlfb>& mlfbs) {
+  size_t aSideCount = plane.tri.getASideMlfbs().size();
+  size_t bSideCount = plane.tri.getBSideMlfbs().size();
+  CHECK(aSideCount == 1 || aSideCount == 2);
+  CHECK(bSideCount == 1 || bSideCount == 2);
+
+  for (size_t m = 0; m < aSideCount; ++m) {
+	const Mlfb& mlfb = *plane.tri.getASideMlfbs()[m];
+	CHECK(plane.isFlat(mlfb) || plane.isPivot(mlfb));
+  }
+  for (size_t m = 0; m < bSideCount; ++m) {
+	const Mlfb& mlfb = *plane.tri.getBSideMlfbs()[m];
+	CHECK(plane.isFlat(mlfb) || plane.isPivot(mlfb));
+  }
+}
+
+void checkGraph(const vector<Mlfb>& mlfbs) {
+  // All non-parallelograms have out-degree 2. Parallelograms have
+  // out-degree equal to 4 minus the number of other adjacent
+  // parallelograms.
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	const Mlfb& mlfb = mlfbs[m];
+	set<size_t> adjParas;
+	set<size_t> adjNodes;
+	for (size_t i = 0; i < 4; ++i) {
+	  const Mlfb& adj = *(mlfb.getEdge(i));
+	  adjNodes.insert(adj.getOffset());
+	  if (adj.isParallelogram())
+		adjParas.insert(adj.getOffset());
+	}
+	const size_t outDegree = adjNodes.size();
+	if (!mlfb.isParallelogram())
+	  CHECK(outDegree == 4);
+	else
+	  CHECK(outDegree == 4 - adjParas.size());
+  }
+
+  // if there is an edge (a,b) then there is also an edge (b,a).
+  for (size_t m = 0; m < mlfbs.size(); ++m) {
+	const Mlfb& mlfb = mlfbs[m];
+	for (size_t i = 0; i < 4; ++i) {
+	  size_t hitsFacet = mlfb.getHitsFacet(i);
+	  const Mlfb& adj = *(mlfb.getEdge(i));
+	  CHECK(mlfb == *(adj.getEdge(hitsFacet)));
+	}
   }
 }
 
@@ -668,30 +1147,15 @@ void checkPivotSeqs(vector<vector<SeqPos> >& pivotSeqs,
 	  seen[pivotSeqs[i][j].mlfb->getOffset()] = true;
 	}
   }
-  for (size_t i = 0; i < mlfbs.size(); ++i) {
+  /*  for (size_t i = 0; i < mlfbs.size(); ++i) {
 	if (plane.isPivot(mlfbs[i]) || plane.isFlat(mlfbs[i]))
 	  continue;
-	CHECK(seen[i]); // all 2-2s in some sequence
-  }
+	  CHECK(seen[i]); // all 2-2s in some sequence
+  }*/
 }
 
-void computeNonSums(vector<Neighbor>& nonSums, const GrobLat& lat) {
-  vector<bool> isSum(lat.getNeighborCount());
-  for (size_t i = 0; i < lat.getNeighborCount(); ++i) {
-	for (size_t j = 0; j < i; ++j) {
-	  Neighbor sum = lat.getSum(lat.getNeighbor(i), lat.getNeighbor(j));
-	  if (sum.isValid())
-		isSum[sum.getRow()] = true;
-	}
-  }
-
-  nonSums.clear();
-  for (size_t i = 0; i < isSum.size(); ++i)
-	if (!isSum[i])
-	  nonSums.push_back(lat.getNeighbor(i));
-}
-
-void checkNonSums(vector<Neighbor>& nonSums, const GrobLat& lat) {
+void checkNonSums(const GrobLat& lat) {
+  const vector<Neighbor>& nonSums = lat.getNonSums();
   CHECK(nonSums.size() == 3 || nonSums.size() == 4);
   if (nonSums.size() == 3) {
 	Matrix mat(3, 3);
@@ -705,12 +1169,10 @@ void checkNonSums(vector<Neighbor>& nonSums, const GrobLat& lat) {
 	for (size_t ns = 0; ns < 4; ++ns)
 	  for (size_t var = 0; var < 3; ++var)
 		mat(ns, var) = nonSums[ns].getY(var);
-	cout << mat << endl;
 	CHECK(isParallelogram(mat));
 
 	return; // not checking this as it seems to not be true
 	mpq_class areaSq = getParallelogramAreaSq(mat);
-	cout << areaSq << endl;
 	CHECK(areaSq == 1);
   }
 }
@@ -794,23 +1256,21 @@ void checkFlatSeq(const vector<SeqPos>& flatSeq,
   }
 }
 
-void checkNonMlfbTris(const GrobLat& lat,
-					  const vector<Mlfb>& mlfbs,
-					  const vector<const Mlfb*>& pivots,
-					  const vector<Tri>& nonMlfbTris,
-					  const Plane& plane) {
-  CHECK(nonMlfbTris.size() == 1);
-  const Tri& tri = nonMlfbTris.back();
-  Neighbor a = tri.a;
-  Neighbor b = tri.b;
-  Neighbor sumAB = lat.getSum(a, b);
+void checkPlaneTri(const GrobLat& lat,
+				   const vector<Mlfb>& mlfbs,
+				   const vector<const Mlfb*>& pivots,
+				   const Plane& plane) {
+  const Tri& tri = plane.tri;
+  Neighbor a = tri.getA();
+  Neighbor b = tri.getB();
+  Neighbor sum = tri.getSum();
 
   // ** tri is not a flat
   for (size_t i = 0; i < mlfbs.size(); ++i) {
 	if (plane.isFlat(mlfbs[i])) {
 	  CHECK(!mlfbs[i].hasPoint(a) ||
 			!mlfbs[i].hasPoint(b) ||
-			!mlfbs[i].hasPoint(sumAB));
+			!mlfbs[i].hasPoint(sum));
 	}
   }
 
@@ -819,7 +1279,7 @@ void checkNonMlfbTris(const GrobLat& lat,
   for (size_t i = 0; i < mlfbs.size(); ++i) {
 	if (!plane.isFlat(mlfbs[i]) &&
 		mlfbs[i].hasPoint(a) &&
-		mlfbs[i].hasPoint(sumAB)) {
+		mlfbs[i].hasPoint(sum)) {
 	  CHECK(mlfbA == 0);
 	  mlfbA = &(mlfbs[i]);
 	}
@@ -831,7 +1291,7 @@ void checkNonMlfbTris(const GrobLat& lat,
   for (size_t i = 0; i < mlfbs.size(); ++i) {
 	if (!plane.isFlat(mlfbs[i]) &&
 		mlfbs[i].hasPoint(b) &&
-		mlfbs[i].hasPoint(sumAB)) {
+		mlfbs[i].hasPoint(sum)) {
 	  CHECK(mlfbB == 0);
 	  mlfbB = &(mlfbs[i]);
 	}
@@ -1015,8 +1475,37 @@ bool Plane::isPivot(const Mlfb& mlfb) const {
   return type == 1 || type == 3;
 }
 
+bool Plane::isSidePivot(const Mlfb& mlfb) const {
+  if (!isPivot(mlfb))
+	return false;
+  for (size_t i = 0; i < 4; ++i)
+	if (is22(*(mlfb.getEdge(i))))
+	  return true;
+  return false;
+}
+
+bool Plane::is22(const Mlfb& mlfb) const {
+  const size_t type = getType(mlfb);
+  return type == 2;
+}
+
 bool Plane::isFlat(const Mlfb& mlfb) const {
   return getType(mlfb) == 4;
+}
+
+bool Neighbor::isSpecial() const {
+  ASSERT(isValid());
+  for (size_t i = 1; i < _lat->getYDim(); ++i)
+	if (getY(i) <= 0)
+	  return false;
+  return true;
+}
+
+bool Neighbor::isGenerator() const {
+  if (isZero())
+	return false;
+  else
+	return !_lat->isSum(*this);
 }
 
 size_t Plane::getType(const Mlfb& mlfb) const {
@@ -1033,6 +1522,40 @@ string Neighbor::getName() const {
   if (!isValid())
 	return "none";
   ostringstream name;
-  name << 'g' << (getRow() + 1);
+  name << 'n' << (getRow() + 1);
+  if (isSpecial())
+	name << 's';
+  if (isGenerator())
+	name << 'g';
   return name.str();
+}
+
+GrobLat::GrobLat(const Matrix& matrix, const SatBinomIdeal& ideal) {
+  _ideal = ideal;
+  _ideal.getMatrix(_y);
+
+  // transpose in preparation for solve
+  transpose(_y);
+  transpose(_mat, matrix);
+
+  solve(_h, _mat, _y);
+
+  // un-transpose
+  transpose(_mat);
+  transpose(_y);
+  transpose(_h);
+
+  _isSumRow.resize(getNeighborCount());
+  for (size_t i = 0; i < getNeighborCount(); ++i) {
+	for (size_t j = 0; j < i; ++j) {
+	  Neighbor sum = getSum(getNeighbor(i), getNeighbor(j));
+	  if (sum.isValid())
+		_isSumRow[sum.getRow()] = true;
+	}
+  }
+
+  _nonSums.clear();
+  for (size_t i = 0; i < _isSumRow.size(); ++i)
+	if (!_isSumRow[i])
+	  _nonSums.push_back(getNeighbor(i));
 }
