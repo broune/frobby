@@ -94,9 +94,6 @@ if [ $? != 0 ]; then exit 1; fi
 $t latformat "$noInput" latformat-unknownOutput $* -oformat unknownFormat
 if [ $? != 0 ]; then exit 1; fi
 
-$t genideal "$noInput" genideal-tooLargeBoard $* -type king -varCount 100000
-if [ $? != 0 ]; then exit 1; fi
-
 $t hilbert "$noInput" option-unknownBigattiSplit $* -algorithm bigatti -split unknownSplit
 if [ $? != 0 ]; then exit 1; fi
 
@@ -215,9 +212,6 @@ $t hilbert "R=QQ[a];I=monomialIdeal(a);extra" m2-extra $* -iformat m2
 if [ $? != 0 ]; then exit 1; fi
 
 $t transform "1 1" 4ti2-noInteger $* -iformat 4ti2
-if [ $? != 0 ]; then exit 1; fi
-
-$t transform "1 1234567890123456" 4ti2-tooLarge $* -iformat 4ti2
 if [ $? != 0 ]; then exit 1; fi
 
 $t hilbert "R=QQ[a];I=monomialIdeal(" m2-noIdentifier $* -iformat m2
