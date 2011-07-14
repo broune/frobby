@@ -40,12 +40,12 @@ class LocalArray {
   _range(gccWorkAround(size)) {
 	ASSERT(this->size() == static_cast<size_t>(end() - begin()));
   }
- 
+
   ~LocalArray() {
 	ASSERT(size() == static_cast<size_t>(end() - begin()));
 	ArenaSource::getArena().freeTopArray(begin(), end());
   }
- 
+
   T& operator[](const size_t i) const {
     ASSERT(i < size());
 	return begin()[i];
@@ -54,7 +54,7 @@ class LocalArray {
   T* begin() const {return _range.first;}
   T* end() const {return _range.second;}
   size_t size() const {return _size;}
- 
+
  private:
  static const pair<T*, T*> gccWorkAround(const size_t size) {
    // for some reason Cygwin's GCC 4.3.4 will not accept this code:

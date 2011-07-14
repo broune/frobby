@@ -480,7 +480,7 @@ namespace {
 	  RawSquareFreeIdeal::const_iterator it = ideal.begin();
 	  const RawSquareFreeIdeal::const_iterator stop = ideal.end();
 	  RawSquareFreeIdeal::const_iterator rarest = it;
-  
+
 	  for (; it != stop; ++it)
 		if (rarer(*it, *rarest, divCounts, varCount))
 		  rarest = it;
@@ -513,7 +513,7 @@ namespace {
 
 	bool rarer(const Word* const a, const Word* const b,
 			   const size_t* divCounts,
-			   const size_t varCount) {	
+			   const size_t varCount) {
 	  size_t lookAbove = 0;
 	  while (true) {
 		pair<size_t, size_t> rarityA =
@@ -544,7 +544,7 @@ namespace {
   class GenMaxSupport : public GenStrategy {
   public:
 	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
-	  return state.inPlaceGenSplit(state.getIdeal().getMaxSupportGen());	
+	  return state.inPlaceGenSplit(state.getIdeal().getMaxSupportGen());
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
@@ -578,7 +578,7 @@ namespace {
   class GenMinSupport : public GenStrategy {
   public:
 	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
-	  return state.inPlaceGenSplit(state.getIdeal().getMinSupportGen());	
+	  return state.inPlaceGenSplit(state.getIdeal().getMinSupportGen());
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
@@ -612,7 +612,7 @@ namespace {
   class GenAny  : public GenStrategy {
   public:
 	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
-	  return state.inPlaceGenSplit(0);	
+	  return state.inPlaceGenSplit(0);
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
@@ -634,7 +634,7 @@ namespace {
   public:
 	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  size_t pivotIndex = rand() % state.getIdeal().getGeneratorCount();
-	  return state.inPlaceGenSplit(pivotIndex);	
+	  return state.inPlaceGenSplit(pivotIndex);
 	}
 
 	virtual iterator filter(iterator begin, iterator end,
@@ -686,7 +686,7 @@ namespace {
 
   private:
 	auto_ptr<PivotStrategy> _stdStrat;
-	auto_ptr<PivotStrategy> _genStrat;  
+	auto_ptr<PivotStrategy> _genStrat;
   };
 
   class DebugStrategy : public PivotStrategy {
@@ -694,7 +694,7 @@ namespace {
 	DebugStrategy(auto_ptr<PivotStrategy> strat, FILE* out):
 	  _strat(strat), _out(out) {}
 
-	virtual EulerState* doPivot(EulerState& state, 
+	virtual EulerState* doPivot(EulerState& state,
 						 const size_t* divCounts) {
 	  const char* str1 = "\n\n\n"
 		"********************************(debug output)********************************\n"

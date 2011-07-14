@@ -61,7 +61,7 @@ EulerAction::EulerAction():
   ("stdPivot",
    "Which kind of standard pivots to use. The options are\n"
    "  popvar: Use a popular variable as pivot.\n"
-   "  rarevar: Use a rare variable as pivot.\n" 
+   "  rarevar: Use a rare variable as pivot.\n"
    "  popgcd: Use the gcd of 3 generators divisible by a popular variable.\n"
    "  any: Use some variable in a way that does not vary between runs.\n"
    "  random: Use a random variable. Choices may vary between runs.\n"
@@ -224,7 +224,7 @@ void EulerAction::perform() {
   alg.setUseAllPairsSimplify(_useAllPairsSimplify);
 
   euler = alg.computeEulerCharacteristic(radical);
-  gmp_fprintf(stdout, "%Zd\n", euler.get_mpz_t());  
+  gmp_fprintf(stdout, "%Zd\n", euler.get_mpz_t());
 }
 
 const char* EulerAction::staticGetName() {

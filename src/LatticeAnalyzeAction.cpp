@@ -58,7 +58,7 @@ namespace {
 	ColumnPrinter pr;
 	pr.setPrefix("  ");
 	print(pr, matrix);
-  
+
 	fputc('\n', stdout);
 	print(stdout, pr);
 	fputc('\n', stdout);
@@ -259,7 +259,7 @@ namespace {
 
 	cout << "The flat sequence has " << plane.flatIntervalCount
 		 << (plane.flatIntervalCount == 1 ? " interval.\n" : " intervals.\n");
- 
+
 	for (size_t i = plane.getMaxType(); i > 0; --i)
 	  cout << "There are " << plane.getTypeCount(i)
 		   << " MLFBs with " << i << " plane neighbors.\n";
@@ -314,7 +314,7 @@ namespace {
 
 	if (flatSeq.size() == 0 || pivots.size() != 4) {
 	  cout << "(Falling back to general framework as no flats or more than 4 pivots)\n\n";
-	  
+
 	  vector<vector<SeqPos> > left;
 	  vector<vector<SeqPos> > right;
 	  computeSeqs(left, right, mlfbs, plane);

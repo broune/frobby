@@ -191,7 +191,7 @@ TEST(RawSquareFreeIdeal, MinimizeAndMinimizable) {
 	deleteRawSquareFreeIdeal(ideal);									\
 	deleteTerm(colon);													\
 	deleteRawSquareFreeIdeal(minimized);								\
-  }																		
+  }
 
 #define TEST_COLON_REMINIMIZE_VAR(idealStr, colonVar, minimizedStr) {	\
 	RSFIdeal* idealVar = newRawSquareFreeIdealParse(idealStr);			\
