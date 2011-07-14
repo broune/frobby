@@ -56,7 +56,7 @@ namespace {
 	  // now pred(*end) is false and begin < end.
 
 	  // This swap is the reason that std::partition doesn't work
-	  Ops::swap(*begin, *end, varCount); 
+	  Ops::swap(*begin, *end, varCount);
 	  ++begin;
 	}
   }
@@ -228,8 +228,8 @@ void RSFIdeal::compact(const Word* remove) {
   // Copy the new compacted terms to remove the space between them. We
   // couldn't do that before because those spaces contained exponents
   // that we had not extracted yet.
-  const size_t newWordCount = Ops::getWordCount(varCompact); 
-  iterator newIt(_memory, newWordCount);   
+  const size_t newWordCount = Ops::getWordCount(varCompact);
+  iterator newIt(_memory, newWordCount);
   for (iterator oldIt = oldBegin; oldIt != oldStop; ++oldIt, ++newIt)
 	Ops::assign(*newIt, (*newIt) + newWordCount, *oldIt);
 
@@ -359,7 +359,7 @@ size_t RSFIdeal::getMaxSupportGen() const {
   const size_t varCount = getVarCount();
   size_t maxSupp = Ops::getSizeOfSupport(*it, varCount);
   const_iterator maxSuppIt = it;
-  
+
   for (++it; it != stop; ++it) {
 	const size_t supp = Ops::getSizeOfSupport(*it, varCount);
 	if (maxSupp < supp) {
@@ -379,7 +379,7 @@ size_t RSFIdeal::getMinSupportGen() const {
   const size_t varCount = getVarCount();
   size_t minSupp = Ops::getSizeOfSupport(*it, varCount);
   const_iterator minSuppIt = it;
-  
+
   for (++it; it != stop; ++it) {
 	const size_t supp = Ops::getSizeOfSupport(*it, varCount);
 	if (minSupp > supp) {
@@ -619,7 +619,7 @@ void RSFIdeal::colonReminimize(const Word* by) {
   // prime to [middle, end).
 
   iterator newMiddle = ::minimize(start, middle, getWordsPerTerm());
-	
+
   iterator newEnd = newMiddle;
   for (iterator it = middle; it != stop; ++it) {
 	for (const_iterator div = start; div != newMiddle; ++div)
@@ -663,7 +663,7 @@ void RSFIdeal::colonReminimize(size_t var) {
 	Ops::setExponent(*it, var, 0);
   if (middle == stop) {
 	ASSERT(isValid());
-	return; // var divides all 
+	return; // var divides all
   }
 
   // var divided [start, middle) and did (does) not divide [middle,

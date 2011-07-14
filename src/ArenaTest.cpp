@@ -36,7 +36,7 @@ TEST(Arena, Big) {
   ASSERT_FALSE(arena.isEmpty());
   arena.freeTop(a);
   ASSERT_TRUE(arena.isEmpty());
-  
+
 }
 
 TEST(Arena, Zero) {

@@ -232,7 +232,7 @@ class Tri {
   Neighbor getB() const {return _b;}
   Neighbor getSum() const {return _sum;}
   const vector<const Mlfb*>& getASideMlfbs() const {return _aSideMlfbs;}
-  const vector<const Mlfb*>& getBSideMlfbs() const {return _bSideMlfbs;} 
+  const vector<const Mlfb*>& getBSideMlfbs() const {return _bSideMlfbs;}
   const vector<Neighbor>& getNeighborsOnBoundary() const {return _boundary;}
   const vector<Neighbor>& getNeighborsInInterior() const {return _interior;}
 
@@ -427,7 +427,7 @@ public:
 
 private:
   Neighbor _a, _b, _c;
-  Matrix _normal;  
+  Matrix _normal;
   bool _line;
 };
 

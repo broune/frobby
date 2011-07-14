@@ -37,7 +37,7 @@ void getThinPlanes(vector<TriPlane>& planes, const GrobLat& lat) {
 			parallel = true;
 			break;
 		  }
-		} 
+		}
 		if (parallel)
 		  continue; // already got this plane
 
@@ -506,7 +506,7 @@ void computeFlatSeq(vector<SeqPos>& seq,
 	if (!moved)
 	  break;
   }
-}  
+}
 
 void computePlanes(vector<Plane>& planes,
 				   const GrobLat& lat,
@@ -813,8 +813,8 @@ void computeSeqs(vector<vector<SeqPos> >& left,
 	  do {
 		pos = nextInSeq(pos);
 		seq.push_back(pos);
-	  } while (!(plane.isPivot(*pos.mlfb)));	  
-	}	  
+	  } while (!(plane.isPivot(*pos.mlfb)));
+	}
   }
 
   CHECK(!seqs.empty());
@@ -875,7 +875,7 @@ void computeSeqs(vector<vector<SeqPos> >& left,
 	  left.push_back(seqs[s]);
 	} else if (rightSeen[offset])
 	  right.push_back(seqs[s]);
-  }  
+  }
 }
 
 void computePivotSeqs(vector<vector<SeqPos> >& seqs,
@@ -891,13 +891,13 @@ void computePivotSeqs(vector<vector<SeqPos> >& seqs,
 	  continue;
 	seqs.resize(seqs.size() + 1);
 	vector<SeqPos>& seq = seqs.back();
-	
+
 	SeqPos pos(&pivot, facet, flatFacet);
 	seq.push_back(pos);
 	do {
 	  pos = nextInSeq(pos);
 	  seq.push_back(pos);
-	} while (!(plane.isPivot(*pos.mlfb)));	  
+	} while (!(plane.isPivot(*pos.mlfb)));
   }
 }
 
@@ -1011,7 +1011,7 @@ void checkMiddle(const Plane& plane,
   // check that we have reached all pivots and flats
   for (m = 0; m < mlfbs.size(); ++m)
 	if (plane.isFlat(mlfbs[m]) || plane.isPivot(mlfbs[m]))
-	  CHECK(seen[m]); 
+	  CHECK(seen[m]);
 }
 
 void checkGraphOnPlane(const Plane& plane,
@@ -1130,7 +1130,7 @@ void checkPivotSeqs(vector<vector<SeqPos> >& pivotSeqs,
 	  // ** in-coming and out-going facets are on same plane
 	  CHECK(plane.getPlace(current->getPoint(prevFacet)) ==
 			plane.getPlace(current->getPoint(nextFacet)));
-	  
+
 	  // ** active facets are the same for all sequences on same side
 	  if (!foundPlace) {
 		place = plane.getPlace(current->getPoint(prevFacet));
@@ -1212,7 +1212,7 @@ void checkFlatSeq(const vector<SeqPos>& flatSeq,
 
 	// right-going edges
 	if (i < flatSeq.size() - 1) {
-	  // not at right end	
+	  // not at right end
 	  CHECK(flat.getEdge(af) == flat.getEdge(bf));
 	  const Mlfb& next = *(flatSeq[i + 1].mlfb);
 	  CHECK(flat.getEdge(af) == &next);
@@ -1233,7 +1233,7 @@ void checkFlatSeq(const vector<SeqPos>& flatSeq,
 	  CHECK(plane.isPivot(*flat.getEdge(af)));
 	  CHECK(plane.isPivot(*flat.getEdge(bf)));
 	  CHECK(flat.getEdge(af) != flat.getEdge(bf));
-	}	  
+	}
 
 	// left-going edges
 	if (i > 0) {
@@ -1419,7 +1419,7 @@ const mpq_class& Neighbor::getH(size_t i) const {
 size_t Neighbor::getHDim() const {
   ASSERT(isValid());
   return _lat->getHDim();
-} 
+}
 
 const mpq_class& Neighbor::getY(size_t i) const {
   ASSERT(isValid());
@@ -1433,7 +1433,7 @@ const mpq_class& Neighbor::getY(size_t i) const {
 size_t Neighbor::getYDim() const {
   ASSERT(isValid());
   return _lat->getYDim();
-} 
+}
 
 bool Neighbor::isZero() const {
   ASSERT(isValid());
