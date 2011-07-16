@@ -23,7 +23,7 @@ al. algorithm. The deformation has as far as I know never previously
 been implemented or even very explicitly described in the
 litterature. The Bigatti algorithm wasn't faster initially after
 implementing it as described in the litterature, but with some
-additional improvements it got a significantly better. It still isn't
+additional improvements it got significantly better. It still isn't
 faster for all ideals, but the improved version is still usually the
 best algorithm which is why it is the default algorithm used.
 
