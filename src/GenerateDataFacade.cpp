@@ -43,11 +43,28 @@ void GenerateDataFacade::generateKingChessIdeal(BigIdeal& ideal,
 }
 
 void GenerateDataFacade::generateKnightChessIdeal
-(BigIdeal& ideal,
- unsigned int rowsAndColumns) {
+(BigIdeal& ideal, unsigned int rowsAndColumns) {
   beginAction("Generating knight ideal.");
 
   ::generateKnightChessIdeal(ideal, rowsAndColumns);
+
+  endAction();
+}
+
+void GenerateDataFacade::generateRookChessIdeal
+(BigIdeal& ideal, unsigned int n, unsigned int k) {
+  beginAction("Generating rook ideal.");
+
+  ::generateRookChessIdeal(ideal, n, k);
+
+  endAction();
+}
+
+void GenerateDataFacade::generateMatchingIdeal
+(BigIdeal& ideal, unsigned int n) {
+  beginAction("Generating matching ideal.");
+
+  ::generateMatchingIdeal(ideal, n);
 
   endAction();
 }

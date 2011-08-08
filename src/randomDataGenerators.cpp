@@ -166,6 +166,227 @@ void generateTreeIdeal(BigIdeal& ideal, size_t varCount) {
   }
 }
 
+void generateRookChessIdeal(BigIdeal& bigIdeal, size_t n, size_t k) {
+  if (n == 0 || k == 0)
+    reportError("One side of rook ideal has zero vertices.");
+  if (n > 1000 || k > 1000)
+    reportError("Number of variables in rook ideal too large.");
+  if (n > k)
+	std::swap(n, k);
+
+  size_t varCount = n * k;
+  Ideal ideal(varCount);
+  Term term(varCount);
+
+  vector<char> taken(k);
+  vector<size_t> choice(n);
+  size_t level = 0;
+  while (true) {
+	if (choice[level] == k) {
+	  if (level == 0)
+		break;
+	  --level;
+	  ASSERT(taken[choice[level]] == true);	
+      ASSERT(term[level * k + choice[level]] == 1);
+	  taken[choice[level]] = false;
+      term[level * k + choice[level]] = 0;
+	  ++choice[level];
+	  continue;
+	}
+    if (taken[choice[level]]) {
+	  ++choice[level];
+	  continue;
+	}
+	taken[choice[level]] = true;
+    ASSERT(term[level * k + choice[level]] == 0);
+	term[level * k + choice[level]] = 1;
+
+    if (level < n - 1) {
+	  ++level;
+	  choice[level] = 0;
+	} else {
+	  ideal.insert(term);
+	  ASSERT(taken[choice[level]] == true);	
+      ASSERT(term[level * k + choice[level]] == 1);
+	  taken[choice[level]] = false;
+      term[level * k + choice[level]] = 0;
+	  ++choice[level];
+	}
+  }
+
+  VarNames names(varCount);
+  bigIdeal.clearAndSetNames(names);
+  bigIdeal.insert(ideal);
+}
+
+void generateMatchingIdeal(BigIdeal& bigIdeal, size_t n) {
+  if (n == 0)
+    reportError("Too few variables in matching ideal.");
+  if (n > 1000 || n > 1000)
+    reportError("Number of variables in matching ideal too large.");
+
+  class State {
+  public:
+	State(size_t nodeCount):
+	  _notTaken(-1), _nodes(nodeCount), _isAnchor(nodeCount) {
+	  std::fill(_nodes.begin(), _nodes.end(), _notTaken);
+	  const size_t varCount = nodeCount * (nodeCount - 1) / 2; // n choose 2 
+	  _term.reset(varCount);
+	}
+
+	void takeEdge(size_t anchor, size_t other) {
+	  ASSERT(anchor < _nodes.size());
+	  ASSERT(other < _nodes.size());
+	  ASSERT(!isTaken(anchor));
+	  ASSERT(!isTaken(other));
+	  _nodes[anchor] = other;
+	  _nodes[other] = anchor;
+      _isAnchor[anchor] = true;
+	  
+	  const size_t var = edgeToVar(anchor, other);
+	  ASSERT(_term[var] == 0);
+	  _term[var] = 1;
+	}
+
+	void takeNode(size_t node) {
+	  ASSERT(node < getNodeCount());
+	  ASSERT(!isTaken(node));
+	  ASSERT(!isAnchor(node));
+	  _nodes[node] = node;
+	}
+
+	void dropNode(size_t node) {
+	  ASSERT(node < getNodeCount());
+	  ASSERT(isTaken(node));
+	  ASSERT(!isAnchor(node));
+	  ASSERT(_nodes[node] == node);
+	  _nodes[node] = _notTaken;
+	}
+
+	void dropEdge(size_t anchor) {
+	  ASSERT(anchor < _nodes.size());
+	  ASSERT(isTaken(anchor));
+	  ASSERT(isAnchor(anchor));
+	  _isAnchor[anchor] = false;
+	  const size_t other = _nodes[anchor];
+	  _nodes[other] = _notTaken;
+	  _nodes[anchor] = _notTaken;
+
+	  const size_t var = edgeToVar(anchor, other);
+	  ASSERT(_term[var] == 1);
+	  _term[var] = 0;
+	}
+
+	size_t getNeighbor(size_t node) const {
+	  ASSERT(isTaken(node));
+	  return _nodes[node];
+	}
+
+    bool isAnchor(size_t node) const {
+	  ASSERT(node < _nodes.size());
+	  return _isAnchor[node];
+	}
+
+	bool isTaken(size_t node) const {
+	  ASSERT(node < _nodes.size());
+	  return _nodes[node] != _notTaken;
+	}
+
+	const Term& getTerm() const {return _term;}
+	size_t getNodeCount() const {return _nodes.size();}
+
+	// Returns static_cast<size_t>(-1) if there are no anchors to the
+	// left (negative direction).
+	size_t getAnchorLeft(size_t node) const {
+	  ASSERT(node <= getNodeCount());
+	  for (--node; node != static_cast<size_t>(-1); --node)
+		if (isAnchor(node))
+		  break;
+	  return node;
+	}
+
+	// returns getNodeCount() if all are taken to right (positive
+	// direction).
+	size_t getNotTakenRight(size_t node) const {
+	  ASSERT(node < getNodeCount());
+	  for (++node; node < getNodeCount(); ++node)
+		if (!isTaken(node))
+		  break;
+	  return node;
+	}
+
+  private:
+	size_t edgeToVar(size_t a, size_t b) const {
+	  ASSERT(a != b);
+	  ASSERT(a < _nodes.size());
+	  ASSERT(b < _nodes.size());
+	  if (a < b)
+		std::swap(a, b);
+	  const size_t var = (a * (a - 1)) / 2 + b;
+	  ASSERT(var < _term.getVarCount());
+	  return var;
+	}
+
+	const size_t _notTaken; // cannot be static when local class
+	std::vector<size_t> _nodes;
+    std::vector<size_t> _isAnchor;
+	Term _term;
+  };
+
+  State state(n);
+  Ideal ideal(state.getTerm().getVarCount());
+  size_t node = 0;
+
+  // one node cannot be used in maximum matching if odd number of nodes.
+  size_t notUsed = state.getNodeCount();
+  if (state.getNodeCount() % 2 == 1) {
+	notUsed = 0;
+	state.takeNode(notUsed);
+	++node;
+  }
+  while (true) {
+	if (node == static_cast<size_t>(-1)) {
+	  if (notUsed < state.getNodeCount()) {
+		state.dropNode(notUsed);
+		++notUsed;
+	  }
+	  if (notUsed == state.getNodeCount())
+		break;
+	  state.takeNode(notUsed);
+	  node = 0; // start over with next node unused
+	}
+	ASSERT(node <= state.getNodeCount());
+	if (node == state.getNodeCount()) {
+	  ideal.insert(state.getTerm());
+	  node = state.getAnchorLeft(node);
+	} else if (!state.isTaken(node)) {
+	  const size_t neighbor = state.getNotTakenRight(node);
+	  if (neighbor == state.getNodeCount()) {
+		node = state.getAnchorLeft(node);
+	  }	else {
+		state.takeEdge(node, neighbor);
+		node = state.getNotTakenRight(neighbor);
+	  }
+	} else {
+	  ASSERT(state.isTaken(node));
+	  ASSERT(state.isAnchor(node));
+	  const size_t neighbor = state.getNeighbor(node);
+	  const size_t nextNeighbor = state.getNotTakenRight(neighbor);
+	  state.dropEdge(node);
+	  if (nextNeighbor == state.getNodeCount()) {
+		node = state.getAnchorLeft(node);
+	  } else {
+		state.takeEdge(node, nextNeighbor);
+		node = state.getNotTakenRight(node);
+	  }
+	}
+  }
+
+  VarNames names(state.getTerm().getVarCount());
+  bigIdeal.clearAndSetNames(names);
+  bigIdeal.insert(ideal);
+}
+
 bool generateRandomEdgeIdeal
 (BigIdeal& bigIdeal, size_t variableCount, size_t generatorCount) {
   Ideal ideal(variableCount);

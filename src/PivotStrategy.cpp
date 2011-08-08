@@ -662,10 +662,8 @@ namespace {
 	  _stdStrat(stdStrat), _genStrat(genStrat) {}
 
 	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
-	  size_t varToGenRatio =
-		state.getNonEliminatedVarCount() /
-		state.getIdeal().getGeneratorCount();
-	  if (varToGenRatio < 10)
+	  if (state.getNonEliminatedVarCount() <
+		  state.getIdeal().getGeneratorCount())
 		return _stdStrat->doPivot(state, divCounts);
 	  else
 		return _genStrat->doPivot(state, divCounts);

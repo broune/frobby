@@ -62,6 +62,23 @@ void IdealFacade::takeRadical(BigIdeal& bigIdeal) {
   endAction();
 }
 
+void IdealFacade::swap01(BigIdeal& bigIdeal) {
+  beginAction("Swapping 0 and 1 exponents.");
+
+  const size_t genCount = bigIdeal.getGeneratorCount();
+  const size_t varCount = bigIdeal.getVarCount();
+  for (size_t gen = 0; gen < genCount; ++gen) {
+	for (size_t var = 0; var < varCount; ++var) {
+	  if (bigIdeal[gen][var] == 1)
+		bigIdeal[gen][var] = 0;
+	  else if (bigIdeal[gen][var] == 0)
+		bigIdeal[gen][var] = 1;
+	}
+  }
+
+  endAction();
+}
+
 mpz_class IdealFacade::computeDimension(const BigIdeal& bigIdeal,
                                         bool codimension,
                                         bool squareFreeAndMinimal) {
