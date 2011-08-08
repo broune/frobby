@@ -53,6 +53,16 @@ void generateKingChessIdeal(BigIdeal& ideal, size_t rowsAndColumns);
 */
 void generateKnightChessIdeal(BigIdeal& ideal, size_t rowsAndColumns);
 
+/** Generate an ideal in n*k variables. Each facet corresponds to a
+   way of placing rooks on an n*k chessboard without any rooks being
+   able to take any other rook in one move.
+*/
+void generateRookChessIdeal(BigIdeal& bigIdeal, size_t n, size_t k);
+
+/** Generate an ideal whose facets are the maximum matchings in an
+	n-clique. */
+void generateMatchingIdeal(BigIdeal& bigIdeal, size_t n);
+
 /** Generate an ideal in varCount variables with minimal generators given by
 \f[
 \left\langle
@@ -88,6 +98,7 @@ bool generateRandomIdeal(BigIdeal& bigIdeal,
                          size_t exponentRange,
                          size_t varCount,
                          size_t generatorCount);
+
 
 /** Generate a random vector of numbers whose gcd is 1.
  */

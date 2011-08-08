@@ -33,6 +33,9 @@ class GenerateDataFacade : private Facade {
   void generateListIdeal(BigIdeal& ideal, size_t varCount);
   void generateKingChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
   void generateKnightChessIdeal(BigIdeal& ideal, unsigned int rowsAndColumns);
+  void generateRookChessIdeal(BigIdeal& ideal, unsigned int n, unsigned int k);
+  void generateMatchingIdeal(BigIdeal& ideal, unsigned int n);
+
   void generateTreeIdeal(BigIdeal& ideal, unsigned int varCount);
 
   void generateEdgeIdeal
