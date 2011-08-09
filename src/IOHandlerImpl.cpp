@@ -109,6 +109,7 @@ const char* IO::IOHandlerImpl::doGetDescription() const {
 void IO::readTermProduct(Scanner& in,
                          const VarNames& names,
                          vector<mpz_class>& term) {
+  ASSERT(term.size() == names.getVarCount());
   term.resize(names.getVarCount());
   for (size_t var = 0; var < term.size(); ++var)
     term[var] = 0;

@@ -130,24 +130,6 @@ void BigIdeal::reserve(size_t capacity) {
   tmp.swap(_terms);
 }
 
-mpz_class& BigIdeal::getLastTermExponentRef(size_t var) {
-  ASSERT(!empty());
-  ASSERT(var < _names.getVarCount());
-
-  return _terms.back()[var];
-}
-
-vector<mpz_class>& BigIdeal::getLastTermRef() {
-  ASSERT(!empty());
-
-  return _terms.back();
-}
-
-const vector<mpz_class>& BigIdeal::getTerm(size_t term) const {
-  ASSERT(term < getGeneratorCount());
-  return _terms[term];
-}
-
 void BigIdeal::getLcm(vector<mpz_class>& lcm) const {
   lcm.clear();
   lcm.resize(getVarCount());
@@ -161,16 +143,6 @@ void BigIdeal::getLcm(vector<mpz_class>& lcm) const {
 
 bool BigIdeal::operator==(const BigIdeal& b) const {
   return _terms == b._terms;
-}
-
-vector<mpz_class>& BigIdeal::operator[](size_t index) {
-  ASSERT(index < _terms.size());
-  return _terms[index];
-}
-
-const vector<mpz_class>& BigIdeal::operator[](size_t index) const {
-  ASSERT(index < _terms.size());
-  return _terms[index];
 }
 
 void BigIdeal::projectVar(size_t var) {
@@ -235,14 +207,6 @@ bool BigIdeal::contains(const vector<mpz_class>& term) const {
 
 void BigIdeal::clear() {
   _terms.clear();
-}
-
-size_t BigIdeal::getGeneratorCount() const {
-  return _terms.size();
-}
-
-size_t BigIdeal::getVarCount() const {
-  return _names.getVarCount();
 }
 
 void BigIdeal::clearAndSetNames(const VarNames& names) {

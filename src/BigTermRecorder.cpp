@@ -30,6 +30,11 @@ void BigTermRecorder::consumeRing(const VarNames& names) {
   _names = names;
 }
 
+void BigTermRecorder::consume(auto_ptr<BigIdeal> ideal) {
+  consumeRing(ideal->getNames());
+  exceptionSafePushBack(_ideals, ideal);  
+}
+
 void BigTermRecorder::beginConsuming() {
   auto_ptr<BigIdeal> ideal(new BigIdeal(_names));
   exceptionSafePushBack(_ideals, ideal);

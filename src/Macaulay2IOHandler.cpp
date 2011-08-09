@@ -26,7 +26,7 @@
 #include "PolyWriter.h"
 #include "error.h"
 #include "display.h"
-
+#include "InputConsumer.h"
 #include <cstdio>
 
 namespace IO {
@@ -215,9 +215,9 @@ namespace IO {
 
   void Macaulay2IOHandler::doReadBareIdeal(Scanner& in,
                                            const VarNames& names,
-                                           BigTermConsumer& consumer) {
-    consumer.beginConsuming(names);
-    vector<mpz_class> term(names.getVarCount());
+                                           InputConsumer& consumer) {
+	consumer.consumeRing(names);
+    consumer.beginIdeal();
 
     in.expect('I');
     in.expect('=');
@@ -229,15 +229,14 @@ namespace IO {
         in.readIdentifier();
     } else {
       do {
-        readTerm(in, names, term);
+		consumer.consumeTermProductNotation(in);
         if (in.match('_'))
           in.readIdentifier();
-        consumer.consume(term);
       } while (in.match(','));
     }
     in.expect(')');
     in.expect(';');
-    consumer.doneConsuming();
+    consumer.endIdeal();
   }
 
   void Macaulay2IOHandler::doReadBarePolynomial(Scanner& in,

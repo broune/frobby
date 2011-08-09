@@ -33,16 +33,17 @@
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
 #include "error.h"
-
+#include "BigTermRecorder.h"
+#include "InputConsumer.h"
 
 IOHandler::~IOHandler() {
 }
 
-void IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+void IOHandler::readIdeal(Scanner& in, InputConsumer& consumer) {
   doReadIdeal(in, consumer);
 }
 
-void IOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+void IOHandler::readIdeals(Scanner& in, InputConsumer& consumer) {
   doReadIdeals(in, consumer);
 }
 
@@ -112,6 +113,25 @@ bool IOHandler::supportsInput(const DataType& type) const {
 
 bool IOHandler::supportsOutput(const DataType& type) const {
   return doSupportsOutput(type);
+}
+
+void IOHandler::doReadIdeal(Scanner& in, InputConsumer& consumer) {
+  // temporary implementation while migrating to InputConsumer.
+  BigTermRecorder middleman;
+  doReadIdeals(in, middleman);
+  vector<BigIdeal*> ideals;
+  ASSERT(!middleman.empty());
+  consumer.consumeIdeal(middleman.releaseIdeal());
+  ASSERT(middleman.empty());
+}
+
+void IOHandler::doReadIdeals(Scanner& in, InputConsumer& consumer) {
+  // temporary implementation while migrating to InputConsumer.
+  BigTermRecorder middleman;
+  doReadIdeals(in, middleman);
+  vector<BigIdeal*> ideals;
+  while (!middleman.empty())
+	consumer.consumeIdeal(middleman.releaseIdeal());
 }
 
 namespace {

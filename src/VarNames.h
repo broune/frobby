@@ -105,4 +105,14 @@ private:
   vector<const string*> _indexToName;
 };
 
+
+
+inline size_t VarNames::getInvalidIndex() {
+  return static_cast<size_t>(-1);
+}
+
+inline size_t VarNames::getVarCount() const {
+  return _indexToName.size();
+}
+
 #endif

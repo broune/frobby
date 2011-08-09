@@ -107,4 +107,42 @@ private:
 ostream& operator<<(ostream& out, const BigIdeal& ideal);
 ostream& operator<<(ostream& out, const vector<BigIdeal>& ideals);
 
+
+
+inline vector<mpz_class>& BigIdeal::operator[](size_t index) {
+  ASSERT(index < _terms.size());
+  return _terms[index];
+}
+
+inline const vector<mpz_class>& BigIdeal::operator[](size_t index) const {
+  ASSERT(index < _terms.size());
+  return _terms[index];
+}
+
+inline mpz_class& BigIdeal::getLastTermExponentRef(size_t var) {
+  ASSERT(!empty());
+  ASSERT(var < _names.getVarCount());
+
+  return _terms.back()[var];
+}
+
+inline vector<mpz_class>& BigIdeal::getLastTermRef() {
+  ASSERT(!empty());
+
+  return _terms.back();
+}
+
+inline const vector<mpz_class>& BigIdeal::getTerm(size_t term) const {
+  ASSERT(term < getGeneratorCount());
+  return _terms[term];
+}
+
+inline size_t BigIdeal::getGeneratorCount() const {
+  return _terms.size();
+}
+
+inline size_t BigIdeal::getVarCount() const {
+  return _names.getVarCount();
+}
+
 #endif

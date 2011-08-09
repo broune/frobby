@@ -24,6 +24,7 @@ class VarNames;
 class Scanner;
 class BigTermConsumer;
 class CoefBigTermConsumer;
+class InputConsumer;
 
 namespace IO {
   class Macaulay2IOHandler : public IOHandlerCommon {
@@ -44,9 +45,9 @@ namespace IO {
                             vector<mpz_class>& term);
     virtual void doReadRing(Scanner& in, VarNames& names);
     virtual bool doPeekRing(Scanner& in);
-    virtual void doReadBareIdeal(Scanner& in,
-                                 const VarNames& names,
-                                 BigTermConsumer& consumer);
+	virtual void doReadBareIdeal(Scanner& in,
+								 const VarNames& names,
+								 InputConsumer& consumer);
     virtual void doReadBarePolynomial(Scanner& in,
                                       const VarNames& names,
                                       CoefBigTermConsumer& consumer);
