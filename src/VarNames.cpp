@@ -103,10 +103,6 @@ const string& VarNames::getName(size_t index) const {
   return *(_indexToName[index]);
 }
 
-size_t VarNames::getVarCount() const {
-  return _indexToName.size();
-}
-
 void VarNames::clear() {
   _nameToIndex.clear();
   _indexToName.clear();
@@ -189,10 +185,6 @@ void VarNames::print(FILE* file) const {
     fprintf(file, "%lu<->\"%s\"", (unsigned long)i, getName(i).c_str());
   }
   fputs(")\n", file);
-}
-
-size_t VarNames::getInvalidIndex() {
-  return numeric_limits<size_t>::max();
 }
 
 bool VarNames::compareNames(const string* a, const string* b) {

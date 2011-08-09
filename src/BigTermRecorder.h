@@ -38,6 +38,8 @@ public:
   virtual void consume(const vector<mpz_class>& term);
   virtual void doneConsuming();
 
+  virtual void consume(auto_ptr<BigIdeal> ideal);
+
   // Returns true if this object currently stores no ideals.
   bool empty() const;
 

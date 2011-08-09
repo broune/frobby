@@ -370,7 +370,7 @@ bool Scanner::peek(char character) {
   return peek() == character;
 }
 
-int Scanner::getChar() {
+inline int Scanner::getChar() {
   if (_char == '\n')
     ++_lineNumber;
   int oldChar = _char;

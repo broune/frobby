@@ -59,3 +59,7 @@ void BigTermConsumer::consume(const BigIdeal& ideal) {
     consume(ideal.getTerm(term));
   doneConsuming();
 }
+
+void BigTermConsumer::consume(auto_ptr<BigIdeal> ideal) {
+  consume(*ideal);
+}

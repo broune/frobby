@@ -20,7 +20,9 @@
 
 #include "VarNames.h"
 #include "BigTermConsumer.h"
+#include "BigTermRecorder.h"
 #include "error.h"
+#include "InputConsumer.h"
 
 IO::IOHandlerCommon::IOHandlerCommon(const char* formatName,
                                      const char* formatDescription):
@@ -41,6 +43,12 @@ void IO::IOHandlerCommon::readBareIdeal(Scanner& in,
   doReadBareIdeal(in, names, consumer);
 }
 
+void IO::IOHandlerCommon::readBareIdeal(Scanner& in,
+                                        const VarNames& names,
+                                        InputConsumer& consumer) {
+  doReadBareIdeal(in, names, consumer);
+}
+
 void IO::IOHandlerCommon::readBarePolynomial(Scanner& in,
                                             const VarNames& names,
                                             CoefBigTermConsumer& consumer) {
@@ -53,7 +61,29 @@ void IO::IOHandlerCommon::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
   readBareIdeal(in, names, consumer);
 }
 
+void IO::IOHandlerCommon::doReadIdeal(Scanner& in, InputConsumer& consumer) {
+  VarNames names;
+  readRing(in, names);
+  readBareIdeal(in, names, consumer);
+}
+
 void IO::IOHandlerCommon::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+  VarNames names;
+  readRing(in, names);
+  if (!hasMoreInput(in)) {
+    consumer.consumeRing(names);
+    return;
+  }
+  readBareIdeal(in, names, consumer);
+
+  while (hasMoreInput(in)) {
+    if (peekRing(in))
+      readRing(in, names);
+    readBareIdeal(in, names, consumer);
+  }
+}
+
+void IO::IOHandlerCommon::doReadIdeals(Scanner& in, InputConsumer& consumer) {
   VarNames names;
   readRing(in, names);
   if (!hasMoreInput(in)) {
@@ -86,4 +116,16 @@ void IO::IOHandlerCommon::doReadBareIdeal(Scanner& in,
                                           const VarNames& names,
                                           BigTermConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
+}
+
+void IO::IOHandlerCommon::doReadBareIdeal(Scanner& in,
+                                          const VarNames& names,
+                                          InputConsumer& consumer) {
+  // temporary implementation pending migration to InputConsumer.
+  BigTermRecorder middleman;
+  middleman.consumeRing(consumer.getRing());
+  doReadBareIdeal(in, names, middleman);
+  ASSERT(!middleman.empty());
+  consumer.consumeIdeal(middleman.releaseIdeal());
+  ASSERT(middleman.empty());
 }

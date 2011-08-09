@@ -234,7 +234,7 @@ namespace IO {
     F::readIdeal(in, consumer, generatorCount, varCount);
 
     while (hasMoreInput(in))
-      readIdeal(in, consumer);
+      doReadIdeal(in, consumer);
   }
 
   void Fourti2IOHandler::doReadPolynomial(Scanner& in,

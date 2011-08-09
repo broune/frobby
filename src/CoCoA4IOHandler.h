@@ -24,6 +24,7 @@ class VarNames;
 class Scanner;
 class BigTermConsumer;
 class CoefBigTermConsumer;
+class InputConsumer;
 
 namespace IO {
   class CoCoA4IOHandler : public IOHandlerCommon {
@@ -46,7 +47,7 @@ namespace IO {
     virtual bool doPeekRing(Scanner& in);
     virtual void doReadBareIdeal(Scanner& in,
                                  const VarNames& names,
-                                 BigTermConsumer& consumer);
+                                 InputConsumer& consumer);
     virtual void doReadBarePolynomial(Scanner& in,
                                       const VarNames& names,
                                       CoefBigTermConsumer& consumer);
