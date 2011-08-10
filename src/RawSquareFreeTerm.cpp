@@ -190,10 +190,25 @@ namespace SquareFreeTermOps {
 	  *a = *b;
   }
 
-  /** Assigns the RawSquareFreeTerm-encoded form of term to encoded
-	  and returns true if term is square free. Otherwise returns
-	  false. */
   bool encodeTerm(Word* encoded, const Exponent* term, const size_t varCount) {
+	size_t var = 0;
+	while (var < varCount) {
+	  Word bit = 1;
+	  *encoded = 0;
+	  do {
+		if (term[var] == 1)
+		  *encoded |= bit;
+		else if (term[var] != 0)
+		  return false;
+		bit <<= 1;
+		++var;
+	  } while (bit != 0 && var < varCount);
+	  ++encoded;
+	}
+	return true;
+  }
+
+  bool encodeTerm(Word* encoded, const mpz_class* term, const size_t varCount) {
 	size_t var = 0;
 	while (var < varCount) {
 	  Word bit = 1;

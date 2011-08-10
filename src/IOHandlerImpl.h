@@ -55,8 +55,9 @@ namespace IO {
     virtual void doReadTerm(Scanner& in,
                             const VarNames& names,
                             vector<mpz_class>& term);
-    virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-    virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadTerm(Scanner& in, InputConsumer& term);
+    virtual void doReadIdeal(Scanner& in, InputConsumer& consumer);
+    virtual void doReadIdeals(Scanner& in, InputConsumer& consumer);
     virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
     virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer);
 

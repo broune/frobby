@@ -49,7 +49,16 @@ void IOHandler::readIdeals(Scanner& in, InputConsumer& consumer) {
 
 void IOHandler::readTerm
 (Scanner& in, const VarNames& names, vector<mpz_class>& term) {
-  doReadTerm(in, names, term);
+  InputConsumer consumer;
+  consumer.consumeRing(names);
+  consumer.beginIdeal();
+  doReadTerm(in, consumer);
+  ASSERT(!consumer.empty());
+  consumer.endIdeal();
+  auto_ptr<BigIdeal> ideal = consumer.releaseIdeal();
+  ASSERT(consumer.empty());
+  ASSERT(ideal->getGeneratorCount() == 1);
+  term = (*ideal)[0];
 }
 
 void IOHandler::readPolynomial(Scanner& in, CoefBigTermConsumer& consumer) {
@@ -113,25 +122,6 @@ bool IOHandler::supportsInput(const DataType& type) const {
 
 bool IOHandler::supportsOutput(const DataType& type) const {
   return doSupportsOutput(type);
-}
-
-void IOHandler::doReadIdeal(Scanner& in, InputConsumer& consumer) {
-  // temporary implementation while migrating to InputConsumer.
-  BigTermRecorder middleman;
-  doReadIdeals(in, middleman);
-  vector<BigIdeal*> ideals;
-  ASSERT(!middleman.empty());
-  consumer.consumeIdeal(middleman.releaseIdeal());
-  ASSERT(middleman.empty());
-}
-
-void IOHandler::doReadIdeals(Scanner& in, InputConsumer& consumer) {
-  // temporary implementation while migrating to InputConsumer.
-  BigTermRecorder middleman;
-  doReadIdeals(in, middleman);
-  vector<BigIdeal*> ideals;
-  while (!middleman.empty())
-	consumer.consumeIdeal(middleman.releaseIdeal());
 }
 
 namespace {

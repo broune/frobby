@@ -35,6 +35,11 @@ class InputConsumer {
   /** Start consuming an ideal. */
   void beginIdeal();
 
+  /** Suggest that the current ideal will have the given number of
+	  generators. This helps in preallocating the right amount of
+	  memory. */
+  void hintGenCount(size_t hintGenCount);
+
   /** Start consuming a term. */
   void beginTerm();
 
@@ -45,9 +50,16 @@ class InputConsumer {
   /** Consumes var raised to the exponent 1. */
   void consumeVarExponentOne(size_t var, const Scanner& in);
 
-  /** Consumes var raised to an exponent read from in. Does not return
-	  if there is an error. */
+  /** Consumes var raised to an exponent read from in.
+
+   Does not return if there is an error. */
   void consumeVarExponent(size_t var, Scanner& in);
+
+  /** Consumes var raised to an exponent read from in. If the number is
+   negative then that is read as zero.
+
+   Does not return if there is an error. */
+  void consumeVarExponentNegativeAsZero(size_t var, Scanner& in);
 
   /** Done reading a term. */
   void endTerm() {}
@@ -60,7 +72,7 @@ class InputConsumer {
   void consumeTermProductNotation(Scanner& in);
 
   /** Done reading an ideal. */
-  void endIdeal() {}
+  void endIdeal();
 
   /** Returns true if there are ideals stored. */
   bool empty() const {return _ideals.empty();}
@@ -74,6 +86,7 @@ class InputConsumer {
   VarNames _names;
   std::list<BigIdeal*> _ideals;
   ElementDeleter<std::list<BigIdeal*> > _idealsDeleter;
+  bool _inIdeal;
 };
 
 #endif

@@ -47,29 +47,46 @@ namespace {
   }
 }
 
-InputConsumer::InputConsumer(): _idealsDeleter(_ideals) {
+InputConsumer::InputConsumer():
+  _idealsDeleter(_ideals),
+  _inIdeal(false) {
 }
 
 void InputConsumer::consumeRing(const VarNames& names) {
   _names = names;
+  if (_inIdeal) {
+	ASSERT(names.getVarCount() == _ideals.back()->getVarCount());
+	_ideals.back()->renameVars(names);
+  }
 }
 
 void InputConsumer::consumeIdeal(auto_ptr<BigIdeal> ideal) {
+  ASSERT(!_inIdeal);
   _names = ideal->getNames();
   exceptionSafePushBack(_ideals, ideal);
 }
 
 void InputConsumer::beginIdeal() {
+  ASSERT(!_inIdeal);
+  _inIdeal = true;
   auto_ptr<BigIdeal> ideal(new BigIdeal(_names));
   exceptionSafePushBack(_ideals, ideal);
 }
 
+void InputConsumer::hintGenCount(size_t hintGenCount) {
+  ASSERT(_inIdeal);
+  ASSERT(!_ideals.empty());
+  _ideals.back()->reserve(hintGenCount);
+}
+
 void InputConsumer::beginTerm() {
+  ASSERT(_inIdeal);
   ASSERT(!empty());
   _ideals.back()->newLastTerm();
 }
 
 size_t InputConsumer::consumeVarNumber(Scanner& in) {
+  ASSERT(_inIdeal);
   ASSERT(!empty());
   ASSERT(!_ideals.back()->getGeneratorCount() == 0);
 
@@ -85,10 +102,11 @@ size_t InputConsumer::consumeVarNumber(Scanner& in) {
 }
 
 void InputConsumer::consumeVarExponentOne(size_t var, const Scanner& in) {
+  ASSERT(_inIdeal);
   ASSERT(!empty());
   ASSERT(var < _ideals.back()->getVarCount());
   mpz_class& exponent = _ideals.back()->getLastTermExponentRef(var);
-  if (var != 0) {
+  if (exponent != 0) {
 	FrobbyStringStream errorMsg;
 	errorMsg << "The variable " << _names.getName(var)
 			 << " appears twice in the same monomial.";
@@ -98,26 +116,51 @@ void InputConsumer::consumeVarExponentOne(size_t var, const Scanner& in) {
 }
 
 void InputConsumer::consumeVarExponent(size_t var, Scanner& in) {
+  ASSERT(_inIdeal);
   ASSERT(!empty());
   ASSERT(var < _ideals.back()->getVarCount());
 
   mpz_class& exponent = _ideals.back()->getLastTermExponentRef(var);
-  in.readInteger(exponent);
-  if (exponent <= 0) {
+  if (exponent != 0) {
 	FrobbyStringStream errorMsg;
-	errorMsg << "Expected positive integer as exponent but got "
+	errorMsg << "The variable " << _names.getName(var)
+			 << " appears twice in the same monomial.";
+	reportSyntaxError(in, errorMsg);
+  }
+  in.readInteger(exponent);
+  if (exponent < 0) {
+	FrobbyStringStream errorMsg;
+	errorMsg << "Expected non-negative integer as exponent but got "
 			 << exponent << '.';
 	reportSyntaxError(in, errorMsg);
   }
 }
 
+void InputConsumer::consumeVarExponentNegativeAsZero(size_t var, Scanner& in) {
+  ASSERT(_inIdeal);
+  ASSERT(!empty());
+  ASSERT(var < _ideals.back()->getVarCount());
+
+  mpz_class& exponent = _ideals.back()->getLastTermExponentRef(var);
+  if (exponent != 0) {
+	FrobbyStringStream errorMsg;
+	errorMsg << "The variable " << _names.getName(var)
+			 << " appears twice in the same monomial.";
+	reportSyntaxError(in, errorMsg);
+  }
+  in.readIntegerAndNegativeAsZero(exponent);
+  ASSERT(exponent >= 0);
+}
+
 void InputConsumer::consumeTerm(const vector<mpz_class>& term) {
+  ASSERT(_inIdeal);
   ASSERT(!empty());
   ASSERT(_ideals.back()->getVarCount() == term.size());
   _ideals.back()->insert(term);
 }
 
 void InputConsumer::consumeTermProductNotation(Scanner& in) {
+  ASSERT(_inIdeal);
   ASSERT(!empty());
   _ideals.back()->newLastTerm();
   vector<mpz_class>& term = _ideals.back()->getLastTermRef();
@@ -129,7 +172,14 @@ void InputConsumer::consumeTermProductNotation(Scanner& in) {
   } while (in.match('*'));
 }
 
+void InputConsumer::endIdeal() {
+  ASSERT(_inIdeal);
+  ASSERT(!_ideals.empty());
+  _inIdeal = false;
+}
+
 auto_ptr<BigIdeal> InputConsumer::releaseIdeal() {
+  ASSERT(!_inIdeal);
   ASSERT(!empty());
   auto_ptr<BigIdeal> ideal(_ideals.front());
   _ideals.pop_front();

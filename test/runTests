@@ -9,9 +9,9 @@ fi
 
 TIMEFORMAT=$' (%2lR real)'
 
-normalTests="euler hilbert_deform hilbert_bigatti hilbert_slice irrdecom \
+normalTests="euler alexdual hilbert_deform hilbert_bigatti hilbert_slice \
              dimension primdecom intersect assoprimes minimize \
-             alexdual radical frob maxstandard optimize"
+             irrdecom radical frob maxstandard optimize"
 
 specialTests="internal idealFormats polyFormats latticeFormats messages"
 params="$*"

@@ -26,6 +26,7 @@
 #include "IdealWriter.h"
 #include "PolyWriter.h"
 #include "error.h"
+#include "InputConsumer.h"
 
 #include <cstdio>
 
@@ -137,6 +138,10 @@ namespace IO {
     readTermProduct(in, names, term);
   }
 
+  void SingularIOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	consumer.consumeTermProductNotation(in);
+  }
+
   void SingularIOHandler::doReadRing(Scanner& in, VarNames& names) {
     names.clear();
 
@@ -205,6 +210,24 @@ namespace IO {
     in.expect(';');
 
     consumer.doneConsuming();
+  }
+
+  void SingularIOHandler::doReadBareIdeal
+  (Scanner& in, InputConsumer& consumer) {
+    consumer.beginIdeal();
+
+    in.expect("ideal");
+    in.expect('I');
+    in.expect('=');
+
+    if (!in.match('0')) {
+      do {
+		consumer.consumeTermProductNotation(in);
+      } while (in.match(','));
+    }
+    in.expect(';');
+
+    consumer.endIdeal();
   }
 
   void SingularIOHandler::doReadBarePolynomial(Scanner& in,

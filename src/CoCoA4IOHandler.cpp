@@ -175,11 +175,8 @@ namespace IO {
     C::writeTermProduct(term, names, out);
   }
 
-  void CoCoA4IOHandler::doReadTerm(Scanner& in,
-                                   const VarNames& names,
-                                   vector<mpz_class>& term) {
-    term.resize(names.getVarCount());
-    C::readTerm(in, term);
+  void CoCoA4IOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	C::readTerm(in, consumer);
   }
 
   void CoCoA4IOHandler::doReadRing(Scanner& in, VarNames& names) {
@@ -229,10 +226,8 @@ namespace IO {
     return in.peek('U') || in.peek('u');
   }
 
-  void CoCoA4IOHandler::doReadBareIdeal(Scanner& in,
-                                        const VarNames& names,
-                                        InputConsumer& consumer) {
-	consumer.consumeRing(names);
+  void CoCoA4IOHandler::doReadBareIdeal
+  (Scanner& in, InputConsumer& consumer) {
     consumer.beginIdeal();
 
     in.expect('I');
