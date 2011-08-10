@@ -27,6 +27,7 @@
 #include "Ideal.h"
 #include "HilbertBasecase.h"
 #include "PivotStrategy.h"
+#include "SquareFreeIdeal.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -153,39 +154,45 @@ void EulerAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void EulerAction::perform() {
-  BigIdeal ideal;
   Scanner in(_io.getInputFormat(), stdin);
   _io.autoDetectInputFormat(in);
   _io.validateFormats();
 
-  IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(in, ideal);
-  in.expectEOF();
+  if (true) {
+	IOFacade ioFacade(_printActions);
+	BigIdeal ideal;
+	ioFacade.readIdeal(in, ideal);
+	in.expectEOF();
 
-  size_t varCount = ideal.getVarCount();
-  size_t genCount = ideal.getGeneratorCount();
+	size_t varCount = ideal.getVarCount();
+	size_t genCount = ideal.getGeneratorCount();
 
-  Ideal radical(varCount);
-  Term tmp(varCount);
-  for (size_t term = 0; term < genCount; ++term) {
-    for (size_t var = 0; var < varCount; ++var) {
-      if (ideal[term][var] == 0)
-        tmp[var] = 0;
-      else if (ideal[term][var] == 1)
-        tmp[var] = 1;
-	  else
-		reportError("Input ideal is not square free.");
-    }
-    radical.insert(tmp);
-  }
+	Ideal radical(varCount);
+	Term tmp(varCount);
+	for (size_t term = 0; term < genCount; ++term) {
+	  for (size_t var = 0; var < varCount; ++var) {
+		if (ideal[term][var] == 0)
+		  tmp[var] = 0;
+		else if (ideal[term][var] == 1)
+		  tmp[var] = 1;
+		else
+		  reportError("Input ideal is not square free.");
+	  }
+	  radical.insert(tmp);
+	}
 
-  radical.minimize();
+	radical.minimize();
 
-  mpz_class euler;
-  if (false) {
 	HilbertBasecase basecase;
-	basecase.computeCoefficient(radical);
-	euler = basecase.getLastCoefficient();
+	mpz_class euler;
+	if (radical.getGeneratorCount() == 0)
+	  euler = 0;
+	else if (radical.getVarCount() == 0)
+	  euler = -1;
+	else {
+      basecase.computeCoefficient(radical);
+	  euler = basecase.getLastCoefficient();
+	}
 	gmp_fprintf(stdout, "%Zd\n", euler.get_mpz_t());
 	return;
   }
@@ -223,7 +230,12 @@ void EulerAction::perform() {
   alg.setUseManyDivSimplify(_useManyDivSimplify);
   alg.setUseAllPairsSimplify(_useAllPairsSimplify);
 
-  euler = alg.computeEulerCharacteristic(radical);
+  IOFacade ioFacade(_printActions);
+  SquareFreeIdeal rad;
+  ioFacade.readSquareFreeIdeal(in, rad);
+  in.expectEOF();
+  rad.minimize();
+  mpz_class euler = alg.computeEulerCharacteristic(*rad.getRawIdeal());
   gmp_fprintf(stdout, "%Zd\n", euler.get_mpz_t());
 }
 

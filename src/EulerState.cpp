@@ -39,6 +39,21 @@ EulerState* EulerState::construct(const Ideal& idealParam, Arena* arena) {
   return state;
 }
 
+EulerState* EulerState::construct
+(const RawSquareFreeIdeal& idealParam, Arena* arena) {
+  ASSERT(arena != 0);
+
+  const size_t varCount = idealParam.getVarCount();
+  const size_t capacity = idealParam.getGeneratorCount();
+  EulerState* state = rawConstruct(varCount, capacity, arena);
+
+  state->ideal->insert(idealParam);
+  Ops::setToIdentity(state->eliminated, varCount);
+  ASSERT(state->debugIsValid());
+
+  return state;
+}
+
 EulerState* EulerState::rawConstruct(size_t varCount, size_t capacity,
 									 Arena* arena) {
   ASSERT(arena != 0);

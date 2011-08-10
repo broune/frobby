@@ -255,19 +255,43 @@ const mpz_class& PivotEulerAlg::computeEulerCharacteristic(const Ideal& ideal) {
   else {
 	LocalArray<Word> termTmp(Ops::getWordCount(ideal.getVarCount()));
 	_termTmp = termTmp.begin();
-	_euler = 0;
-
 	EulerState* state = EulerState::construct(ideal, &(Arena::getArena()));
-	while (state != 0) {
-	  EulerState* nextState = processState(*state);
-	  if (nextState == 0) {
-		nextState = state->getParent();
-		Arena::getArena().freeAndAllAfter(state);
-	  }
-	  state = nextState;
-	}
+	computeEuler(state);
   }
   _pivotStrategy->computationCompleted(*this);
 
   return _euler;
+}
+
+const mpz_class& PivotEulerAlg::computeEulerCharacteristic
+(const RawSquareFreeIdeal& ideal) {
+  if (_pivotStrategy.get() == 0)
+	_pivotStrategy = newDefaultPivotStrategy();
+
+  if (ideal.getGeneratorCount() == 0)
+	_euler = 0;
+  else if (ideal.getVarCount() == 0)
+	_euler = -1;
+  else {
+	LocalArray<Word> termTmp(Ops::getWordCount(ideal.getVarCount()));
+	_termTmp = termTmp.begin();
+	EulerState* state = EulerState::construct(ideal, &(Arena::getArena()));
+	computeEuler(state);
+  }
+  _pivotStrategy->computationCompleted(*this);
+
+  return _euler;
+}
+
+void PivotEulerAlg::computeEuler(EulerState* state) {
+  _euler = 0;
+
+  while (state != 0) {
+	EulerState* nextState = processState(*state);
+	if (nextState == 0) {
+	  nextState = state->getParent();
+	  Arena::getArena().freeAndAllAfter(state);
+	}
+	state = nextState;
+  }
 }

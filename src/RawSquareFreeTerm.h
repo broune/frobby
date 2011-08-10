@@ -81,6 +81,7 @@ namespace SquareFreeTermOps {
 	  and returns true if term is square free. Otherwise returns
 	  false. */
   bool encodeTerm(Word* encoded, const Exponent* term, const size_t varCount);
+  bool encodeTerm(Word* encoded, const mpz_class* term, const size_t varCount);
 
   size_t getBitOffset(size_t var);
 

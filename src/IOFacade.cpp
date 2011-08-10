@@ -31,6 +31,8 @@
 #include "SatBinomIdeal.h"
 #include "SatBinomRecorder.h"
 #include "InputConsumer.h"
+#include "SquareFreeIdeal.h"
+#include "RawSquareFreeIdeal.h"
 #include <iterator>
 
 IOFacade::IOFacade(bool printActions):
@@ -105,6 +107,23 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   /// @TODO: return value instead of this copy.
   ASSERT(!recorder.empty());
   ideal = *(recorder.releaseIdeal());
+  ASSERT(recorder.empty());
+
+  endAction();
+}
+
+/** Read a square free ideal from in and place it in the parameter
+	ideal. */
+void IOFacade::readSquareFreeIdeal(Scanner& in, SquareFreeIdeal& ideal) {
+  beginAction("Reading square free ideal.");
+
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
+
+  InputConsumer recorder;
+  handler->readIdeal(in, recorder);
+  ASSERT(!recorder.empty());
+  ideal = *recorder.releaseIdeal();
   ASSERT(recorder.empty());
 
   endAction();

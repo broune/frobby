@@ -23,6 +23,7 @@
 #include "DataType.h"
 #include "IdealWriter.h"
 #include "error.h"
+#include "InputConsumer.h"
 
 #include <cstdio>
 
@@ -30,7 +31,7 @@ namespace IO {
   namespace NewMonos {
     void writeRing(const VarNames& names, FILE* out);
     void readRingNoLeftParen(Scanner& in, VarNames& names);
-    void readIdealNoLeftParen(Scanner& in, BigTermConsumer& consumer);
+    void readIdealNoLeftParen(Scanner& in, InputConsumer& consumer);
   }
   namespace N = NewMonos;
 
@@ -88,18 +89,16 @@ namespace IO {
     writeTermProduct(term, names, out);
   }
 
-  void NewMonosIOHandler::doReadTerm(Scanner& in,
-                                      const VarNames& names,
-                                      vector<mpz_class>& term) {
-    readTermProduct(in, names, term);
+  void NewMonosIOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	consumer.consumeTermProductNotation(in);
   }
 
-  void NewMonosIOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
+  void NewMonosIOHandler::doReadIdeal(Scanner& in, InputConsumer& consumer) {
     in.expect('(');
     N::readIdealNoLeftParen(in, consumer);
   }
 
-  void NewMonosIOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+  void NewMonosIOHandler::doReadIdeals(Scanner& in, InputConsumer& consumer) {
     in.expect('(');
     if (in.peek('l') || in.peek('L')) {
       VarNames names;
@@ -128,8 +127,7 @@ namespace IO {
       names.addVarSyntaxCheckUnique(in, in.readIdentifier());
   }
 
-  void N::readIdealNoLeftParen(Scanner& in,
-                               BigTermConsumer& consumer) {
+  void N::readIdealNoLeftParen(Scanner& in, InputConsumer& consumer) {
     in.expect("monomial-ideal-with-order");
 
     VarNames names;
@@ -137,14 +135,9 @@ namespace IO {
     N::readRingNoLeftParen(in, names);
     consumer.consumeRing(names);
 
-    consumer.beginConsuming();
-    vector<mpz_class> term(names.getVarCount());
-
-    while (!in.match(')')) {
-      readTermProduct(in, names, term);
-      consumer.consume(term);
-    }
-
-    consumer.doneConsuming();
+    consumer.beginIdeal();
+    while (!in.match(')'))
+	  consumer.consumeTermProductNotation(in);
+    consumer.endIdeal();
   }
 }

@@ -32,6 +32,7 @@
 #include "PolyWriter.h"
 #include "error.h"
 #include "display.h"
+#include "InputConsumer.h"
 
 namespace IO {
   namespace Fourti2 {
@@ -44,7 +45,7 @@ namespace IO {
                    const TermTranslator& translator,
                    FILE* out);
     void readIdeal(Scanner& in,
-                   BigTermConsumer& consumer,
+                   InputConsumer& consumer,
                    size_t generatorCount,
                    size_t varCount);
     void readSatBinomIdeal(Scanner& in,
@@ -186,19 +187,19 @@ namespace IO {
     F::writeTerm(term, out);
   }
 
-  void Fourti2IOHandler::doReadTerm(Scanner& in,
-                                    const VarNames& names,
-                                    vector<mpz_class>& term) {
-    term.resize(names.getVarCount());
-    if (term.empty())
+  void Fourti2IOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	consumer.beginTerm();
+	const size_t varCount = consumer.getRing().getVarCount();
+	if (varCount == 0)
       in.expect("fourtitwo_identity");
     else {
-      for (size_t var = 0; var < names.getVarCount(); ++var)
-        in.readIntegerAndNegativeAsZero(term[var]);
+      for (size_t var = 0; var < varCount; ++var)
+		consumer.consumeVarExponentNegativeAsZero(var, in);
     }
+	consumer.endTerm();
   }
 
-  void Fourti2IOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
+  void Fourti2IOHandler::doReadIdeal(Scanner& in, InputConsumer& consumer) {
     size_t generatorCount;
     in.readSizeT(generatorCount);
 
@@ -208,7 +209,7 @@ namespace IO {
     F::readIdeal(in, consumer, generatorCount, varCount);
   }
 
-  void Fourti2IOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+  void Fourti2IOHandler::doReadIdeals(Scanner& in, InputConsumer& consumer) {
     // An empty list is just a ring by itself, and this has a special
     // syntax.  So we first decipher whether we are looking at a ring or
     // an ideal.  At the point where we can tell that it is an ideal, we
@@ -363,30 +364,25 @@ namespace IO {
       this cannot happen. The code below is the common code for these
       two cases. */
   void F::readIdeal(Scanner& in,
-                    BigTermConsumer& consumer,
+                    InputConsumer& consumer,
                     size_t generatorCount,
                     size_t varCount) {
-    // We have to read the entire ideal before we can tell whether there is
-    // a ring associated to it, so we have to store the ideal here until
-    // that time.
+	consumer.consumeRing(VarNames(varCount));
+	consumer.beginIdeal();
 
-    BigIdeal ideal((VarNames(varCount)));
-    ideal.reserve(generatorCount);
     for (size_t t = 0; t < generatorCount; ++t) {
-      // Read a term
-      ideal.newLastTerm();
-      vector<mpz_class>& term = ideal.getLastTermRef();
+	  consumer.beginTerm();
       for (size_t var = 0; var < varCount; ++var)
-        in.readIntegerAndNegativeAsZero(term[var]);
+		consumer.consumeVarExponentNegativeAsZero(var, in);
+	  consumer.endTerm();
     }
 
     if (in.peekIdentifier()) {
       VarNames names;
       F::readRing(in, names, varCount);
-      ideal.renameVars(names);
+	  consumer.consumeRing(names);
     }
-
-    consumer.consume(ideal);
+	consumer.endIdeal();
   }
 
   void F::readSatBinomIdeal(Scanner& in,

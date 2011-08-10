@@ -25,9 +25,8 @@ class Arena;
 class EulerState {
 public:
   static EulerState* construct(const Ideal& idealParam, Arena* arena);
-
-  EulerState(const Ideal& idealParam, Arena& arena);
-  EulerState(Arena& arena);
+  static EulerState* construct
+	(const RawSquareFreeIdeal& idealParam, Arena* arena);
 
   EulerState* inPlaceStdSplit(size_t pivotVar);
   EulerState* inPlaceStdSplit(Word* pivot);

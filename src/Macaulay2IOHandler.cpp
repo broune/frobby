@@ -160,10 +160,10 @@ namespace IO {
     writeTermProduct(term, names, out);
   }
 
-  void Macaulay2IOHandler::doReadTerm(Scanner& in,
-                                      const VarNames& names,
-                                      vector<mpz_class>& term) {
-    readTermProduct(in, names, term);
+  void Macaulay2IOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	consumer.consumeTermProductNotation(in);
+	if (in.match('_'))
+	  in.readIdentifier();
   }
 
   void Macaulay2IOHandler::doReadRing(Scanner& in, VarNames& names) {
@@ -213,10 +213,8 @@ namespace IO {
     return in.peek('R') || in.peek('r');
   }
 
-  void Macaulay2IOHandler::doReadBareIdeal(Scanner& in,
-                                           const VarNames& names,
-                                           InputConsumer& consumer) {
-	consumer.consumeRing(names);
+  void Macaulay2IOHandler::doReadBareIdeal
+  (Scanner& in, InputConsumer& consumer) {
     consumer.beginIdeal();
 
     in.expect('I');

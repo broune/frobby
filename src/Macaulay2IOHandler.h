@@ -40,14 +40,10 @@ namespace IO {
     virtual void doWriteTerm(const vector<mpz_class>& term,
                              const VarNames& names,
                              FILE* out);
-    virtual void doReadTerm(Scanner& in,
-                            const VarNames& names,
-                            vector<mpz_class>& term);
+    virtual void doReadTerm(Scanner& in, InputConsumer& consumer);
     virtual void doReadRing(Scanner& in, VarNames& names);
     virtual bool doPeekRing(Scanner& in);
-	virtual void doReadBareIdeal(Scanner& in,
-								 const VarNames& names,
-								 InputConsumer& consumer);
+	virtual void doReadBareIdeal(Scanner& in, InputConsumer& consumer);
     virtual void doReadBarePolynomial(Scanner& in,
                                       const VarNames& names,
                                       CoefBigTermConsumer& consumer);

@@ -32,6 +32,7 @@ class PivotEulerAlg {
   PivotEulerAlg();
 
   const mpz_class& computeEulerCharacteristic(const Ideal& ideal);
+  const mpz_class& computeEulerCharacteristic(const RawSquareFreeIdeal& ideal);
   const mpz_class& getComputedEulerCharacteristic() const {return _euler;}
 
   void setPivotStrategy(auto_ptr<PivotStrategy> strategy) {
@@ -48,6 +49,8 @@ class PivotEulerAlg {
   bool getUseAllPairsSimplify() const {return _useAllPairsSimplify;}
 
  private:
+  void computeEuler(EulerState* state);
+
   EulerState* processState(EulerState& state);
   void getPivot(const EulerState& state, Word* pivot);
 

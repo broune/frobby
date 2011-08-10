@@ -22,6 +22,7 @@
 #include <vector>
 
 class Ideal;
+class BigIdeal;
 
 /** @todo describe further.
 
@@ -59,12 +60,13 @@ class RawSquareFreeIdeal {
 	  inserted. There must be enough capacity for all the generators
 	  even if not all are actually inserted. */
   size_t insert(const Ideal& ideal);
+  size_t insert(const BigIdeal& ideal);
 
   /** Inserts all the generators of ideal. */
   void insert(const RawSquareFreeIdeal& ideal);
 
-  void minimize();
   void insert(const Word* term);
+  void minimize();
   void colon(const Word* by);
   void colon(size_t var);
 
@@ -84,9 +86,6 @@ class RawSquareFreeIdeal {
   /** Puts the least common multiple of the generators of the ideal
 	  into lcm. */
   void getLcm(Word* lcm) const;
-
-  static RawSquareFreeIdeal* newIdeal(size_t varCount, size_t capacity);
-  static void deleteIdeal(RawSquareFreeIdeal* ideal);
 
   size_t getGeneratorCount() const {return _genCount;}
   size_t getVarCount() const {return _varCount;}

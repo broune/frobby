@@ -20,7 +20,7 @@
 
 #include "Ideal.h"
 #include "RawSquareFreeTerm.h"
-
+#include "BigIdeal.h"
 #include <limits>
 #include <algorithm>
 #include <sstream>
@@ -162,6 +162,20 @@ size_t RSFIdeal::insert(const Ideal& ideal) {
   size_t gen = 0;
   for (; gen < ideal.getGeneratorCount(); ++gen) {
 	if (!Ops::encodeTerm(_memoryEnd, ideal[gen], getVarCount()))
+	  break;
+	++_genCount;
+	_memoryEnd += getWordsPerTerm();
+  }
+  ASSERT(isValid());
+  return gen;
+}
+
+size_t RSFIdeal::insert(const BigIdeal& ideal) {
+  ASSERT(getVarCount() == ideal.getVarCount());
+
+  size_t gen = 0;
+  for (; gen < ideal.getGeneratorCount(); ++gen) {
+	if (!Ops::encodeTerm(_memoryEnd, &(ideal[gen][0]), getVarCount()))
 	  break;
 	++_genCount;
 	_memoryEnd += getWordsPerTerm();
