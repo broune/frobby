@@ -18,10 +18,12 @@
 #define INPUT_CONSUMER_GUARD
 
 #include "BigIdeal.h"
+#include "SquareFreeIdeal.h"
 #include "VarNames.h"
 #include "ElementDeleter.h"
 #include <vector>
 #include <list>
+#include <string>
 
 class Scanner;
 
@@ -30,8 +32,9 @@ class InputConsumer {
   InputConsumer();
 
   void consumeRing(const VarNames& names);
-  void consumeIdeal(auto_ptr<BigIdeal> ideal);
-  
+
+  void requireSquareFree();
+
   /** Start consuming an ideal. */
   void beginIdeal();
 
@@ -42,6 +45,9 @@ class InputConsumer {
 
   /** Start consuming a term. */
   void beginTerm();
+
+  /** Reads variable and returns id. Does not return if there is an error. */
+  size_t consumeVar(Scanner& in);
 
   /** Reads variable as a number so that the first variable is 1.
    Does not return if there is an error. */ 
@@ -55,18 +61,8 @@ class InputConsumer {
    Does not return if there is an error. */
   void consumeVarExponent(size_t var, Scanner& in);
 
-  /** Consumes var raised to an exponent read from in. If the number is
-   negative then that is read as zero.
-
-   Does not return if there is an error. */
-  void consumeVarExponentNegativeAsZero(size_t var, Scanner& in);
-
   /** Done reading a term. */
-  void endTerm() {}
-
-  /** Consume a term in one go. Term is interpreted as an exponent
-	  vector. */
-  void consumeTerm(const vector<mpz_class>& term);
+  void endTerm();
 
   /** Reads a term in a format like "a^4*b*c^2" */
   void consumeTermProductNotation(Scanner& in);
@@ -77,16 +73,45 @@ class InputConsumer {
   /** Returns true if there are ideals stored. */
   bool empty() const {return _ideals.empty();}
 
-  /** Returns the */
-  auto_ptr<BigIdeal> releaseIdeal();
+  /** Struct that keeps either a BigIdeal or a SquareFreeIdeal. */
+
+  /** Assigns the least recently read ideal that has not been released
+   to the parameter of the type that the ideal was read as. */
+  void releaseIdeal(auto_ptr<SquareFreeIdeal>& sqf, auto_ptr<BigIdeal>& big);
+
+  /** Returns the least recently read ideal that has not been released.
+   Converts the ideal to a BigIdeal if it had been read as something else. */
+  auto_ptr<BigIdeal> releaseBigIdeal();
+
+  /** Returns the least recently read ideal that has not been released.
+   That ideal must have been read as a SquareFreeIdeal. */
+  auto_ptr<SquareFreeIdeal> releaseSquareFreeIdeal();
+
+  /** Returns the current ring. */
   const VarNames& getRing() const {return _names;}
 
-
  private:
+  struct Entry {
+	auto_ptr<BigIdeal> _big;
+	auto_ptr<SquareFreeIdeal> _sqf;
+  };
+  void releaseIdeal(Entry& e);
+
+  void errorVariableAppearsTwice(const Scanner& in, size_t var);
+  void idealNotSquareFree();
+  static void toBigIdeal
+    (auto_ptr<SquareFreeIdeal>& sqf, auto_ptr<BigIdeal>& big);
+
+  string _tmpString;
   VarNames _names;
-  std::list<BigIdeal*> _ideals;
-  ElementDeleter<std::list<BigIdeal*> > _idealsDeleter;
+  auto_ptr<BigIdeal> _bigIdeal;
+  auto_ptr<SquareFreeIdeal> _sqfIdeal;
+  vector<string> _term;
+
+  std::list<Entry*> _ideals;
+  ElementDeleter<std::list<Entry*> > _idealsDeleter;
   bool _inIdeal;
+  bool _requireSquareFree;
 };
 
 #endif

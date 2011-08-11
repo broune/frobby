@@ -52,9 +52,6 @@ namespace IO {
     virtual BigTermConsumer* doCreateIdealWriter(FILE* out) = 0;
     virtual CoefBigTermConsumer* doCreatePolynomialWriter(FILE* out);
 
-    virtual void doReadTerm(Scanner& in,
-                            const VarNames& names,
-                            vector<mpz_class>& term);
     virtual void doReadTerm(Scanner& in, InputConsumer& term);
     virtual void doReadIdeal(Scanner& in, InputConsumer& consumer);
     virtual void doReadIdeals(Scanner& in, InputConsumer& consumer);

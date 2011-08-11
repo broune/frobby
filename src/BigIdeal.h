@@ -22,6 +22,7 @@
 
 class TermTranslator;
 class Ideal;
+class SquareFreeIdeal;
 
 class BigIdeal {
 public:
@@ -30,6 +31,7 @@ public:
 
   void insert(const Ideal& ideal);
   void insert(const Ideal& ideal, const TermTranslator& translator);
+  void insert(const SquareFreeIdeal& ideal);
   void insert(const vector<mpz_class>& term);
 
   void renameVars(const VarNames& names);
@@ -93,6 +95,8 @@ public:
 
   // Sorts the variables.
   void sortVariables();
+
+  void swap(BigIdeal& ideal);
 
   void print(FILE* file) const;
   void print(ostream& out) const;

@@ -21,20 +21,23 @@
 #include "Ideal.h"
 #include "BigIdeal.h"
 
-SquareFreeIdeal::SquareFreeIdeal(): _ideal(0) {}
+SquareFreeIdeal::SquareFreeIdeal(): _ideal(0), _capacity(0) {}
+
+SquareFreeIdeal::SquareFreeIdeal
+(const SquareFreeIdeal& ideal, size_t capacity):
+  _names(ideal.getNames()) {
+  _capacity = capacity;
+  if (_capacity < ideal.getGeneratorCount())
+	_capacity = ideal.getGeneratorCount();
+  _ideal = newRawSquareFreeIdeal(_names.getVarCount(), _capacity);
+  _ideal->insert(*ideal._ideal);
+}
 
 SquareFreeIdeal::SquareFreeIdeal(const BigIdeal& ideal):
   _names(ideal.getNames()) {
-  const size_t varCount = ideal.getVarCount();
-  const size_t capacity = ideal.getGeneratorCount();
-  _ideal = newRawSquareFreeIdeal(varCount, capacity);
+  _capacity = ideal.getGeneratorCount();
+  _ideal = newRawSquareFreeIdeal(_names.getVarCount(), _capacity);
   _ideal->insert(ideal);
-}
-
-SquareFreeIdeal::SquareFreeIdeal
-(const VarNames& names, RawSquareFreeIdeal* ideal):
-  _names(names), _ideal(ideal) {
-  ASSERT(ideal != 0);
 }
 
 SquareFreeIdeal::~SquareFreeIdeal() {
@@ -52,14 +55,50 @@ void SquareFreeIdeal::minimize() {
   _ideal->minimize();
 }
 
+void SquareFreeIdeal::renameVars(const VarNames& names) {
+  ASSERT(_ideal != 0);
+  ASSERT(_names.getVarCount() == names.getVarCount());
+  _names = names;
+}
+
+void SquareFreeIdeal::insertIdentity() {
+  if (getGeneratorCount() == getCapacity())
+	reserve(getCapacity() == 0 ? 16 : getCapacity() * 2);
+  _ideal->insertIdentity();
+}
+
+void SquareFreeIdeal::insert(Word* term) {
+  ASSERT(term != 0);
+  ASSERT(getGeneratorCount() <= getCapacity());
+  if (getGeneratorCount() == getCapacity())
+	reserve(getCapacity() == 0 ? 16 : getCapacity() * 2);
+  ASSERT(getGeneratorCount() < getCapacity());
+  _ideal->insert(term);
+}
+
+bool SquareFreeIdeal::insert(const std::vector<std::string>& term) {
+  ASSERT(term.size() == getVarCount());
+  ASSERT(getGeneratorCount() <= getCapacity());
+  if (getGeneratorCount() == getCapacity())
+	reserve(getCapacity() == 0 ? 16 : getCapacity() * 2);
+  ASSERT(getGeneratorCount() < getCapacity());
+  return _ideal->insert(term);
+}
 
 void SquareFreeIdeal::clear() {
   _names.clear();
   deleteRawSquareFreeIdeal(_ideal);
   _ideal = 0;
+  _capacity = 0;
 }
 
 void SquareFreeIdeal::swap(SquareFreeIdeal& ideal) {
   std::swap(_names, ideal._names);
   std::swap(_ideal, ideal._ideal);
+  std::swap(_capacity, ideal._capacity);
+}
+
+void SquareFreeIdeal::reserve(size_t capacity) {
+  if (getCapacity() < capacity)
+	SquareFreeIdeal(*this, capacity).swap(*this);
 }

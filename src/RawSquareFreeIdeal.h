@@ -66,6 +66,10 @@ class RawSquareFreeIdeal {
   void insert(const RawSquareFreeIdeal& ideal);
 
   void insert(const Word* term);
+  void insertIdentity();
+
+  /** Returns false if the strings in term are not all "", "1" or "0". */
+  bool insert(const std::vector<std::string>& term);
   void minimize();
   void colon(const Word* by);
   void colon(size_t var);
@@ -82,6 +86,9 @@ class RawSquareFreeIdeal {
    just set to zero. The relative order of the remaining variables is
    preserved. */
   void compact(const Word* remove);
+
+  /** Change 0 exponents into 1 and vice versa. */
+  void swap01Exponents();
 
   /** Puts the least common multiple of the generators of the ideal
 	  into lcm. */
@@ -173,6 +180,9 @@ class RawSquareFreeIdeal {
   bool operator!=(const RawSquareFreeIdeal& ideal) const {
 	return !(*this == ideal);
   }
+
+  Word* back() {iterator e = end(); --e; return *e;}
+  const Word* back() const {const_iterator e = end(); --e; return *e;}
 
   /** Sorts the generators in ascending lex order. */
   void sortLexAscending();

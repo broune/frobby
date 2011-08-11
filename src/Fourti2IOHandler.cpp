@@ -38,6 +38,7 @@ namespace IO {
   namespace Fourti2 {
     void writeRing(const VarNames& names, FILE* out);
     void writeRingWithoutHeader(const VarNames& names, FILE* out);
+    void readTerm(Scanner& in, InputConsumer& consumer);
     void readRing(Scanner& in, VarNames& names);
     void readRing(Scanner& in, VarNames& names, size_t varCount);
     void writeTerm(const vector<mpz_class>& term, FILE* out);
@@ -182,21 +183,13 @@ namespace IO {
       // ideal since then it is possible to see what happened from the
       // number of generators and variables. We do not have that
       // information here, so we have to print something.
-      fputs("fourtitwo_identity", out);
+      fputs("_fourtitwo_identity", out);
     }
     F::writeTerm(term, out);
   }
 
   void Fourti2IOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
-	consumer.beginTerm();
-	const size_t varCount = consumer.getRing().getVarCount();
-	if (varCount == 0)
-      in.expect("fourtitwo_identity");
-    else {
-      for (size_t var = 0; var < varCount; ++var)
-		consumer.consumeVarExponentNegativeAsZero(var, in);
-    }
-	consumer.endTerm();
+    F::readTerm(in, consumer);
   }
 
   void Fourti2IOHandler::doReadIdeal(Scanner& in, InputConsumer& consumer) {
@@ -316,6 +309,22 @@ namespace IO {
     fputc('\n', out);
   }
 
+  void F::readTerm(Scanner& in, InputConsumer& consumer) {
+    consumer.beginTerm();
+    const size_t varCount = consumer.getRing().getVarCount();
+	if (varCount == 0)
+      in.expect("_fourtitwo_identity");
+    else {
+      for (size_t var = 0; var < varCount; ++var) {
+        if (in.match('-'))
+          in.expectIntegerNoSign();
+        else
+          consumer.consumeVarExponent(var, in);
+      }
+    }
+    consumer.endTerm();
+  }
+
   void F::readRing(Scanner& in, VarNames& names) {
     names.clear();
     while (in.peekIdentifier())
@@ -370,11 +379,14 @@ namespace IO {
 	consumer.consumeRing(VarNames(varCount));
 	consumer.beginIdeal();
 
-    for (size_t t = 0; t < generatorCount; ++t) {
-	  consumer.beginTerm();
-      for (size_t var = 0; var < varCount; ++var)
-		consumer.consumeVarExponentNegativeAsZero(var, in);
-	  consumer.endTerm();
+    if (varCount == 0) {
+      for (size_t t = 0; t < generatorCount; ++t) {
+        consumer.beginTerm();
+        consumer.endTerm();
+      }
+    } else {
+      for (size_t t = 0; t < generatorCount; ++t)
+        F::readTerm(in, consumer);
     }
 
     if (in.peekIdentifier()) {

@@ -71,16 +71,8 @@ void IO::IOHandlerImpl::registerOutput(const DataType& type) {
   _supportedOutputs.push_back(&type);
 }
 
-void IO::IOHandlerImpl::doReadTerm(Scanner& in,
-                                   const VarNames& names,
-                                   vector<mpz_class>& term) {
-  INTERNAL_ERROR_UNIMPLEMENTED();
-}
-
 void IO::IOHandlerImpl::doReadTerm(Scanner& in, InputConsumer& consumer) {
-  vector<mpz_class> term;
-  doReadTerm(in, consumer.getRing(), term);
-  consumer.consumeTerm(term);
+  INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
 void IO::IOHandlerImpl::doReadIdeal(Scanner& in, InputConsumer& consumer) {

@@ -21,7 +21,8 @@
 #include "TermTranslator.h"
 #include "Ideal.h"
 #include "VarSorter.h"
-
+#include "RawSquareFreeTerm.h"
+#include "SquareFreeIdeal.h"
 #include <sstream>
 
 class OffsetTermCompare {
@@ -57,12 +58,11 @@ BigIdeal::BigIdeal(const VarNames& names):
 }
 
 void BigIdeal::insert(const Ideal& ideal) {
-  reserve(_terms.size() + ideal.getGeneratorCount());
+  reserve(getGeneratorCount() + ideal.getGeneratorCount());
 
   Ideal::const_iterator it = ideal.begin();
   for (; it != ideal.end(); ++it) {
     newLastTerm();
-
     for (size_t var = 0; var < _names.getVarCount(); ++var)
       getLastTermExponentRef(var) = (*it)[var];
   }
@@ -70,15 +70,25 @@ void BigIdeal::insert(const Ideal& ideal) {
 
 void BigIdeal::insert(const Ideal& ideal,
                       const TermTranslator& translator) {
-  reserve(_terms.size() + ideal.getGeneratorCount());
+  reserve(getGeneratorCount() + ideal.getGeneratorCount());
 
   Ideal::const_iterator it = ideal.begin();
   for (; it != ideal.end(); ++it) {
     newLastTerm();
-
     for (size_t var = 0; var < _names.getVarCount(); ++var)
       getLastTermExponentRef(var) = translator.getExponent(var, (*it)[var]);
   }
+}
+
+void BigIdeal::insert(const SquareFreeIdeal& ideal) {
+  reserve(getGeneratorCount() + ideal.getGeneratorCount());
+
+  SquareFreeIdeal::const_iterator it = ideal.begin();
+  for (; it != ideal.end(); ++it) {
+    newLastTerm();
+    for (size_t var = 0; var < _names.getVarCount(); ++var)
+      getLastTermExponentRef(var) = SquareFreeTermOps::getExponent(*it, var);
+  }  
 }
 
 void BigIdeal::insert(const vector<mpz_class>& term) {
@@ -290,6 +300,11 @@ void BigIdeal::sortVariables() {
   sorter.getOrderedNames(_names);
   for (size_t i = 0; i < _terms.size(); ++i)
     sorter.permute(_terms[i]);
+}
+
+void BigIdeal::swap(BigIdeal& ideal) {
+  _terms.swap(ideal._terms);
+  _names.swap(ideal._names);
 }
 
 void BigIdeal::print(FILE* file) const {

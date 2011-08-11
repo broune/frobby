@@ -17,7 +17,9 @@
 #ifndef SCANNER_GUARD
 #define SCANNER_GUARD
 
-class VarNames;
+#include "VarNames.h"
+#include <string>
+
 class IOHandler;
 
 /** This class offers an input interface which is more convenient and
@@ -54,10 +56,10 @@ public:
    @param in The file to read input from.
    */
   Scanner(const string& formatName, FILE* in);
-  ~Scanner();
+  ~Scanner() {delete[] _tmpString;}
 
-  const string& getFormat() const;
-  void setFormat(const string& format);
+  const string& getFormat() const {return _formatName;}
+  void setFormat(const string& format) {_formatName = format;}
   auto_ptr<IOHandler> createIOHandler() const;
 
   /** Return true if the next character is c, and in that case skip
@@ -81,18 +83,32 @@ public:
 
   /** Require the following characters to be equal to str. These
       characters are skipped past. */
-  void expect(const string& str);
+  void expect(const string& str) {expect(str.c_str());}
 
   /** Require that there is no more input. */
   void expectEOF();
 
   /** Read an arbitrary-precision integer. */
+  void expectIntegerNoSign();
+
+  /** Read an arbitrary-precision integer. */
   void readInteger(mpz_class& integer);
+
+  /** Read an arbitrary-precision integer. */
+  void readIntegerNoSign(string& str);
+
+    /** Read an arbitrary-precision integer. */
+  void readIntegerNoSign(mpz_class& str);
 
   /** Read an integer and set it to zero if it is negative. This is
       more efficient because the sign can be detected before the
       integer is read. */
   void readIntegerAndNegativeAsZero(mpz_class& integer);
+
+    /** Read an integer and set it to zero if it is negative. This is
+      more efficient because the sign can be detected before the
+      integer is read. */
+  void readIntegerAndNegativeAsZero(std::string& integer);
 
   /** Reads a size_t, where the representable range of that type
       determines when the number is too big. The number is required to
@@ -102,6 +118,9 @@ public:
   /** The returned string is only valid until the next method on this
       object gets called. */
   const char* readIdentifier();
+
+  /** Reads an identifier into str. str must be empty. */
+  void readIdentifier(string& str);
 
   /** Reads an identifier and returns the index of that identifier as
       the index of a variable in names. Throws an exception if there
@@ -115,7 +134,7 @@ public:
 
   /** Returns true if the next character is whitespace. Does not,
       obviously, skip whitespace. */
-  bool peekWhite();
+  bool peekWhite() {return isspace(peek());}
 
   /** Skips whitespace and returns true if the next character is equal
       to the parameter(s). */
@@ -123,10 +142,10 @@ public:
 
   /** Returns the number of newlines seen. Does not skip
       whitespace. */
-  unsigned int getLineNumber() const;
+  unsigned int getLineNumber() const {return _lineNumber;}
 
   /** Returns the next character or EOF. Does not skip whitespace. */
-  int peek();
+  int peek() {return _char;}
 
   /** Reads past any whitespace, where whitespace is defined by the
       standard function isspace(). */
@@ -137,11 +156,17 @@ private:
   size_t readIntegerString();
   void parseInteger(mpz_class& integer, size_t size);
 
-  int getChar();
+  void errorExpectTwo(char a, char b, int got);
+  void errorExpectOne(char expected, int got);
+  void errorReadVariable(const char* name);
+  void errorReadIdentifier();
 
+  void reportErrorUnexpectedToken(const string& expected, int got);
   void reportErrorUnexpectedToken(const string& expected, const string& got);
 
+  int getChar();
   void growTmpString();
+  int readBuffer();
 
   mpz_class _integer;
   FILE* _in;
@@ -152,6 +177,105 @@ private:
   size_t _tmpStringCapacity;
 
   string _formatName;
+
+  vector<char> _buffer;
+  vector<char>::iterator _bufferPos;
 };
+
+
+
+inline void Scanner::readIdentifier(string& str) {
+  eatWhite();
+  if (!isalpha(peek()))
+    errorReadIdentifier();
+  str.clear();
+  do {
+    str += static_cast<char>(getChar());
+  } while (isalnum(peek()) || peek() == '_');
+}
+
+inline size_t Scanner::readVariable(const VarNames& names) {
+  const char* name = readIdentifier();
+  size_t var = names.getIndex(name);
+  if (var == VarNames::invalidIndex)
+    errorReadVariable(name);
+  return var;
+}
+
+
+inline bool Scanner::matchEOF() {
+  eatWhite();
+  return peek() == EOF;
+}
+
+inline bool Scanner::match(char c) {
+  eatWhite();
+  if (c == peek()) {
+    getChar();
+    return true;
+  } else
+    return false;
+}
+
+inline void Scanner::expect(char a, char b) {
+  eatWhite();
+  int got = getChar();
+  if (got != a && got != b)
+    errorExpectTwo(a, b, got);
+}
+
+inline void Scanner::expect(char expected) {
+  eatWhite();
+  int got = getChar();
+  if (got != expected)
+    errorExpectOne(expected, got);
+}
+
+inline void Scanner::readInteger(mpz_class& integer) {
+  size_t size = readIntegerString();
+  parseInteger(integer, size);
+}
+
+inline void Scanner::expectIntegerNoSign() {
+  readIntegerString(); // todo: check not negative
+}
+
+inline void Scanner::readIntegerNoSign(mpz_class& integer) {
+  readIntegerString(); // todo: check not negative
+  integer = _tmpString + 1;
+}
+
+inline void Scanner::readIntegerNoSign(string& integer) {
+  readIntegerString(); // todo: check not negative
+  integer = _tmpString + 1;
+}
+
+inline bool Scanner::peekIdentifier() {
+  eatWhite();
+  return isalpha(peek());
+}
+
+inline bool Scanner::peek(char character) {
+  eatWhite();
+  return peek() == character;
+}
+
+inline void Scanner::eatWhite() {
+  while (isspace(peek()))
+    getChar();
+}
+
+inline int Scanner::getChar() {
+  if (_char == '\n')
+    ++_lineNumber;
+  int oldChar = _char;
+  if (_bufferPos == _buffer.end())
+    _char = readBuffer();
+  else {
+    _char = *_bufferPos;
+    ++_bufferPos;
+  }
+  return oldChar;
+}
 
 #endif

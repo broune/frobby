@@ -89,7 +89,7 @@ void IOFacade::readIdeal(Scanner& in, BigTermConsumer& consumer) {
   // todo: find a way to generate the input as it comes in rather than
   // storing it and only then letting it go on.
   ASSERT(!middleman.empty());
-  consumer.consume(middleman.releaseIdeal());
+  consumer.consume(middleman.releaseBigIdeal());
   ASSERT(middleman.empty());
 
   endAction();
@@ -104,9 +104,8 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   InputConsumer recorder;
   handler->readIdeal(in, recorder);
 
-  /// @TODO: return value instead of this copy.
   ASSERT(!recorder.empty());
-  ideal = *(recorder.releaseIdeal());
+  ideal.swap(*(recorder.releaseBigIdeal()));
   ASSERT(recorder.empty());
 
   endAction();
@@ -120,11 +119,12 @@ void IOFacade::readSquareFreeIdeal(Scanner& in, SquareFreeIdeal& ideal) {
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
-  InputConsumer recorder;
-  handler->readIdeal(in, recorder);
-  ASSERT(!recorder.empty());
-  ideal = *recorder.releaseIdeal();
-  ASSERT(recorder.empty());
+  InputConsumer consumer;
+  consumer.requireSquareFree();
+  handler->readIdeal(in, consumer);
+  ASSERT(!consumer.empty());
+  ideal.swap(*consumer.releaseSquareFreeIdeal());
+  ASSERT(consumer.empty());
 
   endAction();
 }
@@ -146,7 +146,7 @@ void IOFacade::readIdeals(Scanner& in,
 
   names = recorder.getRing();
   while (!recorder.empty())
-    exceptionSafePushBack(ideals, recorder.releaseIdeal());
+    exceptionSafePushBack(ideals, recorder.releaseBigIdeal());
 
   idealsDeleter.release();
 
@@ -238,7 +238,7 @@ bool IOFacade::readAlexanderDualInstance
 
   // TODO: return value instead of this copy.
   ASSERT(!recorder.empty());
-  ideal = *(recorder.releaseIdeal());
+  ideal = *(recorder.releaseBigIdeal());
   ASSERT(recorder.empty());
 
   bool pointSpecified = false;

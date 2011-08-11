@@ -4,15 +4,21 @@ frobby=../../bin/frobby
 testhelper=../testScripts/testhelper
 test="$1"
 tmpFile=/tmp/frobbyEulerRadicalTmp
+tmpFileInverted=/tmp/frobbyEulerRadicalInvertedTmp
 shift
+
+$frobby transform -radical -minimize -trimVariables < $test.test > $tmpFile  \
+  2> /dev/null
 
 if [ "$1" = "_full" ];
 then
   shift;
+  # inverting twice should give the same answer
+  $frobby transform -swap01 < $tmpFile > $tmpFileInverted 2>/dev/null
+  $testhelper euler $tmpFileInverted $test.euler -swap01 $*
+  if [ $? != 0 ]; then exit 1; fi
 fi
 
-$frobby transform -radical -minimize -trimVariables < $test.test > $tmpFile  \
-  2> /dev/null
 $testhelper euler $tmpFile $test.euler $*
 if [ $? != 0 ]; then exit 1; fi
 
