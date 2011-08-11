@@ -58,7 +58,7 @@ bool VarNames::addVar(const string& name) {
     throw;
   }
 
-  if (getVarCount() == getInvalidIndex())
+  if (getVarCount() == invalidIndex)
     reportError("Too many variable names");
 
   ASSERT(contains(name));
@@ -83,13 +83,13 @@ bool VarNames::operator<(const VarNames& names) const {
 size_t VarNames::getIndex(const string& name) const {
   VarNameMap::const_iterator it = _nameToIndex.find(name);
   if (it == _nameToIndex.end())
-    return getInvalidIndex();
+    return invalidIndex;
   else
     return it->second;
 }
 
 bool VarNames::contains(const string& name) const {
-  return getIndex(name) != getInvalidIndex();
+  return getIndex(name) != invalidIndex;
 }
 
 bool VarNames::namesAreDefault() const {
@@ -185,6 +185,11 @@ void VarNames::print(FILE* file) const {
     fprintf(file, "%lu<->\"%s\"", (unsigned long)i, getName(i).c_str());
   }
   fputs(")\n", file);
+}
+
+void VarNames::swap(VarNames& names) {
+  _indexToName.swap(names._indexToName);
+  _nameToIndex.swap(names._nameToIndex);
 }
 
 bool VarNames::compareNames(const string* a, const string* b) {

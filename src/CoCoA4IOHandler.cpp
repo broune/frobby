@@ -344,13 +344,12 @@ namespace IO {
 
   void C::readTerm(Scanner& in, InputConsumer& consumer) {
 	consumer.beginTerm();
-    if (in.match('1'))
-      return;
-
-    do {
-      C::readVarPower(in, consumer);
-      in.eatWhite();
-    } while (in.peek() == 'x');
+    if (!in.match('1')) {
+      do {
+        C::readVarPower(in, consumer);
+        in.eatWhite();
+      } while (in.peek() == 'x');
+    }
 	consumer.endTerm();
   }
 

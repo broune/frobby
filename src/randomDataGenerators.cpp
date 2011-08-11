@@ -186,7 +186,7 @@ void generateRookChessIdeal(BigIdeal& bigIdeal, size_t n, size_t k) {
 	  if (level == 0)
 		break;
 	  --level;
-	  ASSERT(taken[choice[level]] == true);	
+	  ASSERT(static_cast<bool>(taken[choice[level]]) == true);	
       ASSERT(term[level * k + choice[level]] == 1);
 	  taken[choice[level]] = false;
       term[level * k + choice[level]] = 0;
@@ -206,7 +206,7 @@ void generateRookChessIdeal(BigIdeal& bigIdeal, size_t n, size_t k) {
 	  choice[level] = 0;
 	} else {
 	  ideal.insert(term);
-	  ASSERT(taken[choice[level]] == true);	
+	  ASSERT(static_cast<bool>(taken[choice[level]]) == true);	
       ASSERT(term[level * k + choice[level]] == 1);
 	  taken[choice[level]] = false;
       term[level * k + choice[level]] = 0;

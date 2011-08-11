@@ -59,7 +59,7 @@ public:
   /** This also depends on the order of the names. */
   bool operator<(const VarNames& names) const;
 
-  /** Returns VarNames::getInvalidIndex() if name is not known. */
+  /** Returns VarNames::invalidIndex() if name is not known. */
   size_t getIndex(const string& name) const;
 
   /** Returns true if name is the name of a variable. */
@@ -94,8 +94,10 @@ public:
   void toString(string& str) const;
   void print(FILE* file) const; // For debug
 
+  void swap(VarNames& names);
+
   /** Returns a fixed variable offset that is always invalid. */
-  static size_t getInvalidIndex();
+  static const size_t invalidIndex = static_cast<size_t>(-1);
 
 private:
   static bool compareNames(const string* a, const string* b);
@@ -106,10 +108,6 @@ private:
 };
 
 
-
-inline size_t VarNames::getInvalidIndex() {
-  return static_cast<size_t>(-1);
-}
 
 inline size_t VarNames::getVarCount() const {
   return _indexToName.size();

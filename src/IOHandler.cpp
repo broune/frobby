@@ -53,9 +53,9 @@ void IOHandler::readTerm
   consumer.consumeRing(names);
   consumer.beginIdeal();
   doReadTerm(in, consumer);
-  ASSERT(!consumer.empty());
   consumer.endIdeal();
-  auto_ptr<BigIdeal> ideal = consumer.releaseIdeal();
+  ASSERT(!consumer.empty());
+  auto_ptr<BigIdeal> ideal = consumer.releaseBigIdeal();
   ASSERT(consumer.empty());
   ASSERT(ideal->getGeneratorCount() == 1);
   term = (*ideal)[0];

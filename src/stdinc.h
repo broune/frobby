@@ -22,6 +22,7 @@
 */
 
 #ifdef _MSC_VER // For Microsoft Compiler in Visual Studio C++.
+#define _SCL_SECURE_NO_WARNINGS
 #pragma warning (push, 1) // Reduce warning level for GMP headers.
 #endif
 
