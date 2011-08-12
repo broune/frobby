@@ -20,6 +20,7 @@
 
 #include <ostream>
 #include <algorithm>
+#include <vector>
 
 namespace SquareFreeTermOps {
   bool isIdentity(const Word* a, Word* aEnd);
@@ -81,6 +82,8 @@ namespace SquareFreeTermOps {
 	  and returns true if term is square free. Otherwise returns
 	  false. */
   bool encodeTerm(Word* encoded, const Exponent* term, const size_t varCount);
+  bool encodeTerm(Word* encoded, const std::vector<mpz_class>& term, const size_t varCount);
+  bool encodeTerm(Word* encoded, const std::vector<std::string>& it, const size_t varCount);
 
   size_t getBitOffset(size_t var);
 

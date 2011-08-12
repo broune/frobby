@@ -21,28 +21,9 @@
 #include "IOHandler.h"
 #include "error.h"
 #include "FrobbyStringStream.h"
-
 #include <limits>
 
-
-//#define ENABLE_SCANNER_LOG
-
-// This enables logging of what the scanner is reading and what it is
-// being asked to do. This is very useful for debugging code using
-// Scanner, but the overhead is too high to include this when reading
-// normally. Thus the inclusion of logging is controlled using the
-// preprocessor.
-#ifdef ENABLE_SCANNER_LOG
-#define SCANNER_LOG(MSG) gmp_fprintf(stderr, MSG);
-#define SCANNER_LOG1(MSG, PARAM) \
-  gmp_fprintf(stderr, MSG, PARAM);
-#define SCANNER_LOG2(MSG, PARAM1, PARAM2) \
-  gmp_fprintf(stderr, MSG, PARAM1, PARAM2);
-#else
-#define SCANNER_LOG(MSG) ;
-#define SCANNER_LOG1(MSG, PARAM) ;
-#define SCANNER_LOG2(MSG, PARAM1, PARAM2) ;
-#endif
+static const size_t BufferSize = 10024;
 
 Scanner::Scanner(const string& formatName, FILE* in):
   _in(in),
@@ -50,80 +31,20 @@ Scanner::Scanner(const string& formatName, FILE* in):
   _char(' '),
   _tmpString(0),
   _tmpStringCapacity(16),
-  _formatName(formatName) {
+  _formatName(formatName),
+  _buffer(BufferSize),
+  _bufferPos(_buffer.end()) {
   if (getFormat() == getFormatNameIndicatingToGuessTheInputFormat())
     setFormat(autoDetectFormat(*this));
   _tmpString = new char[16];
-}
-
-Scanner::~Scanner() {
-  delete[] _tmpString;
-}
-
-const string& Scanner::getFormat() const {
-  return _formatName;
-}
-
-void Scanner::setFormat(const string& format) {
-  _formatName = format;
 }
 
 auto_ptr<IOHandler> Scanner::createIOHandler() const {
   return ::createIOHandler(getFormat());
 }
 
-bool Scanner::match(char c) {
-  SCANNER_LOG1("Matching the character '%c'.", c);
-
-  eatWhite();
-  if (c == peek()) {
-    getChar();
-    SCANNER_LOG(" Found match\n");
-    return true;
-  } else {
-    SCANNER_LOG(" No match.\n");
-    return false;
-  }
-}
-
-bool Scanner::matchEOF() {
-  SCANNER_LOG("Matching End-Of-File.\n");
-
-  eatWhite();
-  if (peek() == EOF) {
-    SCANNER_LOG(" Found match\n");
-    return true;
-  } else {
-    SCANNER_LOG(" No match.\n");
-    return false;
-  }
-}
-
-void Scanner::expect(char expected) {
-  SCANNER_LOG1("Expecting the character '%c'.\n", expected);
-
-  eatWhite();
-  int got = getChar();
-  if (got != expected) {
-    FrobbyStringStream gotDescription;
-    if (got == EOF)
-      gotDescription << "no more input";
-    else
-      gotDescription << '\"' << static_cast<char>(got)<< '\"';
-
-    string expectedStr;
-    expectedStr += expected;
-    reportErrorUnexpectedToken(expectedStr, gotDescription);
-  }
-}
-
-unsigned int Scanner::getLineNumber() const {
-  return _lineNumber;
-}
-
 void Scanner::expect(const char* str) {
   ASSERT(str != 0);
-  SCANNER_LOG1("Expecting the string \"%s\".\n", str);
 
   eatWhite();
 
@@ -153,13 +74,7 @@ void Scanner::expect(const char* str) {
   }
 }
 
-void Scanner::expect(const string& str) {
-  expect(str.c_str());
-}
-
 void Scanner::expectEOF() {
-  SCANNER_LOG("Expecting End-Of-File.\n");
-
   // TODO: get this moved into the null format itself.
   if (_formatName == "null")
     return;
@@ -169,14 +84,18 @@ void Scanner::expectEOF() {
     reportErrorUnexpectedToken("no more input", "");
 }
 
-void Scanner::expect(char a, char b) {
-  SCANNER_LOG2("Expecting %c or %c.\n", a, b);
+void Scanner::errorExpectTwo(char a, char b, int got) {
+  ASSERT(a != got && b != got);
+  FrobbyStringStream err;
+  err << a << " or " << b;
+  reportErrorUnexpectedToken(err, got);
+}
 
-  if (!match(a) && !match(b)) {
-    FrobbyStringStream err;
-    err << a << " or " << b;
-    reportErrorUnexpectedToken(err, "");
-  }
+void Scanner::errorExpectOne(char expected, int got) {
+  ASSERT(expected != got);
+  string expectedStr;
+  expectedStr += expected;
+  reportErrorUnexpectedToken(expectedStr, got);
 }
 
 size_t Scanner::readIntegerString() {
@@ -226,25 +145,12 @@ void Scanner::parseInteger(mpz_class& integer, size_t size) {
   }
 }
 
-void Scanner::readInteger(mpz_class& integer) {
-  SCANNER_LOG("Expecting arbitrary precision integer.");
-
-  size_t size = readIntegerString();
-  parseInteger(integer, size);
-
-  SCANNER_LOG1(" Read %Zd.\n", integer.get_mpz_t());
-}
-
 void Scanner::readIntegerAndNegativeAsZero(mpz_class& integer) {
-  SCANNER_LOG("Expecting arbitrary precision integer (negative to zero).");
-
   // Fast path for common case of reading a zero.
   if (peek() == '0') {
     getChar();
     if (!isdigit(peek())) {
       integer = 0;
-
-      SCANNER_LOG(" Read 0.\n");
       return;
     }
   }
@@ -254,13 +160,26 @@ void Scanner::readIntegerAndNegativeAsZero(mpz_class& integer) {
     integer = 0;
   else
     parseInteger(integer, size);
+}
 
-  SCANNER_LOG1(" Read %Zd.\n", integer.get_mpz_t());
+void Scanner::readIntegerAndNegativeAsZero(string& integer) {
+  // Fast path for common case of reading a zero.
+  if (peek() == '0') {
+    getChar();
+    if (!isdigit(peek())) {
+      integer = '0';
+      return;
+    }
+  }
+
+  readIntegerString();
+  if (_tmpString[0] == '-')
+    integer = '0';
+  else
+    integer = _tmpString + 1;
 }
 
 void Scanner::readSizeT(size_t& size) {
-  SCANNER_LOG("Reading size_t non-negative integer as arbitrary precision.\n");
-
   readInteger(_integer);
 
   // Deal with different possibilities for how large size_t is.
@@ -311,11 +230,9 @@ void Scanner::growTmpString() {
 }
 
 const char* Scanner::readIdentifier() {
-  SCANNER_LOG("Expecting identifier.");
-
   eatWhite();
   if (!isalpha(peek()))
-    reportErrorUnexpectedToken("an identifier", "");
+    errorReadIdentifier();
 
   ASSERT(_tmpStringCapacity > 0);
 
@@ -328,58 +245,27 @@ const char* Scanner::readIdentifier() {
   }
   _tmpString[size] = '\0';
 
-  SCANNER_LOG1(" Read \"%s\".\n", _tmpString);
   return _tmpString;
 }
 
-size_t Scanner::readVariable(const VarNames& names) {
-  SCANNER_LOG("Reading variable name as identifier.\n");
-
-  const char* name = readIdentifier();
-  size_t var = names.getIndex(name);
-  if (var == VarNames::getInvalidIndex()) {
-    FrobbyStringStream errorMsg;
-    errorMsg << "Unknown variable \"" << name << "\". Maybe you forgot a *.";
-    reportSyntaxError(*this, errorMsg);
-  }
-  return var;
+void Scanner::errorReadIdentifier() {
+  reportErrorUnexpectedToken("an identifier", "");
 }
 
-bool Scanner::peekIdentifier() {
-  eatWhite();
-
-  SCANNER_LOG1("Peeking for identifier. Identifier %s.\n",
-               isalpha(peek()) ? "found" : "not found");
-
-  return isalpha(peek());
+void Scanner::errorReadVariable(const char* name) {
+  FrobbyStringStream errorMsg;
+  errorMsg << "Unknown variable \"" << name << "\". Maybe you forgot a *.";
+  reportSyntaxError(*this, errorMsg);
 }
 
-bool Scanner::peekWhite() {
-  SCANNER_LOG1("Peeking for space. Space %s.\n",
-               isspace(peek()) ? "found" : "not found");
-
-  return isspace(peek());
-}
-
-bool Scanner::peek(char character) {
-  eatWhite();
-
-  SCANNER_LOG2("Peeking for character %c. Character %s.\n",
-               character, peek() == character ? "found" : "not found");
-
-  return peek() == character;
-}
-
-int Scanner::getChar() {
-  if (_char == '\n')
-    ++_lineNumber;
-  int oldChar = _char;
-  _char = getc(_in);
-  return oldChar;
-}
-
-int Scanner::peek() {
-  return _char;
+void Scanner::reportErrorUnexpectedToken
+(const string& expected, int got) {
+  FrobbyStringStream gotDescription;
+  if (got == EOF)
+    gotDescription << "no more input";
+  else
+    gotDescription << '\"' << static_cast<char>(got)<< '\"';
+  reportErrorUnexpectedToken(expected, gotDescription);
 }
 
 void Scanner::reportErrorUnexpectedToken
@@ -392,7 +278,16 @@ void Scanner::reportErrorUnexpectedToken
   reportSyntaxError(*this, errorMsg);
 }
 
-void Scanner::eatWhite() {
-  while (isspace(peek()))
-    getChar();
+int Scanner::readBuffer() {
+  if (_buffer.size() < _buffer.capacity() && (feof(_in) || ferror(_in)))
+    return EOF;
+  _buffer.resize(_buffer.capacity());
+  size_t read = fread(&_buffer[0], 1, _buffer.capacity(), _in);
+  _buffer.resize(read);
+  _bufferPos = _buffer.begin();
+  if (read == 0)
+    return EOF;
+  char c = *_bufferPos;
+  ++_bufferPos;
+  return c;
 }

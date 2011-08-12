@@ -93,6 +93,11 @@ TransformAction::TransformAction():
    "that x divides g. This options transposes that matrix.",
    false),
 
+  _swap01
+  ("swap01",
+   "Change all 0 exponents to 1 and vice versa.",
+   false),
+
   _projectVar
   ("projectVar",
    "Project away the i'th variable counting from 1. No action is taken "
@@ -111,6 +116,7 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_product);
   parameters.push_back(&_addPurePowers);
   parameters.push_back(&_trimVariables);
+  parameters.push_back(&_swap01);
   parameters.push_back(&_projectVar);
   parameters.push_back(&_transpose);
   Action::obtainParameters(parameters);
@@ -174,6 +180,9 @@ void TransformAction::perform() {
 
     if (_radical)
       idealFacade.takeRadical(ideal);
+
+	if (_swap01)
+	  idealFacade.swap01(ideal);
 
     if (_minimize)
       idealFacade.sortAllAndMinimize(ideal);

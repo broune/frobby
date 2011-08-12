@@ -25,6 +25,7 @@
 #include "DataType.h"
 #include "SatBinomConsumer.h"
 #include "SatBinomIdeal.h"
+#include "InputConsumer.h"
 
 namespace IO {
   NullIOHandler::NullIOHandler():
@@ -56,18 +57,19 @@ namespace IO {
                                   FILE* out) {
   }
 
-  void NullIOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
-    consumer.consume(BigIdeal());
+  void NullIOHandler::doReadIdeal(Scanner& in, InputConsumer& consumer) {
+	consumer.consumeRing(VarNames());
+	consumer.beginIdeal();
+	consumer.endIdeal();
   }
 
-  void NullIOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+  void NullIOHandler::doReadIdeals(Scanner& in, InputConsumer& consumer) {
     consumer.consumeRing(VarNames());
   }
 
-  void NullIOHandler::doReadTerm(Scanner& in,
-                                 const VarNames& names,
-                                 vector<mpz_class>& term) {
-    term.clear();
+  void NullIOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	consumer.beginTerm();
+	consumer.endTerm();
   }
 
   void NullIOHandler::doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer) {

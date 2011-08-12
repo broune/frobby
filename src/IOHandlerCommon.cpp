@@ -20,7 +20,9 @@
 
 #include "VarNames.h"
 #include "BigTermConsumer.h"
+#include "BigTermRecorder.h"
 #include "error.h"
+#include "InputConsumer.h"
 
 IO::IOHandlerCommon::IOHandlerCommon(const char* formatName,
                                      const char* formatDescription):
@@ -35,10 +37,8 @@ bool IO::IOHandlerCommon::peekRing(Scanner& in) {
   return doPeekRing(in);
 }
 
-void IO::IOHandlerCommon::readBareIdeal(Scanner& in,
-                                        const VarNames& names,
-                                        BigTermConsumer& consumer) {
-  doReadBareIdeal(in, names, consumer);
+void IO::IOHandlerCommon::readBareIdeal(Scanner& in, InputConsumer& consumer) {
+  doReadBareIdeal(in, consumer);
 }
 
 void IO::IOHandlerCommon::readBarePolynomial(Scanner& in,
@@ -47,25 +47,27 @@ void IO::IOHandlerCommon::readBarePolynomial(Scanner& in,
   doReadBarePolynomial(in, names, consumer);
 }
 
-void IO::IOHandlerCommon::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
+void IO::IOHandlerCommon::doReadIdeal(Scanner& in, InputConsumer& consumer) {
   VarNames names;
   readRing(in, names);
-  readBareIdeal(in, names, consumer);
+  consumer.consumeRing(names);
+  readBareIdeal(in, consumer);
 }
 
-void IO::IOHandlerCommon::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+void IO::IOHandlerCommon::doReadIdeals(Scanner& in, InputConsumer& consumer) {
   VarNames names;
   readRing(in, names);
-  if (!hasMoreInput(in)) {
-    consumer.consumeRing(names);
+  consumer.consumeRing(names);
+  if (!hasMoreInput(in))
     return;
-  }
-  readBareIdeal(in, names, consumer);
+  readBareIdeal(in, consumer);
 
   while (hasMoreInput(in)) {
-    if (peekRing(in))
+    if (peekRing(in)) {
       readRing(in, names);
-    readBareIdeal(in, names, consumer);
+	  consumer.consumeRing(names);
+	}
+    readBareIdeal(in, consumer);
   }
 }
 
@@ -82,8 +84,7 @@ void IO::IOHandlerCommon::doReadBarePolynomial(Scanner& in,
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
-void IO::IOHandlerCommon::doReadBareIdeal(Scanner& in,
-                                          const VarNames& names,
-                                          BigTermConsumer& consumer) {
+void IO::IOHandlerCommon::doReadBareIdeal
+(Scanner& in, InputConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }

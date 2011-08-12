@@ -30,7 +30,9 @@
 #include "CoefBigTermRecorder.h"
 #include "SatBinomIdeal.h"
 #include "SatBinomRecorder.h"
-
+#include "InputConsumer.h"
+#include "SquareFreeIdeal.h"
+#include "RawSquareFreeIdeal.h"
 #include <iterator>
 
 IOFacade::IOFacade(bool printActions):
@@ -82,7 +84,13 @@ void IOFacade::readIdeal(Scanner& in, BigTermConsumer& consumer) {
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
-  handler->readIdeal(in, consumer);
+  InputConsumer middleman;
+  handler->readIdeal(in, middleman);
+  // todo: find a way to generate the input as it comes in rather than
+  // storing it and only then letting it go on.
+  ASSERT(!middleman.empty());
+  consumer.consume(middleman.releaseBigIdeal());
+  ASSERT(middleman.empty());
 
   endAction();
 }
@@ -93,13 +101,30 @@ void IOFacade::readIdeal(Scanner& in, BigIdeal& ideal) {
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
-  BigTermRecorder recorder;
+  InputConsumer recorder;
   handler->readIdeal(in, recorder);
 
-  /// @TODO: return value instead of this copy.
   ASSERT(!recorder.empty());
-  ideal = *(recorder.releaseIdeal());
+  ideal.swap(*(recorder.releaseBigIdeal()));
   ASSERT(recorder.empty());
+
+  endAction();
+}
+
+/** Read a square free ideal from in and place it in the parameter
+	ideal. */
+void IOFacade::readSquareFreeIdeal(Scanner& in, SquareFreeIdeal& ideal) {
+  beginAction("Reading square free ideal.");
+
+  auto_ptr<IOHandler> handler(in.createIOHandler());
+  ASSERT(handler.get() != 0);
+
+  InputConsumer consumer;
+  consumer.requireSquareFree();
+  handler->readIdeal(in, consumer);
+  ASSERT(!consumer.empty());
+  ideal.swap(*consumer.releaseSquareFreeIdeal());
+  ASSERT(consumer.empty());
 
   endAction();
 }
@@ -115,12 +140,13 @@ void IOFacade::readIdeals(Scanner& in,
 
   auto_ptr<IOHandler> handler(in.createIOHandler());
 
-  BigTermRecorder recorder;
+  //BigTermRecorder recorder;
+  InputConsumer recorder;
   handler->readIdeals(in, recorder);
 
   names = recorder.getRing();
   while (!recorder.empty())
-    exceptionSafePushBack(ideals, recorder.releaseIdeal());
+    exceptionSafePushBack(ideals, recorder.releaseBigIdeal());
 
   idealsDeleter.release();
 
@@ -207,12 +233,12 @@ bool IOFacade::readAlexanderDualInstance
   auto_ptr<IOHandler> handler(in.createIOHandler());
   ASSERT(handler.get() != 0);
 
-  BigTermRecorder recorder;
+  InputConsumer recorder;
   handler->readIdeal(in, recorder);
 
   // TODO: return value instead of this copy.
   ASSERT(!recorder.empty());
-  ideal = *(recorder.releaseIdeal());
+  ideal = *(recorder.releaseBigIdeal());
   ASSERT(recorder.empty());
 
   bool pointSpecified = false;

@@ -20,7 +20,7 @@
 
 #include "Ideal.h"
 #include "RawSquareFreeTerm.h"
-
+#include "BigIdeal.h"
 #include <limits>
 #include <algorithm>
 #include <sstream>
@@ -170,11 +170,36 @@ size_t RSFIdeal::insert(const Ideal& ideal) {
   return gen;
 }
 
+size_t RSFIdeal::insert(const BigIdeal& ideal) {
+  ASSERT(getVarCount() == ideal.getVarCount());
+
+  size_t gen = 0;
+  for (; gen < ideal.getGeneratorCount(); ++gen) {
+    if (!Ops::encodeTerm(_memoryEnd, ideal[gen], getVarCount()))
+      break;
+    ++_genCount;
+    _memoryEnd += getWordsPerTerm();
+  }
+  ASSERT(isValid());
+  return gen;
+}
+
 void RSFIdeal::insert(const RawSquareFreeIdeal& ideal) {
   const_iterator stop = ideal.end();
   for (const_iterator it = ideal.begin(); it != stop; ++it)
 	insert(*it);
   ASSERT(isValid());
+}
+
+bool RSFIdeal::insert(const std::vector<std::string>& term) {
+  ASSERT(term.size() == getVarCount());
+
+  if (!Ops::encodeTerm(_memoryEnd, term, getVarCount()))
+    return false;
+  ++_genCount;
+  _memoryEnd += getWordsPerTerm();
+  ASSERT(isValid());
+  return true;
 }
 
 void RSFIdeal::minimize() {
@@ -581,6 +606,20 @@ void RSFIdeal::sortLexAscending() {
 
 void RSFIdeal::insert(const Word* term) {
   Ops::assign(_memoryEnd, _memoryEnd + getWordsPerTerm(), term);
+  ++_genCount;
+  _memoryEnd += getWordsPerTerm();
+  ASSERT(isValid());
+}
+
+void RSFIdeal::swap01Exponents() {
+  const iterator stop = end();
+  const size_t varCount = getVarCount();
+  for (iterator it = begin(); it != stop; ++it)
+    Ops::invert(*it, varCount);
+}
+
+void RSFIdeal::insertIdentity() {
+  Ops::setToIdentity(_memoryEnd, _memoryEnd + getWordsPerTerm());
   ++_genCount;
   _memoryEnd += getWordsPerTerm();
   ASSERT(isValid());

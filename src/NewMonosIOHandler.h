@@ -37,11 +37,9 @@ namespace IO {
     virtual void doWriteTerm(const vector<mpz_class>& term,
                              const VarNames& names,
                              FILE* out);
-    virtual void doReadTerm(Scanner& in,
-                            const VarNames& names,
-                            vector<mpz_class>& term);
-    void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-    void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadTerm(Scanner& in, InputConsumer& consumer);
+    void doReadIdeal(Scanner& in, InputConsumer& consumer);
+    void doReadIdeals(Scanner& in, InputConsumer& consumer);
   };
 }
 

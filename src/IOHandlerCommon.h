@@ -24,6 +24,7 @@ class Scanner;
 class VarNames;
 class BigTermConsumer;
 class CoefBigTermConsumer;
+class InputConsumer;
 
 namespace IO {
   /** This class contains further functionality that makes it more
@@ -42,9 +43,7 @@ namespace IO {
     bool peekRing(Scanner& in);
 
     /** Reads an ideal without a ring preceding it. */
-    void readBareIdeal(Scanner& in,
-                       const VarNames& names,
-                       BigTermConsumer& consumer);
+    void readBareIdeal(Scanner& in, InputConsumer& consumer);
 
     /** Reads a polynomial without a ring preceding it. */
     void readBarePolynomial(Scanner& in,
@@ -53,17 +52,15 @@ namespace IO {
 
   private:
     // The following methods are implemented in terms of the new methods.
-    virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer);
-    virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer);
+    virtual void doReadIdeal(Scanner& in, InputConsumer& consumer);
+    virtual void doReadIdeals(Scanner& in, InputConsumer& consumer);
     virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer);
 
     // Override these methods except for those that do input
     // of un-supported type.
     virtual void doReadRing(Scanner& in, VarNames& names) = 0;
     virtual bool doPeekRing(Scanner& in) = 0;
-    virtual void doReadBareIdeal(Scanner& in,
-                                 const VarNames& names,
-                                 BigTermConsumer& consumer);
+    virtual void doReadBareIdeal(Scanner& in, InputConsumer& consumer);
     virtual void doReadBarePolynomial(Scanner& in,
                                       const VarNames& names,
                                       CoefBigTermConsumer& consumer);

@@ -22,6 +22,7 @@
 #include <vector>
 
 class Ideal;
+class BigIdeal;
 
 /** @todo describe further.
 
@@ -59,12 +60,17 @@ class RawSquareFreeIdeal {
 	  inserted. There must be enough capacity for all the generators
 	  even if not all are actually inserted. */
   size_t insert(const Ideal& ideal);
+  size_t insert(const BigIdeal& ideal);
 
   /** Inserts all the generators of ideal. */
   void insert(const RawSquareFreeIdeal& ideal);
 
-  void minimize();
   void insert(const Word* term);
+  void insertIdentity();
+
+  /** Returns false if the strings in term are not all "", "1" or "0". */
+  bool insert(const std::vector<std::string>& term);
+  void minimize();
   void colon(const Word* by);
   void colon(size_t var);
 
@@ -81,12 +87,12 @@ class RawSquareFreeIdeal {
    preserved. */
   void compact(const Word* remove);
 
+  /** Change 0 exponents into 1 and vice versa. */
+  void swap01Exponents();
+
   /** Puts the least common multiple of the generators of the ideal
 	  into lcm. */
   void getLcm(Word* lcm) const;
-
-  static RawSquareFreeIdeal* newIdeal(size_t varCount, size_t capacity);
-  static void deleteIdeal(RawSquareFreeIdeal* ideal);
 
   size_t getGeneratorCount() const {return _genCount;}
   size_t getVarCount() const {return _varCount;}
@@ -174,6 +180,9 @@ class RawSquareFreeIdeal {
   bool operator!=(const RawSquareFreeIdeal& ideal) const {
 	return !(*this == ideal);
   }
+
+  Word* back() {iterator e = end(); --e; return *e;}
+  const Word* back() const {const_iterator e = end(); --e; return *e;}
 
   /** Sorts the generators in ascending lex order. */
   void sortLexAscending();

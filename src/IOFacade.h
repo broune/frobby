@@ -28,6 +28,7 @@ class VarNames;
 class BigTermConsumer;
 class SatBinomIdeal;
 class SatBinomConsumer;
+class SquareFreeIdeal;
 
 /** A facade for input and output of mathematical objects.
 
@@ -53,6 +54,10 @@ class IOFacade : private Facade {
 
   /** Read an ideal from in and place it in the parameter ideal. */
   void readIdeal(Scanner& in, BigIdeal& ideal);
+
+  /** Read a square free ideal from in and place it in the parameter
+	  ideal. */
+  void readSquareFreeIdeal(Scanner& in, SquareFreeIdeal& ideal);
 
   /** Insert the ideals that are read into the parameter ideals. The
    parameter ideals is required to be empty. Names contains the last

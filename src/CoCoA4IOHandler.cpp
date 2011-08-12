@@ -26,6 +26,7 @@
 #include "IdealWriter.h"
 #include "PolyWriter.h"
 #include "error.h"
+#include "InputConsumer.h"
 
 #include <cstdio>
 
@@ -39,7 +40,9 @@ namespace IO {
                           const VarNames& names,
                           FILE* out);
     void readTerm(Scanner& in, vector<mpz_class>& term);
+    void readTerm(Scanner& in, InputConsumer& consumer);
     void readVarPower(vector<mpz_class>& term, Scanner& in);
+    void readVarPower(Scanner& in, InputConsumer& consumer);
     void readCoefTerm(mpz_class& coef,
                       vector<mpz_class>& term,
                       bool firstTerm,
@@ -172,11 +175,8 @@ namespace IO {
     C::writeTermProduct(term, names, out);
   }
 
-  void CoCoA4IOHandler::doReadTerm(Scanner& in,
-                                   const VarNames& names,
-                                   vector<mpz_class>& term) {
-    term.resize(names.getVarCount());
-    C::readTerm(in, term);
+  void CoCoA4IOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	C::readTerm(in, consumer);
   }
 
   void CoCoA4IOHandler::doReadRing(Scanner& in, VarNames& names) {
@@ -226,11 +226,9 @@ namespace IO {
     return in.peek('U') || in.peek('u');
   }
 
-  void CoCoA4IOHandler::doReadBareIdeal(Scanner& in,
-                                        const VarNames& names,
-                                        BigTermConsumer& consumer) {
-    consumer.beginConsuming(names);
-    vector<mpz_class> term(names.getVarCount());
+  void CoCoA4IOHandler::doReadBareIdeal
+  (Scanner& in, InputConsumer& consumer) {
+    consumer.beginIdeal();
 
     in.expect('I');
     in.expect(":=");
@@ -239,14 +237,13 @@ namespace IO {
 
     if (!in.match(')')) {
       do {
-        C::readTerm(in, term);
-        consumer.consume(term);
+		C::readTerm(in, consumer);
       } while (in.match(','));
       in.expect(')');
     }
     in.match(';');
 
-    consumer.doneConsuming();
+    consumer.endIdeal();
   }
 
   void CoCoA4IOHandler::doReadBarePolynomial(Scanner& in,
@@ -345,8 +342,18 @@ namespace IO {
     } while (in.peek() == 'x');
   }
 
-  void C::readVarPower(vector<mpz_class>& term,
-                       Scanner& in) {
+  void C::readTerm(Scanner& in, InputConsumer& consumer) {
+	consumer.beginTerm();
+    if (!in.match('1')) {
+      do {
+        C::readVarPower(in, consumer);
+        in.eatWhite();
+      } while (in.peek() == 'x');
+    }
+	consumer.endTerm();
+  }
+
+  void C::readVarPower(vector<mpz_class>& term, Scanner& in) {
     in.expect('x');
     in.expect('[');
 
@@ -379,6 +386,17 @@ namespace IO {
       }
     } else
       term[var] = 1;
+  }
+
+  void C::readVarPower(Scanner& in, InputConsumer& consumer) {
+    in.expect('x');
+    in.expect('[');
+    size_t var = consumer.consumeVarNumber(in);
+    in.expect(']');
+    if (in.match('^'))
+	  consumer.consumeVarExponent(var, in);
+    else
+	  consumer.consumeVarExponentOne(var, in);
   }
 
   void C::readCoefTerm(mpz_class& coef,
