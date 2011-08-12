@@ -85,6 +85,14 @@ TransformAction::TransformAction():
    "Remove variables that divide none of the generators.",
    false),
 
+  _transpose
+  ("transpose",
+   "Exchange variables and minimal generators. Let M be a matrix whose "
+   "rows are labeled by minimal generators and whose columns are labeled "
+   "by variables. The entry at row g and column x is the number of times "
+   "that x divides g. This options transposes that matrix.",
+   false),
+
   _projectVar
   ("projectVar",
    "Project away the i'th variable counting from 1. No action is taken "
@@ -104,6 +112,7 @@ void TransformAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_addPurePowers);
   parameters.push_back(&_trimVariables);
   parameters.push_back(&_projectVar);
+  parameters.push_back(&_transpose);
   Action::obtainParameters(parameters);
 }
 
@@ -122,6 +131,23 @@ void TransformAction::perform() {
   in.expectEOF();
 
   IdealFacade idealFacade(_printActions);
+
+  if (_transpose) {
+    names.clear();
+    for (size_t i = 0; i < ideals.size(); ++i) {
+      const BigIdeal& ideal = *(ideals[i]);
+      BigIdeal trans(VarNames(ideal.getGeneratorCount()));
+      trans.reserve(ideal.getVarCount());
+      for (size_t var = 0; var < ideal.getVarCount(); ++var) {
+        trans.newLastTerm();
+        for (size_t gen = 0; gen < ideal.getGeneratorCount(); ++gen)
+          trans.getLastTermRef()[gen] = ideal[gen][var];
+	  }
+	  (*ideals[i]) = trans;
+      if (i == ideals.size() - 1)
+        names = ideal.getNames();
+	}
+  }
 
   if (0 < _projectVar && _projectVar <= names.getVarCount()) {
     size_t var = _projectVar - 1;
