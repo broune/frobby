@@ -42,6 +42,7 @@ class EulerAction : public Action {
   BoolParameter _useUniqueDivSimplify;
   BoolParameter _useManyDivSimplify;
   BoolParameter _useAllPairsSimplify;
+  BoolParameter _swap01;
   IOParameters _io;
 };
 

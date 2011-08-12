@@ -48,6 +48,7 @@ class TransformAction : public Action {
   BoolParameter _addPurePowers;
   BoolParameter _trimVariables;
   BoolParameter _transpose;
+  BoolParameter _swap01;
   IntegerParameter _projectVar;
 };
 

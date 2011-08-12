@@ -27,6 +27,7 @@ class BigTermConsumer;
 class DataType;
 class CoefBigTermConsumer;
 class SatBinomConsumer;
+class InputConsumer;
 
 /** An IOHandler implements input and output for some format in such a
  way that client code does not need to know which format is being
@@ -42,10 +43,10 @@ class IOHandler {
   virtual ~IOHandler();
 
   /** Read an ideal and feed it to the consumer. */
-  void readIdeal(Scanner& in, BigTermConsumer& consumer);
+  void readIdeal(Scanner& in, InputConsumer& consumer);
 
   /** Read a number of ideals and feed them to the consumer. */
-  void readIdeals(Scanner& in, BigTermConsumer& consumer);
+  void readIdeals(Scanner& in, InputConsumer& consumer);
 
   void readTerm
     (Scanner& in, const VarNames& names, vector<mpz_class>& term);
@@ -77,11 +78,9 @@ class IOHandler {
   virtual const char* doGetName() const = 0;
   virtual const char* doGetDescription() const = 0;
 
-  virtual void doReadIdeal(Scanner& in, BigTermConsumer& consumer) = 0;
-  virtual void doReadIdeals(Scanner& in, BigTermConsumer& consumer) = 0;
-  virtual void doReadTerm(Scanner& in,
-                          const VarNames& names,
-                          vector<mpz_class>& term) = 0;
+  virtual void doReadIdeal(Scanner& in, InputConsumer& consumer) = 0;
+  virtual void doReadIdeals(Scanner& in, InputConsumer& consumer) = 0;
+  virtual void doReadTerm(Scanner& in, InputConsumer& consumer) = 0;
   virtual void doReadPolynomial(Scanner& in, CoefBigTermConsumer& consumer) = 0;
   virtual void doReadSatBinomIdeal(Scanner& in, SatBinomConsumer& consumer) = 0;
   virtual void doWriteTerm(const vector<mpz_class>& term,

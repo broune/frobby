@@ -27,6 +27,7 @@
 #include "Ideal.h"
 #include "HilbertBasecase.h"
 #include "PivotStrategy.h"
+#include "SquareFreeIdeal.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -46,7 +47,9 @@ EulerAction::EulerAction():
  "\n"
  "Then f is a bijection from the facets of D to the minimal generators of I. "
  "So this action can easily be used to compute Euler characteristics of "
- "abstract simplicial complexes given by their facets.",
+ "abstract simplicial complexes given by their facets. If you have an input "
+ "file where the 0-1 exponents are opposite of what you need for this "
+ "action, use the -swap01 option.",
  false),
 
   _pivot
@@ -136,6 +139,11 @@ EulerAction::EulerAction():
    "variables that divide A also divide B.",
    false),
 
+  _swap01
+  ("swap01",
+   "Change all 0 exponents to 1 and vice versa.",
+   false),
+
   _io(DataType::getMonomialIdealType(), DataType::getNullType()) {
 }
 
@@ -149,46 +157,14 @@ void EulerAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_useUniqueDivSimplify);
   parameters.push_back(&_useManyDivSimplify);
   parameters.push_back(&_useAllPairsSimplify);
+  parameters.push_back(&_swap01);
   Action::obtainParameters(parameters);
 }
 
 void EulerAction::perform() {
-  BigIdeal ideal;
   Scanner in(_io.getInputFormat(), stdin);
   _io.autoDetectInputFormat(in);
   _io.validateFormats();
-
-  IOFacade ioFacade(_printActions);
-  ioFacade.readIdeal(in, ideal);
-  in.expectEOF();
-
-  size_t varCount = ideal.getVarCount();
-  size_t genCount = ideal.getGeneratorCount();
-
-  Ideal radical(varCount);
-  Term tmp(varCount);
-  for (size_t term = 0; term < genCount; ++term) {
-    for (size_t var = 0; var < varCount; ++var) {
-      if (ideal[term][var] == 0)
-        tmp[var] = 0;
-      else if (ideal[term][var] == 1)
-        tmp[var] = 1;
-	  else
-		reportError("Input ideal is not square free.");
-    }
-    radical.insert(tmp);
-  }
-
-  radical.minimize();
-
-  mpz_class euler;
-  if (false) {
-	HilbertBasecase basecase;
-	basecase.computeCoefficient(radical);
-	euler = basecase.getLastCoefficient();
-	gmp_fprintf(stdout, "%Zd\n", euler.get_mpz_t());
-	return;
-  }
 
   PivotEulerAlg alg;
 
@@ -223,7 +199,14 @@ void EulerAction::perform() {
   alg.setUseManyDivSimplify(_useManyDivSimplify);
   alg.setUseAllPairsSimplify(_useAllPairsSimplify);
 
-  euler = alg.computeEulerCharacteristic(radical);
+  IOFacade ioFacade(_printActions);
+  SquareFreeIdeal rad;
+  ioFacade.readSquareFreeIdeal(in, rad);
+  in.expectEOF();
+  rad.minimize();
+  if (_swap01)
+    rad.swap01Exponents();
+  mpz_class euler = alg.computeEulerCharacteristic(*rad.getRawIdeal());
   gmp_fprintf(stdout, "%Zd\n", euler.get_mpz_t());
 }
 

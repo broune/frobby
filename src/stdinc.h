@@ -22,6 +22,7 @@
 */
 
 #ifdef _MSC_VER // For Microsoft Compiler in Visual Studio C++.
+#define _SCL_SECURE_NO_WARNINGS
 #pragma warning (push, 1) // Reduce warning level for GMP headers.
 #endif
 
@@ -48,8 +49,11 @@
 #pragma warning (disable: 4355)
 
 #ifdef _DEBUG
+#ifndef DEBUG
 #define DEBUG
 #endif
+#endif
+
 #ifdef DEBUG
 // MSC's map header has an issue where you get a syntax error if you
 // define a macro for new like we do below. We work around this by including

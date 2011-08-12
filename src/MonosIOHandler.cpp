@@ -22,6 +22,7 @@
 #include "DataType.h"
 #include "IdealWriter.h"
 #include "error.h"
+#include "InputConsumer.h"
 
 #include <cstdio>
 
@@ -87,10 +88,8 @@ namespace IO {
     writeTermProduct(term, names, out);
   }
 
-  void MonosIOHandler::doReadTerm(Scanner& in,
-                                   const VarNames& names,
-                                   vector<mpz_class>& term) {
-    readTermProduct(in, names, term);
+  void MonosIOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+	consumer.consumeTermProductNotation(in);
   }
 
   void MonosIOHandler::doReadRing(Scanner& in, VarNames& names) {
@@ -108,17 +107,13 @@ namespace IO {
     return in.peek('v');
   }
 
-  void MonosIOHandler::doReadBareIdeal(Scanner& in,
-                                       const VarNames& names,
-                                       BigTermConsumer& consumer) {
-    consumer.beginConsuming(names);
-    vector<mpz_class> term(names.getVarCount());
+  void MonosIOHandler::doReadBareIdeal(Scanner& in, InputConsumer& consumer) {
+    consumer.beginIdeal();
 
     in.expect('[');
     if (!in.match(']')) {
       do {
-        readTerm(in, names, term);
-        consumer.consume(term);
+		consumer.consumeTermProductNotation(in);
       } while (in.match(','));
       if (!in.match(']')) {
         if (in.peekIdentifier())
@@ -129,7 +124,7 @@ namespace IO {
     }
     in.expect(';');
 
-    consumer.doneConsuming();
+    consumer.endIdeal();
   }
 
   void M::writeRing(const VarNames& names, FILE* out) {

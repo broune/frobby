@@ -32,11 +32,13 @@
 #include "PolyWriter.h"
 #include "error.h"
 #include "display.h"
+#include "InputConsumer.h"
 
 namespace IO {
   namespace Fourti2 {
     void writeRing(const VarNames& names, FILE* out);
     void writeRingWithoutHeader(const VarNames& names, FILE* out);
+    void readTerm(Scanner& in, InputConsumer& consumer);
     void readRing(Scanner& in, VarNames& names);
     void readRing(Scanner& in, VarNames& names, size_t varCount);
     void writeTerm(const vector<mpz_class>& term, FILE* out);
@@ -44,7 +46,7 @@ namespace IO {
                    const TermTranslator& translator,
                    FILE* out);
     void readIdeal(Scanner& in,
-                   BigTermConsumer& consumer,
+                   InputConsumer& consumer,
                    size_t generatorCount,
                    size_t varCount);
     void readSatBinomIdeal(Scanner& in,
@@ -181,24 +183,16 @@ namespace IO {
       // ideal since then it is possible to see what happened from the
       // number of generators and variables. We do not have that
       // information here, so we have to print something.
-      fputs("fourtitwo_identity", out);
+      fputs("_fourtitwo_identity", out);
     }
     F::writeTerm(term, out);
   }
 
-  void Fourti2IOHandler::doReadTerm(Scanner& in,
-                                    const VarNames& names,
-                                    vector<mpz_class>& term) {
-    term.resize(names.getVarCount());
-    if (term.empty())
-      in.expect("fourtitwo_identity");
-    else {
-      for (size_t var = 0; var < names.getVarCount(); ++var)
-        in.readIntegerAndNegativeAsZero(term[var]);
-    }
+  void Fourti2IOHandler::doReadTerm(Scanner& in, InputConsumer& consumer) {
+    F::readTerm(in, consumer);
   }
 
-  void Fourti2IOHandler::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
+  void Fourti2IOHandler::doReadIdeal(Scanner& in, InputConsumer& consumer) {
     size_t generatorCount;
     in.readSizeT(generatorCount);
 
@@ -208,7 +202,7 @@ namespace IO {
     F::readIdeal(in, consumer, generatorCount, varCount);
   }
 
-  void Fourti2IOHandler::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+  void Fourti2IOHandler::doReadIdeals(Scanner& in, InputConsumer& consumer) {
     // An empty list is just a ring by itself, and this has a special
     // syntax.  So we first decipher whether we are looking at a ring or
     // an ideal.  At the point where we can tell that it is an ideal, we
@@ -234,7 +228,7 @@ namespace IO {
     F::readIdeal(in, consumer, generatorCount, varCount);
 
     while (hasMoreInput(in))
-      readIdeal(in, consumer);
+      doReadIdeal(in, consumer);
   }
 
   void Fourti2IOHandler::doReadPolynomial(Scanner& in,
@@ -315,6 +309,22 @@ namespace IO {
     fputc('\n', out);
   }
 
+  void F::readTerm(Scanner& in, InputConsumer& consumer) {
+    consumer.beginTerm();
+    const size_t varCount = consumer.getRing().getVarCount();
+	if (varCount == 0)
+      in.expect("_fourtitwo_identity");
+    else {
+      for (size_t var = 0; var < varCount; ++var) {
+        if (in.match('-'))
+          in.expectIntegerNoSign();
+        else
+          consumer.consumeVarExponent(var, in);
+      }
+    }
+    consumer.endTerm();
+  }
+
   void F::readRing(Scanner& in, VarNames& names) {
     names.clear();
     while (in.peekIdentifier())
@@ -363,30 +373,28 @@ namespace IO {
       this cannot happen. The code below is the common code for these
       two cases. */
   void F::readIdeal(Scanner& in,
-                    BigTermConsumer& consumer,
+                    InputConsumer& consumer,
                     size_t generatorCount,
                     size_t varCount) {
-    // We have to read the entire ideal before we can tell whether there is
-    // a ring associated to it, so we have to store the ideal here until
-    // that time.
+	consumer.consumeRing(VarNames(varCount));
+	consumer.beginIdeal();
 
-    BigIdeal ideal((VarNames(varCount)));
-    ideal.reserve(generatorCount);
-    for (size_t t = 0; t < generatorCount; ++t) {
-      // Read a term
-      ideal.newLastTerm();
-      vector<mpz_class>& term = ideal.getLastTermRef();
-      for (size_t var = 0; var < varCount; ++var)
-        in.readIntegerAndNegativeAsZero(term[var]);
+    if (varCount == 0) {
+      for (size_t t = 0; t < generatorCount; ++t) {
+        consumer.beginTerm();
+        consumer.endTerm();
+      }
+    } else {
+      for (size_t t = 0; t < generatorCount; ++t)
+        F::readTerm(in, consumer);
     }
 
     if (in.peekIdentifier()) {
       VarNames names;
       F::readRing(in, names, varCount);
-      ideal.renameVars(names);
+	  consumer.consumeRing(names);
     }
-
-    consumer.consume(ideal);
+	consumer.endIdeal();
   }
 
   void F::readSatBinomIdeal(Scanner& in,

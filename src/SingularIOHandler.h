@@ -42,11 +42,13 @@ namespace IO {
     virtual void doReadTerm(Scanner& in,
                             const VarNames& names,
                             vector<mpz_class>& term);
+    virtual void doReadTerm(Scanner& in, InputConsumer& term);
     virtual void doReadRing(Scanner& in, VarNames& names);
     virtual bool doPeekRing(Scanner& in);
     virtual void doReadBareIdeal(Scanner& in,
                                  const VarNames& names,
                                  BigTermConsumer& consumer);
+    virtual void doReadBareIdeal(Scanner& in, InputConsumer& consumer);
     virtual void doReadBarePolynomial(Scanner& in,
                                       const VarNames& names,
                                       CoefBigTermConsumer& consumer);

@@ -33,22 +33,32 @@
 #include "CoCoA4IOHandler.h"
 #include "SingularIOHandler.h"
 #include "error.h"
-
+#include "BigTermRecorder.h"
+#include "InputConsumer.h"
 
 IOHandler::~IOHandler() {
 }
 
-void IOHandler::readIdeal(Scanner& in, BigTermConsumer& consumer) {
+void IOHandler::readIdeal(Scanner& in, InputConsumer& consumer) {
   doReadIdeal(in, consumer);
 }
 
-void IOHandler::readIdeals(Scanner& in, BigTermConsumer& consumer) {
+void IOHandler::readIdeals(Scanner& in, InputConsumer& consumer) {
   doReadIdeals(in, consumer);
 }
 
 void IOHandler::readTerm
 (Scanner& in, const VarNames& names, vector<mpz_class>& term) {
-  doReadTerm(in, names, term);
+  InputConsumer consumer;
+  consumer.consumeRing(names);
+  consumer.beginIdeal();
+  doReadTerm(in, consumer);
+  consumer.endIdeal();
+  ASSERT(!consumer.empty());
+  auto_ptr<BigIdeal> ideal = consumer.releaseBigIdeal();
+  ASSERT(consumer.empty());
+  ASSERT(ideal->getGeneratorCount() == 1);
+  term = (*ideal)[0];
 }
 
 void IOHandler::readPolynomial(Scanner& in, CoefBigTermConsumer& consumer) {

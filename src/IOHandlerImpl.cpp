@@ -30,6 +30,7 @@
 #include "BigTermConsumer.h"
 #include "DataType.h"
 #include "error.h"
+#include "InputConsumer.h"
 #include <algorithm>
 
 IO::IOHandlerImpl::IOHandlerImpl(const char* formatName,
@@ -70,17 +71,15 @@ void IO::IOHandlerImpl::registerOutput(const DataType& type) {
   _supportedOutputs.push_back(&type);
 }
 
-void IO::IOHandlerImpl::doReadTerm(Scanner& in,
-                                   const VarNames& names,
-                                   vector<mpz_class>& term) {
+void IO::IOHandlerImpl::doReadTerm(Scanner& in, InputConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
-void IO::IOHandlerImpl::doReadIdeal(Scanner& in, BigTermConsumer& consumer) {
+void IO::IOHandlerImpl::doReadIdeal(Scanner& in, InputConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 
-void IO::IOHandlerImpl::doReadIdeals(Scanner& in, BigTermConsumer& consumer) {
+void IO::IOHandlerImpl::doReadIdeals(Scanner& in, InputConsumer& consumer) {
   INTERNAL_ERROR_UNIMPLEMENTED();
 }
 

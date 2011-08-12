@@ -52,7 +52,7 @@ rawSources := main.cpp Action.cpp IOParameters.cpp						\
   Matrix.cpp BigIntVector.cpp ColumnPrinter.cpp EulerAction.cpp			\
   RawSquareFreeTerm.cpp RawSquareFreeIdeal.cpp PivotEulerAlg.cpp		\
   EulerState.cpp PivotStrategy.cpp Arena.cpp LocalArray.cpp				\
-  LatticeAlgs.cpp
+  LatticeAlgs.cpp InputConsumer.cpp SquareFreeIdeal.cpp
 
 rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   LibIrreducibleDecomTest.cpp LibMaxStdTest.cpp LibStdProgramTest.cpp	\
