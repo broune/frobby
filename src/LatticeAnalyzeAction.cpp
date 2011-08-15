@@ -356,6 +356,28 @@ namespace {
 	}
   }
 
+  void printInteriorNeighborGraph(const GrobLat& lat) {
+    ofstream out("interior.dot");
+    out << "digraph G {\n" << flush;
+    for (size_t gen1 = 0; gen1 < lat.getNeighborCount(); ++gen1) {
+      Neighbor from = lat.getNeighbor(gen1);
+      out << ' ' << from.getName() << ";\n";
+      for (size_t gen2 = 0; gen2 < lat.getNeighborCount(); ++gen2) {
+        if (gen1 == gen2)
+          continue;
+        Neighbor to = lat.getNeighbor(gen2);
+        Neighbor sum = lat.getSum(from, to);
+        if (!sum.isValid() || !lat.isInterior(to, sum))
+          continue;
+        out << "  " << from.getName() << " -> " << sum.getName();
+        if (lat.isPointFreeBody(from, sum))
+          out << " [style=dotted,arrowhead=empty]";
+        out << ";\n";
+      }
+    }
+    out << "}\n";
+  }
+
   void printScarfGraph(const vector<Mlfb>& mlfbs) {
 	ofstream out("graph.dot");
 	out << "graph G {\n";
@@ -531,6 +553,7 @@ void LatticeAnalyzeAction::perform() {
 
   checkPlanes(thinPlanes, planes);
 
+  printInteriorNeighborGraph(lat);
   printScarfGraph(mlfbs);
   printMathematica3D(mlfbs, lat);
 
