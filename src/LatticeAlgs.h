@@ -212,6 +212,15 @@ class GrobLat {
 								  _ideal.getGenerator(c.getRow()));
   }
 
+  bool isInterior(Neighbor a, Neighbor b) const {
+    if (!isPointFreeBody(a, b))
+      return false;
+    for (size_t var = 1; var < a.getYDim(); ++var)
+      if (a.getY(var) <= 0 && b.getY(var) <= 0)
+        return false;
+    return true;
+  }
+
  private:
   vector<bool> _isSumRow;
   vector<Neighbor> _nonSums;
