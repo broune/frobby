@@ -40,8 +40,13 @@ class NameFactory {
   void registerProduct(const string& name, FactoryFunction function);
 
   /** Calls the function registered to the parameter name and returns
-   the result. Returns null if name has not been registered. */
+   the result. Returns null if name has not been registered. Can still
+   throw an exception for example if out of memory. */
   auto_ptr<AbstractProduct> createNoThrow(const string& name) const;
+
+  /** Calls the function registered to the parameter name and returns
+   the result. Throws an exception if name has not been registered. */
+  auto_ptr<AbstractProduct> create(const string& name) const;
 
   /** Inserts into names all registered names that have the indicated
    prefix in lexicographic increasing order. */
@@ -96,6 +101,16 @@ createNoThrow(const string& name) const {
     if (it->first == name)
       return it->second();
   return auto_ptr<AbstractProduct>();
+}
+
+template<class AbstractProduct>
+auto_ptr<AbstractProduct> NameFactory<AbstractProduct>::
+create(const string& name) const {
+  auto_ptr<AbstractProduct> product = createNoThrow(name);
+  if (product.get() == 0)
+    throwError<UnknownNameException>(
+      "Unknown " + getAbstractProductName() + " \"" + name + "\".");
+  return product;
 }
 
 template<class AbstractProduct>

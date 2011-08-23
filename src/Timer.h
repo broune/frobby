@@ -17,18 +17,30 @@
 #ifndef TIMER_GUARD
 #define TIMER_GUARD
 
+#include <ctime>
+
+/** Measures spans of CPU time.
+
+ The internal record of time can overflow quickly. If
+ clock_t is 32 bits unsigned and CLOCKS_PER_TIC is one million
+ then overflow will occur after 71 minutes. */
 class Timer {
 public:
-  Timer();
+  Timer() {reset();}
 
-  void reset();
+  /** Resets the amount of elapsed CPU time to zero. */
+  void reset() {_clocksAtReset = clock();}
 
-  unsigned long getSeconds() const;
+  /** Returns the number of CPU milliseconds since the last reset.
+  See class description for time span overflow limitations. */
+  unsigned long getMilliseconds() const;
 
+  /** Prints the elapsed time in a human readable format. See
+  class description for time span overflow limitations. */
   void print(FILE* out) const;
 
 private:
-  time_t _initialTime;
+  std::clock_t _clocksAtReset;
 };
 
 #endif

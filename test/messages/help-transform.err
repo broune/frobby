@@ -45,8 +45,17 @@ The parameters accepted by transform are as follows.
  -sort [BOOL]   (default is off)
    Sort generators according to the reverse lexicographic order.
 
+ -swap01 [BOOL]   (default is off)
+   Change all 0 exponents to 1 and vice versa.
+
  -time [BOOL]   (default is off)
    Display and time each subcomputation.
+
+ -transpose [BOOL]   (default is off)
+   Exchange variables and minimal generators. Let M be a matrix whose rows are
+   labeled by minimal generators and whose columns are labeled by variables.
+   The entry at row g and column x is the number of times that x divides g.
+   This options transposes that matrix.
 
  -trimVariables [BOOL]   (default is off)
    Remove variables that divide none of the generators.

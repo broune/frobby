@@ -30,8 +30,10 @@ class AssertException : public logic_error {
 
 namespace TestInternal {
   struct StdData {
-  StdData(size_t line, const char* file, const char* testName, bool printDot):
-	line(line), file(file), testName(testName), printDot(printDot) {}
+  StdData(size_t lineParam, const char* fileParam,
+    const char* testNameParam, bool printDotParam):
+	line(lineParam), file(fileParam),
+    testName(testNameParam), printDot(printDotParam) {}
 	size_t line;
 	const char* file;
 	const char* testName;

@@ -37,6 +37,7 @@ class EulerAction : public Action {
   StringParameter _pivot;
   StringParameter _stdPivot;
   StringParameter _genPivot;
+  StringParameter _autoTranspose;
   BoolParameter _printDebug;
   BoolParameter _printStatistics;
   BoolParameter _useUniqueDivSimplify;

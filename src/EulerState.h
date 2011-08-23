@@ -43,6 +43,8 @@ public:
   void flipSign() {sign = -sign;}
   int getSign() const {return sign;}
 
+  void transpose();
+
   EulerState* getParent() {return _parent;}
   RawSquareFreeIdeal& getIdeal() {return *ideal;}
   const RawSquareFreeIdeal& getIdeal() const {return *ideal;}

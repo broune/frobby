@@ -51,7 +51,7 @@ HilbertAction::HilbertAction():
   _algorithm
   ("algorithm",
    "Which algorithm to use. Options are slice, bigatti and deform.",
-   "deform") {
+   "bigatti") {
 
   _params.add(_io);
   _params.add(_sliceParams);

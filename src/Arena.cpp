@@ -83,6 +83,7 @@ void Arena::freeAndAllAfterFromOldBlock(void* ptr) {
   ASSERT(!_block.isInBlock(ptr));
   ASSERT(_block._previousBlock != 0);
 
+  _block._freeBegin = _block._blockBegin;
   while (!(_block._previousBlock->isInBlock(ptr))) {
 	discardPreviousBlock();
 	ASSERT(_block._previousBlock != 0);

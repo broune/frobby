@@ -124,6 +124,29 @@ size_t Scanner::readIntegerString() {
   return size;
 }
 
+size_t Scanner::readIntegerStringNoSign() {
+  eatWhite();
+  if (peek() == '-' || peek() == '+')
+    reportErrorUnexpectedToken("integer without preceding sign", peek());
+  // todo: remove code duplication with readIntegerString.
+
+  ASSERT(_tmpStringCapacity > 1);
+
+  size_t size = 0;
+  while (isdigit(peek())) {
+    _tmpString[size] = static_cast<char>(getChar());
+    ++size;
+    if (size == _tmpStringCapacity)
+      growTmpString();
+  }
+  _tmpString[size] = '\0';
+
+  if (size == 0)
+    reportErrorUnexpectedToken("an integer", "");
+
+  return size;
+}
+
 void Scanner::parseInteger(mpz_class& integer, size_t size) {
   // This code has a fast path for small integers and a slower path
   // for longer integers. The largest number representable in 32 bits

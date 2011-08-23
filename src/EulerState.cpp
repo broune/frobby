@@ -57,19 +57,21 @@ EulerState* EulerState::construct
 EulerState* EulerState::rawConstruct(size_t varCount, size_t capacity,
 									 Arena* arena) {
   ASSERT(arena != 0);
-  // Add 1 to the capacity to leave room for eliminated at the end.
-  size_t bytesNeeded =
-	RawSquareFreeIdeal::getBytesOfMemoryFor(varCount, capacity + 1);
-  // capacity musn't be max as we added 1 to it.
-  if (bytesNeeded == 0 || capacity == static_cast<size_t>(-1))
+  // Do both ways around to support transpose.
+  size_t bytesIdeal = std::max(
+	RawSquareFreeIdeal::getBytesOfMemoryFor(varCount, capacity),
+    RawSquareFreeIdeal::getBytesOfMemoryFor(capacity, varCount));
+  size_t wordsElim = std::max(
+    Ops::getWordCount(varCount), Ops::getWordCount(capacity));
+  if (bytesIdeal == 0 || wordsElim == 0)
 	throw bad_alloc();
 
   EulerState* state =
 	static_cast<EulerState*>(arena->alloc(sizeof(EulerState)));
-  void* buffer = arena->alloc(bytesNeeded);
   state->_alloc = arena;
-  state->ideal = RawSquareFreeIdeal::construct(buffer, varCount);
-  state->eliminated = state->ideal->getGeneratorUnsafe(capacity);
+  state->ideal =
+    RawSquareFreeIdeal::construct(arena->alloc(bytesIdeal), varCount);
+  state->eliminated = arena->allocArrayNoCon<Word>(wordsElim).first;
   state->sign = 1;
   state->_parent = 0;
 
@@ -176,12 +178,19 @@ EulerState* EulerState::makeSumSubState(Word* pivot) {
   subState->_parent = this;
 
   subState->ideal->insertNonMultiples(pivot, *ideal);
+  ASSERT(subState->ideal->getGeneratorCount() < ideal->getGeneratorCount());
   subState->ideal->insert(pivot);
   Ops::assign(subState->eliminated, eliminated, varCount);
   subState->sign = sign;
 
   ASSERT(subState->debugIsValid());
   return subState;
+}
+
+void EulerState::transpose() {
+  ideal->transpose(eliminated);
+  ideal->minimize();
+  Ops::setToIdentity(eliminated, ideal->getVarCount());
 }
 
 void EulerState::compactEliminatedVariablesIfProfitable() {

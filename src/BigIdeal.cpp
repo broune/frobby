@@ -88,7 +88,7 @@ void BigIdeal::insert(const SquareFreeIdeal& ideal) {
     newLastTerm();
     for (size_t var = 0; var < _names.getVarCount(); ++var)
       getLastTermExponentRef(var) = SquareFreeTermOps::getExponent(*it, var);
-  }  
+  }
 }
 
 void BigIdeal::insert(const vector<mpz_class>& term) {

@@ -85,9 +85,9 @@ namespace SquareFreeTermOps {
   bool encodeTerm(Word* encoded, const std::vector<mpz_class>& term, const size_t varCount);
   bool encodeTerm(Word* encoded, const std::vector<std::string>& it, const size_t varCount);
 
-  size_t getBitOffset(size_t var);
+  inline size_t getBitOffset(size_t var);
 
-  size_t getWordOffset(size_t var);
+  inline size_t getWordOffset(size_t var);
 
   bool hasFullSupport(const Word* a, size_t varCount);
 

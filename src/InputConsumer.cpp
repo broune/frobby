@@ -54,9 +54,9 @@ void InputConsumer::beginIdeal() {
   _term.resize(_names.getVarCount());
 }
 
-void InputConsumer::hintGenCount(size_t hintGenCount) {
+void InputConsumer::hintGenCount(size_t hintGenCountParam) {
   ASSERT(_inIdeal);
-  _bigIdeal->reserve(hintGenCount);
+  _bigIdeal->reserve(hintGenCountParam);
 }
 
 void InputConsumer::beginTerm() {

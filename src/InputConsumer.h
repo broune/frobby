@@ -50,7 +50,7 @@ class InputConsumer {
   size_t consumeVar(Scanner& in);
 
   /** Reads variable as a number so that the first variable is 1.
-   Does not return if there is an error. */ 
+   Does not return if there is an error. */
   size_t consumeVarNumber(Scanner& in);
 
   /** Consumes var raised to the exponent 1. */

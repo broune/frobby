@@ -8,14 +8,14 @@
  - The analyze action can now report on strong and weak genericity
  - The library interface now supports primary decomposition
  - The library interface now supports associated primes
+ - Reading input monomial ideals is now significantly faster
 
 The new Euler characteristic code uses a new algorithm that is joint
-work with Eduardo Saenz-de-Cabezon. As far as we know, the Frobby
-implementation of this algorithm is orders of magnitude faster than
+work with Eduardo Saenz-de-Cabezon. As documented in our paper, the
+Frobby implementation of this algorithm is much faster than
 implementations of Euler characteristic algorithms in other
-systems. It is really two distinct algorithms - each is better for
-certain ideals. Frobby will dynamically choose which algorithm to use
-at each step of the algorithm if the hybrid option is used.
+systems. The euler action has many options, but the default should be the
+fastest for nearly all ideals.
 
 The Hilbert-Poincare series code was written to compare the Slice
 algorithm, the deformation algorithm and the Bigatti et
@@ -23,7 +23,7 @@ al. algorithm. The deformation has as far as I know never previously
 been implemented or even very explicitly described in the
 litterature. The Bigatti algorithm wasn't faster initially after
 implementing it as described in the litterature, but with some
-additional improvements it got significantly better. It still isn't
+additional improvements it got significantly better. It still is not
 faster for all ideals, but the improved version is still usually the
 best algorithm which is why it is the default algorithm used.
 
