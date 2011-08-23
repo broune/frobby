@@ -28,12 +28,12 @@
 #include "HilbertBasecase.h"
 #include "PivotStrategy.h"
 #include "SquareFreeIdeal.h"
+#include "ActionPrinter.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <limits>
 
-/** @todo Expand the description of this action. */
 EulerAction::EulerAction():
   Action
 (staticGetName(),
@@ -58,7 +58,7 @@ EulerAction::EulerAction():
    "  std: Use standard pivots only.\n"
    "  gen: Use generator pivots only.\n"
    "  hybrid: Use a heuristic to choose at each split.\n",
-   "std"),
+   "gen"),
 
   _stdPivot
   ("stdPivot",
@@ -72,7 +72,7 @@ EulerAction::EulerAction():
    "generators. A popular variable is a variable that divides a "
    "maximum number of generators.\n"
    "\n"
-   "In addition, expand_X where X is one of the strategies above will "
+   "In addition, widen_X where X is one of the strategies above will "
    "compute a preliminary pivot according to X, and then select the actual "
    "pivot to be the gcd of all generators that the preliminary pivot divides.",
    "popvar"),
@@ -86,9 +86,10 @@ EulerAction::EulerAction():
    "  minsupp: Pick a generator with minimum support.\n"
    "  any: Pick some generator in a way that does not vary between runs.\n"
    "  random: Pick a random generator. Choices may vary between runs.\n"
-   "  rarestvars: Pick a generator that is divisible by a maximum number of\n"
+   "  rarest: Pick a generator that is divisible by a maximum number of\n"
    "    rare variables. Break ties by picking the generator that is divisible\n"
    "    by the maximum number of second-most-rare variables and so on.\n"
+   "  raremax: as rarevar_maxsupp.\n"
    "A rare variable is a variable that divides a minimum number of "
    "generators. A popular variable is a variable that divides a "
    "maximum number of generators.\n"
@@ -110,7 +111,19 @@ EulerAction::EulerAction():
    "minsupp strategy might have eliminated all generators that are divisible "
    "by the rare variable that rarevar selects. Then rarevar cannot make a "
    "choice so it will refrain from doing so.",
-   "rarevar_minsupp"),
+   "raremax"),
+
+  _autoTranspose
+  ("autotranspose",
+   "The two algorithms prefer more variables and more generators "
+   "respectively. Transposing the variable-generator divides "
+   "matrix swaps the number of variables and generators without "
+   "changing the Euler characteristic. If this option is on it "
+   "will transpose at each step if the preferred one of "
+   "variables and generators is not larger. If this option is "
+   "set to \"once\", it will do this but only at the first step. "
+   "If this option is off, no transposes are done.",
+   "on"),
 
   _printDebug
   ("debug",
@@ -135,8 +148,8 @@ EulerAction::EulerAction():
 
   _useAllPairsSimplify
   ("impliedDiv",
-   "Simplify ideals at each step with generators A and B such that all "
-   "variables that divide A also divide B.",
+   "Simplify ideals at each step with variables X and Y such that all "
+   "generators divisible by A are also divisible by B.",
    false),
 
   _swap01
@@ -152,6 +165,7 @@ void EulerAction::obtainParameters(vector<Parameter*>& parameters) {
   parameters.push_back(&_pivot);
   parameters.push_back(&_stdPivot);
   parameters.push_back(&_genPivot);
+  parameters.push_back(&_autoTranspose);
   parameters.push_back(&_printDebug);
   parameters.push_back(&_printStatistics);
   parameters.push_back(&_useUniqueDivSimplify);
@@ -162,22 +176,8 @@ void EulerAction::obtainParameters(vector<Parameter*>& parameters) {
 }
 
 void EulerAction::perform() {
-  Scanner in(_io.getInputFormat(), stdin);
-  _io.autoDetectInputFormat(in);
-  _io.validateFormats();
-
-  PivotEulerAlg alg;
-
   auto_ptr<PivotStrategy> stdStrat = newStdPivotStrategy(_stdPivot.getValue());
-  if (stdStrat.get() == 0)
-    reportError("Unknown standard pivot strategy \"" +
-				_stdPivot.getValue() + "\".");
-
   auto_ptr<PivotStrategy> genStrat = newGenPivotStrategy(_genPivot.getValue());
-  if (genStrat.get() == 0)
-    reportError("Unknown generator pivot strategy \"" +
-				_genPivot.getValue() + "\".");
-
   auto_ptr<PivotStrategy> strat;
   if (_pivot == "std")
 	strat = stdStrat;
@@ -194,19 +194,49 @@ void EulerAction::perform() {
   if (_printStatistics)
 	strat = newStatisticsPivotStrategy(strat, stderr);
 
+  PivotEulerAlg alg;
   alg.setPivotStrategy(strat);
   alg.setUseUniqueDivSimplify(_useUniqueDivSimplify);
   alg.setUseManyDivSimplify(_useManyDivSimplify);
   alg.setUseAllPairsSimplify(_useAllPairsSimplify);
 
   IOFacade ioFacade(_printActions);
-  SquareFreeIdeal rad;
-  ioFacade.readSquareFreeIdeal(in, rad);
-  in.expectEOF();
-  rad.minimize();
-  if (_swap01)
-    rad.swap01Exponents();
-  mpz_class euler = alg.computeEulerCharacteristic(*rad.getRawIdeal());
+  SquareFreeIdeal ideal;
+  {
+    Scanner in(_io.getInputFormat(), stdin);
+    _io.autoDetectInputFormat(in);
+    _io.validateFormats();
+    ioFacade.readSquareFreeIdeal(in, ideal);
+    in.expectEOF();
+  }
+  if (_swap01) {
+    ActionPrinter pr(_printActions, "Inverting ideal.");
+    ideal.swap01Exponents();
+  }
+
+  {
+    ActionPrinter pr(_printActions, "Minimizing ideal.");
+    ideal.minimize();
+  }
+
+  if (_autoTranspose == "on") {
+    alg.setAutoTranspose(true);
+    alg.setInitialAutoTranspose(true);
+  } else if (_autoTranspose == "once") {
+    alg.setAutoTranspose(false);
+    alg.setInitialAutoTranspose(true);
+  } else if (_autoTranspose == "off") {
+    alg.setAutoTranspose(false);
+    alg.setInitialAutoTranspose(false);
+  } else
+    reportError("Unknown setting for -autoTranspose of \"" +
+				_autoTranspose.getValue() + "\".");
+
+  mpz_class euler;
+  {
+    ActionPrinter pr(_printActions, "Computing Euler characteristic.");
+    euler = alg.computeEulerCharacteristic(*ideal.getRawIdeal());
+  }
   gmp_fprintf(stdout, "%Zd\n", euler.get_mpz_t());
 }
 

@@ -18,6 +18,7 @@
 #include "stdinc.h"
 #include "RawSquareFreeIdeal.h"
 
+#include "Arena.h"
 #include "Ideal.h"
 #include "RawSquareFreeTerm.h"
 #include "BigIdeal.h"
@@ -99,6 +100,13 @@ RSFIdeal* RSFIdeal::construct(void* buffer, const Ideal& ideal) {
   return p;
 }
 
+RSFIdeal* RSFIdeal::construct(void* buffer, const RawSquareFreeIdeal& ideal) {
+  RSFIdeal* p = construct(buffer, ideal.getVarCount());
+  p->insert(ideal);
+  ASSERT(p->isValid());
+  return p;
+}
+
 size_t RSFIdeal::getBytesOfMemoryFor(size_t varCount, size_t generatorCount) {
   // This calculation is tricky because there are many overflows that
   // can occur. If most cases if an overflow occurs or nearly occurs
@@ -129,14 +137,43 @@ size_t RSFIdeal::getBytesOfMemoryFor(size_t varCount, size_t generatorCount) {
   return bytesForStruct + bytesForGens;
 }
 
-RSFIdeal& RSFIdeal::operator=(const RSFIdeal& ideal) {
-  _varCount = ideal.getVarCount();
-  _wordsPerTerm = ideal.getWordsPerTerm();
+void RSFIdeal::setToTransposeOf(const RawSquareFreeIdeal& ideal, Word* eraseVars) {
+  if (this == &ideal) {
+    transpose(eraseVars);
+    return;
+  }
+
+  const size_t idealVarCount = ideal.getVarCount();
+  const size_t idealGenCount = ideal.getGeneratorCount();
+
+  _varCount = idealGenCount;
+  _wordsPerTerm = Ops::getWordCount(_varCount);
   _genCount = 0;
   _memoryEnd = _memory;
-  insert(ideal);
+
+  for (size_t var = 0; var < idealVarCount; ++var) {
+    if (eraseVars != 0 && Ops::getExponent(eraseVars, var))
+      continue;
+    insertIdentity();
+    Word* newTransposedGen = back();
+    for (size_t gen = 0; gen < idealGenCount; ++gen) {
+      const bool value = Ops::getExponent(ideal.getGenerator(gen), var);
+      Ops::setExponent(newTransposedGen, gen, value);
+    }
+  }
+
   ASSERT(isValid());
-  return *this;
+}
+
+void RSFIdeal::transpose(Word* eraseVars) {
+  const size_t varCount = getVarCount();
+  const size_t genCount = getGeneratorCount();
+  const size_t bytes = RSFIdeal::getBytesOfMemoryFor(varCount, genCount);
+  Arena& arena = Arena::getArena();
+  void* buffer = arena.alloc(bytes);
+  RSFIdeal* copy = RSFIdeal::construct(buffer, *this);
+  setToTransposeOf(*copy, eraseVars);
+  arena.freeTop(buffer);
 }
 
 void RSFIdeal::print(FILE* file) const {

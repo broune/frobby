@@ -24,13 +24,24 @@
 class EulerState;
 class PivotEulerAlg;
 
+/** A pivot selection strategy for the Euler algorithm. */
 class PivotStrategy {
 public:
   virtual ~PivotStrategy() {}
 
+  /** Split state. Returns null if state was a base case. Otherwise
+   state and the return value become the two substates. divCounts[var]
+   must be the number of generators that div divides. */
   virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) = 0;
+
+  /** Prints the name of the strategy to out. */
   virtual void getName(ostream& out) const = 0;
+
+  /** Call this function once when computation is complete. */
   virtual void computationCompleted(const PivotEulerAlg& alg) = 0;
+
+  /** Returns true if transposing state is adviced. */
+  virtual bool shouldTranspose(const EulerState& state) const = 0;
 
  protected:
   PivotStrategy() {}

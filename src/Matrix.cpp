@@ -300,15 +300,17 @@ void nullSpace(Matrix& basis, const Matrix& matParam) {
   // Find pivots
   size_t rank = 0;
   vector<char> colHasPivot(mat.getColCount());
-  size_t col = 0;
-  size_t row = 0;
-  while (row < mat.getRowCount() && col < mat.getColCount()) {
-    if (mat(row,  col) == 0) {
-      ++col;
-    } else {
-      ++rank;
-      colHasPivot[col] = true;
-      ++row;
+  {
+    size_t col = 0;
+    size_t row = 0;
+    while (row < mat.getRowCount() && col < mat.getColCount()) {
+      if (mat(row,  col) == 0) {
+        ++col;
+      } else {
+        ++rank;
+        colHasPivot[col] = true;
+        ++row;
+      }
     }
   }
 

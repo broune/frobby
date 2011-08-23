@@ -39,6 +39,12 @@ class PivotEulerAlg {
 	_pivotStrategy = strategy;
   }
 
+  void setInitialAutoTranspose(bool value) {_initialAutoTranspose = value;}
+  bool getInitialAutoTranspose() const {return _initialAutoTranspose;}
+
+  void setAutoTranspose(bool value) {_autoTranspose = value;}
+  bool getAutoTranspose() const {return _autoTranspose;}
+
   void setUseUniqueDivSimplify(bool value) {_useUniqueDivSimplify = value;}
   bool getUseUniqueDivSimplify() const {return _useUniqueDivSimplify;}
 
@@ -50,6 +56,7 @@ class PivotEulerAlg {
 
  private:
   void computeEuler(EulerState* state);
+  bool autoTranspose(EulerState& state);
 
   EulerState* processState(EulerState& state);
   void getPivot(const EulerState& state, Word* pivot);
@@ -61,6 +68,8 @@ class PivotEulerAlg {
   bool _useUniqueDivSimplify;
   bool _useManyDivSimplify;
   bool _useAllPairsSimplify;
+  bool _autoTranspose;
+  bool _initialAutoTranspose;
   auto_ptr<PivotStrategy> _pivotStrategy;
 };
 

@@ -17,25 +17,22 @@
 #include "stdinc.h"
 #include "Timer.h"
 
-#include "ctime"
-
-Timer::Timer() {
-  reset();
-}
-
-void Timer::reset() {
-  _initialTime = time(0);
-}
-
-unsigned long Timer::getSeconds() const {
-  return (unsigned long)(time(0) - _initialTime);
+unsigned long Timer::getMilliseconds() const {
+  const double floatSpan = clock() - _clocksAtReset;
+  const double floatMilliseconds = 1000 * (floatSpan / CLOCKS_PER_SEC);
+  unsigned long milliseconds = static_cast<unsigned long>(floatMilliseconds);
+  if (floatMilliseconds - milliseconds >= 0.5)
+    ++milliseconds;
+  return milliseconds;
 }
 
 void Timer::print(FILE* out) const {
-  unsigned long seconds = getSeconds();
+  unsigned long milliseconds = getMilliseconds();
+  unsigned long seconds = milliseconds / 1000;
   unsigned long minutes = seconds / 60;
   unsigned long hours = minutes / 60;
 
+  milliseconds %= 1000;
   seconds %= 60;
   minutes %= 60;
 
@@ -44,5 +41,5 @@ void Timer::print(FILE* out) const {
     fprintf(out, "%luh", hours);
   if (minutes != 0 || hours != 0)
     fprintf(out, "%lum", minutes);
-  fprintf(out, "%lus)", seconds);
+  fprintf(out, "%lu.%03lus)", seconds, milliseconds);
 }

@@ -25,7 +25,8 @@ The parameters accepted by genideal are as follows.
    Display and time each subcomputation.
 
  -type STRING   (default is random)
-   The supported types of ideals are random, edge, list, king, knight and tree.
+   The supported types of ideals are random, edge, list, king, knight, rook,
+   matching and tree.
 
  -varCount INTEGER   (default is 3)
    The number of variables.

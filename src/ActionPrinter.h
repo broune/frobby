@@ -23,13 +23,16 @@
 class ActionPrinter {
  public:
   ActionPrinter(bool printActions);
+  ActionPrinter(bool printActions, const char* message);
+  ~ActionPrinter();
 
   void printMessage(const char* message);
   void beginAction(const char* message);
   void endAction();
 
  private:
-  bool _printActions;
+  const bool _printActions;
+  bool _actionBegun;
   Timer _timer;
 };
 

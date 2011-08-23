@@ -36,9 +36,10 @@ namespace {
   inline size_t getRareVar(const size_t* divCounts, const size_t varCount) {
 	const size_t* end = divCounts + varCount;
 	const size_t* rare = divCounts;
-	for (; rare != end; ++rare)
-	  if (*rare > 0)
-		break;
+    while (*rare == 0) {
+      ++rare;
+      ASSERT(rare != end); // not all zero
+    }
 
 	const size_t* it = rare + 1;
 	for (; it != end; ++it)
@@ -46,6 +47,17 @@ namespace {
 		rare = it;
 
 	return rare - divCounts;
+  }
+
+  inline void makeRareVarsMask
+    (Word* mask, const size_t* divCounts, const size_t varCount) {
+    const size_t rareVar = getRareVar(divCounts, varCount);
+    ASSERT(rareVar < varCount); // not all zero
+    const size_t maxCount = divCounts[rareVar];
+    Ops::setToIdentity(mask, varCount);
+    for (size_t var = 0; var < varCount; ++var)
+      if (divCounts[var] == maxCount)
+        Ops::setExponent(mask, var, true);
   }
 
   class RawSquareFreeTerm {
@@ -85,6 +97,9 @@ namespace {
 	virtual Word* getPivot(const EulerState& state,
 						   const size_t* divCounts) = 0;
 	virtual void computationCompleted(const PivotEulerAlg& alg) {}
+    virtual bool shouldTranspose(const EulerState& state) const {
+      return state.getVarCount() > state.getIdeal().getGeneratorCount();
+    }
   };
 
   class StdPopVar : public StdStrategy {
@@ -271,6 +286,10 @@ namespace {
 	  _strat->computationCompleted(alg);
 	}
 
+    virtual bool shouldTranspose(const EulerState& state) const {
+      return _strat->shouldTranspose(state);
+    }
+
   private:
 	auto_ptr<StdStrategy> _strat;
   };
@@ -283,6 +302,9 @@ namespace {
 							const size_t* divCounts,
 							const size_t varCount) = 0;
 	virtual void computationCompleted(const PivotEulerAlg& alg) {}
+    virtual bool shouldTranspose(const EulerState& state) const {
+      return state.getVarCount() < state.getIdeal().getGeneratorCount();
+    }
   };
 
   class GenPopVar : public GenStrategy {
@@ -316,6 +338,62 @@ namespace {
 
 	static const char* staticGetName() {
 	  return "popvar";
+	}
+
+	virtual void getName(ostream& out) const {
+	  out << staticGetName();
+	}
+  };
+
+  class GenRareMax : public GenStrategy {
+  public:
+	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
+      typedef RawSquareFreeIdeal::const_iterator const_iterator;
+      const RawSquareFreeIdeal& ideal = state.getIdeal();
+	  const size_t varCount = state.getVarCount();
+      const size_t rareVar = getRareVar(divCounts, varCount);
+
+      const const_iterator end = ideal.end();
+      size_t bestSupport = 0;
+      const_iterator best = end;
+      for (const_iterator it = ideal.begin(); it != end; ++it) {
+        if (!Ops::getExponent(*it, rareVar))
+          continue;
+        const size_t support = Ops::getSizeOfSupport(*it, varCount);
+        if (bestSupport < support) {
+          bestSupport = support;
+          best = it;
+        }
+      }
+      ASSERT(best != end);
+      return state.inPlaceGenSplit(best - ideal.begin());
+  	}
+
+	virtual iterator filter(iterator begin, iterator end,
+							const size_t* divCounts,
+							const size_t varCount) {
+      const size_t rareVar = getRareVar(divCounts, varCount);
+
+      size_t bestSupport = 0;
+      iterator newEnd = begin;
+	  for (iterator it = begin; it != end; ++it) {
+        if (!Ops::getExponent(*it, rareVar))
+          continue;
+        const size_t support = Ops::getSizeOfSupport(*it, varCount);
+        if (bestSupport > support)
+          continue;
+        if (bestSupport < support) {
+          newEnd = begin;
+          bestSupport = support;
+        }
+		Ops::swap(*it, *newEnd, varCount);
+		++newEnd;
+      }
+	  return newEnd;
+	}
+
+	static const char* staticGetName() {
+	  return "raremax";
 	}
 
 	virtual void getName(ostream& out) const {
@@ -395,6 +473,10 @@ namespace {
 		_filters[i]->computationCompleted(alg);
 	}
 
+    virtual bool shouldTranspose(const EulerState& state) const {
+      return _filters.front()->shouldTranspose(state);
+    }
+
   private:
 	vector<GenStrategy*> _filters;
 	ElementDeleter<vector<GenStrategy*> > _filtersDeleter;
@@ -428,7 +510,7 @@ namespace {
 	}
 
 	static const char* staticGetName() {
-	  return "rarestvars";
+	  return "rarest";
 	}
 
 	virtual void getName(ostream& out) const {
@@ -682,6 +764,10 @@ namespace {
 	  _genStrat->computationCompleted(alg);
 	}
 
+    virtual bool shouldTranspose(const EulerState& state) const {
+      return false;
+    }
+
   private:
 	auto_ptr<PivotStrategy> _stdStrat;
 	auto_ptr<PivotStrategy> _genStrat;
@@ -727,6 +813,10 @@ namespace {
 				  alg.getComputedEulerCharacteristic().get_mpz_t());
 	}
 
+    virtual bool shouldTranspose(const EulerState& state) const {
+      return _strat->shouldTranspose(state);
+    }
+
   private:
 	auto_ptr<PivotStrategy> _strat;
 	FILE* _out;
@@ -735,7 +825,7 @@ namespace {
   class StatisticsStrategy : public PivotStrategy {
   public:
 	StatisticsStrategy(auto_ptr<PivotStrategy> strat, FILE* out):
-	  _strat(strat), _out(out), _statesSplit(0) {}
+	  _strat(strat), _out(out), _statesSplit(0), _transposes(0) {}
 
 	virtual EulerState* doPivot(EulerState& state, const size_t* divCounts) {
 	  ++_statesSplit;
@@ -755,6 +845,10 @@ namespace {
 			  alg.getUseManyDivSimplify() ? "yes" : "no");
 	  fprintf(_out, "* Using implied div simplify: %s\n",
 			  alg.getUseAllPairsSimplify() ? "yes" : "no");
+	  fprintf(_out, "* Do initial autotranspose: %s\n",
+			  alg.getInitialAutoTranspose() ? "yes" : "no");
+	  fprintf(_out, "* Do autotranspose at each step: %s\n",
+			  alg.getAutoTranspose() ? "yes" : "no");
 	  ostringstream strategyName;
 	  getName(strategyName);
 	  fprintf(_out, "* Pivot strategy: %s\n", strategyName.str().c_str());
@@ -764,13 +858,22 @@ namespace {
 	  // in a binary tree is one plus the number of internal nodes.
 	  unsigned long totalStates = 2 * _statesSplit + 1;
 	  fprintf(_out, "* States processed: %lu\n", (unsigned long)totalStates);
+	  fprintf(_out, "* Transposes taken: %lu\n", (unsigned long)_transposes);
 	  fputs("********\n", _out);
 	}
+
+    virtual bool shouldTranspose(const EulerState& state) const {
+      const bool should = _strat->shouldTranspose(state);
+      if (should)
+        ++_transposes;
+      return should;
+    }
 
   private:
 	auto_ptr<PivotStrategy> _strat;
 	FILE* _out;
 	unsigned long _statesSplit;
+    mutable unsigned long _transposes;
   };
 
   typedef NameFactory<StdStrategy> StdFactory;
@@ -787,6 +890,7 @@ namespace {
   typedef NameFactory<GenStrategy> GenFactory;
   GenFactory getGenStratFactory() {
     GenFactory factory("generator pivot strategy");
+    nameFactoryRegister<GenRareMax>(factory);
     nameFactoryRegister<GenRareVar>(factory);
     nameFactoryRegister<GenRarestVars>(factory);
     nameFactoryRegister<GenPopVar>(factory);
@@ -800,21 +904,19 @@ namespace {
 
 auto_ptr<PivotStrategy> newStdPivotStrategy(const string& name) {
   if (name.compare(0, 6, "widen_") != 0) {
-	auto_ptr<StdStrategy> strat = getStdStratFactory().createNoThrow(name);
+	auto_ptr<StdStrategy> strat = getStdStratFactory().create(name);
 	return auto_ptr<PivotStrategy>(strat.release());
   }
 
   auto_ptr<StdStrategy> subStrat =
-	getStdStratFactory().createNoThrow(name.substr(6, name.size() - 6));
-  if (subStrat.get() == 0)
-	return auto_ptr<PivotStrategy>();
+	getStdStratFactory().create(name.substr(6, name.size() - 6));
   return auto_ptr<PivotStrategy>(new StdWiden(subStrat));
 }
 
 auto_ptr<PivotStrategy> newGenPivotStrategy(const string& name) {
   GenFactory factory = getGenStratFactory();
   if (name.find('_') == string::npos) {
-	auto_ptr<GenStrategy> strat = factory.createNoThrow(name);
+	auto_ptr<GenStrategy> strat = factory.create(name);
 	return auto_ptr<PivotStrategy>(strat.release());
   }
 
@@ -832,9 +934,7 @@ auto_ptr<PivotStrategy> newGenPivotStrategy(const string& name) {
 	  pos = nextPos + 1;
 	}
 
-	auto_ptr<GenStrategy> strat = factory.createNoThrow(part);
-	if (strat.get() == 0)
-	  return auto_ptr<PivotStrategy>();
+	auto_ptr<GenStrategy> strat = factory.create(part);
 	composite->addStrategy(strat);
   } while (pos != string::npos);
   return auto_ptr<PivotStrategy>(composite.release());

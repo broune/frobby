@@ -395,9 +395,9 @@ void computeMlfbs(vector<Mlfb>& mlfbs, const GrobLat& lat) {
 
 	  // Find the MLFB with the right hand side that we have
 	  // computed.
-	  for (size_t m = 0; m < mlfbs.size(); ++m) {
-		if (mlfbs[m].getRhs() == rhs) {
-		  mlfb.edges[facetPushIn] = &(mlfbs[m]);
+	  for (size_t mi = 0; mi < mlfbs.size(); ++mi) {
+		if (mlfbs[mi].getRhs() == rhs) {
+		  mlfb.edges[facetPushIn] = &(mlfbs[mi]);
 		  mlfb.edgeHitsFacet[facetPushIn] = facetPushOut;
 		  goto foundMatch;
 		}
@@ -853,15 +853,15 @@ void computeSeqs(vector<vector<SeqPos> >& left,
   vector<bool> rightSeen(mlfbs.size());
   pending.push(&(mlfbs[m]));
   while (!pending.empty()) {
-	const Mlfb& m = *pending.top();
+	const Mlfb& pm = *pending.top();
 	pending.pop();
-	if (rightSeen[m.getOffset()])
+	if (rightSeen[pm.getOffset()])
 	  continue;
-	rightSeen[m.getOffset()] = true;
+	rightSeen[pm.getOffset()] = true;
 	for (size_t s = 0; s < seqs.size(); ++s) {
-	  if (*(seqs[s].front().mlfb) == m)
+	  if (*(seqs[s].front().mlfb) == pm)
 		pending.push(seqs[s].back().mlfb);
-	  if (*(seqs[s].back().mlfb) == m)
+	  if (*(seqs[s].back().mlfb) == pm)
 		pending.push(seqs[s].front().mlfb);
 	}
   }
@@ -1326,12 +1326,12 @@ mpq_class getIndexSum(const vector<Mlfb>& mlfbs) {
 }
 
 SeqPos::SeqPos() {}
-SeqPos::SeqPos(const Mlfb* mlfb, size_t nextFacet, size_t previousFacet) {
-  ASSERT(mlfb != 0);
+SeqPos::SeqPos(const Mlfb* mlfbParam, size_t nextFacet, size_t previousFacet) {
+  ASSERT(mlfbParam != 0);
   ASSERT(nextFacet != previousFacet);
   ASSERT(nextFacet < 4);
   ASSERT(previousFacet < 4);
-  this->mlfb = mlfb;
+  mlfb = mlfbParam;
 
   comingFromFacet = previousFacet;
   for (size_t f = 0; f < 4; ++f)

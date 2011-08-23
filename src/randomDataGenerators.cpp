@@ -186,7 +186,7 @@ void generateRookChessIdeal(BigIdeal& bigIdeal, size_t n, size_t k) {
 	  if (level == 0)
 		break;
 	  --level;
-	  ASSERT(static_cast<bool>(taken[choice[level]]) == true);	
+	  ASSERT(static_cast<bool>(taken[choice[level]]) == true);
       ASSERT(term[level * k + choice[level]] == 1);
 	  taken[choice[level]] = false;
       term[level * k + choice[level]] = 0;
@@ -206,7 +206,7 @@ void generateRookChessIdeal(BigIdeal& bigIdeal, size_t n, size_t k) {
 	  choice[level] = 0;
 	} else {
 	  ideal.insert(term);
-	  ASSERT(static_cast<bool>(taken[choice[level]]) == true);	
+	  ASSERT(static_cast<bool>(taken[choice[level]]) == true);
       ASSERT(term[level * k + choice[level]] == 1);
 	  taken[choice[level]] = false;
       term[level * k + choice[level]] = 0;
@@ -230,7 +230,7 @@ void generateMatchingIdeal(BigIdeal& bigIdeal, size_t n) {
 	State(size_t nodeCount):
 	  _notTaken(-1), _nodes(nodeCount), _isAnchor(nodeCount) {
 	  std::fill(_nodes.begin(), _nodes.end(), _notTaken);
-	  const size_t varCount = nodeCount * (nodeCount - 1) / 2; // n choose 2 
+	  const size_t varCount = nodeCount * (nodeCount - 1) / 2; // n choose 2
 	  _term.reset(varCount);
 	}
 
@@ -242,7 +242,7 @@ void generateMatchingIdeal(BigIdeal& bigIdeal, size_t n) {
 	  _nodes[anchor] = other;
 	  _nodes[other] = anchor;
       _isAnchor[anchor] = true;
-	  
+
 	  const size_t var = edgeToVar(anchor, other);
 	  ASSERT(_term[var] == 0);
 	  _term[var] = 1;

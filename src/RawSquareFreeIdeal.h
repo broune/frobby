@@ -24,9 +24,9 @@
 class Ideal;
 class BigIdeal;
 
-/** @todo describe further.
+/** A bit packed square free ideal placed in a pre-allocated buffer.
 
-	The "raw" prefix is there for a reason!
+	Use SquareFreeIdeal for a more pleasant interface.
 
 	This class allocates none of its own memory. It must be
 	initialized using the member function construct() in a buffer of
@@ -38,6 +38,8 @@ class RawSquareFreeIdeal {
  public:
   static RawSquareFreeIdeal* construct(void* buffer, size_t varCount = 0);
   static RawSquareFreeIdeal* construct(void* buffer, const Ideal& ideal);
+  static RawSquareFreeIdeal* construct(void* buffer,
+    const RawSquareFreeIdeal& ideal);
 
   /** Returns the number of bytes of memory necessary to contain an
 	  ideal with the given parameters. This size is padded to ensure
@@ -49,9 +51,40 @@ class RawSquareFreeIdeal {
   */
   static size_t getBytesOfMemoryFor(size_t varCount, size_t generatorCount);
 
-  RawSquareFreeIdeal& operator=(const RawSquareFreeIdeal& ideal);
+  /** Resets this object to be a copy of ideal. */
+  RawSquareFreeIdeal& operator=(const RawSquareFreeIdeal& ideal)
+    {return *construct(this, ideal);}
 
+  /** Resets this object to the transpose of ideal.
+
+   Let M be a matrix with variable-labeled columns and
+   generator-labeled rows. Entry (g,v) is 1 if and only if
+   v divides g and otherwise it is 0. There is a bijection
+   between such matrices and generating sets of ideals. Take
+   a generating set, construct its matric and transpose the
+   matrix. The generating set corresponding to the transposed
+   matrix generates the transpose ideal.
+
+   The eraseVars parameter is used as for compact(). So the
+   variables who have a 1 at their index into eraseVars (as bits)
+   will not be taken into the matrix that is transposed. A null
+   value indicates to take along all variables. */
+  void setToTransposeOf(const RawSquareFreeIdeal& ideal, Word* eraseVars = 0);
+
+  /** Equivalent to setToTransposeOf(this, eraseVars). */
+  void transpose(Word* eraseVars = 0);
+
+  /** Removes the variables that divide remove. Unless remove is the
+   identity this will decrease varCount. The operation is much like
+   colon, except that the exponents are remove entirely instead of
+   just set to zero. The relative order of the remaining variables is
+   preserved. */
+  void compact(const Word* remove);
+
+  /** Print a debug-suitable representation of this object to file. */
   void print(FILE* file) const;
+
+  /** Print a debug-suitable representation of this object to out. */
   void print(ostream& out) const;
 
   /** Inserts the generators of ideal from index 0 onward until
@@ -77,15 +110,9 @@ class RawSquareFreeIdeal {
   /** Performs a colon and minimize. Object must be already minimized. */
   void colonReminimize(const Word* colon);
 
-  /** Performs a colon by var and minimize. Object must be already minimized. */
+  /** Performs a colon by var and minimize. Object must be already
+   minimized. */
   void colonReminimize(size_t var);
-
-  /** Removes the variables that divide remove. Unless remove is the
-   identity this will decrease varCount. The operation is much like
-   colon, except that the exponents are remove entirely instead of
-   just set to zero. The relative order of the remaining variables is
-   preserved. */
-  void compact(const Word* remove);
 
   /** Change 0 exponents into 1 and vice versa. */
   void swap01Exponents();

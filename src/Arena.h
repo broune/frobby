@@ -146,7 +146,7 @@ class Arena {
   struct Block {
 	Block();
 
-	bool isInBlock(const void* ptr) const;
+	inline bool isInBlock(const void* ptr) const;
 	size_t getSize() const {return _blockEnd - _blockBegin;}
 	size_t getFreeCapacity() const {return _blockEnd - _freeBegin;}
 	bool isEmpty() const {return _blockBegin == _freeBegin;}

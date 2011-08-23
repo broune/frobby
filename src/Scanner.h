@@ -149,11 +149,15 @@ public:
 
   /** Reads past any whitespace, where whitespace is defined by the
       standard function isspace(). */
-  void eatWhite();
+  inline void eatWhite();
 
 private:
   /** Returns the size of the string. */
   size_t readIntegerString();
+
+  /** Returns the size of the string. */
+  size_t readIntegerStringNoSign();
+
   void parseInteger(mpz_class& integer, size_t size);
 
   void errorExpectTwo(char a, char b, int got);
@@ -164,7 +168,7 @@ private:
   void reportErrorUnexpectedToken(const string& expected, int got);
   void reportErrorUnexpectedToken(const string& expected, const string& got);
 
-  int getChar();
+  inline int getChar();
   void growTmpString();
   int readBuffer();
 
@@ -237,17 +241,17 @@ inline void Scanner::readInteger(mpz_class& integer) {
 }
 
 inline void Scanner::expectIntegerNoSign() {
-  readIntegerString(); // todo: check not negative
+  readIntegerStringNoSign();
 }
 
 inline void Scanner::readIntegerNoSign(mpz_class& integer) {
-  readIntegerString(); // todo: check not negative
-  integer = _tmpString + 1;
+  readIntegerStringNoSign();
+  integer = _tmpString;
 }
 
 inline void Scanner::readIntegerNoSign(string& integer) {
-  readIntegerString(); // todo: check not negative
-  integer = _tmpString + 1;
+  readIntegerStringNoSign();
+  integer = _tmpString;
 }
 
 inline bool Scanner::peekIdentifier() {

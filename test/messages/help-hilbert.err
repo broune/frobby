@@ -11,7 +11,7 @@ computes the polynomial in the numerator of this fraction.
 
 The parameters accepted by hilbert are as follows.
 
- -algorithm STRING   (default is deform)
+ -algorithm STRING   (default is bigatti)
    Which algorithm to use. Options are slice, bigatti and deform.
 
  -canon [BOOL]   (default is off)

@@ -334,24 +334,24 @@ class Mlfb {
 	return getName();
   }
 
-  Neighbor getHitsNeighbor(size_t index) const {
-	ASSERT(index < edgeHitsFacet.size());
-	return getPoint(getHitsFacet(index));
+  Neighbor getHitsNeighbor(size_t indexParam) const {
+	ASSERT(indexParam < edgeHitsFacet.size());
+	return getPoint(getHitsFacet(indexParam));
   }
 
-  size_t getHitsFacet(size_t index) const {
-	ASSERT(index < edgeHitsFacet.size());
-	return edgeHitsFacet[index];
+  size_t getHitsFacet(size_t indexParam) const {
+	ASSERT(indexParam < edgeHitsFacet.size());
+	return edgeHitsFacet[indexParam];
   }
 
-  const Mlfb* getEdge(size_t index) const {
-	ASSERT(index < edges.size());
-	return edges[index];
+  const Mlfb* getEdge(size_t indexParam) const {
+	ASSERT(indexParam < edges.size());
+	return edges[indexParam];
   }
 
-  Mlfb* getEdge(size_t index) {
-	ASSERT(index < edges.size());
-	return edges[index];
+  Mlfb* getEdge(size_t indexParam) {
+	ASSERT(indexParam < edges.size());
+	return edges[indexParam];
   }
 
   size_t getFacetOf(const Mlfb& adjacent) const {

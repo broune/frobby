@@ -393,3 +393,48 @@ TEST(RawSquareFreeIdeal, Compact) {
 	 "111111111111111111111111111111111111101111111111111111111110\n"
 	 "000000000000000001000000000000000000000000000000000000000001\n");
 }
+
+#define TEST_TRANSPOSE(beforeStr, removeStr, afterStr) {	  \
+  RSFIdeal* before = newRawSquareFreeIdealParse(beforeStr);   \
+  Word* remove = removeStr == 0 ? 0 : newTermParse(removeStr);\
+  RSFIdeal* after = newRawSquareFreeIdealParse(afterStr);     \
+  const size_t maxDim = before->getGeneratorCount() > before->getVarCount() ?\
+    before->getGeneratorCount() : before->getVarCount();      \
+  RSFIdeal* calculated = newRawSquareFreeIdeal(maxDim, maxDim);\
+  calculated->setToTransposeOf(*before, remove);              \
+  ASSERT_EQ(*calculated, *after);                             \
+  calculated->setToTransposeOf(*calculated);                  \
+  calculated->transpose();                                    \
+  ASSERT_EQ(*calculated, *after);                             \
+  deleteRawSquareFreeIdeal(before);							  \
+  deleteTerm(remove);									      \
+  deleteRawSquareFreeIdeal(after);							  \
+  deleteRawSquareFreeIdeal(calculated);					      \
+}
+
+TEST(RawSquareFreeIdeal, Transpose) {
+  TEST_TRANSPOSE("\n", 0, "\n");
+  TEST_TRANSPOSE("\n", "", "\n");
+  TEST_TRANSPOSE("01\n", 0, "0\n1\n");
+  TEST_TRANSPOSE("01\n", "00", "0\n1\n");
+  TEST_TRANSPOSE("01\n", "10", "1\n");
+  TEST_TRANSPOSE("01\n", "01", "0\n");
+  TEST_TRANSPOSE("11\n01\n", 0, "10\n11\n");
+  TEST_TRANSPOSE("1110101\n"
+                 "0011100\n"
+                 "1011111\n",
+
+                 "0010000",
+
+                 "101\n100\n011\n111\n001\n101\n");
+
+  string myBefore;
+  string myRemove;
+  string myAfter;
+  for (size_t i = 0; i < 200; ++i) {
+    myBefore += "0101";
+    myRemove += "0011";
+    myAfter += "0\n1\n";
+  }
+  TEST_TRANSPOSE(myBefore.c_str(), myRemove.c_str(), myAfter.c_str());
+}

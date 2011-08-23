@@ -36,7 +36,8 @@ namespace TestInternal {
   }
 
   void assertFail(const char* cond, const char* expected, const StdData& data) {
-	stringstream msg;
+    ASSERT(false);
+    stringstream msg;
 	msg << "Unit test " << data.testName
 		<< " failed in file " << data.file
 		<< " on line " << data.line << ".\n"
@@ -57,6 +58,7 @@ namespace TestInternal {
 
   void assertFail1(const char* cond, const char* expected, const StdData& data,
 				   const char* exp1, string exp1Value) {
+    ASSERT(false);
 	stringstream msg;
 	msg << "Unit test " << data.testName
 		<< " failed in file " << data.file
@@ -81,6 +83,7 @@ namespace TestInternal {
   void assertFail2(const char* cond, const char* expected, const StdData& data,
 				   const char* exp1, string exp1Value,
 				   const char* exp2, string exp2Value) {
+    ASSERT(false);
 	stringstream msg;
 	msg << "Unit test " << data.testName
 		<< " failed in file " << data.file
@@ -116,6 +119,7 @@ namespace TestInternal {
 	if (testName == 0)
 	  testName = "";
 
+    ASSERT(false);
 	stringstream msg;
 	msg << "Unit test " << testName
 		<< " failed in file " << file

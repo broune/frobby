@@ -230,11 +230,11 @@ namespace {
 	  cout << " contains the neighbors\n";
 
 	  NeighborPrinter pr(lat);
-	  for (size_t i = 0; i < mlfb.getPointCount(); ++i) {
-		pr.addMlfbPoint(mlfb.getPoint(i),
+	  for (size_t j = 0; j < mlfb.getPointCount(); ++j) {
+		pr.addMlfbPoint(mlfb.getPoint(j),
 						plane,
-						mlfb.getHitsNeighbor(i),
-						*mlfb.getEdge(i));
+						mlfb.getHitsNeighbor(j),
+						*mlfb.getEdge(j));
 	  }
 	  pr.print(cout);
 	  cout << "Its index is " << mlfb.index << ", its rhs dot product is " <<

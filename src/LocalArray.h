@@ -35,9 +35,9 @@
 template<class T, class ArenaSource = Arena>
 class LocalArray {
  public:
- LocalArray(const size_t size):
-  _size(size),
-  _range(gccWorkAround(size)) {
+ LocalArray(const size_t sizeParam):
+  _size(sizeParam),
+  _range(gccWorkAround(sizeParam)) {
 	ASSERT(this->size() == static_cast<size_t>(end() - begin()));
   }
 

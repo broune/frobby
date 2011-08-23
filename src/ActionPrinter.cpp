@@ -19,7 +19,19 @@
 #include "ActionPrinter.h"
 
 ActionPrinter::ActionPrinter(bool printActions):
-  _printActions(printActions) {
+  _printActions(printActions),
+  _actionBegun(false) {
+}
+
+ActionPrinter::ActionPrinter(bool printActions, const char* message):
+  _printActions(printActions),
+  _actionBegun(true) {
+  printMessage(message);
+}
+
+ActionPrinter::~ActionPrinter() {
+  if (_actionBegun)
+    endAction();
 }
 
 void ActionPrinter::printMessage(const char* message) {
@@ -30,11 +42,15 @@ void ActionPrinter::printMessage(const char* message) {
 }
 
 void ActionPrinter::beginAction(const char* message) {
-  _timer.reset();
+  ASSERT(!_actionBegun);
   printMessage(message);
+  _actionBegun = true;
+  _timer.reset();
 }
 
 void ActionPrinter::endAction() {
+  ASSERT(_actionBegun);
+  _actionBegun = false;
   if (_printActions) {
     fputc(' ', stderr);
     _timer.print(stderr);

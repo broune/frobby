@@ -65,7 +65,7 @@ public:
 
   void clear();
 
-  size_t getGeneratorCount() const;
+  inline size_t getGeneratorCount() const;
   size_t getVarCount() const;
 
   void clearAndSetNames(const VarNames& names);

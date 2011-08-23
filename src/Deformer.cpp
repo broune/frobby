@@ -49,30 +49,32 @@ namespace {
          it != exps.end(); ++it) {
       vector<Exponent*>& block = it->second;
 
-      typedef vector<Exponent*>::iterator blockIt;
+      typedef vector<Exponent*>::iterator BlockIt;
       if (stronglyGeneric) {
-        for (blockIt it = block.begin(); it != block.end(); ++it) {
-          undeform.push_back((*it)[var]);
-          (*it)[var] = undeform.size() - 1;
+        for (BlockIt blockIt = block.begin(); blockIt != block.end();
+          ++blockIt) {
+          undeform.push_back((*blockIt)[var]);
+          (*blockIt)[var] = undeform.size() - 1;
         }
       } else {
         undeform.push_back(block.front()[var]);
         Exponent sharedDeformedExponent = undeform.size() - 1;
 
-        for (blockIt it = block.begin(); it != block.end(); ++it) {
+        for (BlockIt blockIt = block.begin(); blockIt != block.end();
+          ++blockIt) {
           bool canUseShared = true;
-          for (blockIt other = it + 1; other != block.end(); ++other) {
-            tmp.lcm(*it, *other);
+          for (BlockIt other = blockIt + 1; other != block.end(); ++other) {
+            tmp.lcm(*blockIt, *other);
             if (!ideal.strictlyContains(tmp)) {
               canUseShared = false;
               break;
             }
           }
           if (canUseShared)
-            (*it)[var] = sharedDeformedExponent;
+            (*blockIt)[var] = sharedDeformedExponent;
           else {
-            undeform.push_back((*it)[var]);
-            (*it)[var] = undeform.size() - 1;
+            undeform.push_back((*blockIt)[var]);
+            (*blockIt)[var] = undeform.size() - 1;
           }
         }
       }
