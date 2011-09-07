@@ -356,7 +356,9 @@ namespace {
 	}
   }
 
-  void printInteriorNeighborGraph(const GrobLat& lat) {
+  void printInteriorNeighborGraph(const GrobLat& lat,
+								  const vector<Mlfb>& mlfbs,
+                                  const vector<Plane>& planes) {
     ofstream out("interior.dot");
     out << "digraph G {\n" << flush;
     for (size_t gen1 = 0; gen1 < lat.getNeighborCount(); ++gen1) {
@@ -369,10 +371,24 @@ namespace {
         Neighbor sum = lat.getSum(from, to);
         if (!sum.isValid() || !lat.isInterior(to, sum))
           continue;
-        out << "  " << from.getName() << " -> " << sum.getName();
-        if (lat.isPointFreeBody(from, sum))
-          out << " [style=dotted,arrowhead=empty]";
-        out << ";\n";
+        out << "  " << from.getName() << " -> " << sum.getName()
+			<< " [label=\"" << to.getName();
+		for (size_t m = 0; m < mlfbs.size(); ++m) {
+		  const Mlfb& mlfb = mlfbs[m];
+		  if (mlfb.hasPoint(to) && mlfb.hasPoint(sum)) {
+            out << ' ' << mlfb.getName();
+          }
+        }
+        if (lat.isPointFreeBody(from, sum)) {
+          for (size_t p = 0; p < planes.size(); ++p) {
+            const Plane& plane = planes[p];
+            if (plane.inPlane(sum) && plane.inPlane(to) && plane.inPlane(from))
+              out << " p" << (p + 1);
+          }
+          out << "\",style=dotted,arrowhead=empty";
+        } else
+          out << "\"";
+        out << "];\n";
       }
     }
     out << "}\n";
@@ -553,7 +569,7 @@ void LatticeAnalyzeAction::perform() {
 
   checkPlanes(thinPlanes, planes);
 
-  printInteriorNeighborGraph(lat);
+  printInteriorNeighborGraph(lat, mlfbs, planes);
   printScarfGraph(mlfbs);
   printMathematica3D(mlfbs, lat);
 
