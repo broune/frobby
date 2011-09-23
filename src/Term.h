@@ -182,8 +182,8 @@ class Term {
 
   /** Returns whether a strictly divides b. \f$a\f$ strictly divides
       \f$b\f$ if \f$a * gcd(a, x_1...x_n)\f$ divides \f$b\f$ and
-      \f$b\neq 1\f$, i.e.\ if, for each $i$, \f$u_i<b_i\f$ or $v_i=0$
-      where $a=x^u$, $b=x^v\neq x^0$
+      \f$b\neq 1\f$, i.e.\ if, for each \f$i\f$, \f$u_i<b_i\f$ or
+      \f$v_i=0\f$ where \f$a=x^u\f$, \f$b=x^v\neq x^0\f$.
   */
   inline static bool strictlyDivides(const Exponent* a, const Exponent* b,
                                      size_t varCount) {
@@ -318,7 +318,7 @@ class Term {
   }
 
   /** Returns whether a is square free, i.e.\ \f$v_i\leq 1\f$ for each
-      \f$i\f$ where $a=x^v$.
+      \f$i\f$ where \f$a=x^v\f$.
   */
   inline static bool isSquareFree(const Exponent* a, size_t varCount) {
     ASSERT(a != 0 || varCount == 0);
@@ -404,7 +404,7 @@ class Term {
     return getSizeOfSupport(_exponents, _varCount);
   }
 
-  /** Returns whether there is some \f$i$ such that \f$a_i=b_i>0$. */
+  /** Returns whether there is some \f$i\f$ such that \f$a_i=b_i>0\f$. */
   static bool sharesNonZeroExponent(const Exponent* a, const Exponent* b,
                                     size_t varCount) {
     for (size_t var = 0; var < varCount; ++var)
