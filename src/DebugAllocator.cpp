@@ -24,6 +24,9 @@
 #include "IOHandler.h"
 #include <limits>
 
+// Must not include code below if not debugging. For one, then Frobby
+// cannot be built as a library as this code calls main.
+// The code only applies to debug builds anyway.
 #ifdef DEBUG
 #undef new
 

@@ -62,18 +62,6 @@ rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   LibAssociatedPrimesTest.cpp MatrixTest.cpp IdealTest.cpp				\
   LibDimensionTest.cpp TermGraderTest.cpp ArenaTest.cpp
 
-# This is for Mac 10.5. On other platforms this does not hurt, though
-# it would be nicer to not do it then. The same thing is true of
-# -L/sw/lib for ldflags.
-ifndef GMP_INC_DIR
-
-  GMP_INC_DIR="/sw/include"
-endif
-
-ifndef ldflags
-  ldflags = $(LDFLAGS) -lgmpxx -lgmp -L/sw/lib
-endif
-
 ifndef CXX
   CXX      = "g++"
 endif
@@ -90,6 +78,10 @@ benchArgs = $(FROBBYARGS)
 
 ifndef MODE
  MODE=release
+endif
+
+ifndef ldflags
+  ldflags = $(cflags) $(LDFLAGS) -lgmpxx -lgmp
 endif
 
 MATCH=false
@@ -191,10 +183,12 @@ benchOptimize: all
 benchAlexdual: all
 	cd test/bench; ./run_alexdual_bench $(benchArgs)
 
+bin/:
+	mkdir bin/;
+
 # Make symbolic link to program from bin/
-bin/$(program): $(outdir)$(program)
+bin/$(program): $(outdir)$(program) bin/
 ifneq ($(MODE), analysis)
-	@mkdir -p $(dir $@);
 	cd bin; rm -f $(program); ln -s ../$(outdir)$(program) $(program); cd ..
 endif
 
@@ -261,30 +255,32 @@ doc: docPs docPdf
 docPs:
 	rm -rf bin/doc
 	mkdir bin/doc
-	for i in 1 2 3; do latex doc/manual.tex -output-directory=bin/doc/; done
+	for i in 1 2 3; do latex -output-directory=bin/doc/ doc/manual.tex; done
 	cd bin; dvips doc/manual.dvi
 docPdf:
 	rm -rf bin/doc
 	mkdir bin/doc
-	for i in 1 2 3; do pdflatex doc/manual.tex -output-directory=bin/doc/; done
+	for i in 1 2 3; do pdflatex -output-directory=bin/doc/ doc/manual.tex; done
 	mv bin/doc/manual.pdf bin
 docDviOnce: # Useful to view changes when writing the manual
-	latex doc/manual.tex -output-directory=bin/doc
+	latex -output-directory=bin/doc doc/manual.tex
 
 # It may seem wasteful to run doxygen three times to generate three
 # kinds of output. However, the latex output for creating a pdf file
 # and for creating a PostScript file is different, and so at least two
 # runs are necessary. Making the HTML output a third run is cleaner
 # than tacking it onto one or both of the other two targets.
+bin/develDoc/: bin/
+	mkdir bin/develDoc
 develDoc: develDocHtml develDocPdf develDocPs
-develDocHtml:
+develDocHtml: bin/develDoc/
 	cat doc/doxygen.conf doc/doxHtml|doxygen -
-develDocPdf:
+develDocPdf: bin/develDoc/
 	rm -rf bin/develDoc/latexPdf bin/develDoc/warningLog
 	cat doc/doxygen.conf doc/doxPdf|doxygen -
 	cd bin/develDoc/latexPdf; for f in `ls *.eps`; do epstopdf $$f; done # Cygwin fix
 	cd bin/develDoc/latexPdf/; make refman.pdf; mv refman.pdf ../develDoc.pdf
-develDocPs:
+develDocPs: bin/develDoc/
 	rm -rf bin/develDoc/latexPs bin/develDoc/warningLog
 	cat doc/doxygen.conf doc/doxPs|doxygen -
 	cd bin/develDoc/latexPs/; make refman.ps; mv refman.ps ../develDoc.ps
@@ -320,7 +316,7 @@ ifndef VER
 endif
 	rm -fr frobby_v$(VER).tar.gz frobby_v$(VER)
 	mkdir frobby_v$(VER)
-	cp -r frobgrob COPYING Makefile src test doc frobby_v$(VER)
+	cp -r changelog.txt frobgrob COPYING Makefile src test doc frobby_v$(VER)
 	mkdir frobby_v$(VER)/4ti2
 	tar --create --gzip --file=frobby_v$(VER).tar.gz frobby_v$(VER)/
 	rm -fr frobby_v$(VER)	

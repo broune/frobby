@@ -41,7 +41,7 @@ namespace {
 }
 
 void TestSuite::sortTests() {
-  sort(begin(), end(), comparePointedToValue);
+  std::sort(begin(), end(), comparePointedToValue);
 }
 
 TestSuite::TestIterator TestSuite::begin() {

@@ -36,7 +36,7 @@ class BigIdeal;
   static list in the Action that creates these?
 */
 
-/** Generate an ideal of the form \$fx_1*x_2\f$, \f$x_2*x_3\f$ and so
+/** Generate an ideal of the form \f$x_1*x_2\f$, \f$x_2*x_3\f$ and so
     on.
 */
 void generateLinkedListIdeal(BigIdeal& ideal, size_t varCount);
