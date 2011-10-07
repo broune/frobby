@@ -64,7 +64,7 @@ namespace {
 
   /** Removes those elements of [begin, end) that are not minimal. The
    result is in the sub-range [begin, newEnd) where newEnd is the
-   returned value. */
+   returned value. @todo: use sort */
    RSFIdeal::iterator minimize(RSFIdeal::iterator begin,
 							  RSFIdeal::iterator end,
 							  const size_t wordCount) {
@@ -645,7 +645,6 @@ void RSFIdeal::insert(const Word* term) {
   Ops::assign(_memoryEnd, _memoryEnd + getWordsPerTerm(), term);
   ++_genCount;
   _memoryEnd += getWordsPerTerm();
-  ASSERT(isValid());
 }
 
 void RSFIdeal::swap01Exponents() {
@@ -659,7 +658,7 @@ void RSFIdeal::insertIdentity() {
   Ops::setToIdentity(_memoryEnd, _memoryEnd + getWordsPerTerm());
   ++_genCount;
   _memoryEnd += getWordsPerTerm();
-  ASSERT(isValid());
+  //ASSERT(isValid());
 }
 
 namespace {
