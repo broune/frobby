@@ -49,7 +49,7 @@ EulerState* EulerState::construct
 
   state->ideal->insert(idealParam);
   Ops::setToIdentity(state->eliminated, varCount);
-  ASSERT(state->debugIsValid());
+  //ASSERT(state->debugIsValid());
 
   return state;
 }
