@@ -32,6 +32,12 @@ Arena::~Arena() {
   delete[] _block._blockBegin;
 }
 
+void Arena::clear() {
+  while (_block.hasPreviousBlock())
+	discardPreviousBlock();
+  _block.clear();
+}
+
 Arena::Block::Block():
   _blockBegin(0),
   _freeBegin(0),

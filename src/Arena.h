@@ -72,6 +72,8 @@ class Arena {
    must not be null. */
   void freeAndAllAfter(void* ptr);
 
+  /** Marks all previous allocations as freed. */
+  void clear();
 
   // ***** Array interface *****
 
@@ -152,6 +154,7 @@ class Arena {
 	bool isEmpty() const {return _blockBegin == _freeBegin;}
 	bool isNull() const {return _blockBegin == 0;}
 	bool hasPreviousBlock() const {return _previousBlock != 0;}
+    void clear() {_freeBegin = _blockBegin;}
 	IF_DEBUG(bool debugIsValid(const void* ptr) const;)
 
 	char* _blockBegin; /// beginning of current block (aligned)

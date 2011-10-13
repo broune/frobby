@@ -25,10 +25,33 @@
  the buffer pool is destructed. */
 class BufferPool {
  public:
+  /** bufferSize is how many bytes are in each allocated buffer. */
   BufferPool(size_t bufferSize);
 
+  /** Returns a pointer to an array of getBufferSize() chars. The
+   alignment is as for Arena. The lifetime of the buffer is until free
+   is called with the returned value as parameter on this same object
+   or clear() is called or this object is destructed.
+
+   Do not pass the returned value to ::free, do not delete it and do
+   not free it on a different BufferPool.  Throws an exception if no
+   more memory can be allocated. Never returns null. */
   void* alloc();
+
+  /** Makes the buffer at ptr available for reuse. ptr must be a value
+   previously returned by alloc on this same object that hasn't been
+   freed already since then. ptr must not be null. This method cannot
+   throw an exception. */
   void free(void* ptr);
+
+  /** Returns how many bytes are in each buffer. Can be more than
+   requested due to having to have enough space to store a free list
+   pointer in each buffer. */
+  size_t getBufferSize() const {return _bufferSize;}
+
+  /** Marks all allocated blocks as available for reuse. Does not
+   deallocate the backing memory. */
+  void clear();
 
  private:
   struct FreeNode {

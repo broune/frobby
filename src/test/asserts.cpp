@@ -119,7 +119,6 @@ namespace TestInternal {
 	if (testName == 0)
 	  testName = "";
 
-    ASSERT(false);
 	stringstream msg;
 	msg << "Unit test " << testName
 		<< " failed in file " << file

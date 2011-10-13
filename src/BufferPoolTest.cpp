@@ -61,17 +61,8 @@ TEST(BufferPool, SmallBuffers) {
     pool.free(b);
   }
 }
-/*
-TEST(BufferPool, Big) {
-  Arena arena;
-  void* a = arena.alloc(5);
-  arena.freeTop(arena.alloc(1024 * 1024));
-  arena.freeTop(arena.alloc(1024 * 1024));
-  ASSERT_FALSE(arena.isEmpty());
-  arena.freeTop(a);
-  ASSERT_TRUE(arena.isEmpty());
 
-}
+/*
 
 TEST(Arena, Zero) {
   Arena arena;
