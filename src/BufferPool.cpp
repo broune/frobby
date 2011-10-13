@@ -37,3 +37,8 @@ void BufferPool::free(void* ptr) {
   node->next = _free;
   _free = node;
 }
+
+void BufferPool::clear() {
+  _free = 0;
+  _arena.clear();
+}
