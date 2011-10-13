@@ -21,6 +21,9 @@
  is defined everywhere throughout the code base.
 */
 
+#ifndef STDINC_GUARD
+#define STDINC_GUARD
+
 #ifdef _MSC_VER // For Microsoft Compiler in Visual Studio C++.
 #define _SCL_SECURE_NO_WARNINGS
 #pragma warning (push, 1) // Reduce warning level for GMP headers.
@@ -101,3 +104,5 @@ static const size_t MemoryAlignment = sizeof(long);
 namespace constants {
   extern const char* const version;
 }
+
+#endif

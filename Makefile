@@ -183,17 +183,15 @@ benchOptimize: all
 benchAlexdual: all
 	cd test/bench; ./run_alexdual_bench $(benchArgs)
 
-bin/:
-	mkdir bin/;
-
 # Make symbolic link to program from bin/
-bin/$(program): $(outdir)$(program) bin/
+bin/$(program): $(outdir)$(program)
+	@mkdir -p bin
 ifneq ($(MODE), analysis)
 	cd bin; rm -f $(program); ln -s ../$(outdir)$(program) $(program); cd ..
 endif
 
 # Link object files into executable
-$(outdir)$(program): $(objs) | $(outdir)
+$(outdir)$(program): $(objs)
 	@mkdir -p $(dir $@)
 ifeq ($(MODE), analysis)
 	echo > $@
@@ -210,7 +208,8 @@ endif
 
 # Link object files into library
 library: bin/$(library)
-bin/$(library): $(objs) | bin/
+bin/$(library): $(objs)
+	@mkdir -p bin/
 	rm -f bin/$(library)
 ifeq ($(MODE), shared)
 	$(CXX) -shared -o bin/$(library) $(ldflags) \
@@ -219,20 +218,19 @@ else
 	ar crs bin/$(library) $(patsubst $(outdir)main.o,,$(objs))
 endif
 
+
 # Compile and output object files.
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
-$(outdir)%.o: src/%.cpp
+$(outdir)stdinc.h.gch: src/stdinc.h
 	@mkdir -p $(dir $@)
-	$(CXX) ${cflags} -c $< -o $@
-	$(CXX) $(cflags) -MM -c $< > $(@:.o=.d).tmp
-# using /usr/bin/env echo to get the non-built-in echo on OS X, since
-# the built-in one does not understand the parameter -n.
-	@/usr/bin/env echo -n "$(dir $@)" > $(@:.o=.d)
-	@cat $(@:.o=.d).tmp >> $(@:.o=.d)
-	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d).tmp | fmt -1 | \
+	$(CXX) ${cflags} src/stdinc.h -o $@
+$(outdir)%.o: src/%.cpp $(outdir)stdinc.h.gch
+	@echo Compiling $<
+	@mkdir -p $(dir $@)
+	@$(CXX) ${cflags} -MMD -c $< -o $@ -include $(outdir)stdinc.h
+	@sed -e 's/.*://' -e 's/\\$$//' < $(@:.o=.d) | fmt -1 | \
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $(@:.o=.d)
-	@rm -f $(@:.o=.d).tmp
 ifeq ($(MODE), analysis)
 	  echo > $@
 endif
@@ -254,12 +252,12 @@ install:
 doc: docPs docPdf
 docPs:
 	rm -rf bin/doc
-	mkdir bin/doc
+	mkdir -p bin/doc
 	for i in 1 2 3; do latex -output-directory=bin/doc/ doc/manual.tex; done
 	cd bin; dvips doc/manual.dvi
 docPdf:
 	rm -rf bin/doc
-	mkdir bin/doc
+	mkdir -p bin/doc
 	for i in 1 2 3; do pdflatex -output-directory=bin/doc/ doc/manual.tex; done
 	mv bin/doc/manual.pdf bin
 docDviOnce: # Useful to view changes when writing the manual
@@ -271,7 +269,7 @@ docDviOnce: # Useful to view changes when writing the manual
 # runs are necessary. Making the HTML output a third run is cleaner
 # than tacking it onto one or both of the other two targets.
 bin/develDoc/: bin/
-	mkdir bin/develDoc
+	mkdir -p bin/develDoc
 develDoc: develDocHtml develDocPdf develDocPs
 develDocHtml: bin/develDoc/
 	cat doc/doxygen.conf doc/doxHtml|doxygen -
@@ -315,9 +313,9 @@ ifndef VER
 	exit 1;
 endif
 	rm -fr frobby_v$(VER).tar.gz frobby_v$(VER)
-	mkdir frobby_v$(VER)
+	mkdir -p frobby_v$(VER)
 	cp -r changelog.txt frobgrob COPYING Makefile src test doc frobby_v$(VER)
-	mkdir frobby_v$(VER)/4ti2
+	mkdir -p frobby_v$(VER)/4ti2
 	tar --create --gzip --file=frobby_v$(VER).tar.gz frobby_v$(VER)/
 	rm -fr frobby_v$(VER)	
 	ls -l frobby_v$(VER).tar.gz
@@ -339,7 +337,7 @@ endif
 
 	hg clone sage bin/sagetmp
 
-	mkdir bin/sagetmp/src
+	mkdir -p bin/sagetmp/src
 	cp -r COPYING Makefile src test bin/sagetmp/src
 
 	mv bin/sagetmp bin/frobby-$(VER)
