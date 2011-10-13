@@ -52,7 +52,8 @@ rawSources := main.cpp Action.cpp IOParameters.cpp						\
   Matrix.cpp BigIntVector.cpp ColumnPrinter.cpp EulerAction.cpp			\
   RawSquareFreeTerm.cpp RawSquareFreeIdeal.cpp PivotEulerAlg.cpp		\
   EulerState.cpp PivotStrategy.cpp Arena.cpp LocalArray.cpp				\
-  LatticeAlgs.cpp InputConsumer.cpp SquareFreeIdeal.cpp
+  LatticeAlgs.cpp InputConsumer.cpp SquareFreeIdeal.cpp BufferPool.cpp	\
+  BufferPoolTest.cpp
 
 rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   LibIrreducibleDecomTest.cpp LibMaxStdTest.cpp LibStdProgramTest.cpp	\
@@ -218,13 +219,13 @@ else
 	ar crs bin/$(library) $(patsubst $(outdir)main.o,,$(objs))
 endif
 
-
 # Compile and output object files.
 # In analysis mode no file is created, so create one
 # to allow dependency analysis to work.
 $(outdir)stdinc.h.gch: src/stdinc.h
+	@echo Creating precompiled header $<
 	@mkdir -p $(dir $@)
-	$(CXX) ${cflags} src/stdinc.h -o $@
+	@$(CXX) ${cflags} src/stdinc.h -o $@
 $(outdir)%.o: src/%.cpp $(outdir)stdinc.h.gch
 	@echo Compiling $<
 	@mkdir -p $(dir $@)
