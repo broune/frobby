@@ -18,7 +18,7 @@
 #ifndef OBJECT_POOL_GUARD
 #define OBJECT_POOL_GUARD
 
-#include "Arena.h"
+#include "MemoryBlocks.h"
 
 /** Allocator for allocating and freeing same-size buffers. Uses
  a free list. All allocations are automatically freed when
@@ -36,13 +36,13 @@ class BufferPool {
    Do not pass the returned value to ::free, do not delete it and do
    not free it on a different BufferPool.  Throws an exception if no
    more memory can be allocated. Never returns null. */
-  void* alloc();
+  inline void* alloc();
 
   /** Makes the buffer at ptr available for reuse. ptr must be a value
    previously returned by alloc on this same object that hasn't been
    freed already since then. ptr must not be null. This method cannot
    throw an exception. */
-  void free(void* ptr);
+  inline void free(void* ptr);
 
   /** Returns how many bytes are in each buffer. Can be more than
    requested due to having to have enough space to store a free list
@@ -54,13 +54,41 @@ class BufferPool {
   void clear();
 
  private:
+  typedef MemoryBlocks::Block Block;
+  Block& block() {return _blocks.getFrontBlock();}
+  const Block& block() const {return _blocks.getFrontBlock();}
+
+  /** Allocate another block of double the size. */
+  void growCapacity();
+
+  /** A node of the linked list of free buffers. */
   struct FreeNode {
     FreeNode* next;
   };
 
-  const size_t _bufferSize;
-  FreeNode* _free; // null indicates that the free list is empty
-  Arena _arena;
+  const size_t _bufferSize; /// size of the buffers returned by alloc
+  FreeNode* _free; /// null indicates that the free list is empty
+  MemoryBlocks _blocks;
 };
+
+inline void* BufferPool::alloc() {
+  if (_free != 0) {
+    void* ptr = _free;
+	_free = _free->next;
+	return ptr;
+  } else {
+    if (block().position() == block().end())
+      growCapacity();
+    void* ptr = block().position();
+    block().setPosition(block().position() + getBufferSize());
+    return ptr;
+  }
+}
+
+inline void BufferPool::free(void* ptr) {
+  FreeNode* node = reinterpret_cast<FreeNode*>(ptr);
+  node->next = _free;
+  _free = node;
+}
 
 #endif
