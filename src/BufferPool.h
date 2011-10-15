@@ -25,7 +25,7 @@
  the buffer pool is destructed. */
 class BufferPool {
  public:
-  /** bufferSize is how many bytes are in each allocated buffer. */
+  /** bufferSize is how many bytes are returned by each call to alloc. */
   BufferPool(size_t bufferSize);
 
   /** Returns a pointer to an array of getBufferSize() chars. The

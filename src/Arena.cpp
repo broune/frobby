@@ -27,89 +27,59 @@ Arena::Arena() {
 }
 
 Arena::~Arena() {
-  while (_block.hasPreviousBlock())
-	discardPreviousBlock();
-  delete[] _block._blockBegin;
+  clear();
 }
 
 void Arena::clear() {
-  while (_block.hasPreviousBlock())
+  while (block().hasPreviousBlock())
 	discardPreviousBlock();
-  _block.clear();
-}
-
-Arena::Block::Block():
-  _blockBegin(0),
-  _freeBegin(0),
-  _blockEnd(0),
-  _previousBlock(0) {
+  block().clear();
 }
 
 void Arena::growCapacity(const size_t needed) {
   // ** Calcuate size of block (doubles capacity)
-  size_t size = std::max(needed, _block.getSize());
+  size_t size = std::max(needed, block().getBytesInBlock());
   if (size > std::numeric_limits<size_t>::max() / 2)
 	throw bad_alloc(); // size * 2 overflows
   size *= 2;
   const size_t minimumAlloc = 16 * 1024 - sizeof(Block) - 16;
   size = std::max(size, minimumAlloc); // avoid many small blocks
-  // align size by rounding down
-  size = size & ~(MemoryAlignment - 1); // works because m.a. is a power of 2
-  ASSERT(size >= needed); // is satisfied because we multiplied by 2
+  size = MemoryBlocks::alignThrowOnOverflow(size);
+
+  ASSERT(size >= needed);
   ASSERT(size % MemoryAlignment == 0);
-  if (size > std::numeric_limits<size_t>::max() - sizeof(Block))
-	throw bad_alloc(); // size + sizeof(block) overflows
-
-  // ** Save current block information at end of memory area
-  if (!_block.isNull()) {
-	Block* previousBlock = reinterpret_cast<Block*>(_block._blockEnd);
-	*previousBlock = _block;
-	_block._previousBlock = previousBlock;
-  }
-
-  // ** Allocate buffer and update _block
-  char* buffer = new char[size + sizeof(Block)];
-  _block._blockBegin = buffer;
-  _block._freeBegin = buffer;
-  _block._blockEnd = buffer + size;
+  _blocks.allocBlock(size);
 }
 
 void Arena::freeTopFromOldBlock(void* ptr) {
   ASSERT(ptr != 0);
-  ASSERT(_block.isEmpty());
-  ASSERT(_block._previousBlock != 0);
+  ASSERT(block().empty());
+  ASSERT(block().hasPreviousBlock());
 
-  ASSERT(_block._previousBlock->debugIsValid(ptr));
-  _block._previousBlock->_freeBegin = static_cast<char*>(ptr);
-  if (_block._previousBlock->isEmpty())
+  Block* previous = block().getPreviousBlock();
+  ASSERT(previous->isInBlock(ptr));
+  previous->setPosition(ptr);
+  if (previous->empty())
 	discardPreviousBlock();
 }
 
 void Arena::freeAndAllAfterFromOldBlock(void* ptr) {
-  ASSERT(!_block.isInBlock(ptr));
-  ASSERT(_block._previousBlock != 0);
+  ASSERT(!block().isInBlock(ptr));
+  ASSERT(block().getPreviousBlock() != 0);
 
-  _block._freeBegin = _block._blockBegin;
-  while (!(_block._previousBlock->isInBlock(ptr))) {
+  block().setPosition(block().begin());
+  while (!(block().getPreviousBlock()->isInBlock(ptr))) {
 	discardPreviousBlock();
-	ASSERT(_block._previousBlock != 0);
+	ASSERT(block().hasPreviousBlock()); // ptr must be in some block
   }
 
-  ASSERT(_block._previousBlock->debugIsValid(ptr));
-  _block._previousBlock->_freeBegin = static_cast<char*>(ptr);
-  if (_block._previousBlock->isEmpty())
+  ASSERT(block().getPreviousBlock()->isInBlock(ptr));
+  block().getPreviousBlock()->setPosition(ptr);
+  if (block().getPreviousBlock()->empty())
 	discardPreviousBlock();
 }
 
 void Arena::discardPreviousBlock() {
-  ASSERT(_block._previousBlock != 0);
-  Block* before = _block._previousBlock->_previousBlock;
-  delete[] _block._previousBlock->_blockBegin;
-  _block._previousBlock = before;
+  ASSERT(block().getPreviousBlock() != 0);
+  _blocks.freePreviousBlock();
 }
-
-#ifdef DEBUG
-bool Arena::Block::debugIsValid(const void* ptr) const {
-  return _blockBegin <= ptr && ptr < _freeBegin;
-}
-#endif

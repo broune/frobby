@@ -18,6 +18,7 @@
 #ifndef ARENA_GUARD
 #define ARENA_GUARD
 
+#include "MemoryBlocks.h"
 #include <utility>
 
 #ifdef DEBUG
@@ -116,7 +117,7 @@ class Arena {
   // ***** Miscellaneous *****
 
   /** Returns true if there are no live allocations for this Arena. */
-  bool isEmpty() const {return !_block.hasPreviousBlock() && _block.isEmpty();}
+  inline bool isEmpty() const;
 
   /** Returns an arena object that can be used for non-thread safe
    scratch memory after static objects have been initialized. The
@@ -128,6 +129,10 @@ class Arena {
   static Arena& getArena() {return _scratchArena;}
 
  private:
+  typedef MemoryBlocks::Block Block;
+  Block& block() {return _blocks.getFrontBlock();}
+  const Block& block() const {return _blocks.getFrontBlock();}
+
   /** Allocate a new block with at least needed bytes. */
   void growCapacity(size_t needed);
 
@@ -141,44 +146,16 @@ class Arena {
   /** Free the memory for the previous block. */
   void discardPreviousBlock();
 
-  /** Rounds value up to the nearest multiple of MemoryAlignment. This
-   number must be representable in a size_t. */
-  static size_t alignNoOverflow(size_t value);
-
-  struct Block {
-	Block();
-
-	inline bool isInBlock(const void* ptr) const;
-	size_t getSize() const {return _blockEnd - _blockBegin;}
-	size_t getFreeCapacity() const {return _blockEnd - _freeBegin;}
-	bool isEmpty() const {return _blockBegin == _freeBegin;}
-	bool isNull() const {return _blockBegin == 0;}
-	bool hasPreviousBlock() const {return _previousBlock != 0;}
-    void clear() {_freeBegin = _blockBegin;}
-	IF_DEBUG(bool debugIsValid(const void* ptr) const;)
-
-	char* _blockBegin; /// beginning of current block (aligned)
-	char* _freeBegin; /// pointer to first free byte (aligned)
-	char* _blockEnd; /// one past last byte (aligned)
-	Block* _previousBlock; /// null if none
-  } _block;
+  MemoryBlocks _blocks;
+  IF_DEBUG(stack<void*> _debugAllocs;)
 
   static Arena _scratchArena;
-
-  IF_DEBUG(stack<void*> _debugAllocs;)
 };
 
-inline size_t Arena::alignNoOverflow(const size_t value) {
-  const size_t decAlign = MemoryAlignment - 1; // compile time constant
-
-  // This works because MemoryAlignment is a power of 2.
-  const size_t aligned = (value + decAlign) & (~decAlign);
-
-  ASSERT(aligned % MemoryAlignment == 0); // alignment
-  ASSERT(aligned >= value); // no overflow
-  ASSERT(aligned - value < MemoryAlignment); // adjustment minimal
-  return aligned;
+inline bool Arena::isEmpty() const {
+  return !block().hasPreviousBlock() && block().empty();
 }
+
 
 inline void* Arena::alloc(size_t size) {
   // It is OK to check capacity before aligning size as capacity is aligned.
@@ -186,7 +163,7 @@ inline void* Arena::alloc(size_t size) {
   //  * size is 0 (size - 1 will overflow)
   //  * there is not enough capacity (size > capacity)
   //  * aligning size would cause an overflow (capacity is aligned)
-  const size_t capacity = _block.getFreeCapacity();
+  const size_t capacity = block().getBytesToRight();
   ASSERT(capacity % MemoryAlignment == 0);
   if (size - 1 >= capacity) {
 	ASSERT(size == 0 || size > capacity);
@@ -199,11 +176,11 @@ inline void* Arena::alloc(size_t size) {
   }
  capacityOK:
   ASSERT(0 < size);
-  ASSERT(size <= _block.getFreeCapacity());
-  ASSERT(alignNoOverflow(size) <= _block.getFreeCapacity());
+  ASSERT(size <= block().getBytesToRight());
+  ASSERT(MemoryBlocks::alignNoOverflow(size) <= block().getBytesToRight());
 
-  void* ptr = _block._freeBegin;
-  _block._freeBegin += alignNoOverflow(size);
+  char* ptr = block().position();
+  block().setPosition(ptr + MemoryBlocks::alignNoOverflow(size));
 
   IF_DEBUG(_debugAllocs.push(ptr));
   return ptr;
@@ -217,10 +194,9 @@ inline void Arena::freeTop(void* ptr) {
   _debugAllocs.pop();
 #endif
 
-  if (!_block.isEmpty()) {
-	ASSERT(_block.debugIsValid(ptr));
-    _block._freeBegin = static_cast<char*>(ptr);
-  } else
+  if (!block().empty())
+    block().setPosition(ptr);
+  else
 	freeTopFromOldBlock(ptr);
 }
 
@@ -234,19 +210,10 @@ inline void Arena::freeAndAllAfter(void* ptr) {
   _debugAllocs.pop();
 #endif
 
-  if (_block.isInBlock(ptr)) {
-	ASSERT(_block.debugIsValid(ptr));
-	_block._freeBegin = static_cast<char*>(ptr);
-  } else
+  if (block().isInBlock(ptr))
+	block().setPosition(ptr);
+  else
 	freeAndAllAfterFromOldBlock(ptr);
-}
-
-inline bool Arena::Block::isInBlock(const void* ptr) const {
-  const char* p = static_cast<const char*>(ptr);
-  const size_t offset = static_cast<size_t>(p - _blockBegin);
-  // if _blockBegin > ptr then offset overflows to a large integer
-  ASSERT((offset < getSize()) == (_blockBegin <= p && p < _blockEnd));
-  return offset < getSize();
 }
 
 template<class T>

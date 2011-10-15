@@ -48,53 +48,52 @@ TEST(MemoryBlocks, Properties) {
     MemoryBlocks::Block& block = blocks.allocBlock(i);
     std::fill(block.begin(), block.end(), i);
     ASSERT_EQ(&block, &blocks.getFrontBlock());
-    ASSERT_FALSE(block.isNull());
-    ASSERT_EQ(block.position(), block.begin());
-    ASSERT_EQ(block.getBytesInBlock(), i);
-    ASSERT_EQ(block.getBytesToRight(), i);
-    ASSERT_EQ(block.end(), block.begin() + i);
-    ASSERT_TRUE(block.empty());
+    ASSERT_FALSE_SILENT(block.isNull());
+    ASSERT_EQ_SILENT(block.position(), block.begin());
+    ASSERT_EQ_SILENT(block.getBytesInBlock(), i);
+    ASSERT_EQ_SILENT(block.getBytesToRight(), i);
+    ASSERT_EQ_SILENT(block.end(), block.begin() + i);
+    ASSERT_TRUE_SILENT(block.empty());
 
     block.setPosition(block.begin() + i / 2);
     if (i > 0) {
-      ASSERT_EQ(block.position(), block.begin() + i / 2);
+      ASSERT_EQ_SILENT(block.position(), block.begin() + i / 2);
       if (i > 1) {
-      ASSERT_FALSE(block.empty());
+      ASSERT_FALSE_SILENT(block.empty());
       }
-      ASSERT_TRUE(block.isInBlock(block.begin()));
-      ASSERT_TRUE(block.isInBlock(block.end() - 1));
+      ASSERT_TRUE_SILENT(block.isInBlock(block.begin()));
+      ASSERT_TRUE_SILENT(block.isInBlock(block.end() - 1));
     } else {
-      ASSERT_EQ(block.begin(), block.end());
+      ASSERT_EQ_SILENT(block.begin(), block.end());
     }
-    ASSERT_EQ(block.getBytesToRight(), i - i / 2);
-    ASSERT_FALSE(block.isInBlock(block.end()));
-    ASSERT_FALSE(block.isInBlock(block.begin() - 1));
+    ASSERT_EQ_SILENT(block.getBytesToRight(), i - i / 2);
+    ASSERT_FALSE_SILENT(block.isInBlock(block.end()));
+    ASSERT_FALSE_SILENT(block.isInBlock(block.begin() - 1));
 
     block.clear();
-    ASSERT_EQ(block.position(), block.begin());
-    ASSERT_TRUE(block.empty());
+    ASSERT_EQ_SILENT(block.position(), block.begin());
+    ASSERT_TRUE_SILENT(block.empty());
   }
   for (size_t i = 100; i > 0; --i) {
     ASSERT_TRUE(blocks.getFrontBlock().hasPreviousBlock());
-
     MemoryBlocks::Block* previous = blocks.getFrontBlock().getPreviousBlock();
     for (const char* it = previous->begin(); it != previous->end(); ++it)
-      ASSERT_EQ(*it, i - 1);
-    ASSERT_EQ(previous->getBytesInBlock(), i - 1);
+      ASSERT_EQ_SILENT(*it, static_cast<char>(i - 1));
+    ASSERT_EQ_SILENT(previous->getBytesInBlock(), i - 1);
     blocks.freePreviousBlock();
   }
   ASSERT_FALSE(blocks.getFrontBlock().isNull());
-  ASSERT_EQ(blocks.getFrontBlock().getBytesInBlock(), 100);
+  ASSERT_EQ_SILENT(blocks.getFrontBlock().getBytesInBlock(), 100u);
 
   blocks.allocBlock(101);
-  ASSERT_EQ(blocks.getFrontBlock().getPreviousBlock()->getBytesInBlock(), 100);
+  ASSERT_EQ_SILENT(blocks.getFrontBlock().getPreviousBlock()->getBytesInBlock(), 100u);
   blocks.allocBlock(102);
-  ASSERT_EQ(blocks.getFrontBlock().getPreviousBlock()->getBytesInBlock(), 101);
+  ASSERT_EQ_SILENT(blocks.getFrontBlock().getPreviousBlock()->getBytesInBlock(), 101u);
 
   blocks.freeAllPreviousBlocks();
-  ASSERT_FALSE(blocks.getFrontBlock().isNull());
-  ASSERT_FALSE(blocks.getFrontBlock().hasPreviousBlock());
-  ASSERT_EQ(blocks.getFrontBlock().getBytesInBlock(), 102);
+  ASSERT_FALSE_SILENT(blocks.getFrontBlock().isNull());
+  ASSERT_FALSE_SILENT(blocks.getFrontBlock().hasPreviousBlock());
+  ASSERT_EQ_SILENT(blocks.getFrontBlock().getBytesInBlock(), 102u);
 
   blocks.allocBlock(103);
   blocks.freeAllBlocks();
