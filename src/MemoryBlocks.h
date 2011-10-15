@@ -22,12 +22,14 @@
  implementing other memory allocators.  */
 class MemoryBlocks {
  public:
-  /** Makes the front block a null block object. No memory is
+   class Block;
+   
+   /** Makes the front block a null block object. No memory is
    allocated. */
   MemoryBlocks() {}
 
   /** Makes the front block have the given capacity. */
-  MemoryBlocks(size_t capacityInBytes) {allocBlock(capacityInBytes());}
+  MemoryBlocks(size_t capacityInBytes) {allocBlock(capacityInBytes);}
 
   /** Frees all blocks. */
   ~MemoryBlocks() {freeAllBlocks();}
@@ -35,7 +37,7 @@ class MemoryBlocks {
   /** Create a new front block with the given capacity. If the
    previous front block is not null, it becomes the previous block of
    the new front block. This invalidates all block pointers. */
-  void allocBlock(size_t capacityInBytes) {_block.newBlock(capacityInBytes);}
+  Block& allocBlock(size_t capacityInBytes);
 
   /** Frees the block previous to the front block. The block before
    that, if any, becomes the new front block. There must be a previous
@@ -50,10 +52,10 @@ class MemoryBlocks {
   void freeAllBlocks();
 
   /** Returns the current front block. Can be a null block object. */
-  Block& getFrontBlock() {return _front;}
+  Block& getFrontBlock() {return _block;}
 
   /** Returns the current front block. Can be a null block object. */
-  Block const& getFrontBlock() const {return _front;}
+  Block const& getFrontBlock() const {return _block;}
 
   /** Rounds value up to the nearest multiple of MemoryAlignment. This
    rounded up value must be representable in a size_t. */
@@ -72,28 +74,31 @@ class MemoryBlocks {
    handled by MemoryBlocks. */
   class Block {
   public:
-	void* begin() {return _blockBegin;}
-	void* const begin() const {return _blockBegin;}
-	void* end() {return _blockEnd;}
-	void* const end() {return _blockEnd;}
-    void* position() {return _freeBegin;}
-    void const* position() const {return _freeBegin;}
+	char* begin() {return _begin;}
+	char* const begin() const {return _begin;}
+	char* end() {return _end;}
+	char* const end() const {return _end;}
+    char* position() {return _position;}
+    char const* position() const {return _position;}
 	inline void setPosition(const void* position);
 
 	/** Returns true if ptr is in the range [begin(), end()). */
 	inline bool isInBlock(const void* ptr) const;
 
 	/** Returns the number of bytes in the range [begin(), end()). */
-	size_t getSize() const {return _blockEnd - _blockBegin;}
+	size_t getBytesInBlock() const {return _end - _begin;}
 
 	/** Returns the number of bytes in the range [position(), end()). */
-	size_t getCapacity() const {return _blockEnd - _freeBegin;}
+	size_t getBytesToRight() const {return _end - _position;}
 
 	/** Returns true if position() == begin(). */
-	bool isEmpty() const {return position() == begin();}
+	bool empty() const {return position() == begin();}
+
+    Block* getPreviousBlock() {return _previous;}
+    Block const* getPreviousBlock() const {return _previous;}
 
 	/** Returns true if previous() is not null. */
-	bool hasPreviousBlock() const {return _previousBlock != 0;}
+	bool hasPreviousBlock() const {return _previous != 0;}
 
 	/** Returns true this is a null block object. That is, if begin(),
 		end() and position() are all null. */
@@ -103,6 +108,7 @@ class MemoryBlocks {
     void clear() {setPosition(begin());}
 
   private:
+    friend class MemoryBlocks;
 	Block() {makeNull();} 
     Block(size_t capacity, Block* previous);
 	Block(Block const&); // unavailable
@@ -121,22 +127,32 @@ class MemoryBlocks {
 		block previous to this block. */
 	void newBlock(size_t capacity);
 
-	char* _blockBegin; /// beginning of current block (aligned)
+	char* _begin; /// beginning of current block (aligned)
 	char* _position; /// pointer to first free byte (aligned)
-	char* _blockEnd; /// one past last byte (aligned)
-	Block* _previousBlock; /// null if none
+	char* _end; /// one past last byte (aligned)
+	Block* _previous; /// null if no previous block
   };
 
  private:
   Block _block;
 };
 
+inline MemoryBlocks::Block& MemoryBlocks::allocBlock(size_t capacityInBytes) {
+  _block.newBlock(capacityInBytes);
+  return _block;
+}
+
+inline void MemoryBlocks::Block::setPosition(void const* position) {
+  ASSERT(position == end() || isInBlock(position));
+  _position = const_cast<char*>(reinterpret_cast<char const*>(position));
+}
+
 inline size_t MemoryBlocks::alignNoOverflow(const size_t value) {
   // this function might look big, but the total compiled code size is
   // one addition and one bitwise and.
   const size_t decAlign = MemoryAlignment - 1; // compile time constant
 
-  ASSERT(MemoryAlignment & (decAlign) == 0) // power of 2
+  ASSERT((MemoryAlignment & (decAlign)) == 0) // power of 2
   // This works because MemoryAlignment is a power of 2.
   const size_t aligned = (value + decAlign) & (~decAlign);
 
@@ -151,12 +167,12 @@ inline size_t MemoryBlocks::alignThrowOnOverflow(size_t value) {
   // one addition, one branch using a comparison and one bitwise and.
   const size_t decAlign = MemoryAlignment - 1; // compile time constant
 
-  ASSERT(MemoryAlignment & (decAlign) == 0) // power of 2
+  ASSERT((MemoryAlignment & (decAlign)) == 0) // power of 2
   // This sum overflows if and only if rounding up overflows because
   // MemoryAlignment is a power of 2.
   const size_t sum = value + decAlign;
   if (sum < value)
-	throw std::bad_alloc; // overflow
+	throw std::bad_alloc(); // overflow
   const size_t aligned = sum & (~decAlign);
 
   ASSERT(aligned % MemoryAlignment == 0); // alignment
@@ -166,13 +182,13 @@ inline size_t MemoryBlocks::alignThrowOnOverflow(size_t value) {
 }
 
 inline bool MemoryBlocks::Block::isInBlock(const void* ptr) const {
-  // We use a trick to check this using one branch and one subtraction
+  // We use a trick to check this using one branch and two subtractions
   // instead of two branches.
   const char* p = static_cast<const char*>(ptr);
-  const size_t offset = static_cast<size_t>(p - _blockBegin);
+  const size_t offset = static_cast<size_t>(p - begin());
   // if _blockBegin > ptr then offset overflows to a large integer
-  ASSERT((offset < getSize()) == (_blockBegin <= p && p < _blockEnd));
-  return offset < getSize();
+  ASSERT((offset < getBytesInBlock()) == (begin() <= p && p < end()));
+  return offset < getBytesInBlock();
 }
 
 #endif

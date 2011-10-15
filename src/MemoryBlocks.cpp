@@ -20,7 +20,7 @@
 
 void MemoryBlocks::freeAllPreviousBlocks() {
   while (_block.hasPreviousBlock())
-	discardPreviousBlock();
+	freePreviousBlock();
 }
 
 void MemoryBlocks::freeAllBlocks() {
@@ -29,12 +29,13 @@ void MemoryBlocks::freeAllBlocks() {
   _block.makeNull();
 }
 
-MemoryBlocks::Block::newBlock(size_t capacityInBytes) {
-  if (!isNull) {
+void MemoryBlocks::Block::newBlock(size_t capacityInBytes) {
+  if (!isNull()) {
 	// We set aside space for a block at the end of the memory. Use that
 	// space to store the block for the old memory.
-	Block* block = reinterpret_cast<Block*>(alignNoOverflow(end()));
-	block->_previous = getPrevious();
+    const size_t blockStructOffset = alignNoOverflow(getBytesInBlock());
+	Block* block = reinterpret_cast<Block*>(begin() + blockStructOffset);
+	block->_previous = this->getPreviousBlock();
 	block->_begin = begin();
 	block->_end = end();
 	block->_position = position();
@@ -45,18 +46,18 @@ MemoryBlocks::Block::newBlock(size_t capacityInBytes) {
   // use it yet.
   const size_t aligned = alignThrowOnOverflow(capacityInBytes);
   const size_t total = aligned + sizeof(Block);
-  if (total < aligned)
-	throw std::bad_alloc; // overflow
+  if (total < aligned) // check overflow
+	throw std::bad_alloc();
   _begin = new char[total];
   _position = _begin;
-  _end = _begin + capacity;
+  _end = _begin + capacityInBytes;
 
   ASSERT(!isNull());
   ASSERT(empty());
-  ASSERT(capacityInBytes == this->capacity());
+  ASSERT(capacityInBytes == getBytesInBlock());
 }
 
-void MemoryBlocks::Blocks::makeNull() {
+void MemoryBlocks::Block::makeNull() {
   _previous = 0;
   _begin = 0;
   _position = 0;
@@ -64,8 +65,8 @@ void MemoryBlocks::Blocks::makeNull() {
 }
 
 void MemoryBlocks::Block::freePrevious() {
-  ASSERT(hasPrevious());
-  Block* previousPrevious = getPrevious()->getPrevious();
-  getPrevious()->free();
-  _previousBlock = previousPrevious;
+  ASSERT(hasPreviousBlock());
+  Block* previousPrevious = getPreviousBlock()->getPreviousBlock();
+  getPreviousBlock()->free();
+  _previous = previousPrevious;
 }

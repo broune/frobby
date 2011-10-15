@@ -53,7 +53,7 @@ rawSources := main.cpp Action.cpp IOParameters.cpp						\
   RawSquareFreeTerm.cpp RawSquareFreeIdeal.cpp PivotEulerAlg.cpp		\
   EulerState.cpp PivotStrategy.cpp Arena.cpp LocalArray.cpp				\
   LatticeAlgs.cpp InputConsumer.cpp SquareFreeIdeal.cpp BufferPool.cpp	\
-  BufferPoolTest.cpp MemoryBlocks.cpp
+  MemoryBlocks.cpp
 
 rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   LibIrreducibleDecomTest.cpp LibMaxStdTest.cpp LibStdProgramTest.cpp	\
@@ -61,7 +61,8 @@ rawTests := LibAlexanderDualTest.cpp LibHilbertPoincareTest.cpp			\
   TermTranslatorTest.cpp RawSquareFreeTermTest.cpp						\
   RawSquareFreeIdealTest.cpp LibPrimaryDecomTest.cpp					\
   LibAssociatedPrimesTest.cpp MatrixTest.cpp IdealTest.cpp				\
-  LibDimensionTest.cpp TermGraderTest.cpp ArenaTest.cpp
+  LibDimensionTest.cpp TermGraderTest.cpp ArenaTest.cpp					\
+  BufferPoolTest.cpp MemoryBlocksTest.cpp
 
 ifndef CXX
   CXX      = "g++"
