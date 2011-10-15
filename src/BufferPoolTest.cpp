@@ -31,10 +31,10 @@ TEST(BufferPool, Grind) {
   BufferPool pool(10001);
   std::list<void*> ptrs;
   for (size_t i = 0; i < 10; ++i) {
-    for (size_t j = 0; j < 10000; ++j)
+    for (size_t j = 0; j < 100; ++j)
 	  ptrs.push_back(pool.alloc());
 	// free most but not all and in FIFO order
-	for (size_t j = 0; j < 9000; ++j) {
+	for (size_t j = 0; j < 90; ++j) {
 	  pool.free(ptrs.front());
 	  ptrs.pop_front();
 	}
