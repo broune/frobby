@@ -28,7 +28,7 @@ TEST(BufferPool, NoOp) {
 }
 
 TEST(BufferPool, Grind) {
-  BufferPool pool(10001);
+  BufferPool pool(1001);
   std::list<void*> ptrs;
   for (size_t i = 0; i < 10; ++i) {
     for (size_t j = 0; j < 100; ++j)

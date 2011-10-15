@@ -97,14 +97,14 @@ TEST(Arena, BigAndOverflow) {
   // sizeof(long) * x overflows to a smaller value (0).
   const size_t smallerOverflow = 1ul << (8*sizeof(long) - 1);
   ASSERT(smallerOverflow > 0);
-  ASSERT(smallerOverflow * sizeof(long) == 0);
+  //ASSERT(smallerOverflow * sizeof(long) == 0); compiler warning
   ASSERT_EXCEPTION(arena.allocArray<long>(smallerOverflow), bad_alloc);
 
   // sizeof(int) * x overflows to a greater value
   const size_t greaterOverflow = (~(0ul)) >> 1;
   ASSERT(sizeof(long) >= 4);
-  ASSERT(greaterOverflow * sizeof(long) > greaterOverflow);
-  ASSERT(greaterOverflow != (greaterOverflow * sizeof(long)) / sizeof(long));
+  //ASSERT(greaterOverflow * sizeof(long) > greaterOverflow); compiler warning
+  //ASSERT(greaterOverflow != (greaterOverflow * sizeof(long)) / sizeof(long));
   ASSERT_EXCEPTION(arena.allocArray<long>(greaterOverflow), bad_alloc);
 
   ASSERT_TRUE(arena.isEmpty());

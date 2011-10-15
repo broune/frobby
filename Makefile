@@ -88,6 +88,7 @@ endif
 
 MATCH=false
 ifeq ($(MODE), release)
+  rawSources := $(rawSources) $(rawTests)
   outdir = bin/release/
   cflags += -O2
   MATCH=true
