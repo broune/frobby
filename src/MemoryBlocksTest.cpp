@@ -26,12 +26,36 @@ TEST_SUITE(MemoryBlocks)
 
 TEST(MemoryBlocks, NoOp) {
   MemoryBlocks blocks;
+  ASSERT_TRUE(blocks.getMemoryUsage() == 0);
+}
+
+TEST(MemoryBlocks, MemoryUsage) {
+  const size_t MaxOverhead =
+    sizeof(MemoryBlocks::Block) + (MemoryAlignment - 1);
+  MemoryBlocks blocks;
+  ASSERT_EQ(blocks.getMemoryUsage(), 0);
+  blocks.allocBlock(100);
+  ASSERT_TRUE(blocks.getMemoryUsage() >= 100);
+  ASSERT_TRUE(blocks.getMemoryUsage() <= 100 + MaxOverhead);
+
+  blocks.allocBlock(200);
+  blocks.allocBlock(400);
+  ASSERT_TRUE(blocks.getMemoryUsage() >= 700);
+  ASSERT_TRUE(blocks.getMemoryUsage() <= 700 + 3 * MaxOverhead);
+
+  blocks.freeAllPreviousBlocks();
+  ASSERT_TRUE(blocks.getMemoryUsage() >= 400);
+  ASSERT_TRUE(blocks.getMemoryUsage() <= 400 + 3 * MaxOverhead);
+
+  blocks.allocBlock(800);
+  blocks.freeAllBlocks();
+  ASSERT_EQ(blocks.getMemoryUsage(), 0);
 }
 
 TEST(MemoryBlocks, NoLeak) {
   MemoryBlocks blocks1;
   blocks1.allocBlock(100);
-  
+ 
   MemoryBlocks blocks2;
   blocks2.allocBlock(100);
   blocks2.allocBlock(1);

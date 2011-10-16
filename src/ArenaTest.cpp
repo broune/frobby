@@ -28,6 +28,13 @@ TEST(Arena, NoOp) {
   Arena arena;
 }
 
+TEST(Arena, GetMemoryUsage) {
+  Arena arena;
+  ASSERT_EQ(arena.getMemoryUsage(), 0);
+  arena.alloc(100);
+  ASSERT_TRUE(arena.getMemoryUsage() >= 100);
+}
+
 TEST(Arena, Big) {
   Arena arena;
   void* a = arena.alloc(5);
@@ -36,7 +43,6 @@ TEST(Arena, Big) {
   ASSERT_FALSE(arena.isEmpty());
   arena.freeTop(a);
   ASSERT_TRUE(arena.isEmpty());
-
 }
 
 TEST(Arena, Zero) {

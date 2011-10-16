@@ -57,6 +57,16 @@ void MemoryBlocks::Block::newBlock(size_t capacityInBytes) {
   ASSERT(capacityInBytes == getBytesInBlock());
 }
 
+size_t MemoryBlocks::getMemoryUsage() const {
+  size_t sum = 0;
+  const Block* block = &_block;
+  do {
+    sum += block->getBytesInBlock();
+    block = block->getPreviousBlock();
+  } while (block != 0);
+  return sum;
+}
+
 void MemoryBlocks::Block::makeNull() {
   _previous = 0;
   _begin = 0;

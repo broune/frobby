@@ -29,6 +29,37 @@ TEST(BufferPool, NoOp) {
   BufferPool pool3(100);
 }
 
+TEST(BufferPool, FreeBuffers) {
+  BufferPool pool(5);
+  for (size_t j = 0; j < 2; ++j) {
+    pool.freeAllBuffers();
+    for (size_t i = 0; i < 100; ++i) {
+      pool.free(pool.alloc());
+      pool.alloc();
+    }
+    pool.freeAllBuffers();
+  }
+}
+
+TEST(BufferPool, GetMemoryUsage) {
+  BufferPool pool(100);
+  ASSERT_EQ(pool.getMemoryUsage(), 0);
+  pool.alloc();
+  ASSERT_TRUE(pool.getMemoryUsage() >= 100);
+}
+
+TEST(BufferPool, FreeBuffersAndBackingMemory) {
+  BufferPool pool(5);
+  for (size_t j = 0; j < 2; ++j) {
+    pool.freeAllBuffersAndBackingMemory();
+    for (size_t i = 0; i < 100; ++i) {
+      pool.free(pool.alloc());
+      pool.alloc();
+    }
+    pool.freeAllBuffersAndBackingMemory();
+  }
+}
+
 TEST(BufferPool, Grind) {
   BufferPool pool(1001);
   std::list<void*> ptrs;

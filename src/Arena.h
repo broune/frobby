@@ -22,7 +22,7 @@
 #include <utility>
 
 #ifdef DEBUG
-#include <stack>
+#include <vector>
 #endif
 
 /** This is an arena allocator. Arena allocators are very fast at the
@@ -73,8 +73,13 @@ class Arena {
    must not be null. */
   void freeAndAllAfter(void* ptr);
 
-  /** Marks all previous allocations as freed. */
-  void clear();
+  /** Marks all previous allocations as freed. Does not deallocate
+   all the backing memory. */
+  void freeAllAllocs();
+
+  /** Marks all previous allocations as freed and deallocates all
+   backing memory. */
+  void freeAllAllocsAndBackingMemory();
 
   // ***** Array interface *****
 
@@ -119,6 +124,11 @@ class Arena {
   /** Returns true if there are no live allocations for this Arena. */
   inline bool isEmpty() const;
 
+  /** Returns the total amount of memory allocated by this object. Includes
+   excess capacity that has not been allocated by a client yet. Does NOT
+   include memory for a DEBUG-only mechanism to catch bugs. */
+  size_t getMemoryUsage() const {return _blocks.getMemoryUsage();}
+
   /** Returns an arena object that can be used for non-thread safe
    scratch memory after static objects have been initialized. The
    default contract is that each function leaves this arena with the
@@ -133,21 +143,18 @@ class Arena {
   Block& block() {return _blocks.getFrontBlock();}
   const Block& block() const {return _blocks.getFrontBlock();}
 
-  /** Allocate a new block with at least needed bytes. */
+  /** Allocate a new block with at least needed bytes and at least
+   double the capacity of the current block. */
   void growCapacity(size_t needed);
 
-  /** As Arena::freeTop where ptr was allocated from an old block. */
+  /** As freeTop where ptr was allocated from an old block. */
   void freeTopFromOldBlock(void* ptr);
 
-  /** As Arena::freeAndAllAfter where ptr was allocated from an old
-   block. */
+  /** As freeAndAllAfter where ptr was allocated from an old block. */
   void freeAndAllAfterFromOldBlock(void* ptr);
 
-  /** Free the memory for the previous block. */
-  void discardPreviousBlock();
-
   MemoryBlocks _blocks;
-  IF_DEBUG(stack<void*> _debugAllocs;)
+  IF_DEBUG(std::vector<void*> _debugAllocs;)
 
   static Arena _scratchArena;
 };
@@ -182,7 +189,7 @@ inline void* Arena::alloc(size_t size) {
   char* ptr = block().position();
   block().setPosition(ptr + MemoryBlocks::alignNoOverflow(size));
 
-  IF_DEBUG(_debugAllocs.push(ptr));
+  IF_DEBUG(_debugAllocs.push_back(ptr));
   return ptr;
 }
 
@@ -190,8 +197,8 @@ inline void Arena::freeTop(void* ptr) {
   ASSERT(ptr != 0);
 #ifdef DEBUG
   ASSERT(!_debugAllocs.empty());
-  ASSERT(_debugAllocs.top() == ptr);
-  _debugAllocs.pop();
+  ASSERT(_debugAllocs.back() == ptr);
+  _debugAllocs.pop_back();
 #endif
 
   if (!block().empty())
@@ -203,11 +210,11 @@ inline void Arena::freeTop(void* ptr) {
 inline void Arena::freeAndAllAfter(void* ptr) {
   ASSERT(ptr != 0);
 #ifdef DEBUG
-  while (!_debugAllocs.empty() && ptr != _debugAllocs.top())
-	_debugAllocs.pop();
+  while (!_debugAllocs.empty() && ptr != _debugAllocs.back())
+	_debugAllocs.pop_back();
   ASSERT(!_debugAllocs.empty());
-  ASSERT(_debugAllocs.top() == ptr);
-  _debugAllocs.pop();
+  ASSERT(_debugAllocs.back() == ptr);
+  _debugAllocs.pop_back();
 #endif
 
   if (block().isInBlock(ptr))
@@ -228,23 +235,24 @@ pair<T*, T*> Arena::allocArrayNoCon(size_t elementCount) {
   return make_pair(array, arrayEnd);
 }
 
-#undef new
 template<class T>
 pair<T*, T*> Arena::allocArray(size_t elementCount) {
   pair<T*, T*> p = allocArrayNoCon<T>(elementCount);
   T* it = p.first;
   try {
-	for (; it != p.second; ++it)
+	for (; it != p.second; ++it) {
+#undef new
 	  new (it) T();
+#ifdef NEW_MACRO
+#define new NEW_MACRO
+#endif
+    }
   } catch (...) {
 	freeTopArray<T>(p.first, it);
 	throw;
   }
   return p;
 }
-#ifdef NEW_MACRO
-#define new NEW_MACRO
-#endif
 
 template<class T>
 void Arena::freeTopArray(T* array, T* arrayEnd) {

@@ -27,13 +27,20 @@ Arena::Arena() {
 }
 
 Arena::~Arena() {
-  clear();
+  freeAllAllocsAndBackingMemory();
 }
 
-void Arena::clear() {
+void Arena::freeAllAllocs() {
   while (block().hasPreviousBlock())
-	discardPreviousBlock();
+	_blocks.freePreviousBlock();
   block().clear();
+}
+
+void Arena::freeAllAllocsAndBackingMemory() {
+  _blocks.freeAllBlocks();
+#ifdef DEBUG
+  _debugAllocs.swap(std::vector<void*>());
+#endif
 }
 
 void Arena::growCapacity(const size_t needed) {
@@ -60,7 +67,7 @@ void Arena::freeTopFromOldBlock(void* ptr) {
   ASSERT(previous->isInBlock(ptr));
   previous->setPosition(ptr);
   if (previous->empty())
-	discardPreviousBlock();
+	_blocks.freePreviousBlock();
 }
 
 void Arena::freeAndAllAfterFromOldBlock(void* ptr) {
@@ -69,17 +76,12 @@ void Arena::freeAndAllAfterFromOldBlock(void* ptr) {
 
   block().setPosition(block().begin());
   while (!(block().getPreviousBlock()->isInBlock(ptr))) {
-	discardPreviousBlock();
+	_blocks.freePreviousBlock();
 	ASSERT(block().hasPreviousBlock()); // ptr must be in some block
   }
 
   ASSERT(block().getPreviousBlock()->isInBlock(ptr));
   block().getPreviousBlock()->setPosition(ptr);
   if (block().getPreviousBlock()->empty())
-	discardPreviousBlock();
-}
-
-void Arena::discardPreviousBlock() {
-  ASSERT(block().getPreviousBlock() != 0);
-  _blocks.freePreviousBlock();
+	_blocks.freePreviousBlock();
 }

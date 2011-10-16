@@ -57,6 +57,9 @@ class MemoryBlocks {
   /** Returns the current front block. Can be a null block object. */
   Block const& getFrontBlock() const {return _block;}
 
+  /** Returns the total amount of memory allocated by this object. */
+  size_t getMemoryUsage() const;
+
   /** Rounds value up to the nearest multiple of MemoryAlignment. This
    rounded up value must be representable in a size_t. */
   inline static size_t alignNoOverflow(size_t value);
