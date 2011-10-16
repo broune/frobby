@@ -44,14 +44,22 @@ class BufferPool {
    throw an exception. */
   inline void free(void* ptr);
 
-  /** Returns how many bytes are in each buffer. Can be more than
-   requested due to having to have enough space to store a free list
-   pointer in each buffer. */
+  /** Returns how many bytes are in each buffer. Can be a few bytes
+   more than requested due to internal requirements on the size of the
+   buffers. Will never be less than requested. */
   size_t getBufferSize() const {return _bufferSize;}
 
-  /** Marks all allocated blocks as available for reuse. Does not
-   deallocate the backing memory. */
-  void clear();
+  /** Marks all allocated buffers as available for reuse. Does not
+   deallocate all the backing memory. */
+  void freeAllBuffers();
+
+  /** Marks all allcoated buffers as available for reuse and frees
+   all backing memory too. */
+  void freeAllBuffersAndBackingMemory();
+
+  /** Returns the total amount of memory allocated by this object. Includes
+   excess capacity that has not been allocated by a client yet. */
+  size_t getMemoryUsage() const {return _blocks.getMemoryUsage();}
 
  private:
   typedef MemoryBlocks::Block Block;
@@ -72,17 +80,17 @@ class BufferPool {
 };
 
 inline void* BufferPool::alloc() {
+  void* ptr;
   if (_free != 0) {
-    void* ptr = _free;
+    ptr = _free;
 	_free = _free->next;
-	return ptr;
   } else {
     if (block().position() == block().end())
       growCapacity();
-    void* ptr = block().position();
+    ptr = block().position();
     block().setPosition(block().position() + getBufferSize());
-    return ptr;
   }
+  return ptr;
 }
 
 inline void BufferPool::free(void* ptr) {

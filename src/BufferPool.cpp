@@ -32,7 +32,7 @@ void BufferPool::growCapacity() {
   size_t size = block().getBytesInBlock();
   if (size == 0) {
     // start out at 10 buffers
-    ASSERT(block.isNull());
+    ASSERT(block().isNull());
     if (_bufferSize > std::numeric_limits<size_t>::max() / 10)
       throw bad_alloc(); // _bufferSize * 10 overflows
     size = _bufferSize * 10;
@@ -49,7 +49,12 @@ void BufferPool::growCapacity() {
   _blocks.allocBlock(size);
 }
 
-void BufferPool::clear() {
+void BufferPool::freeAllBuffers() {
   _free = 0;
   _blocks.freeAllPreviousBlocks();
+}
+
+void BufferPool::freeAllBuffersAndBackingMemory() {
+  _free = 0;
+  _blocks.freeAllBlocks();
 }
